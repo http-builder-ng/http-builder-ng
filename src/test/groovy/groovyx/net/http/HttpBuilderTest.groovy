@@ -7,12 +7,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import groovy.json.JsonSlurper;
 import java.util.concurrent.Executors;
+import static groovyx.net.http.ClientType.*;
 
 class HttpBuilderTest extends Specification {
 
     def "Basic GET"() {
         setup:
-        def result = HttpBuilder.configure().get {
+        def result = HttpBuilder.configure(APACHE_HTTP_CLIENT).get {
             response.parser "text/html", NativeHandlers.Parsers.&textToString
             request.uri = 'http://www.google.com';
         };
@@ -24,7 +25,7 @@ class HttpBuilderTest extends Specification {
 
     def "GET with Parameters"() {
         setup:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             response.parser "text/html", NativeHandlers.Parsers.&textToString
             request.uri = 'http://www.google.com';
         }
@@ -40,7 +41,7 @@ class HttpBuilderTest extends Specification {
     def "Basic POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
-        def http = HttpBuilder.configure();
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT);
         def result = http.post {
             request.uri = 'http://httpbin.org/post'
             request.body = toSend;
@@ -56,7 +57,7 @@ class HttpBuilderTest extends Specification {
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org/post'
             request.body = toSend;
             request.contentType = ContentTypes.URLENC[0];
@@ -72,7 +73,7 @@ class HttpBuilderTest extends Specification {
     def "POST Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org/post'
             request.contentType = 'application/json';
         }
@@ -92,7 +93,7 @@ class HttpBuilderTest extends Specification {
     def "Test POST Random Headers"() {
         setup:
         final headers = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
-        def results = HttpBuilder.configure().post {
+        def results = HttpBuilder.configure(APACHE_HTTP_CLIENT).post {
             request.uri = 'http://httpbin.org/post'
             request.contentType = 'application/json';
             request.headers = headers;
@@ -104,7 +105,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Head"() {
         setup:
-        def result = HttpBuilder.configure().head {
+        def result = HttpBuilder.configure(APACHE_HTTP_CLIENT).head {
             request.uri = 'http://www.google.com';
         };
 
@@ -114,7 +115,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Multi-Threaded Head"() {
         setup:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             execution.maxThreads = 2
             execution.executor = Executors.newFixedThreadPool(2)
         }
@@ -133,7 +134,7 @@ class HttpBuilderTest extends Specification {
     def "PUT Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org/put'
             request.contentType = 'application/json';
         }
@@ -152,7 +153,7 @@ class HttpBuilderTest extends Specification {
 
     def "Gzip and Deflate"() {
         when:
-        def gzipped = HttpBuilder.configure().get {
+        def gzipped = HttpBuilder.configure(APACHE_HTTP_CLIENT).get {
             request.uri = 'http://httpbin.org/gzip'
         }
 
@@ -160,7 +161,7 @@ class HttpBuilderTest extends Specification {
         gzipped.gzipped == true;
 
         when:
-        def deflated = HttpBuilder.configure().get {
+        def deflated = HttpBuilder.configure(APACHE_HTTP_CLIENT).get {
             request.uri = 'http://httpbin.org/deflate'
         }
 
@@ -170,7 +171,7 @@ class HttpBuilderTest extends Specification {
 
     def "Basic Auth"() {
         setup:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org'
         }
 
@@ -189,7 +190,7 @@ class HttpBuilderTest extends Specification {
         //which of course httpclient won't do. If you let the first request fail, then the cookie will
         //be set, which means the next request will have the cookie and will allow auth to succeed.
         setup:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org'
             request.auth.digest 'david', 'clark'
         }
@@ -215,7 +216,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Set Cookies"() {
         when:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org';
             request.cookie 'foocookie', 'barcookie'
         }
@@ -241,7 +242,7 @@ class HttpBuilderTest extends Specification {
     def "Test Delete"() {
         setup:
         def args = [ one: 'i', two: 'ii' ]
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org'
             execution.maxThreads = 5
         }
@@ -258,7 +259,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Custom Parser"() {
         setup:
-        def http = HttpBuilder.configure {
+        def http = HttpBuilder.configure(APACHE_HTTP_CLIENT) {
             request.uri = 'http://httpbin.org/'
         }
 

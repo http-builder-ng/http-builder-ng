@@ -1,22 +1,24 @@
 package groovyx.net.http;
 
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.BasicCookieStore;
+import groovyx.net.http.libspecific.ApacheHttpBuilder;
 import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
 import static groovyx.net.http.HttpConfigs.*;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
 
-    final ChainedHttpConfig config = basic(root());
+    private final ChainedHttpConfig config = basic(root());
+
+    public ChainedHttpConfig getChainedConfig() {
+        return config;
+    }
+    
     final Exec exec = new Exec();
 
     private static class Exec implements Execution {
-        int maxThreads = 1;
-        Executor executor;
-        SSLContext sslContext;
+        private int maxThreads = 1;
+        private Executor executor = SingleThreaded.instance;
+        private SSLContext sslContext;
 
         public void setMaxThreads(final int val) {
             if(val < 1) {
@@ -26,12 +28,28 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
             this.maxThreads = val;
         }
 
+        public int getMaxThreads() {
+            return maxThreads;
+        }
+
         public void setExecutor(final Executor val) {
+            if(val == null) {
+                throw new NullPointerException();
+            }
+            
             this.executor = val;
+        }
+
+        public Executor getExecutor() {
+            return executor;
         }
 
         public void setSslContext(final SSLContext val) {
             this.sslContext = val;
+        }
+
+        public SSLContext getSslContext() {
+            return sslContext;
         }
     }
 
@@ -43,26 +61,15 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         public static final SingleThreaded instance = new SingleThreaded();
     }
 
-    public HttpBuilder build() {
-        final BasicCookieStore cookieStore = new BasicCookieStore();
-        final Executor e = exec.executor == null ? SingleThreaded.instance : exec.executor;
-        HttpClientBuilder myBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
-        ChainedHttpConfig myConfig = config;
-        
-        if(exec.maxThreads > 1) {
-            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-            cm.setMaxTotal(exec.maxThreads);
-            cm.setDefaultMaxPerRoute(exec.maxThreads);
-            
-            myBuilder.setConnectionManager(cm);
-            myConfig = new HttpConfigs.ThreadSafeHttpConfig(config);
+    public HttpBuilder build(final ClientType type) {
+        switch(type) {
+        case APACHE_HTTP_CLIENT: return apacheHttpBuilder();
+        default: throw new IllegalArgumentException();
         }
-        
-        if(exec.sslContext != null) {
-            myBuilder.setSSLContext(exec.sslContext);
-        }
-        
-        return new HttpBuilder(myBuilder.build(), cookieStore, myConfig, e);
+    }
+
+    public HttpBuilder apacheHttpBuilder() {
+        return new ApacheHttpBuilder(this);
     }
 
     public Request getRequest() {
