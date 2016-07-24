@@ -3,13 +3,11 @@ package groovyx.net.http;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import static groovyx.net.http.Traverser.*;
-import org.apache.http.cookie.Cookie;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.Charset;
 import groovy.lang.Closure;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import java.util.function.BiConsumer;
 
 public interface ChainedHttpConfig extends HttpConfig {
 
@@ -18,7 +16,7 @@ public interface ChainedHttpConfig extends HttpConfig {
         List<Cookie> getCookies();
         Object getBody();
         String getContentType();
-        Map<String,Function<ChainedRequest,HttpEntity>> getEncoderMap();
+        Map<String,BiConsumer<ChainedRequest,ToServer>> getEncoderMap();
         Charset getCharset();
 
         default Charset actualCharset() {
@@ -39,7 +37,7 @@ public interface ChainedHttpConfig extends HttpConfig {
             return map;
         }
 
-        default Function<ChainedRequest,HttpEntity> actualEncoder(final String contentType) {
+        default BiConsumer<ChainedRequest,ToServer> actualEncoder(final String contentType) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
         }
 
@@ -62,7 +60,7 @@ public interface ChainedHttpConfig extends HttpConfig {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
         
-        default Function<HttpResponse,Object> actualParser(final String contentType) {
+        default Function<FromServer,Object> actualParser(final String contentType) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.parser(contentType), Traverser::notNull);
         }
     }

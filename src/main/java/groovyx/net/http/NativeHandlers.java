@@ -1,5 +1,7 @@
 package groovyx.net.http;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import org.apache.http.util.EntityUtils;
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper;
@@ -51,32 +53,46 @@ public class NativeHandlers {
 
     private static final Logger log = LoggerFactory.getLogger(NativeHandlers.class);
     
-    public static Object success(final HttpResponse response, final Object data) throws IOException {
-        //If response is streaming, buffer it in a byte array:
-        if(data instanceof InputStream) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DefaultGroovyMethods.leftShift(buffer, (InputStream) data);
-            return new ByteArrayInputStream(buffer.toByteArray());
-        }
-        else if(data instanceof Reader) {
-            StringWriter buffer = new StringWriter();
-            DefaultGroovyMethods.leftShift(buffer, (Reader) data);
-            return new StringReader(buffer.toString());
-        }
-        else if(data instanceof Closeable) {
-            if(log.isWarnEnabled()) {
-                log.warn("Parsed data is streaming, but will be accessible after " +
-                         "the network connection is closed.  Use at your own risk!");
-            }
-        }
-        
+    public static Object success(final FromServer fromServer, final Object data) {
         return data;
     }
 
-    public static Object failure(final HttpResponse response) throws HttpResponseException {
-        throw new HttpResponseException(response.getStatusLine().getStatusCode(),
-                                        response.getStatusLine().getReasonPhrase());
+    public static Object failure(final FromServer fromServer, final Object data) {
+        throw new HttpException(fromServer, data);
     }
+
+    protected static class Expanding {
+        CharBuffer charBuffer = CharBuffer.allocate(2048);
+        final char[] charAry = new char[2048];
+        
+        private void resize(final int toWrite) {
+            final int byAtLeast = toWrite - charBuffer.remaining();
+            int next = charBuffer.capacity() << 1;
+            while((next - charBuffer.capacity()) + charBuffer.remaining() < byAtLeast) {
+                next = next << 1;
+            }
+            
+            CharBuffer tmp = CharBuffer.allocate(next);
+            charBuffer.flip();
+            tmp.put(charBuffer);
+            charBuffer = tmp;
+        }
+        
+        public void append(final int total) {
+            if(charBuffer.remaining() < total) {
+                resize(total);
+            }
+            
+            charBuffer.put(charAry, 0, total);
+        }
+    }
+    
+    protected static final ThreadLocal<Expanding> tlExpanding = new ThreadLocal<Expanding>() {
+            @Override protected Expanding initialValue() {
+                return new Expanding();
+            }
+        };
+
     
     public static class Encoders {
 
@@ -110,99 +126,72 @@ public class NativeHandlers {
         private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class,
                                                                   byte[].class, ByteArrayOutputStream.class, Closure.class };
         
-        public static HttpEntity binary(final ChainedHttpConfig.ChainedRequest request) {
+        public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
             final String contentType = request.actualContentType();
             checkTypes(contentType, body, BINARY_TYPES);
             
-            InputStreamEntity entity = null;
-            
             if(body instanceof ByteArrayInputStream) {
-                // special case for ByteArrayIS so that we can set the content length.
-                ByteArrayInputStream in = (ByteArrayInputStream) body;
-                entity = new InputStreamEntity(in, in.available());
+                ts.toServer(contentType, (ByteArrayInputStream) body);
             }
             else if(body instanceof InputStream) {
-                entity = new InputStreamEntity((InputStream) body);
+                ts.toServer(contentType, (InputStream) body);
             }
             else if(body instanceof byte[]) {
-                final byte[] out = (byte[]) body;
-                entity = new InputStreamEntity(new ByteArrayInputStream(out), out.length);
-            }
-            else if(body instanceof ByteArrayOutputStream ) {
-                ByteArrayOutputStream out = (ByteArrayOutputStream) body;
-                entity = new InputStreamEntity(new ByteArrayInputStream(out.toByteArray()), out.size());
-            }
-            else if(body instanceof Closure) {
-                final ByteArrayOutputStream out = new ByteArrayOutputStream();
-                ((Closure) body).call(out);
-                entity = new InputStreamEntity(new ByteArrayInputStream(out.toByteArray()), out.size());
+                ts.toServer(contentType, new ByteArrayInputStream((byte[]) body));
             }
             else {
                 throw new UnsupportedOperationException();
             }
-            
-            entity.setContentType(contentType);
-            return entity;
         }
 
         private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
+        
+        private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
+            final Expanding e = tlExpanding.get();
+            e.charBuffer.clear();
+            int total;
+            while((total = r.read(e.charAry)) != -1) {
+                e.append(total);
+            }
 
-        public static HttpEntity text(final ChainedHttpConfig.ChainedRequest request) throws IOException {
+            e.charBuffer.flip();
+            return new ByteArrayInputStream(cs.encode(e.charBuffer).array());
+        }
+
+        private static InputStream stringToStream(final String s, final Charset cs) {
+            final ByteBuffer buf = cs.encode(s);
+            return new ByteArrayInputStream(buf.array(), 0, buf.limit());
+        }
+
+        public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
             final Object body = checkNull(request.actualBody());
             final String contentType = request.actualContentType();
             checkTypes(contentType, body, TEXT_TYPES);
             String text = null;
             
-            if(body instanceof Closure) {
-                final StringWriter out = new StringWriter();
-                final PrintWriter writer = new PrintWriter( out );
-                ((Closure) body).call(writer);
-                writer.close();
-                out.flush();
-                text = out.toString();
-            }
-            else if(body instanceof Writable) {
-                final StringWriter out = new StringWriter();
-                ((Writable) body).writeTo(out);
-                out.flush();
-                text = out.toString();
-            }
-            else if(body instanceof Reader) {
-                final BufferedReader buffered = (body instanceof BufferedReader ?
-                                           (BufferedReader) body :
-                                           new BufferedReader((Reader) body));
-                StringWriter out = new StringWriter();
-                DefaultGroovyMethods.leftShift(out, buffered);
-                text = out.toString();
+            if(body instanceof Reader) {
+                ts.toServer(contentType, readerToStream((Reader) body, request.actualCharset()));
             }
             else {
-                throw new UnsupportedOperationException();
+                ts.toServer(contentType, stringToStream(body.toString(), request.actualCharset()));
             }
-
-            final StringEntity ret = new StringEntity(text, request.actualCharset());
-            ret.setContentType(contentType);
-            return ret;
         }
 
         private static final Class[] FORM_TYPES = { Map.class, String.class };
 
-        public static HttpEntity form(final ChainedHttpConfig.ChainedRequest request) {
+        public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
             final String contentType = request.actualContentType();
             checkTypes(contentType, body, FORM_TYPES);
 
             if(body instanceof String) {
-                final StringEntity ret = new StringEntity(body.toString(), request.actualCharset());
-                ret.setContentType(contentType);
-                return ret;
+                ts.toServer(contentType, stringToStream((String) body, request.actualCharset()));
             }
             else if(body instanceof Map) {
                 final Map<?,?> params = (Map) body;
                 final String encoded = Form.encode(params, request.actualCharset());
-                final StringEntity ret = new StringEntity(encoded, request.actualCharset());
-                ret.setContentType(contentType);
-                return ret;
+                ts.toServer(contentType, stringToStream(encoded, request.actualCharset()));
             }
             else {
                 throw new UnsupportedOperationException();
@@ -211,36 +200,30 @@ public class NativeHandlers {
 
         private static final Class[] XML_TYPES = new Class[] { String.class, StreamingMarkupBuilder.class };
         
-        public static HttpEntity xml(final ChainedHttpConfig.ChainedRequest request) {
+        public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
             final String contentType = request.actualContentType();
             checkTypes(contentType, body, XML_TYPES);
 
-            StringEntity ret;
             if(body instanceof String) {
-                ret = new StringEntity(body.toString(), request.actualCharset());
+                ts.toServer(contentType, stringToStream((String) body, request.actualCharset()));
             }
             else if(body instanceof Closure) {
                 final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
-                ret = new StringEntity(smb.bind(body).toString(), request.actualCharset());
+                ts.toServer(contentType, stringToStream(smb.bind(body).toString(), request.actualCharset()));
             }
             else {
                 throw new UnsupportedOperationException();
             }
-
-            ret.setContentType(contentType);
-            return ret;
         }
 
-        public static HttpEntity json(final ChainedHttpConfig.ChainedRequest request) {
+        public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
             final String contentType = request.actualContentType();
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
                                  : new JsonBuilder(body).toString());
-            final StringEntity ret = new StringEntity(json, request.actualCharset());
-            ret.setContentType(contentType);
-            return ret;
+            ts.toServer(contentType, stringToStream(json, request.actualCharset()));
         }
     }
 
@@ -274,62 +257,10 @@ public class NativeHandlers {
             }
         }
         
-        /**
-         * Helper method to get the charset from the response.  This should be done
-         * when manually parsing any text response to ensure it is decoded using the
-         * correct charset. For instance:<pre>
-         * Reader reader = new InputStreamReader( resp.getEntity().getContent(),
-         *   ParserRegistry.getCharset( resp ) );</pre>
-         * @param resp
-         */
-        public static Charset charset(final HttpResponse resp) {
-            try {
-                NameValuePair charset = resp.getEntity().getContentType()
-                    .getElements()[0].getParameterByName("charset");
-                
-                if(charset == null || charset.getValue().trim().equals("")) {
-                    if(log.isDebugEnabled()) {
-                        log.debug("Could not find charset in response; using " + DEFAULT_CHARSET);
-                    }
-                    
-                    return DEFAULT_CHARSET;
-                }
-                
-                return Charset.forName(charset.getValue());
-            }
-            catch ( RuntimeException ex ) { // NPE or OOB Exceptions
-                if(log.isWarnEnabled()) {
-                    log.warn( "Could not parse charset from content-type header in response" );
-                }
-                
-                return DEFAULT_CHARSET;
-            }
-        }
-
-        public static Object nothing(final HttpResponse response) {
-            return null;
-        }
-
-        public static InputStream stream(final HttpResponse response) {
-            try {
-                HttpEntity entity = response.getEntity();
-                if(entity == null) {
-                    //case of head request
-                    return null;
-                }
-                else {
-                    return entity.getContent();
-                }
-            }
-            catch(IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        }
-
-        public static byte[] streamToBytes(final HttpResponse response) {
+        public static byte[] streamToBytes(final FromServer fromServer) {
             try {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                DefaultGroovyMethods.leftShift(baos, stream(response));
+                DefaultGroovyMethods.leftShift(baos, fromServer.getInputStream());
                 return baos.toByteArray();
             }
             catch(IOException ioe) {
@@ -337,65 +268,53 @@ public class NativeHandlers {
             }
         }
 
-        public static Reader text(final HttpResponse response) {
-            return new InputStreamReader(stream(response), charset(response));
-        }
-
-        public static String textToString(final HttpResponse response) {
-            try(final Reader reader = text(response)) {
-                final char[] buffer = new char[1024];
-                final StringBuilder builder = new StringBuilder();
-                int num;
-                while((num = reader.read(buffer, 0, buffer.length)) != -1) {
-                    builder.append(buffer, 0, num);
+        public static String textToString(final FromServer fromServer) {
+            try(final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset())) {
+                final Expanding e = tlExpanding.get();
+                e.charBuffer.clear();
+                int total;
+                while((total = reader.read(e.charAry)) != -1) {
+                    e.append(total);
                 }
                 
-                return builder.toString();
+                e.charBuffer.flip();
+                return e.charBuffer.toString();
             }
             catch(IOException ioe) {
                 throw new RuntimeException(ioe);
             }
         }
 
-        public static Map<String,List<String>> form(final HttpResponse response) {
-            try {
-                final Charset charset = charset(response);
-                final HttpEntity entity = response.getEntity();
-                return Form.decode(entity.getContent(), charset);
-            }
-            catch(IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
+        public static Map<String,List<String>> form(final FromServer fromServer) {
+            return Form.decode(fromServer.getInputStream(), fromServer.getCharset());
         }
 
-        public static GPathResult html(final HttpResponse response) {
+        public static GPathResult html(final FromServer fromServer) {
             try {
                 final XMLReader p = new org.cyberneko.html.parsers.SAXParser();
                 p.setEntityResolver(catalogResolver);
-                return new XmlSlurper(p).parse(text(response));
+                return new XmlSlurper(p).parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
             }
             catch(IOException | SAXException ex) {
                 throw new RuntimeException(ex);
             }
         }
 
-        public static GPathResult xml(final HttpResponse response) {
+        public static GPathResult xml(final FromServer fromServer) {
             try {
                 final XmlSlurper xml = new XmlSlurper();
                 xml.setEntityResolver(catalogResolver);
                 xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
                 xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                return xml.parse(text(response));
+                return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
             }
             catch(IOException | SAXException | ParserConfigurationException ex) {
                 throw new RuntimeException(ex);
             }
         }
         
-        public static Object json(final HttpResponse response) {
-            // there is a bug in the JsonSlurper.parse method...
-            //String jsonTxt = DefaultGroovyMethods.getText( parseText( resp ) );
-            return new JsonSlurper().parse(text(response));
+        public static Object json(final FromServer fromServer) {
+            return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
         }
     }
 }

@@ -1,10 +1,5 @@
 package groovyx.net.http;
 
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyShell;
@@ -16,7 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,19 +21,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
-import org.apache.http.Header;
-import org.apache.http.HeaderIterator;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.ExecutionContext;
-import org.apache.http.protocol.HttpContext;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -151,16 +138,16 @@ public class HttpConfigs {
             getUri().setFull(val.toURI());
         }
 
-        public Function<ChainedRequest,HttpEntity> encoder(final String contentType) {
-            final Function<ChainedRequest,HttpEntity> enc =  getEncoderMap().get(contentType);
+        public BiConsumer<ChainedRequest,ToServer> encoder(final String contentType) {
+            final BiConsumer<ChainedRequest,ToServer> enc =  getEncoderMap().get(contentType);
             return enc != null ? enc : null;
         }
         
-        public void encoder(final String contentType, final Function<ChainedRequest,HttpEntity> val) {
+        public void encoder(final String contentType, final BiConsumer<ChainedRequest,ToServer> val) {
             getEncoderMap().put(contentType, val);
         }
         
-        public void encoder(final List<String> contentTypes, final Function<ChainedRequest,HttpEntity> val) {
+        public void encoder(final List<String> contentTypes, final BiConsumer<ChainedRequest,ToServer> val) {
             for(String contentType : contentTypes) {
                 encoder(contentType, val);
             }
@@ -182,20 +169,7 @@ public class HttpConfigs {
         }
 
         public void cookie(final String name, final String value, final Date date) {
-            if(getUri() == null) {
-                throw new IllegalStateException("You must set the uri before setting cookies, in the same scope, " +
-                                                "so that domain and path can be properly calculated");
-            }
-
-            final URI uri = getUri().toURI();
-            final BasicClientCookie cookie = new BasicClientCookie(name, value);
-            cookie.setDomain(uri.getHost());
-            cookie.setPath(uri.getPath());
-            if(date != null) {
-                cookie.setExpiryDate(date);
-            }
-
-            getCookies().add(cookie);
+            getCookies().add(new Cookie(name, value, date));
         }
     }
 
@@ -205,7 +179,7 @@ public class HttpConfigs {
         private UriBuilder uriBuilder;
         private final Map<String,String> headers = new LinkedHashMap<>();
         private Object body;
-        private final Map<String,Function<ChainedRequest,HttpEntity>> encoderMap = new LinkedHashMap<>();
+        private final Map<String,BiConsumer<ChainedRequest,ToServer>> encoderMap = new LinkedHashMap<>();
         private BasicAuth auth = new BasicAuth();
         private List<Cookie> cookies = new ArrayList(1);
 
@@ -218,7 +192,7 @@ public class HttpConfigs {
             return cookies;
         }
         
-        public Map<String,Function<ChainedRequest,HttpEntity>> getEncoderMap() {
+        public Map<String,BiConsumer<ChainedRequest,ToServer>> getEncoderMap() {
             return encoderMap;
         }
         
@@ -266,7 +240,7 @@ public class HttpConfigs {
         private volatile UriBuilder uriBuilder;
         private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
         private volatile Object body;
-        private final ConcurrentMap<String,Function<ChainedRequest,HttpEntity>> encoderMap = new ConcurrentHashMap<>();
+        private final ConcurrentMap<String,BiConsumer<ChainedRequest,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
         private final List<Cookie> cookies = new CopyOnWriteArrayList();
 
@@ -292,7 +266,7 @@ public class HttpConfigs {
             return cookies;
         }
         
-        public Map<String,Function<ChainedRequest,HttpEntity>> getEncoderMap() {
+        public Map<String,BiConsumer<ChainedRequest,ToServer>> getEncoderMap() {
             return encoderMap;
         }
         
@@ -338,7 +312,7 @@ public class HttpConfigs {
         abstract protected Map<Integer,Closure<Object>> getByCode();
         abstract protected Closure<Object> getSuccess();
         abstract protected Closure<Object> getFailure();
-        abstract protected Map<String,Function<HttpResponse,Object>> getParserMap();
+        abstract protected Map<String,Function<FromServer,Object>> getParserMap();
         
         private final ChainedResponse parent;
 
@@ -383,16 +357,16 @@ public class HttpConfigs {
             return null;
         }
         
-        public Function<HttpResponse,Object> parser(final String contentType) {
-            final Function<HttpResponse,Object> p = getParserMap().get(contentType);
+        public Function<FromServer,Object> parser(final String contentType) {
+            final Function<FromServer,Object> p = getParserMap().get(contentType);
             return p != null ? p : null;
         }
         
-        public void parser(final String contentType, Function<HttpResponse,Object> val) {
+        public void parser(final String contentType, Function<FromServer,Object> val) {
             getParserMap().put(contentType, val);
         }
         
-        public void parser(final List<String> contentTypes, Function<HttpResponse,Object> val) {
+        public void parser(final List<String> contentTypes, Function<FromServer,Object> val) {
             for(String contentType : contentTypes) {
                 parser(contentType, val);
             }
@@ -403,13 +377,13 @@ public class HttpConfigs {
         private final Map<Integer,Closure<Object>> byCode = new LinkedHashMap<>();
         private Closure<Object> successHandler;
         private Closure<Object> failureHandler;
-        private final Map<String,Function<HttpResponse,Object>> parserMap = new LinkedHashMap<>();
+        private final Map<String,Function<FromServer,Object>> parserMap = new LinkedHashMap<>();
 
         protected BasicResponse(final ChainedResponse parent) {
             super(parent);
         }
         
-        public Map<String,Function<HttpResponse,Object>> getParserMap() {
+        public Map<String,Function<FromServer,Object>> getParserMap() {
             return parserMap;
         }
         
@@ -435,7 +409,7 @@ public class HttpConfigs {
     }
 
     public static class ThreadSafeResponse extends BaseResponse {
-        private final ConcurrentMap<String,Function<HttpResponse,Object>> parserMap = new ConcurrentHashMap<>();
+        private final ConcurrentMap<String,Function<FromServer,Object>> parserMap = new ConcurrentHashMap<>();
         private final ConcurrentMap<Integer,Closure<Object>> byCode = new ConcurrentHashMap<>();
         private volatile Closure<Object> successHandler;
         private volatile Closure<Object> failureHandler;
@@ -452,7 +426,7 @@ public class HttpConfigs {
             this.failureHandler = toCopy.failureHandler;
         }
         
-        protected Map<String,Function<HttpResponse,Object>> getParserMap() {
+        protected Map<String,Function<FromServer,Object>> getParserMap() {
             return parserMap;
         }
         

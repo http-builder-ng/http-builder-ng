@@ -265,8 +265,8 @@ class HttpBuilderTest extends Specification {
         when:
         def lines = http.get {
             request.uri.path = '/stream/25'
-            response.parser "application/json", { resp ->
-                NativeHandlers.Parsers.text(resp).readLines();
+            response.parser "application/json", { fromServer ->
+                NativeHandlers.Parsers.textToString(fromServer).readLines();
             }
         }
 

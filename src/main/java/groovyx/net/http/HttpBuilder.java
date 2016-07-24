@@ -1,5 +1,8 @@
 package groovyx.net.http;
 
+import groovyx.net.http.libspecific.ApacheFromServer;
+import java.util.function.BiConsumer;
+import groovyx.net.http.libspecific.ApacheToServer;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
@@ -33,7 +36,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.protocol.ResponseProcessCookies;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.auth.DigestScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -62,41 +64,16 @@ public class HttpBuilder {
             this.config = config;
         }
         
-        private void processContentType(final HttpEntity entity) {
-            if(entity == null) {
-                return;
-            }
-            
-            final Header header = entity.getContentType();
-            if(header == null) {
-                return;
-            }
-
-            final HeaderElement[] elements = header.getElements();
-            if(elements == null) {
-                contentType = header.getValue();
-            }
-
-            HeaderElement element = elements[0];
-            contentType = element.getName();
-            if(element.getParameters() != null && element.getParameters().length != 0) {
-                final NameValuePair nvp = element.getParameter(0);
-                if(nvp.getName().toLowerCase().equals("charset")) {
-                    charset = Charset.forName(nvp.getValue());
-                }
-            }
+        private Function<FromServer,Object> findParser(final String contentType) {
+            final Function<FromServer,Object> found = config.getChainedResponse().actualParser(contentType);
+            return found == null ? NativeHandlers.Parsers::streamToBytes : found;
         }
 
-        private Function<HttpResponse,Object> findParser(final String contentType) {
-            final Function<HttpResponse,Object> found = config.getChainedResponse().actualParser(contentType);
-            return found == null ? NativeHandlers.Parsers::stream : found;
-        }
-
-        private Object[] closureArgs(final Closure<Object> closure, final HttpResponse response, final Object o) {
+        private Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
             final int size = closure.getMaximumNumberOfParameters();
             final Object[] args = new Object[size];
             if(size >= 1) {
-                args[0] = response;
+                args[0] = fromServer;
             }
 
             if(size >= 2) {
@@ -106,32 +83,21 @@ public class HttpBuilder {
             return args;
         }
 
-        private void cleanup(final HttpResponse response) {
-            final HttpEntity entity = response.getEntity();
-            try {
-                if(entity != null) {
-                    EntityUtils.consume(entity);
-                }
-            }
-            catch(IOException ioe) {
-                if(log.isWarnEnabled()) {
-                    log.warn("Could not fully consume http entity", ioe);
-                }
-            }
-        }
-
         public Object handleResponse(final HttpResponse response) {
+            final ApacheFromServer fromServer = new ApacheFromServer(response);
             try {
-                final int status = response.getStatusLine().getStatusCode();
-                final HttpEntity entity = response.getEntity();
-                processContentType(entity);
-                final Function<HttpResponse,Object> parser = findParser(contentType);
-                final Closure<Object> action = config.getChainedResponse().actualAction(status);
-                final Object o = parser.apply(response);
-                return action.call(closureArgs(action, response, o));
+                final Function<FromServer,Object> parser = findParser(fromServer.getContentType());
+                final Closure<Object> action = config.getChainedResponse().actualAction(fromServer.getStatusCode());
+                if(fromServer.getHasBody()) {
+                    final Object o = parser.apply(fromServer);
+                    return action.call(closureArgs(action, fromServer, o));
+                }
+                else {
+                    return action.call(closureArgs(action, fromServer, null));
+                }
             }
             finally {
-                cleanup(response);
+                fromServer.finish();
             }
         }
     }
@@ -242,12 +208,14 @@ public class HttpBuilder {
             throw new IllegalStateException("Found request body, but content type is undefined");
         }
         
-        final Function<ChainedHttpConfig.ChainedRequest,HttpEntity> encoder = cr.actualEncoder(contentType);
+        final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder = cr.actualEncoder(contentType);
         if(encoder == null) {
             throw new IllegalStateException("Found body, but did not find encoder");
         }
 
-        return encoder.apply(cr);
+        final ApacheToServer ats = new ApacheToServer();
+        encoder.accept(cr, ats);
+        return ats;
     }
 
     private <T extends HttpUriRequest> T addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) {
@@ -256,9 +224,17 @@ public class HttpBuilder {
         }
 
         //technically cookies are headers, so add them here
+        final URI uri = cr.getUri().toURI();
         List<Cookie> cookies = cr.actualCookies(new ArrayList());
         for(Cookie cookie : cookies) {
-            cookieStore.addCookie(cookie);
+            final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
+            apacheCookie.setDomain(uri.getHost());
+            apacheCookie.setPath(uri.getPath());
+            if(cookie.getExpires() != null) {
+                apacheCookie.setExpiryDate(cookie.getExpires());
+            }
+            
+            cookieStore.addCookie(apacheCookie);
         }
 
         return message;

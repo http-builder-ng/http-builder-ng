@@ -8,10 +8,9 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 
 public interface HttpConfig {
 
@@ -61,9 +60,9 @@ public interface HttpConfig {
         
         void cookie(String name, String value, Date expires);
 
-        void encoder(String contentType, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
-        void encoder(List<String> contentTypes, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
-        Function<ChainedHttpConfig.ChainedRequest,HttpEntity> encoder(String contentType);
+        void encoder(String contentType, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
+        void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
+        BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder(String contentType);
     }
     
     public interface Response {
@@ -75,9 +74,9 @@ public interface HttpConfig {
         void setSuccess(Closure<Object> closure);
         void setFailure(Closure<Object> closure);
 
-        void parser(String contentType, Function<HttpResponse,Object> val);
-        void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
-        Function<HttpResponse,Object> parser(String contentType);
+        void parser(String contentType, Function<FromServer,Object> val);
+        void parser(List<String> contentTypes, Function<FromServer,Object> val);
+        Function<FromServer,Object> parser(String contentType);
     }
 
     Request getRequest();

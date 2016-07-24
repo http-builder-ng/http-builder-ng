@@ -1,16 +1,19 @@
 package groovyx.net.http;
 
 import spock.lang.*
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import groovyx.net.http.libspecific.ApacheToServer;
 
 class HttpConfigTest extends Specification {
 
     def "Basic Config"() {
         setup:
-        Function jsonEncoder = NativeHandlers.Encoders.&json;
+        BiConsumer jsonEncoder = NativeHandlers.Encoders.&json;
         Function jsonParser = NativeHandlers.Parsers.&json;
+        ApacheToServer ats = new ApacheToServer();
 
         HttpConfig http = HttpConfigs.threadSafe().config {
             request.charset = StandardCharsets.UTF_8;
@@ -23,16 +26,18 @@ class HttpConfigTest extends Specification {
             response.parser JSON, jsonParser
         }
 
+        http.request.encoder("application/javascript").accept(http.request, ats)
+        
         expect:
         http.request.encoder("application/json") == jsonEncoder;
         http.response.parser("text/javascript") == jsonParser;
-        http.request.encoder("application/javascript").apply(http.request) != null;
+        ats.content;
         http.request.body == [ one: 1, two: 2 ];
     }
 
     def Chaining() {
         setup:
-        Function xmlEncoder = NativeHandlers.Encoders.&xml;
+        BiConsumer xmlEncoder = NativeHandlers.Encoders.&xml;
         Function xmlParser = NativeHandlers.Parsers.&xml;
         Closure success = { res, o -> println(o); }
         Closure failure = { res -> println("failed"); }
