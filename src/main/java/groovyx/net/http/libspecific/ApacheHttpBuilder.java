@@ -101,18 +101,12 @@ public class ApacheHttpBuilder implements HttpBuilder {
         }
     }
 
-    private static class SingleThreaded implements Executor {
-        public void execute(Runnable r) {
-            r.run();
-        }
-    }
-
     final private CookieStore cookieStore;
     final private CloseableHttpClient client;
     final private ChainedHttpConfig config;
     final private Executor executor;
 
-    public ApacheHttpBuilder(final HttpObjectConfigImpl config) {
+    public ApacheHttpBuilder(final HttpObjectConfig config) {
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.cookieStore = new BasicCookieStore();

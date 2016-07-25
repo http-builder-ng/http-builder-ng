@@ -6,38 +6,41 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.codehaus.groovy.runtime.MethodClosure;
 import java.io.Closeable;
+import java.util.function.Function;
+import groovyx.net.http.libspecific.ApacheHttpBuilder;
 
 public interface HttpBuilder extends Closeable {
 
-    public static class TypeHolder {
-        protected static volatile ClientType clientType = ClientType.APACHE_HTTP_CLIENT;
+    public static class Holder {
+        public static volatile Function<HttpObjectConfig, ? extends HttpBuilder> factory = ApacheHttpBuilder::new;
     }
 
-    public static ClientType getDefaultClientType() {
-        return TypeHolder.clientType;
+    public static Function<HttpObjectConfig, ? extends HttpBuilder> getDefaultFactory() {
+        return Holder.factory;
     }
 
-    public static void setDefaultClientType(final ClientType val) {
-        TypeHolder.clientType = val;
+    public static void setDefaultFactory(final Function<HttpObjectConfig, ? extends HttpBuilder> factory) {
+        Holder.factory = factory;
     }
-    
+
     static void noOp() { }
     static Closure NO_OP = new MethodClosure(HttpBuilder.class, "noOp");
 
-    public static HttpBuilder configure(final ClientType type) {
-        return configure(type, NO_OP);
+    public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory) {
+        return configure(factory, NO_OP);
     }
 
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-        return configure(getDefaultClientType(), closure);
+        return configure(Holder.factory, closure);
     }
     
-    public static HttpBuilder configure(final ClientType type, @DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-        HttpObjectConfigImpl impl = new HttpObjectConfigImpl();
+    public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory,
+                                        @DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
         closure.setDelegate(impl);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
-        return impl.build(type);
+        return factory.apply(impl);
     }
 
     default Object get() {

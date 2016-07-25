@@ -16,6 +16,7 @@ public interface HttpObjectConfig extends HttpConfig {
         SSLContext getSslContext();
     }
 
+    ChainedHttpConfig getChainedConfig();
     Execution getExecution();
 }
 

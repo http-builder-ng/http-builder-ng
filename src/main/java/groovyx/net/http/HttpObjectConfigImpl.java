@@ -61,13 +61,6 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         public static final SingleThreaded instance = new SingleThreaded();
     }
 
-    public HttpBuilder build(final ClientType type) {
-        switch(type) {
-        case APACHE_HTTP_CLIENT: return apacheHttpBuilder();
-        default: throw new IllegalArgumentException();
-        }
-    }
-
     public HttpBuilder apacheHttpBuilder() {
         return new ApacheHttpBuilder(this);
     }
