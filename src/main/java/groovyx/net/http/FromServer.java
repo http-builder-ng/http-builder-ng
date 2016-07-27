@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 public interface FromServer {
 
     public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+
     static class Header {
         private final String key;
         private final String value;

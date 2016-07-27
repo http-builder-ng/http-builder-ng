@@ -11,6 +11,7 @@ import java.util.function.Function;
 import groovyx.net.http.libspecific.ApacheHttpBuilder;
 import static groovyx.net.http.NativeHandlers.*;
 
+@Ignore
 class HttpBuilderTest extends Specification {
 
     static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;
