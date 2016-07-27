@@ -56,18 +56,11 @@ public class ApacheHttpBuilder implements HttpBuilder {
     private static class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig config;
-        private String contentType = "application/octet-stream";
-        private Charset charset = StandardCharsets.UTF_8;
         
         public Handler(final ChainedHttpConfig config) {
             this.config = config;
         }
         
-        private Function<FromServer,Object> findParser(final String contentType) {
-            final Function<FromServer,Object> found = config.getChainedResponse().actualParser(contentType);
-            return found == null ? NativeHandlers.Parsers::streamToBytes : found;
-        }
-
         private Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
             final int size = closure.getMaximumNumberOfParameters();
             final Object[] args = new Object[size];
@@ -85,14 +78,14 @@ public class ApacheHttpBuilder implements HttpBuilder {
         public Object handleResponse(final HttpResponse response) {
             final ApacheFromServer fromServer = new ApacheFromServer(response);
             try {
-                final Function<FromServer,Object> parser = findParser(fromServer.getContentType());
+                final Function<FromServer,Object> parser = config.findParser(fromServer.getContentType());
                 final Closure<Object> action = config.getChainedResponse().actualAction(fromServer.getStatusCode());
                 if(fromServer.getHasBody()) {
                     final Object o = parser.apply(fromServer);
-                    return action.call(closureArgs(action, fromServer, o));
+                    return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));
                 }
                 else {
-                    return action.call(closureArgs(action, fromServer, null));
+                    return action.call(ChainedHttpConfig.closureArgs(action, fromServer, null));
                 }
             }
             finally {
@@ -200,25 +193,19 @@ public class ApacheHttpBuilder implements HttpBuilder {
     }
 
     private HttpEntity entity(final ChainedHttpConfig config) {
-        final ChainedHttpConfig.ChainedRequest cr = config.getChainedRequest();
-        final String contentType = cr.actualContentType();
-        if(contentType == null) {
-            throw new IllegalStateException("Found request body, but content type is undefined");
-        }
-        
-        final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder = cr.actualEncoder(contentType);
-        if(encoder == null) {
-            throw new IllegalStateException("Found body, but did not find encoder");
-        }
-
         final ApacheToServer ats = new ApacheToServer();
-        encoder.accept(cr, ats);
+        config.findEncoder().accept(config.getChainedRequest(), ats);
         return ats;
     }
 
     private <T extends HttpUriRequest> T addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) {
         for(Map.Entry<String,String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
+        }
+
+        final String contentType = cr.actualContentType();
+        if(contentType != null) {
+            message.addHeader("Content-Type", contentType);
         }
 
         //technically cookies are headers, so add them here

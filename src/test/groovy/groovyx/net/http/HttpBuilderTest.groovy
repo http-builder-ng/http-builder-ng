@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import groovyx.net.http.libspecific.ApacheHttpBuilder;
 
+@Ignore
 class HttpBuilderTest extends Specification {
 
     static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;

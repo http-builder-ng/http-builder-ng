@@ -68,4 +68,41 @@ public interface ChainedHttpConfig extends HttpConfig {
     ChainedResponse getChainedResponse();
     ChainedRequest getChainedRequest();
     ChainedHttpConfig getParent();
+
+    default Function<FromServer,Object> findParser(final String contentType) {
+        final Function<FromServer,Object> found = getChainedResponse().actualParser(contentType);
+        return found == null ? NativeHandlers.Parsers::streamToBytes : found;
+    }
+    
+    default BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> findEncoder() {
+        final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder = getChainedRequest().actualEncoder(findContentType());
+        if(encoder == null) {
+            throw new IllegalStateException("Did not find encoder");
+        }
+
+        return encoder;
+    }
+
+    default String findContentType() {
+        final String contentType = getChainedRequest().actualContentType();
+        if(contentType == null) {
+            throw new IllegalStateException("Found request body, but content type is undefined");
+        }
+
+        return contentType;
+    }
+
+    public static Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
+        final int size = closure.getMaximumNumberOfParameters();
+        final Object[] args = new Object[size];
+        if(size >= 1) {
+            args[0] = fromServer;
+        }
+        
+        if(size >= 2) {
+            args[1] = o;
+        }
+        
+        return args;
+    }
 }
