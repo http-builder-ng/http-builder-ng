@@ -9,6 +9,7 @@ import groovy.json.JsonSlurper;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import groovyx.net.http.libspecific.ApacheHttpBuilder;
+import static groovyx.net.http.NativeHandlers.*;
 
 class HttpBuilderTest extends Specification {
 
@@ -34,122 +35,115 @@ class HttpBuilderTest extends Specification {
     }
     
     def "Basic GET"() {
-        setup:
-        def result = google.get {
-            response.parser "text/html", NativeHandlers.Parsers.&textToString
-        };
-
         expect:
-        result instanceof String;
-        result.indexOf('</html>') != -1;
-    }
-
-    def "GET with Parameters"() {
-        setup:
-        String result = google.get(String) {
-            response.parser "text/html", NativeHandlers.Parsers.&textToString
-            request.uri.query = [ q: 'Big Bird' ];
+        google.get {
+            response.parser "text/html", Parsers.&textToString
+        }.with {
+            indexOf('</html>') != -1;
         }
-
+    }
+    
+    def "GET with Parameters"() {
         expect:
-        result.contains('Big Bird');
+        google.get(String) {
+            response.parser "text/html", Parsers.&textToString
+            request.uri.query = [ q: 'Big Bird' ];
+        }.with {
+            contains('Big Bird');
+        }
     }
 
     def "Basic POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
-        def result = httpBin.post {
+
+        expect:
+        httpBin.post {
             request.uri.path = '/post'
             request.body = toSend;
             request.contentType = 'application/x-www-form-urlencoded';
+        }.with {
+            form == toSend;
         }
-
-        expect:
-        result;
-        result.form == toSend;
     }
 
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
+
         def http = HttpBuilder.configure(apacheBuilder) {
             request.uri = 'http://httpbin.org/post'
             request.body = toSend;
             request.contentType = 'application/x-www-form-urlencoded';
         }
         
-        def result = http.post();
-
         expect:
-        result;
-        result.form == toSend;
+        http.post().form == toSend;
     }
 
     def "POST Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
         def accept = [ 'application/json','application/javascript','text/javascript' ];
-        
-        def result = httpBin.post {
+
+        expect:
+        httpBin.post {
             request.uri.path = '/post'
             request.uri.query = [ one: '1', two: '2' ];
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
+        }.with {
+            (it instanceof Map &&
+             headers.Accept.split(';') as List<String> == accept && 
+             new JsonSlurper().parseText(data) == toSend);
         }
-
-        expect:
-        result instanceof Map;
-        result.headers.Accept.split(';') as List<String> == accept;
-        new JsonSlurper().parseText(result.data) == toSend;
     }
 
     def "Test POST Random Headers"() {
         setup:
-        final headers = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
-        def results = httpBin.post {
-            request.uri.path = '/post'
-            request.contentType = 'application/json';
-            request.headers = headers;
-        }
+        final myHeaders = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
 
         expect:
-        headers.every { key, value -> results.headers[key] == value; };
+        httpBin.post {
+            request.uri.path = '/post'
+            request.contentType = 'application/json';
+            request.headers = myHeaders;
+        }.with {
+            myHeaders.every { key, value -> headers[key] == value; };
+        }
     }
 
     def "Test Head"() {
-        setup:
-        def result = google.head();
-
         expect:
-        !result
+        !google.head();
     }
 
     def "Test Multi-Threaded Head"() {
-        setup:
-        def futures = (0..<2).collect { google.headAsync(); }
-
         expect:
-        futures.size() == 2;
-        futures.every { future -> future.get() == null; };
+        (0..<2).collect {
+            google.headAsync();
+        }.every {
+            future -> future.get() == null;
+        }
     }
 
     def "PUT Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
 
-        def result = httpBin.put {
+        expect:
+        httpBin.put {
             request.uri.path = '/put';
             request.uri.query = [ one: '1', two: '2' ];
             request.accept = ContentTypes.JSON;
             request.body = toSend;
             request.contentType = 'application/json';
+        }.with {
+            (it instanceof Map &&
+             headers.Accept.split(';') as List<String> == ContentTypes.JSON &&
+             new JsonSlurper().parseText(data) == toSend);
         }
-
-        expect:
-        result instanceof Map;
-        result.headers.Accept.split(';') as List<String> == ContentTypes.JSON;
-        new JsonSlurper().parseText(result.data) == toSend;
     }
 
     def "Gzip and Deflate"() {
@@ -187,65 +181,45 @@ class HttpBuilderTest extends Specification {
         }
     }
 
-    //TODO: Continue simplification
     def "Test Set Cookies"() {
-        when:
-        def http = HttpBuilder.configure(apacheBuilder) {
-            request.uri = 'http://httpbin.org';
-            request.cookie 'foocookie', 'barcookie'
-        }
-
-        def data = http.get {
+        expect:
+        httpBin.get {
             request.uri.path = '/cookies'
+            request.cookie 'foocookie', 'barcookie'
+        }.with {
+            cookies.foocookie == 'barcookie';
         }
 
-        then:
-        data.cookies.foocookie == 'barcookie';
-
-        when:
-        data = http.get {
+        httpBin.get {
             request.uri.path = '/cookies'
             request.cookie 'requestcookie', '12345'
+        }.with {
+            cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345';
         }
-
-        then:
-        data.cookies.foocookie == 'barcookie';
-        data.cookies.requestcookie == '12345';
     }
 
     def "Test Delete"() {
         setup:
-        def args = [ one: 'i', two: 'ii' ]
-        def http = HttpBuilder.configure(apacheBuilder) {
-            request.uri = 'http://httpbin.org'
-            execution.maxThreads = 5
-        }
+        def myArgs = [ one: 'i', two: 'ii' ]
 
-        when:
-        def data = http.delete {
+        expect:
+        httpBin.delete {
             request.uri.path = '/delete'
-            request.uri.query = args
+            request.uri.query = myArgs
+        }.with {
+            args == myArgs;
         }
-
-        then:
-        data.args == args;
     }
 
     def "Test Custom Parser"() {
-        setup:
-        def http = HttpBuilder.configure(apacheBuilder) {
-            request.uri = 'http://httpbin.org/'
-        }
-
-        when:
-        def lines = http.get {
+        expect:
+        httpBin.get {
             request.uri.path = '/stream/25'
             response.parser "application/json", { fromServer ->
-                NativeHandlers.Parsers.textToString(fromServer).readLines();
+                Parsers.textToString(fromServer).readLines();
             }
+        }.with {
+            size() == 25;
         }
-
-        then:
-        lines.size() == 25
     }
 }
