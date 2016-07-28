@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.CookieManager;
+import java.net.CookieHandler;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -15,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.Base64;
 
 public class JavaHttpBuilder implements HttpBuilder {
 
-    protected static class Action {
+    protected class Action {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
@@ -51,8 +59,41 @@ public class JavaHttpBuilder implements HttpBuilder {
             if(contentType != null) {
                 connection.addRequestProperty("Content-Type", contentType);
             }
+
+            connection.addRequestProperty("Accept-Encoding", "gzip");
             
-            //TODO: Add Cookies
+            final URI uri = cr.getUri().toURI();
+            final List<Cookie> cookies = cr.actualCookies(new ArrayList());
+            for(Cookie cookie : cookies) {
+                final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+                httpCookie.setDomain(uri.getHost());
+                httpCookie.setPath(uri.getPath());
+                if(cookie.getExpires() != null) {
+                    final long diff = cookie.getExpires().getTime() - System.currentTimeMillis();
+                    httpCookie.setMaxAge(diff / 1_000L);
+                }
+                else {
+                    httpCookie.setMaxAge(3_600L);
+                }
+                
+                globalCookieManager.getCookieStore().add(uri, httpCookie);
+            }
+        }
+
+        private void addAuth() {
+            final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();
+            if(auth == null) {
+                return;
+            }
+
+            if(auth.getAuthType() == HttpConfig.AuthType.BASIC) {
+                final String toEncode = auth.getUser() + ":" + auth.getPassword();
+                final byte[] bytes = toEncode.getBytes(requestConfig.getChainedRequest().actualCharset());
+                connection.addRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString(bytes));
+            }
+            else {
+                throw new UnsupportedOperationException("HttpURLConnection does not support " + auth.getAuthType() + " authentication");
+            }
         }
 
         private void handleToServer() {
@@ -84,6 +125,11 @@ public class JavaHttpBuilder implements HttpBuilder {
         public Object execute() {
             try {
                 addHeaders();
+                addAuth();
+                for(HttpCookie httpCookie : globalCookieManager.getCookieStore().getCookies()) {
+                    System.out.println(httpCookie);
+                }
+                
                 connection.connect();
                 handleToServer();
                 return handleFromServer();
@@ -95,7 +141,7 @@ public class JavaHttpBuilder implements HttpBuilder {
 
         protected class JavaToServer implements ToServer {
             
-            public void toServer(final String contentType, final InputStream inputStream) {
+            public void toServer(final InputStream inputStream) {
                 try {
                     final OutputStream os = connection.getOutputStream();
                     final byte[] buffer = new byte[4_096];
@@ -112,7 +158,7 @@ public class JavaHttpBuilder implements HttpBuilder {
         
         protected class JavaFromServer implements FromServer {
 
-            private BufferedInputStream bis;
+            private InputStream is;
             private boolean hasBody;
             private List<Header> headers;
             
@@ -120,17 +166,31 @@ public class JavaHttpBuilder implements HttpBuilder {
                 //TODO: detect non success and read from error stream instead
                 try {
                     headers = populateHeaders();
-                    bis = new BufferedInputStream(connection.getInputStream());
+                    BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
                     bis.mark(0);
                     hasBody = bis.read() != -1;
                     bis.reset();
+                    is = handleEncoding(bis);
                 }
                 catch(IOException e) {
                     //swallow, no body is present?
-                    bis = null;
+                    is = null;
                     hasBody = false;
                 }
+            }
 
+            private InputStream handleEncoding(final InputStream is) throws IOException {
+                Header encodingHeader = Header.find(headers, "Content-Encoding");
+                if(encodingHeader != null) {
+                    if(encodingHeader.getValue().equals("gzip")) {
+                        return new GZIPInputStream(is);
+                    }
+                    else if(encodingHeader.getValue().equals("deflate")) {
+                        return new InflaterInputStream(is);
+                    }
+                }
+
+                return is;
             }
 
             private List<Header> populateHeaders() {
@@ -151,7 +211,7 @@ public class JavaHttpBuilder implements HttpBuilder {
             }
             
             public InputStream getInputStream() {
-                return bis;
+                return is;
             }
             
             public int getStatusCode() {
@@ -186,6 +246,12 @@ public class JavaHttpBuilder implements HttpBuilder {
         }
     }
 
+    private final static CookieManager globalCookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
+    
+    static {
+        CookieHandler.setDefault(globalCookieManager);
+    }
+    
     final private ChainedHttpConfig config;
     final private Executor executor;
     

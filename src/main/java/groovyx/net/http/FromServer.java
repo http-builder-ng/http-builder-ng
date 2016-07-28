@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public interface FromServer {
 
@@ -124,7 +126,7 @@ public interface FromServer {
             return Charset.forName(header.getKeysValues().get("charset").get(0));
         }
     }
-    
+
     InputStream getInputStream();
     int getStatusCode();
     String getMessage();

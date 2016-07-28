@@ -6,8 +6,6 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -193,7 +191,7 @@ public class ApacheHttpBuilder implements HttpBuilder {
     }
 
     private HttpEntity entity(final ChainedHttpConfig config) {
-        final ApacheToServer ats = new ApacheToServer();
+        final ApacheToServer ats = new ApacheToServer(config.findContentType());
         config.findEncoder().accept(config.getChainedRequest(), ats);
         return ats;
     }

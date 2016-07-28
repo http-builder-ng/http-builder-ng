@@ -95,12 +95,8 @@ public class NativeHandlers {
             return body;
         }
 
-        private static void checkTypes(String contentType, final Object body, final Class[] allowedTypes) {
-            if(contentType == null) {
-                throw new IllegalArgumentException("Content Type is null");
-            }
-            
-            Class type = body.getClass();
+        private static void checkTypes(final Object body, final Class[] allowedTypes) {
+            final Class type = body.getClass();
             for(Class allowed : allowedTypes) {
                 if(allowed.isAssignableFrom(type)) {
                     return;
@@ -114,22 +110,20 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
-        private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class,
-                                                                  byte[].class, ByteArrayOutputStream.class, Closure.class };
+        private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class, Closure.class };
         
         public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            final String contentType = request.actualContentType();
-            checkTypes(contentType, body, BINARY_TYPES);
+            checkTypes(body, BINARY_TYPES);
             
             if(body instanceof ByteArrayInputStream) {
-                ts.toServer(contentType, (ByteArrayInputStream) body);
+                ts.toServer((ByteArrayInputStream) body);
             }
             else if(body instanceof InputStream) {
-                ts.toServer(contentType, (InputStream) body);
+                ts.toServer((InputStream) body);
             }
             else if(body instanceof byte[]) {
-                ts.toServer(contentType, new ByteArrayInputStream((byte[]) body));
+                ts.toServer(new ByteArrayInputStream((byte[]) body));
             }
             else {
                 throw new UnsupportedOperationException();
@@ -157,15 +151,14 @@ public class NativeHandlers {
 
         public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
             final Object body = checkNull(request.actualBody());
-            final String contentType = request.actualContentType();
-            checkTypes(contentType, body, TEXT_TYPES);
+            checkTypes(body, TEXT_TYPES);
             String text = null;
             
             if(body instanceof Reader) {
-                ts.toServer(contentType, readerToStream((Reader) body, request.actualCharset()));
+                ts.toServer(readerToStream((Reader) body, request.actualCharset()));
             }
             else {
-                ts.toServer(contentType, stringToStream(body.toString(), request.actualCharset()));
+                ts.toServer(stringToStream(body.toString(), request.actualCharset()));
             }
         }
 
@@ -173,16 +166,15 @@ public class NativeHandlers {
 
         public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            final String contentType = request.actualContentType();
-            checkTypes(contentType, body, FORM_TYPES);
+            checkTypes(body, FORM_TYPES);
 
             if(body instanceof String) {
-                ts.toServer(contentType, stringToStream((String) body, request.actualCharset()));
+                ts.toServer(stringToStream((String) body, request.actualCharset()));
             }
             else if(body instanceof Map) {
                 final Map<?,?> params = (Map) body;
                 final String encoded = Form.encode(params, request.actualCharset());
-                ts.toServer(contentType, stringToStream(encoded, request.actualCharset()));
+                ts.toServer(stringToStream(encoded, request.actualCharset()));
             }
             else {
                 throw new UnsupportedOperationException();
@@ -193,15 +185,14 @@ public class NativeHandlers {
         
         public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            final String contentType = request.actualContentType();
-            checkTypes(contentType, body, XML_TYPES);
+            checkTypes(body, XML_TYPES);
 
             if(body instanceof String) {
-                ts.toServer(contentType, stringToStream((String) body, request.actualCharset()));
+                ts.toServer(stringToStream((String) body, request.actualCharset()));
             }
             else if(body instanceof Closure) {
                 final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
-                ts.toServer(contentType, stringToStream(smb.bind(body).toString(), request.actualCharset()));
+                ts.toServer(stringToStream(smb.bind(body).toString(), request.actualCharset()));
             }
             else {
                 throw new UnsupportedOperationException();
@@ -210,11 +201,10 @@ public class NativeHandlers {
 
         public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            final String contentType = request.actualContentType();
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
                                  : new JsonBuilder(body).toString());
-            ts.toServer(contentType, stringToStream(json, request.actualCharset()));
+            ts.toServer(stringToStream(json, request.actualCharset()));
         }
     }
 

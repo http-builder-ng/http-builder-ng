@@ -10,11 +10,14 @@ import org.apache.http.message.BasicHeader;
 
 public class ApacheToServer implements ToServer, HttpEntity {
 
-    private String contentType;
+    private final String contentType;
     private InputStream inputStream;
 
-    public void toServer(final String contentType, final InputStream inputStream) {
+    public ApacheToServer(final String contentType) {
         this.contentType = contentType;
+    }
+
+    public void toServer(final InputStream inputStream) {
         this.inputStream = inputStream;
     }
     

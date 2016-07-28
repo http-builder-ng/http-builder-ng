@@ -11,7 +11,6 @@ import java.util.function.Function;
 import groovyx.net.http.libspecific.ApacheHttpBuilder;
 import static groovyx.net.http.NativeHandlers.*;
 
-@Ignore
 class HttpBuilderTest extends Specification {
 
     static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;
@@ -213,12 +212,12 @@ class HttpBuilderTest extends Specification {
     }
 
     def "Test Custom Parser"() {
+        setup:
+        def newParser = { fromServer -> Parsers.textToString(fromServer).readLines(); };
         expect:
         httpBin.get {
             request.uri.path = '/stream/25'
-            response.parser "application/json", { fromServer ->
-                Parsers.textToString(fromServer).readLines();
-            }
+            response.parser "application/json", newParser
         }.with {
             size() == 25;
         }
