@@ -11,14 +11,18 @@ import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.FileOutputStream;
+import java.io.File;
 import java.io.StringWriter;
 import java.io.StringReader;
 import java.nio.charset.Charset;
@@ -29,11 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -237,16 +241,46 @@ public class NativeHandlers {
                 }
             }
         }
+
+        private static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+            try {
+                final byte[] bytes = new byte[2_048];
+                int read;
+                while((read = istream.read(bytes)) != -1) {
+                    ostream.write(bytes, 0, read);
+                }
+            }
+            catch(IOException e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                if(close) {
+                    try {
+                        ostream.close();
+                    }
+                    catch(IOException ioe) {
+                        throw new RuntimeException(ioe);
+                    }
+                }
+            }
+        }
+        
+        public static Function<FromServer,Object> download(final File file) {
+            return (fs) -> {
+                try {
+                    transfer(fs.getInputStream(), new FileOutputStream(file), true);
+                    return file;
+                }
+                catch(FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
         
         public static byte[] streamToBytes(final FromServer fromServer) {
-            try {
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                DefaultGroovyMethods.leftShift(baos, fromServer.getInputStream());
-                return baos.toByteArray();
-            }
-            catch(IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            transfer(fromServer.getInputStream(), baos, true);
+            return baos.toByteArray();
         }
 
         public static String textToString(final FromServer fromServer) {

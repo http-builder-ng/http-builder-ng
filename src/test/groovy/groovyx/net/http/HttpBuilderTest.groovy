@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import groovyx.net.http.libspecific.ApacheHttpBuilder;
 import static groovyx.net.http.NativeHandlers.*;
+import static groovyx.net.http.NativeHandlers.Parsers.download;
 
 class HttpBuilderTest extends Specification {
 
@@ -239,5 +240,20 @@ class HttpBuilderTest extends Specification {
         }.get().with {
             indexOf('</html>') != -1;
         }
+    }
+
+    def "Download"() {
+        setup:
+        def file = File.createTempFile("tmp", ".html");
+
+        google.get {
+            response.parser 'text/html', download(file)
+        }
+
+        expect:
+        file.length() > 0;
+        
+        cleanup:
+        file.delete();
     }
 }
