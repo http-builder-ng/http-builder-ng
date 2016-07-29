@@ -83,7 +83,7 @@ public class NativeHandlers {
     
     public static class Encoders {
 
-        private static Object checkNull(final Object body) {
+        public static Object checkNull(final Object body) {
             if(body == null) {
                 throw new NullPointerException("Effective body cannot be null");
             }
@@ -91,7 +91,7 @@ public class NativeHandlers {
             return body;
         }
 
-        private static void checkTypes(final Object body, final Class[] allowedTypes) {
+        public static void checkTypes(final Object body, final Class[] allowedTypes) {
             final Class type = body.getClass();
             for(Class allowed : allowedTypes) {
                 if(allowed.isAssignableFrom(type)) {
@@ -140,7 +140,7 @@ public class NativeHandlers {
             return new ByteArrayInputStream(cs.encode(e.charBuffer).array());
         }
 
-        private static InputStream stringToStream(final String s, final Charset cs) {
+        public static InputStream stringToStream(final String s, final Charset cs) {
             final ByteBuffer buf = cs.encode(s);
             return new ByteArrayInputStream(buf.array(), 0, buf.limit());
         }
@@ -276,7 +276,8 @@ public class NativeHandlers {
         }
 
         public static String textToString(final FromServer fromServer) {
-            try(final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset())) {
+            try {
+                final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());
                 final Expanding e = tlExpanding.get();
                 e.charBuffer.clear();
                 int total;
