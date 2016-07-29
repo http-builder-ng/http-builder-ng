@@ -1,4 +1,4 @@
-package groovyx.net.http.libspecific;
+package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;

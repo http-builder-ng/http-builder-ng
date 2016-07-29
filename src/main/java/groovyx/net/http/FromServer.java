@@ -3,14 +3,11 @@ package groovyx.net.http;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public interface FromServer {
 

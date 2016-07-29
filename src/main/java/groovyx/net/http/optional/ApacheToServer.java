@@ -1,4 +1,4 @@
-package groovyx.net.http.libspecific;
+package groovyx.net.http.optional;
 
 import groovyx.net.http.ToServer;
 import java.io.IOException;

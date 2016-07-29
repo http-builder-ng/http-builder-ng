@@ -1,14 +1,10 @@
-package groovyx.net.http;
+package groovyx.net.http
 
-import groovy.transform.TypeChecked;
 import spock.lang.*
-import java.util.function.Function;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import groovy.json.JsonSlurper;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
-import groovyx.net.http.libspecific.ApacheHttpBuilder;
+import groovyx.net.http.optional.ApacheHttpBuilder;
 import static groovyx.net.http.NativeHandlers.*;
 import static groovyx.net.http.NativeHandlers.Parsers.download;
 

@@ -5,7 +5,7 @@ import javax.net.ssl.SSLContext;
 
 public interface HttpObjectConfig extends HttpConfig {
 
-    public interface Execution {
+    interface Execution {
         void setMaxThreads(int val);
         int getMaxThreads();
         

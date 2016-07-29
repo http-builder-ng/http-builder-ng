@@ -10,19 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
+
 
 public interface HttpConfig {
 
-    public enum Status { SUCCESS, FAILURE };
-    public enum AuthType { BASIC, DIGEST };
+    enum Status { SUCCESS, FAILURE };
+    enum AuthType { BASIC, DIGEST };
 
-    public interface Auth {
+    interface Auth {
         AuthType getAuthType();
         String getUser();
         String getPassword();
-        boolean getPreemptive();
-        
+
         default void basic(String user, String password) {
             basic(user, password, false);
         }
@@ -36,7 +35,7 @@ public interface HttpConfig {
         void digest(String user, String password, boolean preemptive);
     }
 
-    public interface Request {
+    interface Request {
         Auth getAuth();
         void setContentType(String val);
         void setCharset(String val);
@@ -65,7 +64,7 @@ public interface HttpConfig {
         BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder(String contentType);
     }
     
-    public interface Response {
+    interface Response {
         void when(Status status, Closure<Object> closure);
         void when(Integer code, Closure<Object> closure);
         void when(String code, Closure<Object> closure);

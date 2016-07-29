@@ -1,6 +1,6 @@
 package groovyx.net.http;
 
-import groovyx.net.http.libspecific.ApacheHttpBuilder;
+import groovyx.net.http.optional.ApacheHttpBuilder;
 import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
 import static groovyx.net.http.HttpConfigs.*;

@@ -5,7 +5,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import groovyx.net.http.libspecific.ApacheToServer;
+import groovyx.net.http.optional.ApacheToServer;
 
 class HttpConfigTest extends Specification {
 

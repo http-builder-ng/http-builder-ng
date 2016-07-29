@@ -1,24 +1,14 @@
 package groovyx.net.http;
 
-import java.util.Collections;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import static java.util.Objects.equals;
 import org.apache.http.client.utils.URIBuilder;
-import java.util.function.Supplier;
-import java.util.function.Predicate;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import static groovyx.net.http.Traverser.*;
 
 public abstract class UriBuilder {

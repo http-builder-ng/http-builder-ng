@@ -7,12 +7,11 @@ import java.util.concurrent.Executor;
 import org.codehaus.groovy.runtime.MethodClosure;
 import java.io.Closeable;
 import java.util.function.Function;
-import groovyx.net.http.libspecific.ApacheHttpBuilder;
 
 public interface HttpBuilder extends Closeable {
 
     public static class Holder {
-        public static volatile Function<HttpObjectConfig, ? extends HttpBuilder> factory = ApacheHttpBuilder::new;
+        public static volatile Function<HttpObjectConfig, ? extends HttpBuilder> factory = JavaHttpBuilder::new;
     }
 
     public static Function<HttpObjectConfig, ? extends HttpBuilder> getDefaultFactory() {

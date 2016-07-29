@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 
 public interface ChainedHttpConfig extends HttpConfig {
 
-    public interface ChainedRequest extends Request {
+    interface ChainedRequest extends Request {
         ChainedRequest getParent();
         List<Cookie> getCookies();
         Object getBody();
@@ -53,7 +53,7 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
     }
 
-    public interface ChainedResponse extends Response {
+    interface ChainedResponse extends Response {
         ChainedResponse getParent();
 
         default Closure<Object> actualAction(final Integer code) {
@@ -92,7 +92,7 @@ public interface ChainedHttpConfig extends HttpConfig {
         return contentType;
     }
 
-    public static Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
+    static Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
         final int size = closure.getMaximumNumberOfParameters();
         final Object[] args = new Object[size];
         if(size >= 1) {
