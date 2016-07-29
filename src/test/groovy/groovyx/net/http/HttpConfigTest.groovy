@@ -5,7 +5,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import groovyx.net.http.optional.ApacheToServer;
 
 class HttpConfigTest extends Specification {
 
@@ -13,7 +12,6 @@ class HttpConfigTest extends Specification {
         setup:
         BiConsumer jsonEncoder = NativeHandlers.Encoders.&json;
         Function jsonParser = NativeHandlers.Parsers.&json;
-        ApacheToServer ats = new ApacheToServer();
 
         HttpConfig http = HttpConfigs.threadSafe().config {
             request.charset = StandardCharsets.UTF_8;
@@ -26,12 +24,9 @@ class HttpConfigTest extends Specification {
             response.parser JSON, jsonParser
         }
 
-        http.request.encoder("application/javascript").accept(http.request, ats)
-        
         expect:
         http.request.encoder("application/json") == jsonEncoder;
         http.response.parser("text/javascript") == jsonParser;
-        ats.content;
         http.request.body == [ one: 1, two: 2 ];
     }
 

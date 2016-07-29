@@ -234,7 +234,7 @@ public class NativeHandlers {
             }
         }
 
-        private static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
             try {
                 final byte[] bytes = new byte[2_048];
                 int read;

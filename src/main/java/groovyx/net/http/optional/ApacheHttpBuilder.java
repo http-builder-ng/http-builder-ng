@@ -3,7 +3,9 @@ package groovyx.net.http.optional;
 import groovyx.net.http.*;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import java.io.OutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-
+import org.apache.http.util.EntityUtils;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -34,34 +37,124 @@ import org.slf4j.LoggerFactory;
 public class ApacheHttpBuilder implements HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
-    
-    private static class Handler implements ResponseHandler<Object> {
 
-        private final ChainedHttpConfig config;
+    private class ApacheFromServer implements FromServer {
         
-        public Handler(final ChainedHttpConfig config) {
-            this.config = config;
+        private final HttpResponse response;
+        private final HttpEntity entity;
+        private final List<Header> headers;
+        private final InputStream inputStream;
+    
+        public ApacheFromServer(final HttpResponse response) {
+            this.response = response;
+            this.entity = response.getEntity();
+
+            if(entity != null) {
+                try {
+                    this.inputStream = entity.getContent();
+                }
+                catch(IOException e) {
+                    throw new RuntimeException("Could not get input stream from apache http client", e);
+                }
+            }
+            else {
+                this.inputStream = null;
+            }
+        
+            this.headers = new ArrayList<>(response.getAllHeaders().length);
+            for(org.apache.http.Header header : response.getAllHeaders()) {
+                headers.add(Header.keyValue(header.getName(), header.getValue()));
+            }
+        }
+
+        public InputStream getInputStream() {
+            return inputStream;
+        }
+
+        public boolean getHasBody() {
+            return entity != null;
+        }
+
+        public int getStatusCode() {
+            return response.getStatusLine().getStatusCode();
+        }
+
+        public String getMessage() {
+            return response.getStatusLine().getReasonPhrase();
+        }
+
+        public List<Header> getHeaders() {
+            return headers;
+        }
+
+        public void finish() {
+            EntityUtils.consumeQuietly(response.getEntity());
+        }
+    }
+
+    public class ApacheToServer implements ToServer, HttpEntity {
+
+        private final String contentType;
+        private InputStream inputStream;
+
+        public ApacheToServer(final String contentType) {
+            this.contentType = contentType;
+        }
+
+        public void toServer(final InputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+    
+        public boolean isRepeatable() {
+            return false;
+        }
+
+        public boolean isChunked() {
+            return false;
+        }
+
+        public long getContentLength() {
+            return -1L;
+        }
+
+        public org.apache.http.Header getContentType() {
+            return new BasicHeader("Content-Type", contentType);
         }
         
-        private Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
-            final int size = closure.getMaximumNumberOfParameters();
-            final Object[] args = new Object[size];
-            if(size >= 1) {
-                args[0] = fromServer;
-            }
+        public org.apache.http.Header getContentEncoding() {
+            return null;
+        }
 
-            if(size >= 2) {
-                args[1] = o;
-            }
+        public InputStream getContent() {
+            return inputStream;
+        }
 
-            return args;
+        public void writeTo(final OutputStream outputStream) {
+            NativeHandlers.Parsers.transfer(inputStream, outputStream, false);
+        }
+
+        public boolean isStreaming() {
+            return true;
+        }
+
+        public void consumeContent() throws IOException {
+            inputStream.close();
+        }
+    }
+    
+    private class Handler implements ResponseHandler<Object> {
+
+        private final ChainedHttpConfig requestConfig;
+        
+        public Handler(final ChainedHttpConfig config) {
+            this.requestConfig = config;
         }
 
         public Object handleResponse(final HttpResponse response) {
             final ApacheFromServer fromServer = new ApacheFromServer(response);
             try {
-                final Function<FromServer,Object> parser = config.findParser(fromServer.getContentType());
-                final Closure<Object> action = config.getChainedResponse().actualAction(fromServer.getStatusCode());
+                final Function<FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
+                final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
                 if(fromServer.getHasBody()) {
                     final Object o = parser.apply(fromServer);
                     return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));
