@@ -334,10 +334,10 @@ public class HttpConfigs {
         
         public void when(final HttpConfig.Status status, Closure<Object> closure) {
             if(status == HttpConfig.Status.SUCCESS) {
-                setSuccess(closure);
+                success(closure);
             }
             else {
-                setFailure(closure);
+                failure(closure);
             }
         }
 
@@ -399,11 +399,11 @@ public class HttpConfigs {
             return failureHandler;
         }
 
-        public void setSuccess(final Closure<Object> val) {
+        public void success(final Closure<Object> val) {
             successHandler = val;
         }
 
-        public void setFailure(final Closure<Object> val) {
+        public void failure(final Closure<Object> val) {
             failureHandler = val;
         }
     }
@@ -442,11 +442,11 @@ public class HttpConfigs {
             return failureHandler;
         }
 
-        public void setSuccess(final Closure<Object> val) {
+        public void success(final Closure<Object> val) {
             successHandler = val;
         }
 
-        public void setFailure(final Closure<Object> val) {
+        public void failure(final Closure<Object> val) {
             failureHandler = val;
         }
     }

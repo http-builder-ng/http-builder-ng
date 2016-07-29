@@ -71,8 +71,8 @@ public interface HttpConfig {
         void when(String code, Closure<Object> closure);
         Closure<Object> when(Integer code);
 
-        void setSuccess(Closure<Object> closure);
-        void setFailure(Closure<Object> closure);
+        void success(Closure<Object> closure);
+        void failure(Closure<Object> closure);
 
         void parser(String contentType, Function<FromServer,Object> val);
         void parser(List<String> contentTypes, Function<FromServer,Object> val);

@@ -39,6 +39,11 @@ public interface FromServer {
             this.value = value;
         }
 
+        @Override
+        public String toString() {
+            return key + ": " + value;
+        }
+
         public String getKey() {
             return key;
         }

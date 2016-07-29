@@ -122,8 +122,17 @@ class JavaHttpBuilderTest extends Specification {
 
     //@Ignore
     def "Test Head"() {
+        setup:
+        def result = google.head {
+            response.success { resp, o ->
+                assert(o == null);
+                assert(resp.headers.size() > 0);
+                return "Success"
+            }
+        }
+        
         expect:
-        !google.head();
+        result == "Success";
     }
 
     //@Ignore
@@ -176,15 +185,19 @@ class JavaHttpBuilderTest extends Specification {
     //possibly this will work: https://gist.github.com/slightfoot/5624590
     //Even easier, Java auth: https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-auth.html
     def "Digest Auth"() {
-        when:
-        httpBin.get {
-            request.uri.path = '/digest-auth/auth/david/clark';
-            request.auth.digest 'david', 'clark';
-            response.failure = { r -> "Ignored" };
+        expect:
+        "Ignored" == httpBin.get {
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+            response.failure { r -> "Ignored" } 
         };
 
-        then:
-        def e = thrown(UnsupportedOperationException);
+        httpBin.get {
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+        }.with {
+            authenticated && user == 'david';
+        }
     }
     
     def "Test Set Cookies"() {
@@ -226,6 +239,16 @@ class JavaHttpBuilderTest extends Specification {
             response.parser "application/json", newParser
         }.with {
             size() == 25;
+        }
+    }
+
+    def "Basic Https"() {
+        expect:
+        HttpBuilder.configure(javaBuilder) {
+            request.uri = 'https://www.google.com'
+            response.parser "text/html", Parsers.&textToString
+        }.get().with {
+            indexOf('</html>') != -1;
         }
     }
 }

@@ -7,22 +7,27 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.CookieManager;
+import java.net.Authenticator;
 import java.net.CookieHandler;
+import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-import java.util.Base64;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 
 public class JavaHttpBuilder implements HttpBuilder {
 
@@ -80,16 +85,14 @@ public class JavaHttpBuilder implements HttpBuilder {
             }
         }
 
-        private void addAuth() {
+        private PasswordAuthentication getAuthInfo() {
             final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();
             if(auth == null) {
-                return;
+                return null;
             }
 
-            if(auth.getAuthType() == HttpConfig.AuthType.BASIC) {
-                final String toEncode = auth.getUser() + ":" + auth.getPassword();
-                final byte[] bytes = toEncode.getBytes(requestConfig.getChainedRequest().actualCharset());
-                connection.addRequestProperty("Authorization", "Basic " + Base64.getEncoder().encodeToString(bytes));
+            if(auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {
+                return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());
             }
             else {
                 throw new UnsupportedOperationException("HttpURLConnection does not support " + auth.getAuthType() + " authentication");
@@ -125,16 +128,18 @@ public class JavaHttpBuilder implements HttpBuilder {
         public Object execute() {
             try {
                 addHeaders();
-                addAuth();
-                for(HttpCookie httpCookie : globalCookieManager.getCookieStore().getCookies()) {
-                    System.out.println(httpCookie);
-                }
-                
-                connection.connect();
-                handleToServer();
-                return handleFromServer();
+                return ThreadLocalAuth.with(getAuthInfo(), () -> {
+                        if(sslContext != null) {
+                            HttpsURLConnection https = (HttpsURLConnection) connection;
+                            https.setSSLSocketFactory(sslContext.getSocketFactory());
+                        }
+                        
+                        connection.connect();
+                        handleToServer();
+                        return handleFromServer();
+                    });
             }
-            catch(IOException e) {
+            catch(Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -246,18 +251,39 @@ public class JavaHttpBuilder implements HttpBuilder {
         }
     }
 
+    protected static class ThreadLocalAuth extends Authenticator {
+        private static final ThreadLocal<PasswordAuthentication> tlAuth = new ThreadLocal<PasswordAuthentication>();
+
+        public PasswordAuthentication getPasswordAuthentication() {
+            return tlAuth.get();
+        }
+        
+        public static final <V> V with(final PasswordAuthentication pa, final Callable<V> callable) throws Exception {
+            tlAuth.set(pa);
+            try {
+                return callable.call();
+            }
+            finally {
+                tlAuth.set(null);
+            }
+        }
+    }
+
     private final static CookieManager globalCookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
     
     static {
+        Authenticator.setDefault(new ThreadLocalAuth());
         CookieHandler.setDefault(globalCookieManager);
     }
     
     final private ChainedHttpConfig config;
     final private Executor executor;
+    final private SSLContext sslContext;
     
     public JavaHttpBuilder(final HttpObjectConfig config) {
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
+        this.sslContext = config.getExecution().getSslContext();
     }
 
     private ChainedHttpConfig configureRequest(final Closure closure) {

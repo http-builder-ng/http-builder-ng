@@ -115,8 +115,16 @@ class HttpBuilderTest extends Specification {
     }
 
     def "Test Head"() {
+        setup:
+        def result = google.head {
+            response.success { resp, o ->
+                assert(o == null);
+                assert(resp.headers.size() > 0);
+            }
+        }
+        
         expect:
-        !google.head();
+        !result
     }
 
     def "Test Multi-Threaded Head"() {
@@ -170,7 +178,7 @@ class HttpBuilderTest extends Specification {
         "Ignored" == httpBin.get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
-            response.failure = { r -> "Ignored" } 
+            response.failure { r -> "Ignored" } 
         };
 
         httpBin.get {
@@ -220,6 +228,16 @@ class HttpBuilderTest extends Specification {
             response.parser "application/json", newParser
         }.with {
             size() == 25;
+        }
+    }
+
+    def "Basic Https"() {
+        expect:
+        HttpBuilder.configure(apacheBuilder) {
+            request.uri = 'https://www.google.com'
+            response.parser "text/html", Parsers.&textToString
+        }.get().with {
+            indexOf('</html>') != -1;
         }
     }
 }

@@ -10,8 +10,8 @@ request.with {
 }
 
 response.with {
-    success = NativeHandlers.&success
-    failure = NativeHandlers.&failure
+    success NativeHandlers.&success
+    failure NativeHandlers.&failure
     
     parser BINARY, NativeHandlers.Parsers.&streamToBytes
     parser TEXT, NativeHandlers.Parsers.&textToString

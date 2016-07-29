@@ -56,8 +56,8 @@ class HttpConfigTest extends Specification {
         def root = HttpConfigs.threadSafe().config {
             request.charset = charset
             request.encoder XML, xmlEncoder
-            response.success = success;
-            response.failure = failure;
+            response.success success;
+            response.failure failure;
         };
 
         def intermediate = HttpConfigs.threadSafe(root).config {
