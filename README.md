@@ -1,4 +1,4 @@
-# Http Builder NG, The Easy Http Client for Groovy.
+# Http Builder NG, The Easy Http Client for Groovy
 
 ## Quick Overview
 
@@ -10,7 +10,8 @@ def httpBin = HttpBuilder.configure {
     request.uri = 'http://httpbin.org/'
 }
 
-//now let's GET /get endpoint at httpbin. This will return a JSON formatted response with an origin property.
+//now let's GET /get endpoint at httpbin.
+//This will return a JSON formatted response with an origin property.
 def result = httpBin.get {
     request.uri.path = '/get'
 }
@@ -26,7 +27,7 @@ httpBin.post {
 
 ```
 
-Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with groovy code annotated with @TypeChecked and @CompileStatic. It also makes use of the @DelegatesTo to provide better IDE support when writing code using Http Builder NG.
+Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
 ## Build Instructions
 
