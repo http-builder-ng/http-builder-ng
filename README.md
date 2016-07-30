@@ -37,7 +37,7 @@ Http Builder NG is built using [gradle](https://gradle.org). To perform a comple
 
 ## History
 
-Http Builder NG was forked from the HTTPBulder project originally developed by Thomas Nichols. It was later passed on to Jason Gritman who maintained it for several years.
+Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to Jason Gritman who maintained it for several years.
 
 The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement was to make HTTPBuilder conform to more modern Groovy DSL designs. However, it was not possible to update the original code to have a more modern typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that Http Builder NG is basically a complete re-write and re-architecture.
 
