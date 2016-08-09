@@ -1,16 +1,21 @@
+plugins {
+    id 'com.jfrog.bintray' version '1.7'
+}
+
+
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'groovy'
 
 sourceCompatibility = 8
 targetCompatibility = 8
 
-group = 'org.codehaus.groovy.modules.http-builder'
-version = '0.8.0-SNAPSHOT'
+group = 'org.codehaus.groovy.modules'
+version = '0.9.2'
 
 repositories {
     jcenter()
-    //mavenCentral()
 }
 
 configurations {
@@ -42,4 +47,46 @@ dependencies {
 
 javadoc {
     options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+}
+
+task sourcesJar(type: Jar) {
+    description = 'Creates sources JAR.'
+    classifier = 'sources'
+    from project.sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+            artifact sourcesJar
+            version project.version
+        }
+    }
+}
+
+bintray {
+    def bintrayUser = project.hasProperty('user') ? project.property('user') : null;
+    def bintrayKey = project.hasProperty('key') ? project.property('key') : null;
+
+    if(bintrayUser && bintrayKey) {
+        user = bintrayUser
+        key = bintrayKey
+        
+        publications = ['mavenJava']
+        
+        pkg {
+            repo = 'maven'
+            name = 'httpbuilder-ng'
+            desc = 'Groovy client for making http requests'
+            licenses = ['Apache-2.0']
+            labels = ['groovy']
+            vcsUrl = 'https://github.com/dwclark/httpbuilder'
+        }
+    }
 }
