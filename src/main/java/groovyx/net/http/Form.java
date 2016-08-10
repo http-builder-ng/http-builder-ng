@@ -45,38 +45,40 @@ public class Form {
     
     public static Map<String,List<String>> decode(final InputStream is, final Charset charset) {
         try {
-            final Map<String,List<String>> ret = new LinkedHashMap<>();
             toBuffers(is, charset);
-            final StringBuilder builder = tlBuffers.get().builder;
-            
-            int lower = 0;
-            while(lower < builder.length()) {
-                int eqAt = builder.indexOf("=", lower);
-                int ampAt = builder.indexOf("&", eqAt);
-                if(ampAt == -1) {
-                    ampAt = builder.length();
-                }
-                
-                final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());
-                final String value = URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());
-                List<String> values = ret.get(key);
-                if(values == null) {
-                    values = new ArrayList<>();
-                    ret.put(key, values);
-                }
-
-                if(ampAt - eqAt > 1) {
-                    values.add(value);
-                }
-                
-                lower = ampAt + 1;
-            }
-            
-            return ret;
+            return decode(tlBuffers.get().builder, charset);
         }
         catch(IOException e) {
             throw new RuntimeException("Error in decoding form", e);
         }
+    }
+
+    public static Map<String,List<String>> decode(final StringBuilder builder, final Charset charset) throws IOException {
+        final Map<String,List<String>> ret = new LinkedHashMap<>();
+        int lower = 0;
+        while(lower < builder.length()) {
+            int eqAt = builder.indexOf("=", lower);
+            int ampAt = builder.indexOf("&", eqAt);
+            if(ampAt == -1) {
+                ampAt = builder.length();
+            }
+            
+            final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());
+            final String value = URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());
+            List<String> values = ret.get(key);
+            if(values == null) {
+                values = new ArrayList<>();
+                ret.put(key, values);
+            }
+            
+            if(ampAt - eqAt > 1) {
+                values.add(value);
+            }
+            
+            lower = ampAt + 1;
+        }
+        
+        return ret;
     }
 
     public static List<?> checkValue(final Object v) {
