@@ -1,13 +1,16 @@
 package groovyx.net.http;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public interface FromServer {
 
@@ -135,4 +138,8 @@ public interface FromServer {
     List<Header> getHeaders();
     boolean getHasBody();
     void finish();
+
+    default Reader getReader() {
+        return new BufferedReader(new InputStreamReader(getInputStream()));
+    }
 }
