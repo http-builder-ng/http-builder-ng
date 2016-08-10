@@ -34,7 +34,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ApacheHttpBuilder implements HttpBuilder {
+public class ApacheHttpBuilder extends HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
 
@@ -175,6 +175,7 @@ public class ApacheHttpBuilder implements HttpBuilder {
     final private Executor executor;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
+        super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.cookieStore = new BasicCookieStore();
@@ -194,6 +195,10 @@ public class ApacheHttpBuilder implements HttpBuilder {
 
         this.client = myBuilder.build();
     }
+
+    protected ChainedHttpConfig getObjectConfig() {
+        return config;
+    }
     
     public Executor getExecutor() {
         return executor;
@@ -208,14 +213,6 @@ public class ApacheHttpBuilder implements HttpBuilder {
                 log.warn("Error in closing http client", ioe);
             }
         }
-    }
-
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(config);
-        closure.setDelegate(myConfig);
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
-        return myConfig;
     }
 
     private int port(final URI uri) {
@@ -300,20 +297,17 @@ public class ApacheHttpBuilder implements HttpBuilder {
         return message;
     }
 
-    public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final ChainedHttpConfig requestConfig = configureRequest(closure);
+    protected Object doGet(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         return exec(addHeaders(cr, new HttpGet(cr.getUri().toURI())), requestConfig);
     }
 
-    public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final ChainedHttpConfig requestConfig = configureRequest(closure);
+    protected Object doHead(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         return exec(addHeaders(cr, new HttpHead(cr.getUri().toURI())), requestConfig);
     }
 
-    public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final ChainedHttpConfig requestConfig = configureRequest(closure);
+    protected Object doPost(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPost post = addHeaders(cr, new HttpPost(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
@@ -323,8 +317,7 @@ public class ApacheHttpBuilder implements HttpBuilder {
         return exec(post, requestConfig);
     }
 
-    public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final ChainedHttpConfig requestConfig = configureRequest(closure);
+    protected Object doPut(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
@@ -334,8 +327,7 @@ public class ApacheHttpBuilder implements HttpBuilder {
         return exec(put, requestConfig);
     }
 
-    public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        final ChainedHttpConfig requestConfig = configureRequest(closure);
+    protected Object doDelete(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpDelete del = addHeaders(cr, new HttpDelete(cr.getUri().toURI()));
         return exec(del, requestConfig);

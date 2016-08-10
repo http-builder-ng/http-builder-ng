@@ -252,4 +252,23 @@ class HttpBuilderTest extends Specification {
         cleanup:
         file.delete();
     }
+
+    def "Interceptors"() {
+        setup:
+        def obj = HttpBuilder.configure(apacheBuilder) {
+            execution.interceptor(HttpVerb.values()) { config, func ->
+                def orig = func.apply(config);
+                return [ orig: orig, msg: "I intercepted" ]
+            }
+
+            request.uri = 'http://www.google.com'
+        }
+
+        def output = obj.get();
+
+        expect:
+        output instanceof Map
+        output.orig
+        output.msg == "I intercepted";
+    }
 }

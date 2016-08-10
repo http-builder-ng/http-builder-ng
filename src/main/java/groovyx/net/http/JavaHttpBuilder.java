@@ -29,7 +29,7 @@ import java.util.zip.InflaterInputStream;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
-public class JavaHttpBuilder implements HttpBuilder {
+public class JavaHttpBuilder extends HttpBuilder {
 
     protected class Action {
 
@@ -281,37 +281,34 @@ public class JavaHttpBuilder implements HttpBuilder {
     final private SSLContext sslContext;
     
     public JavaHttpBuilder(final HttpObjectConfig config) {
+        super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.sslContext = config.getExecution().getSslContext();
     }
 
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(config);
-        closure.setDelegate(myConfig);
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
-        return myConfig;
+    protected ChainedHttpConfig getObjectConfig() {
+        return config;
     }
 
-    public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return new Action(configureRequest(closure), "GET").execute();
+    protected Object doGet(final ChainedHttpConfig requestConfig) {
+        return new Action(requestConfig, "GET").execute();
     }
     
-    public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return new Action(configureRequest(closure), "HEAD").execute();
+    protected Object doHead(final ChainedHttpConfig requestConfig) {
+        return new Action(requestConfig, "HEAD").execute();
     }
     
-    public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return new Action(configureRequest(closure), "POST").execute();
+    protected Object doPost(final ChainedHttpConfig requestConfig) {
+        return new Action(requestConfig, "POST").execute();
     }
     
-    public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return new Action(configureRequest(closure), "PUT").execute();
+    protected Object doPut(final ChainedHttpConfig requestConfig) {
+        return new Action(requestConfig, "PUT").execute();
     }
     
-    public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return new Action(configureRequest(closure), "DELETE").execute();
+    protected Object doDelete(final ChainedHttpConfig requestConfig) {
+        return new Action(requestConfig, "DELETE").execute();
     }
     
     public Executor getExecutor() {
