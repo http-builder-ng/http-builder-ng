@@ -12,9 +12,8 @@ request.with {
 }
 
 response.with {
-    success = NativeHandlers.&success
-    failure = NativeHandlers.&failure
-    
+    success NativeHandlers.&success
+    failure NativeHandlers.&failure
     
     parser BINARY, NativeHandlers.Parsers.&binary
     parser TEXT, NativeHandlers.Parsers.&text

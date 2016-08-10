@@ -3,14 +3,14 @@ package groovyx.net.http
 import spock.lang.*
 import groovy.json.JsonSlurper;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
-import groovyx.net.http.optional.ApacheHttpBuilder;
+import java.util.function.Function
+
 import static groovyx.net.http.NativeHandlers.*;
 import static groovyx.net.http.NativeHandlers.Parsers.download;
 
-class HttpBuilderTest extends Specification {
+class JavaHttpBuilderTest extends Specification {
 
-    static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;
+    static final Function javaBuilder = { c -> new JavaHttpBuilder(c); } as Function;
 
     def httpBin, google, pool;
 
@@ -18,19 +18,20 @@ class HttpBuilderTest extends Specification {
         def max = 2;
         def pool = Executors.newFixedThreadPool(max);
         
-        httpBin = HttpBuilder.configure(apacheBuilder) {
+        httpBin = HttpBuilder.configure(javaBuilder) {
             request.uri = 'http://httpbin.org/';
             execution.maxThreads = max
             execution.executor = pool;
         }
 
-        google = HttpBuilder.configure(apacheBuilder) {
+        google = HttpBuilder.configure(javaBuilder) {
             request.uri = 'http://www.google.com';
             execution.maxThreads = max
             execution.executor = pool;
         };
     }
-    
+
+    //@Ignore
     def "Basic GET"() {
         expect:
         google.get {
@@ -39,7 +40,8 @@ class HttpBuilderTest extends Specification {
             indexOf('</html>') != -1;
         }
     }
-    
+
+    //@Ignore
     def "GET with Parameters"() {
         expect:
         google.get(String) {
@@ -50,6 +52,7 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "Basic POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
@@ -64,11 +67,12 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
-
-        def http = HttpBuilder.configure(apacheBuilder) {
+        
+        def http = HttpBuilder.configure(javaBuilder) {
             request.uri = 'http://httpbin.org/post'
             request.body = toSend;
             request.contentType = 'application/x-www-form-urlencoded';
@@ -78,6 +82,7 @@ class HttpBuilderTest extends Specification {
         http.post().form == toSend;
     }
 
+    //@Ignore
     def "POST Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -97,6 +102,7 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "Test POST Random Headers"() {
         setup:
         final myHeaders = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
@@ -111,19 +117,22 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "Test Head"() {
         setup:
         def result = google.head {
             response.success { resp, o ->
                 assert(o == null);
                 assert(resp.headers.size() > 0);
+                return "Success"
             }
         }
         
         expect:
-        !result
+        result == "Success";
     }
 
+    //@Ignore
     def "Test Multi-Threaded Head"() {
         expect:
         (0..<2).collect {
@@ -133,6 +142,7 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "PUT Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -151,12 +161,14 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //@Ignore
     def "Gzip and Deflate"() {
         expect:
         httpBin.get { request.uri.path = '/gzip'; }.gzipped;
         httpBin.get { request.uri.path = '/deflate'; }.deflated;
     }
 
+    //@Ignore
     def "Basic Auth"() {
         expect:
         httpBin.get {
@@ -167,10 +179,9 @@ class HttpBuilderTest extends Specification {
         }
     }
 
+    //possibly this will work: https://gist.github.com/slightfoot/5624590
+    //Even easier, Java auth: https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-auth.html
     def "Digest Auth"() {
-        //NOTE, httpbin.org oddly requires cookies to be set during digest authentication,
-        //which of course httpclient won't do. If you let the first request fail, then the cookie will
-        //be set, which means the next request will have the cookie and will allow auth to succeed.
         expect:
         "Ignored" == httpBin.get {
             request.uri.path = '/digest-auth/auth/david/clark'
@@ -185,18 +196,18 @@ class HttpBuilderTest extends Specification {
             authenticated && user == 'david';
         }
     }
-
+    
     def "Test Set Cookies"() {
         expect:
         httpBin.get {
-            request.uri.path = '/cookies'
+            request.uri.path = '/cookies';
             request.cookie 'foocookie', 'barcookie'
         }.with {
             cookies.foocookie == 'barcookie';
         }
-
+        
         httpBin.get {
-            request.uri.path = '/cookies'
+            request.uri.path = '/cookies';
             request.cookie 'requestcookie', '12345'
         }.with {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345';
@@ -230,7 +241,7 @@ class HttpBuilderTest extends Specification {
 
     def "Basic Https"() {
         expect:
-        HttpBuilder.configure(apacheBuilder) {
+        HttpBuilder.configure(javaBuilder) {
             request.uri = 'https://www.google.com'
             response.parser "text/html", Parsers.&textToString
         }.get().with {
@@ -238,7 +249,7 @@ class HttpBuilderTest extends Specification {
         }
     }
 
-    def "Download"() {
+     def "Download"() {
         setup:
         def file = File.createTempFile("tmp", ".html");
 
@@ -255,7 +266,7 @@ class HttpBuilderTest extends Specification {
 
     def "Interceptors"() {
         setup:
-        def obj = HttpBuilder.configure(apacheBuilder) {
+        def obj = HttpBuilder.configure(javaBuilder) {
             execution.interceptor(HttpVerb.values()) { config, func ->
                 def orig = func.apply(config);
                 return [ orig: orig, msg: "I intercepted" ]

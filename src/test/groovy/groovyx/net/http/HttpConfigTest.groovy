@@ -1,6 +1,7 @@
 package groovyx.net.http;
 
 import spock.lang.*
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,7 @@ class HttpConfigTest extends Specification {
 
     def "Basic Config"() {
         setup:
-        Function jsonEncoder = NativeHandlers.Encoders.&json;
+        BiConsumer jsonEncoder = NativeHandlers.Encoders.&json;
         Function jsonParser = NativeHandlers.Parsers.&json;
 
         HttpConfig http = HttpConfigs.threadSafe().config {
@@ -26,13 +27,12 @@ class HttpConfigTest extends Specification {
         expect:
         http.request.encoder("application/json") == jsonEncoder;
         http.response.parser("text/javascript") == jsonParser;
-        http.request.encoder("application/javascript").apply(http.request) != null;
         http.request.body == [ one: 1, two: 2 ];
     }
 
     def Chaining() {
         setup:
-        Function xmlEncoder = NativeHandlers.Encoders.&xml;
+        BiConsumer xmlEncoder = NativeHandlers.Encoders.&xml;
         Function xmlParser = NativeHandlers.Parsers.&xml;
         Closure success = { res, o -> println(o); }
         Closure failure = { res -> println("failed"); }
@@ -51,8 +51,8 @@ class HttpConfigTest extends Specification {
         def root = HttpConfigs.threadSafe().config {
             request.charset = charset
             request.encoder XML, xmlEncoder
-            response.success = success;
-            response.failure = failure;
+            response.success success;
+            response.failure failure;
         };
 
         def intermediate = HttpConfigs.threadSafe(root).config {

@@ -8,22 +8,20 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+
 
 public interface HttpConfig {
 
-    public enum Status { SUCCESS, FAILURE };
-    public enum AuthType { BASIC, DIGEST };
+    enum Status { SUCCESS, FAILURE };
+    enum AuthType { BASIC, DIGEST };
 
-    public interface Auth {
+    interface Auth {
         AuthType getAuthType();
         String getUser();
         String getPassword();
-        boolean getPreemptive();
-        
+
         default void basic(String user, String password) {
             basic(user, password, false);
         }
@@ -37,7 +35,7 @@ public interface HttpConfig {
         void digest(String user, String password, boolean preemptive);
     }
 
-    public interface Request {
+    interface Request {
         Auth getAuth();
         void setContentType(String val);
         void setCharset(String val);
@@ -61,23 +59,23 @@ public interface HttpConfig {
         
         void cookie(String name, String value, Date expires);
 
-        void encoder(String contentType, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
-        void encoder(List<String> contentTypes, Function<ChainedHttpConfig.ChainedRequest,HttpEntity> val);
-        Function<ChainedHttpConfig.ChainedRequest,HttpEntity> encoder(String contentType);
+        void encoder(String contentType, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
+        void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
+        BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder(String contentType);
     }
     
-    public interface Response {
+    interface Response {
         void when(Status status, Closure<Object> closure);
         void when(Integer code, Closure<Object> closure);
         void when(String code, Closure<Object> closure);
         Closure<Object> when(Integer code);
 
-        void setSuccess(Closure<Object> closure);
-        void setFailure(Closure<Object> closure);
+        void success(Closure<Object> closure);
+        void failure(Closure<Object> closure);
 
-        void parser(String contentType, Function<HttpResponse,Object> val);
-        void parser(List<String> contentTypes, Function<HttpResponse,Object> val);
-        Function<HttpResponse,Object> parser(String contentType);
+        void parser(String contentType, Function<FromServer,Object> val);
+        void parser(List<String> contentTypes, Function<FromServer,Object> val);
+        Function<FromServer,Object> parser(String contentType);
     }
 
     Request getRequest();

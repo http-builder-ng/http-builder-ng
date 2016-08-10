@@ -1,25 +1,16 @@
 package groovyx.net.http;
 
-import java.util.Collections;
-import java.net.MalformedURLException;
+import groovy.lang.GString;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import static java.util.Objects.equals;
-import org.apache.http.client.utils.URIBuilder;
-import java.util.function.Supplier;
-import java.util.function.Predicate;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import static groovyx.net.http.Traverser.*;
+import org.codehaus.groovy.runtime.GStringImpl;
+import java.io.IOException;
 
 public abstract class UriBuilder {
 
@@ -31,82 +22,70 @@ public abstract class UriBuilder {
     public abstract int getPort();
     public abstract UriBuilder setHost(String val);
     public abstract String getHost();
-    public abstract UriBuilder setPath(String val);
-    public abstract String getPath();
-    public abstract UriBuilder setQuery(Map<String,Object> val);
-    public abstract Map<String,Object> getQuery();
+    public abstract UriBuilder setPath(GString val);
+    public abstract GString getPath();
+    public abstract UriBuilder setQuery(Map<String,?> val);
+    public abstract Map<String,?> getQuery();
     public abstract UriBuilder setFragment(String val);
     public abstract String getFragment();
     public abstract UriBuilder setUserInfo(String val);
     public abstract String getUserInfo();
     public abstract UriBuilder getParent();
+
+    public UriBuilder setPath(final String str) {
+        return setPath(new GStringImpl(EMPTY, new String[] { str }));
+    }
     
-    public URI toURI(final Charset charset) {
+    public URI toURI() {
         try {
-            final URIBuilder b = new URIBuilder();
-            
             final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
-            if(scheme != null) b.setScheme(scheme);
-            
             final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
-            if(port != null) b.setPort(port);
-            
             final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
-            if(host != null) b.setHost(host);
-            
-            final String path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
-            if(path != null) b.setPath(path);
-            
-            final Map<String,Object> query = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
-            if(query != null) {
-                for(Map.Entry<String,Object> entry : query.entrySet()) {
-                    b.addParameter(entry.getKey(), entry.getValue().toString());
-                }
-            }
-            
+            final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
+            final Map<String,?> queryMap = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
+            final String query = (queryMap == null || queryMap.isEmpty()) ? null : Form.encode(queryMap, StandardCharsets.UTF_8);
             final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
-            if(fragment != null) b.setFragment(fragment);
-            
             final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
-            if(userInfo != null) b.setUserInfo(userInfo);
-            
-            return b.build();
+            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
         }
         catch(URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected final void populateFrom(final URIBuilder builder) {
-        setScheme(builder.getScheme());
-        setPort(builder.getPort());
-        setHost(builder.getHost());
-        setPath(builder.getPath());
-
-        Map<String,Object> tmp = new LinkedHashMap<>();
-        for(NameValuePair nvp : builder.getQueryParams()) {
-            tmp.put(nvp.getName(), nvp.getValue());
+    private static final Object[] EMPTY = new Object[0];
+    
+    protected final void populateFrom(final URI uri) {
+        try {
+            setScheme(uri.getScheme());
+            setPort(uri.getPort());
+            setHost(uri.getHost());
+            
+            final String path = uri.getPath();
+            if(path != null) {
+                setPath(new GStringImpl(EMPTY, new String[] { path }));
+            }
+            
+            final String rawQuery = uri.getQuery();
+            if(rawQuery != null) {
+                setQuery(Form.decode(new StringBuilder(rawQuery), StandardCharsets.UTF_8));
+            }
+            
+            setFragment(uri.getFragment());
+            setUserInfo(uri.getUserInfo());
         }
-        setQuery(tmp);
-
-        setFragment(builder.getFragment());
-        setUserInfo(builder.getUserInfo());
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public final UriBuilder setFull(final String str) throws URISyntaxException {
-        final URIBuilder builder = new URIBuilder(str);
-        populateFrom(builder);
-        return this;
+        return setFull(new URI(str));
     }
 
     public final UriBuilder setFull(final URI uri) {
-        final URIBuilder builder = new URIBuilder(uri);
-        populateFrom(builder);
+        populateFrom(uri);
         return this;
-    }
-
-    public URI toURI() {
-        return toURI(StandardCharsets.UTF_8);
     }
 
     public static UriBuilder basic(final UriBuilder parent) {
@@ -134,12 +113,12 @@ public abstract class UriBuilder {
         public UriBuilder setHost(String val) { host = val; return this; }
         public String getHost() { return host; }
 
-        private String path;
-        public UriBuilder setPath(String val) { path = val; return this; }
-        public String getPath() { return path; }
+        private GString path;
+        public UriBuilder setPath(GString val) { path = val; return this; }
+        public GString getPath() { return path; }
         
         private Map<String,Object> query = new LinkedHashMap<>(1);
-        public UriBuilder setQuery(Map<String,Object> val) { query.putAll(val);; return this; }
+        public UriBuilder setQuery(Map<String,?> val) { query.putAll(val);; return this; }
         public Map<String,Object> getQuery() { return query; }
 
         private String fragment;
@@ -171,13 +150,13 @@ public abstract class UriBuilder {
         public UriBuilder setHost(String val) { host = val; return this; }
         public String getHost() { return host; }
 
-        private volatile String path;
-        public UriBuilder setPath(String val) { path = val; return this; }
-        public String getPath() { return path; }
+        private volatile GString path;
+        public UriBuilder setPath(GString val) { path = val; return this; }
+        public GString getPath() { return path; }
 
         private Map<String,Object> query = new ConcurrentHashMap();
-        public UriBuilder setQuery(Map<String,Object> val) { query.putAll(val); return this; }
-        public Map<String,Object> getQuery() { return query; }
+        public UriBuilder setQuery(Map<String,?> val) { query.putAll(val); return this; }
+        public Map<String,?> getQuery() { return query; }
 
         private volatile String fragment;
         public UriBuilder setFragment(String val) { fragment = val; return this; }
