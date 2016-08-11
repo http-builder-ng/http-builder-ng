@@ -1,12 +1,11 @@
 package groovyx.net.http;
 
-import groovyx.net.http.optional.ApacheHttpBuilder;
+import java.util.EnumMap;
 import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.net.ssl.SSLContext;
 import static groovyx.net.http.HttpConfigs.*;
-import java.util.function.Function;
-import java.util.function.BiFunction;
-import java.util.EnumMap;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
   
@@ -92,10 +91,6 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         }
 
         public static final SingleThreaded instance = new SingleThreaded();
-    }
-
-    public HttpBuilder apacheHttpBuilder() {
-        return new ApacheHttpBuilder(this);
     }
 
     public Request getRequest() {
