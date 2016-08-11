@@ -65,7 +65,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 connection.addRequestProperty("Content-Type", contentType);
             }
 
-            connection.addRequestProperty("Accept-Encoding", "gzip");
+            connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
             
             final URI uri = cr.getUri().toURI();
             final List<Cookie> cookies = cr.actualCookies(new ArrayList());

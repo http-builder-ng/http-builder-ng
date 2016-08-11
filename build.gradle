@@ -12,21 +12,10 @@ sourceCompatibility = 8
 targetCompatibility = 8
 
 group = 'org.codehaus.groovy.modules'
-version = '0.9.6'
+version = '0.9.7'
 
 repositories {
     jcenter()
-}
-
-configurations {
-    runtime {
-        exclude(module: 'signpost-commonshttp4')
-        exclude(module: 'signpost-core')
-        exclude(module: 'httpclient')
-        exclude(module: 'groovy-all')
-    }
-
-    testRuntime.extendsFrom = [compile, testCompile]
 }
 
 dependencies {
@@ -36,13 +25,16 @@ dependencies {
     compile('org.slf4j:slf4j-api:1.7.21')
     
     //optionals
-    compile('com.opencsv:opencsv:3.8');
-    compile('org.apache.httpcomponents:httpclient:4.5.2');
-    compile('oauth.signpost:signpost-commonshttp4:1.2.1.1')
-    compile('oauth.signpost:signpost-core:1.2.1.1')
-    compile('org.codehaus.groovy:groovy-all:2.4.6')
+    def optionals = [ 'com.opencsv:opencsv:3.8', 'org.apache.httpcomponents:httpclient:4.5.2',
+                      'oauth.signpost:signpost-commonshttp4:1.2.1.1', 'oauth.signpost:signpost-core:1.2.1.1',
+                      'org.codehaus.groovy:groovy-all:2.4.6' ];
 
+    optionals.each { opt ->
+        compileOnly(opt); testCompile(opt);
+    }
+    
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
+    
 }
 
 javadoc {
@@ -60,13 +52,19 @@ artifacts {
     archives sourcesJar
 }
 
-publishing {
+project.publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact jar
+            from components.java
+            //artifact jar
             artifact sourcesJar
+            groupId project.group
             version project.version
         }
+    }
+
+    configurations.runtime.allDependencies.each {
+        println(it);
     }
 }
 
