@@ -121,14 +121,18 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
-        public static boolean handleFileUpload(final Object body, final ToServer ts) {
+        public static boolean handleRawUpload(final Object body, final ToServer ts, final Charset charset) {
             try {
                 if(body instanceof File) {
                     ts.toServer(new FileInputStream((File) body));
                     return true;
                 }
-                else if(body instanceof FileInputStream) {
-                    ts.toServer((FileInputStream) body);
+                else if(body instanceof InputStream) {
+                    ts.toServer((InputStream) body);
+                    return true;
+                }
+                else if(body instanceof Reader) {
+                    ts.toServer(new ReaderInputStream((Reader) body, charset));
                     return true;
                 }
                 else {
@@ -149,16 +153,13 @@ public class NativeHandlers {
          */
         public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleFileUpload(body, ts)) {
+            if(handleRawUpload(body, ts, request.actualCharset())) {
                 return;
             }
             
             checkTypes(body, BINARY_TYPES);
             
-            if(body instanceof InputStream) {
-                ts.toServer((InputStream) body);
-            }
-            else if(body instanceof byte[]) {
+            if(body instanceof byte[]) {
                 ts.toServer(new ByteArrayInputStream((byte[]) body));
             }
             else {
@@ -169,15 +170,7 @@ public class NativeHandlers {
         private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
         
         private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
-            final Expanding e = tlExpanding.get();
-            e.charBuffer.clear();
-            int total;
-            while((total = r.read(e.charAry)) != -1) {
-                e.append(total);
-            }
-
-            e.charBuffer.flip();
-            return new ByteArrayInputStream(cs.encode(e.charBuffer).array());
+            return new ReaderInputStream(r, cs);
         }
 
         public static InputStream stringToStream(final String s, final Charset cs) {
@@ -191,19 +184,12 @@ public class NativeHandlers {
          */
         public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
             final Object body = checkNull(request.actualBody());
-            if(handleFileUpload(body, ts)) {
+            if(handleRawUpload(body, ts, request.actualCharset())) {
                 return;
             }
             
             checkTypes(body, TEXT_TYPES);
-            String text = null;
-            
-            if(body instanceof Reader) {
-                ts.toServer(readerToStream((Reader) body, request.actualCharset()));
-            }
-            else {
-                ts.toServer(stringToStream(body.toString(), request.actualCharset()));
-            }
+            ts.toServer(stringToStream(body.toString(), request.actualCharset()));
         }
 
         private static final Class[] FORM_TYPES = { Map.class, String.class };
@@ -219,7 +205,7 @@ public class NativeHandlers {
          */
         public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleFileUpload(body, ts)) {
+            if(handleRawUpload(body, ts, request.actualCharset())) {
                 return;
             }
             
@@ -251,7 +237,7 @@ public class NativeHandlers {
          */
         public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleFileUpload(body, ts)) {
+            if(handleRawUpload(body, ts, request.actualCharset())) {
                 return;
             }
             
@@ -280,7 +266,7 @@ public class NativeHandlers {
          */
         public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-             if(handleFileUpload(body, ts)) {
+            if(handleRawUpload(body, ts, request.actualCharset())) {
                 return;
             }
 

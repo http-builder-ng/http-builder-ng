@@ -27,4 +27,16 @@ class CharSequenceInputStreamTest extends Specification {
         expect:
         str == text;
     }
+
+    def "Something Random"() {
+        setup:
+        def text = ReaderInputStreamTest.randomAscii(4096);
+        def istream = new CharSequenceInputStream(text, StandardCharsets.UTF_8);
+        def baos = new ByteArrayOutputStream();
+        baos << istream;
+        def str = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
+        expect:
+        str == text;
+    }
 }

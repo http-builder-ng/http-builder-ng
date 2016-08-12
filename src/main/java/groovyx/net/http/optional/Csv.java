@@ -42,6 +42,10 @@ public class Csv {
     public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final Function<Writer,CSVWriter> csvWriterMaker) {
         return (request, ts) -> {
             final Object body = checkNull(request.actualBody());
+            if(handleRawUpload(body, ts, request.actualCharset())) {
+                return;
+            }
+            
             checkTypes(body, new Class[] { List.class });
             final List<?> list = (List<?>) body;
             final StringWriter writer = new StringWriter();
