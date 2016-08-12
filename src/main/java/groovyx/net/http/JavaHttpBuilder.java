@@ -28,6 +28,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 public class JavaHttpBuilder extends HttpBuilder {
 
@@ -148,12 +149,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             
             public void toServer(final InputStream inputStream) {
                 try {
-                    final OutputStream os = connection.getOutputStream();
-                    final byte[] buffer = new byte[4_096];
-                    int read = 0;
-                    while((read = inputStream.read(buffer)) != -1) {
-                        os.write(buffer, 0, read);
-                    }
+                    transfer(inputStream, connection.getOutputStream(), true);
                 }
                 catch(IOException e) {
                     throw new RuntimeException(e);

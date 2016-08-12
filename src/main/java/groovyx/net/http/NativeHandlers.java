@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -120,6 +121,25 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
+        public static boolean handleFileUpload(final Object body, final ToServer ts) {
+            try {
+                if(body instanceof File) {
+                    ts.toServer(new FileInputStream((File) body));
+                    return true;
+                }
+                else if(body instanceof FileInputStream) {
+                    ts.toServer((FileInputStream) body);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            catch(IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class, Closure.class };
 
         /**
@@ -129,12 +149,13 @@ public class NativeHandlers {
          */
         public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
+            if(handleFileUpload(body, ts)) {
+                return;
+            }
+            
             checkTypes(body, BINARY_TYPES);
             
-            if(body instanceof ByteArrayInputStream) {
-                ts.toServer((ByteArrayInputStream) body);
-            }
-            else if(body instanceof InputStream) {
+            if(body instanceof InputStream) {
                 ts.toServer((InputStream) body);
             }
             else if(body instanceof byte[]) {
@@ -160,8 +181,7 @@ public class NativeHandlers {
         }
 
         public static InputStream stringToStream(final String s, final Charset cs) {
-            final ByteBuffer buf = cs.encode(s);
-            return new ByteArrayInputStream(buf.array(), 0, buf.limit());
+            return new CharSequenceInputStream(s, cs);
         }
 
         /**
@@ -169,9 +189,12 @@ public class NativeHandlers {
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-
         public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
             final Object body = checkNull(request.actualBody());
+            if(handleFileUpload(body, ts)) {
+                return;
+            }
+            
             checkTypes(body, TEXT_TYPES);
             String text = null;
             
@@ -196,6 +219,10 @@ public class NativeHandlers {
          */
         public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
+            if(handleFileUpload(body, ts)) {
+                return;
+            }
+            
             checkTypes(body, FORM_TYPES);
 
             if(body instanceof String) {
@@ -224,6 +251,10 @@ public class NativeHandlers {
          */
         public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
+            if(handleFileUpload(body, ts)) {
+                return;
+            }
+            
             checkTypes(body, XML_TYPES);
 
             if(body instanceof String) {
@@ -249,6 +280,10 @@ public class NativeHandlers {
          */
         public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
+             if(handleFileUpload(body, ts)) {
+                return;
+            }
+
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
                                  : new JsonBuilder(body).toString());
