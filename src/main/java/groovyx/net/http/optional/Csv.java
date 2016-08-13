@@ -17,9 +17,7 @@ public class Csv {
     public static Function<FromServer,List<String[]>> parse(final Function<Reader,CSVReader> csvReaderMaker) {
         return (fromServer) -> {
             try {
-                final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());
-                final CSVReader csvReader = csvReaderMaker.apply(reader);
-                return csvReader.readAll();
+                return csvReaderMaker.apply(fromServer.getReader()).readAll();
             }
             catch(IOException e) {
                 throw new RuntimeException(e);
@@ -42,10 +40,6 @@ public class Csv {
     public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final Function<Writer,CSVWriter> csvWriterMaker) {
         return (request, ts) -> {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-            
             checkTypes(body, new Class[] { List.class });
             final List<?> list = (List<?>) body;
             final StringWriter writer = new StringWriter();

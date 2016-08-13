@@ -38,7 +38,12 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
 
         default BiConsumer<ChainedRequest,ToServer> actualEncoder(final String contentType) {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
+            if(NativeHandlers.Encoders.rawUpload(this)) {
+                return NativeHandlers.Encoders::handleRawUpload;
+            }
+            else {
+                return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
+            }
         }
 
         default Auth actualAuth() {

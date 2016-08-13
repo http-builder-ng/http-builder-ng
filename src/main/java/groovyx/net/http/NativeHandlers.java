@@ -121,22 +121,29 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
-        public static boolean handleRawUpload(final Object body, final ToServer ts, final Charset charset) {
+        public static boolean rawUpload(final ChainedHttpConfig.ChainedRequest request) {
+            final Object body = request.actualBody();
+            return (body instanceof File ||
+                    body instanceof InputStream ||
+                    body instanceof Reader);
+        }
+
+        public static void handleRawUpload(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+            final Object body = request.actualBody();
+            final Charset charset = request.actualCharset();
+            
             try {
                 if(body instanceof File) {
                     ts.toServer(new FileInputStream((File) body));
-                    return true;
                 }
                 else if(body instanceof InputStream) {
                     ts.toServer((InputStream) body);
-                    return true;
                 }
                 else if(body instanceof Reader) {
                     ts.toServer(new ReaderInputStream((Reader) body, charset));
-                    return true;
                 }
                 else {
-                    return false;
+                    throw new IllegalArgumentException("type not supported by raw upload handler");
                 }
             }
             catch(IOException e) {
@@ -153,10 +160,6 @@ public class NativeHandlers {
          */
         public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-            
             checkTypes(body, BINARY_TYPES);
             
             if(body instanceof byte[]) {
@@ -184,10 +187,6 @@ public class NativeHandlers {
          */
         public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-            
             checkTypes(body, TEXT_TYPES);
             ts.toServer(stringToStream(body.toString(), request.actualCharset()));
         }
@@ -205,10 +204,6 @@ public class NativeHandlers {
          */
         public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-            
             checkTypes(body, FORM_TYPES);
 
             if(body instanceof String) {
@@ -237,10 +232,6 @@ public class NativeHandlers {
          */
         public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-            
             checkTypes(body, XML_TYPES);
 
             if(body instanceof String) {
@@ -266,10 +257,6 @@ public class NativeHandlers {
          */
         public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(body, ts, request.actualCharset())) {
-                return;
-            }
-
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
                                  : new JsonBuilder(body).toString());
