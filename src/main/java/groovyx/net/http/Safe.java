@@ -12,21 +12,21 @@ public class Safe {
     public static void register(final HttpConfig config,
                                 final Supplier<Boolean> shouldRegister,
                                 final List<String> contentTypes,
-                                final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder,
-                                final Function<FromServer,Object> parser) {
+                                final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> encoderSupplier,
+                                final Supplier<Function<FromServer,Object>> parserSupplier) {
         
         if(shouldRegister.get()) {
-            config.getRequest().encoder(contentTypes, encoder);
-            config.getResponse().parser(contentTypes, parser);
+            config.getRequest().encoder(contentTypes, encoderSupplier.get());
+            config.getResponse().parser(contentTypes, parserSupplier.get());
         }
     }
     
     public static void register(final HttpConfig config,
                                 final Supplier<Boolean> shouldRegister,
                                 final String contentType,
-                                final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder,
-                                final Function<FromServer,Object> parser) {
-        register(config, shouldRegister, Collections.singletonList(contentType), encoder, parser);
+                                final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> encoderSupplier,
+                                final Supplier<Function<FromServer,Object>> parserSupplier) {
+        register(config, shouldRegister, Collections.singletonList(contentType), encoderSupplier, parserSupplier);
     }
 
     public static Supplier<Boolean> ifClassIsLoaded(final String className) {

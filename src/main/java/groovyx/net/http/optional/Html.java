@@ -10,10 +10,17 @@ import org.jsoup.nodes.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import static groovyx.net.http.NativeHandlers.Encoders.stringToStream;
+import java.util.function.Supplier;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class Html {
 
-    public static GPathResult neckoParse(final FromServer fromServer) {
+    public static final Supplier<Function<FromServer,Object>> neckoParserSupplier = () -> Html::neckoParse;
+    public static final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> jsoupEncoderSupplier = () -> Html::jsoupEncode;
+    public static final Supplier<Function<FromServer,Object>> jsoupParserSupplier = () -> Html::jsoupParse;
+    
+    public static Object neckoParse(final FromServer fromServer) {
         try {
             final XMLReader p = new org.cyberneko.html.parsers.SAXParser();
             p.setEntityResolver(NativeHandlers.Parsers.catalogResolver);
@@ -23,8 +30,8 @@ public class Html {
             throw new RuntimeException(ex);
         }
     }
-
-    public static Document jsoupParse(final FromServer fromServer) {
+    
+    public static Object jsoupParse(final FromServer fromServer) {
         try {
             return Jsoup.parse(fromServer.getInputStream(),
                                fromServer.getCharset().name(),

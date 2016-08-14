@@ -10,9 +10,16 @@ import java.io.Writer;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import static groovyx.net.http.NativeHandlers.Encoders.*;
 
 public class Csv {
+
+    public static final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> csvEncoderSupplier = Csv::encode;
+    public static final Supplier<Function<FromServer,Object>> csvParserSupplier = Csv::parse;
+
+    public static final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> tsvEncoderSupplier = () -> Csv.encode('\t');
+    public static final Supplier<Function<FromServer,Object>> tsvParserSupplier = () -> Csv.parse('\t');
 
     public static Function<FromServer,Object> parse(final Function<Reader,CSVReader> csvReaderMaker) {
         return (fromServer) -> {

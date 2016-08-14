@@ -557,13 +557,13 @@ public class HttpConfigs {
     static {
         root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure(CONFIG);
         register(root, ifClassIsLoaded("org.cyberneko.html.parsers.SAXParser"),
-                 "text/html", NativeHandlers.Encoders::xml, Html::neckoParse);
+                 "text/html", () -> NativeHandlers.Encoders::xml, Html.neckoParserSupplier);
         register(root, ifClassIsLoaded("org.jsoup.Jsoup"),
-                 "text/html", Html::jsoupEncode, Html::jsoupParse);
+                 "text/html", Html.jsoupEncoderSupplier, Html.jsoupParserSupplier);
         register(root, ifClassIsLoaded("com.opencsv.CSVReader"),
-                 "text/csv", Csv.encode(), Csv.parse());
+                 "text/csv", Csv.csvEncoderSupplier, Csv.csvParserSupplier);
         register(root, ifClassIsLoaded("com.opencsv.CSVReader"),
-                 "text/tab-separated-values", Csv.encode('\t'), Csv.parse('\t'));
+                 "text/tab-separated-values", Csv.tsvEncoderSupplier, Csv.tsvParserSupplier);
     }
 
     public static ChainedHttpConfig root() {
