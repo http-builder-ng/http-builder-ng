@@ -18,5 +18,4 @@ response.with {
     parser URLENC, NativeHandlers.Parsers.&form
     parser XML, NativeHandlers.Parsers.&xml
     parser JSON, NativeHandlers.Parsers.&json
-    parser HTML, NativeHandlers.Parsers.&html
 }

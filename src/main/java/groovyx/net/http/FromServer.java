@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.net.URI;
 
 public interface FromServer {
 
@@ -137,6 +138,7 @@ public interface FromServer {
     String getMessage();
     List<Header> getHeaders();
     boolean getHasBody();
+    URI getUri();
     void finish();
 
     default Reader getReader() {

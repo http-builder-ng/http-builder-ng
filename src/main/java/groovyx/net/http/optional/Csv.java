@@ -1,20 +1,20 @@
 package groovyx.net.http.optional;
 
-import groovyx.net.http.*;
-import static groovyx.net.http.NativeHandlers.Encoders.*;
 import com.opencsv.*;
-import java.io.InputStreamReader;
+import groovyx.net.http.*;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Writer;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
+import static groovyx.net.http.NativeHandlers.Encoders.*;
 
 public class Csv {
 
-    public static Function<FromServer,List<String[]>> parse(final Function<Reader,CSVReader> csvReaderMaker) {
+    public static Function<FromServer,Object> parse(final Function<Reader,CSVReader> csvReaderMaker) {
         return (fromServer) -> {
             try {
                 return csvReaderMaker.apply(fromServer.getReader()).readAll();
@@ -25,15 +25,15 @@ public class Csv {
         };
     }
 
-    public static Function<FromServer,List<String[]>> parse() {
+    public static Function<FromServer,Object> parse() {
         return parse((r) -> new CSVReader(r));
     }
 
-    public static Function<FromServer,List<String[]>> parse(final char separator) {
+    public static Function<FromServer,Object> parse(final char separator) {
         return parse((r) -> new CSVReader(r, separator));
     }
 
-    public static Function<FromServer,List<String[]>> parse(final char separator, final char quoteChar) {
+    public static Function<FromServer,Object> parse(final char separator, final char quoteChar) {
         return parse((r) -> new CSVReader(r, separator, quoteChar));
     }
 

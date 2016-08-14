@@ -20,14 +20,18 @@ repositories {
 
 dependencies {
     //required
-    compile('net.sourceforge.nekohtml:nekohtml:1.9.22');
     compile('xml-resolver:xml-resolver:1.2')
     compile('org.slf4j:slf4j-api:1.7.21')
     
     //optionals
-    def optionals = [ 'com.opencsv:opencsv:3.8', 'org.apache.httpcomponents:httpclient:4.5.2',
-                      'oauth.signpost:signpost-commonshttp4:1.2.1.1', 'oauth.signpost:signpost-core:1.2.1.1',
-                      'org.codehaus.groovy:groovy-all:2.4.6' ];
+    def optionals = [ 'com.opencsv:opencsv:3.8',
+                      'org.apache.httpcomponents:httpclient:4.5.2',
+                      'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+                      'oauth.signpost:signpost-core:1.2.1.1',
+                      'org.codehaus.groovy:groovy-all:2.4.6',
+                      'org.jsoup:jsoup:1.9.2',
+                      'net.sourceforge.nekohtml:nekohtml:1.9.22',
+                      'com.fasterxml.jackson.core:jackson-databind:2.8.1' ];
 
     optionals.each { opt ->
         compileOnly(opt); testCompile(opt);

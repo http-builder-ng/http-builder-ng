@@ -1,10 +1,11 @@
 package groovyx.net.http
 
-import spock.lang.*
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.json.JsonSlurper;
+import groovyx.net.http.optional.Jackson;
 import java.util.concurrent.Executors;
 import java.util.function.Function
-
+import spock.lang.*
 import static groovyx.net.http.NativeHandlers.*;
 import static groovyx.net.http.NativeHandlers.Parsers.download;
 
@@ -31,7 +32,6 @@ class JavaHttpBuilderTest extends Specification {
         };
     }
 
-    //@Ignore
     def "Basic GET"() {
         expect:
         google.get {
@@ -41,7 +41,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "GET with Parameters"() {
         expect:
         google.get(String) {
@@ -52,7 +51,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "Basic POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
@@ -67,7 +65,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
@@ -82,7 +79,6 @@ class JavaHttpBuilderTest extends Specification {
         http.post().form == toSend;
     }
 
-    //@Ignore
     def "POST Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -102,7 +98,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "Test POST Random Headers"() {
         setup:
         final myHeaders = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
@@ -117,7 +112,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "Test Head"() {
         setup:
         def result = google.head {
@@ -132,7 +126,6 @@ class JavaHttpBuilderTest extends Specification {
         result == "Success";
     }
 
-    //@Ignore
     def "Test Multi-Threaded Head"() {
         expect:
         (0..<2).collect {
@@ -142,7 +135,6 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "PUT Json With Parameters"() {
         setup:
         def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
@@ -161,14 +153,12 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //@Ignore
     def "Gzip and Deflate"() {
         expect:
         httpBin.get { request.uri.path = '/gzip'; }.gzipped;
         httpBin.get { request.uri.path = '/deflate'; }.deflated;
     }
 
-    //@Ignore
     def "Basic Auth"() {
         expect:
         httpBin.get {
@@ -282,4 +272,37 @@ class JavaHttpBuilderTest extends Specification {
         output.orig
         output.msg == "I intercepted";
     }
+
+    def "Optional HTML"() {
+        setup:
+        def obj = google.get();
+
+        expect:
+        obj;
+        obj instanceof org.jsoup.nodes.Document;
+    }
+
+    def "Optional POST Json With Parameters With Jackson"() {
+        setup:
+        def objectMapper = new ObjectMapper();
+        def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
+        def accept = [ 'application/json','application/javascript','text/javascript' ];
+
+        expect:
+        httpBin.post {
+            request.uri.path = '/post'
+            request.uri.query = [ one: '1', two: '2' ];
+            request.accept = accept;
+            request.body = toSend;
+            request.contentType = 'application/json';
+            request.encoder(['text/json', 'application/json'], Jackson.encode(objectMapper));
+            response.parser(['text/json', 'application/json'], Jackson.parse(objectMapper, Map));
+
+        }.with {
+            (it instanceof Map &&
+             headers.Accept.split(';') as List<String> == accept && 
+             new JsonSlurper().parseText(data) == toSend);
+        }
+    }
+
 }

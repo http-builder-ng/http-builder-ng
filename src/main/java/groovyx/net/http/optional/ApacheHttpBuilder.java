@@ -44,8 +44,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
         private final HttpEntity entity;
         private final List<Header> headers;
         private final InputStream inputStream;
+        private final URI uri;
     
-        public ApacheFromServer(final HttpResponse response) {
+        public ApacheFromServer(final URI originalUri, final HttpResponse response) {
+            this.uri = originalUri;
             this.response = response;
             this.entity = response.getEntity();
 
@@ -85,6 +87,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         public List<Header> getHeaders() {
             return headers;
+        }
+
+        public URI getUri() {
+            return uri;
         }
 
         public void finish() {
@@ -151,7 +157,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public Object handleResponse(final HttpResponse response) {
-            final ApacheFromServer fromServer = new ApacheFromServer(response);
+            final ApacheFromServer fromServer = new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response);
             try {
                 final Function<FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
                 final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());

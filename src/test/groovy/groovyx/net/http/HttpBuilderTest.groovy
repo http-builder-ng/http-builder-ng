@@ -1,10 +1,12 @@
 package groovyx.net.http
 
-import spock.lang.*
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.json.JsonSlurper;
+import groovyx.net.http.optional.ApacheHttpBuilder;
+import groovyx.net.http.optional.Jackson;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
-import groovyx.net.http.optional.ApacheHttpBuilder;
+import spock.lang.*
 import static groovyx.net.http.NativeHandlers.*;
 import static groovyx.net.http.NativeHandlers.Parsers.download;
 
@@ -270,5 +272,37 @@ class HttpBuilderTest extends Specification {
         output instanceof Map
         output.orig
         output.msg == "I intercepted";
+    }
+
+    def "Optional HTML"() {
+        setup:
+        def obj = google.get();
+
+        expect:
+        obj;
+        obj instanceof org.jsoup.nodes.Document;
+    }
+    
+    def "Optional POST Json With Parameters With Jackson"() {
+        setup:
+        def objectMapper = new ObjectMapper();
+        def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
+        def accept = [ 'application/json','application/javascript','text/javascript' ];
+
+        expect:
+        httpBin.post {
+            request.uri.path = '/post'
+            request.uri.query = [ one: '1', two: '2' ];
+            request.accept = accept;
+            request.body = toSend;
+            request.contentType = 'application/json';
+            request.encoder(['text/json', 'application/json'], Jackson.encode(objectMapper));
+            response.parser(['text/json', 'application/json'], Jackson.parse(objectMapper, Map));
+
+        }.with {
+            (it instanceof Map &&
+             headers.Accept.split(';') as List<String> == accept && 
+             new JsonSlurper().parseText(data) == toSend);
+        }
     }
 }

@@ -26,6 +26,8 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import static groovyx.net.http.ChainedHttpConfig.*;
+import static groovyx.net.http.Safe.*;
+import groovyx.net.http.optional.*;
 
 public class HttpConfigs {
 
@@ -550,7 +552,19 @@ public class HttpConfigs {
     }
 
     private static final String CONFIG = "59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy";
-    private static final ThreadSafeHttpConfig root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure(CONFIG);
+    private static final ThreadSafeHttpConfig root;
+
+    static {
+        root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure(CONFIG);
+        register(root, ifClassIsLoaded("org.cyberneko.html.parsers.SAXParser"),
+                 "text/html", NativeHandlers.Encoders::xml, Html::neckoParse);
+        register(root, ifClassIsLoaded("org.jsoup.Jsoup"),
+                 "text/html", Html::jsoupEncode, Html::jsoupParse);
+        register(root, ifClassIsLoaded("com.opencsv.CSVReader"),
+                 "text/csv", Csv.encode(), Csv.parse());
+        register(root, ifClassIsLoaded("com.opencsv.CSVReader"),
+                 "text/tab-separated-values", Csv.encode('\t'), Csv.parse('\t'));
+    }
 
     public static ChainedHttpConfig root() {
         return root;

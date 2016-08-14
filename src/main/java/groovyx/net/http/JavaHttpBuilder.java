@@ -109,7 +109,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
 
         private Object handleFromServer() {
-            final JavaFromServer fromServer = new JavaFromServer();
+            final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());
             try {
                 final Function<FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
                 final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
@@ -162,8 +162,10 @@ public class JavaHttpBuilder extends HttpBuilder {
             private InputStream is;
             private boolean hasBody;
             private List<Header> headers;
+            private URI uri;
             
-            public JavaFromServer() {
+            public JavaFromServer(final URI originalUri) {
+                this.uri = originalUri;
                 //TODO: detect non success and read from error stream instead
                 try {
                     headers = populateHeaders();
@@ -239,6 +241,10 @@ public class JavaHttpBuilder extends HttpBuilder {
             
             public boolean getHasBody() {
                 return hasBody;
+            }
+
+            public URI getUri() {
+                return uri;
             }
             
             public void finish() {

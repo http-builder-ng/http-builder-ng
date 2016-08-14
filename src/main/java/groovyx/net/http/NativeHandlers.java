@@ -275,7 +275,7 @@ public class NativeHandlers {
          * {@link Catalog} class is technically not thread-safe, but as long as you
          * do not parse catalog files while using the resolver, it should be fine.
          */
-        protected static CatalogResolver catalogResolver;
+        public static CatalogResolver catalogResolver;
         
         static {
             CatalogManager catalogManager = new CatalogManager();
@@ -375,22 +375,6 @@ public class NativeHandlers {
          */
         public static Map<String,List<String>> form(final FromServer fromServer) {
             return Form.decode(fromServer.getInputStream(), fromServer.getCharset());
-        }
-
-        /**
-         * Standard parser for html responses
-         * @param fromServer Backend indenpendent representation of data returned from http server
-         * @return Body of response
-         */
-        public static GPathResult html(final FromServer fromServer) {
-            try {
-                final XMLReader p = new org.cyberneko.html.parsers.SAXParser();
-                p.setEntityResolver(catalogResolver);
-                return new XmlSlurper(p).parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
-            }
-            catch(IOException | SAXException ex) {
-                throw new RuntimeException(ex);
-            }
         }
 
         /**
