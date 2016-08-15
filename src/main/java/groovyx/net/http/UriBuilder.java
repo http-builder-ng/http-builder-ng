@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import static groovyx.net.http.Traverser.*;
 import org.codehaus.groovy.runtime.GStringImpl;

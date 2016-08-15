@@ -9,67 +9,92 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import static groovyx.net.http.NativeHandlers.Encoders.*;
 
 public class Csv {
 
-    public static final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> csvEncoderSupplier = Csv::encode;
-    public static final Supplier<Function<FromServer,Object>> csvParserSupplier = Csv::parse;
+    public static final Supplier<BiConsumer<ChainedHttpConfig,ToServer>> encoderSupplier = () -> Csv::encode;
+    public static final Supplier<BiFunction<ChainedHttpConfig,FromServer,Object>> parserSupplier = () -> Csv::parse;
+    
+    public static class Context {
 
-    public static final Supplier<BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer>> tsvEncoderSupplier = () -> Csv.encode('\t');
-    public static final Supplier<Function<FromServer,Object>> tsvParserSupplier = () -> Csv.parse('\t');
+        public static final String ID = "3DOJ0FPjyD4GwLmpMjrCYnNJK60=";
+        public static Context DEFAULT_CSV = new Context(',');
+        public static Context DEFAULT_TSV = new Context('\t');
+        
+        private final Character separator;
+        private final Character quoteChar;
 
-    public static Function<FromServer,Object> parse(final Function<Reader,CSVReader> csvReaderMaker) {
-        return (fromServer) -> {
-            try {
-                return csvReaderMaker.apply(fromServer.getReader()).readAll();
+        public Context(final Character separator) {
+            this(separator, null);
+        }
+        
+        public Context(final Character separator, final Character quoteChar) {
+            this.separator = separator;
+            this.quoteChar = quoteChar;
+        }
+
+        public char getSeparator() {
+            return separator;
+        }
+
+        public boolean hasQuoteChar() {
+            return quoteChar != null;
+        }
+        
+        public char getQuoteChar() {
+            return quoteChar;
+        }
+
+        private CSVReader makeReader(final Reader reader) {
+            if(hasQuoteChar()) {
+                return new CSVReader(reader, separator, quoteChar);
             }
-            catch(IOException e) {
-                throw new RuntimeException(e);
+            else {
+                return new CSVReader(reader, separator);
             }
-        };
-    }
+        }
 
-    public static Function<FromServer,Object> parse() {
-        return parse((r) -> new CSVReader(r));
-    }
-
-    public static Function<FromServer,Object> parse(final char separator) {
-        return parse((r) -> new CSVReader(r, separator));
-    }
-
-    public static Function<FromServer,Object> parse(final char separator, final char quoteChar) {
-        return parse((r) -> new CSVReader(r, separator, quoteChar));
-    }
-
-    public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final Function<Writer,CSVWriter> csvWriterMaker) {
-        return (request, ts) -> {
-            final Object body = checkNull(request.actualBody());
-            checkTypes(body, new Class[] { List.class });
-            final List<?> list = (List<?>) body;
-            final StringWriter writer = new StringWriter();
-            final CSVWriter csvWriter = csvWriterMaker.apply(writer);
-
-            for(Object o : list) {
-                final String[] line = (String[]) o;
-                csvWriter.writeNext((String[]) o);
+        private CSVWriter makeWriter(final Writer writer) {
+            if(hasQuoteChar()) {
+                return new CSVWriter(writer, separator, quoteChar);
             }
-            
-            stringToStream(writer.toString(), request.actualCharset());
-        };
+            else {
+                return new CSVWriter(writer, separator);
+            }
+        }
     }
 
-    public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode() {
-        return encode((w) -> new CSVWriter(w));
+    public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
+        try {
+            final Csv.Context ctx = (Csv.Context) config.actualContext(fromServer.getContentType(), Csv.Context.ID);
+            return ctx.makeReader(fromServer.getReader()).readAll();
+        }
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final char separator) {
-        return encode((w) -> new CSVWriter(w, separator));
-    }
+    public static void encode(final ChainedHttpConfig config, final ToServer ts) {
+        if(handleRawUpload(config, ts)) {
+            return;
+        }
 
-    public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final char separator, final char quoteChar) {
-        return encode((w) -> new CSVWriter(w, separator, quoteChar));
+        final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+        final Csv.Context ctx = (Csv.Context) config.actualContext(request.actualContentType(), Csv.Context.ID);
+        final Object body = checkNull(request.actualBody());
+        checkTypes(body, new Class[] { Iterable.class });
+        final StringWriter writer = new StringWriter();
+        final CSVWriter csvWriter = ctx.makeWriter(new StringWriter());
+
+        Iterable<Object> iterable = (Iterable) body;
+        for(Object o : iterable) {
+            csvWriter.writeNext((String[]) o);
+        }
+        
+        ts.toServer(stringToStream(writer.toString(), request.actualCharset()));
     }
 }

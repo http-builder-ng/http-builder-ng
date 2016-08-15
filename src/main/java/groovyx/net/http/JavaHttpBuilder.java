@@ -1,12 +1,9 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
-import groovyx.net.http.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -16,14 +13,13 @@ import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 import javax.net.ssl.HttpsURLConnection;
@@ -104,17 +100,17 @@ public class JavaHttpBuilder extends HttpBuilder {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             final Object body = cr.actualBody();
             if(body != null) {
-                requestConfig.findEncoder().accept(cr, new JavaToServer());
+                requestConfig.findEncoder().accept(requestConfig, new JavaToServer());
             }
         }
 
         private Object handleFromServer() {
             final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());
             try {
-                final Function<FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
+                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
                 final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
                 if(fromServer.getHasBody()) {
-                    final Object o = parser.apply(fromServer);
+                    final Object o = parser.apply(requestConfig, fromServer);
                     return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));
                 }
                 else {

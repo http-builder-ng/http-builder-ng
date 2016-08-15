@@ -2,7 +2,6 @@ package groovyx.net.http.optional;
 
 import groovyx.net.http.*;
 import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.HttpEntity;
@@ -159,10 +158,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
         public Object handleResponse(final HttpResponse response) {
             final ApacheFromServer fromServer = new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response);
             try {
-                final Function<FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
+                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
                 final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
                 if(fromServer.getHasBody()) {
-                    final Object o = parser.apply(fromServer);
+                    final Object o = parser.apply(requestConfig, fromServer);
                     return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));
                 }
                 else {
@@ -272,7 +271,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     private HttpEntity entity(final ChainedHttpConfig config) {
         final ApacheToServer ats = new ApacheToServer(config.findContentType());
-        config.findEncoder().accept(config.getChainedRequest(), ats);
+        config.findEncoder().accept(config, ats);
         return ats;
     }
 

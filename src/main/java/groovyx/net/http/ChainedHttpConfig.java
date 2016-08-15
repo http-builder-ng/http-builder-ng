@@ -1,10 +1,11 @@
 package groovyx.net.http;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import static groovyx.net.http.Traverser.*;
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap;
 import java.nio.charset.Charset;
 import groovy.lang.Closure;
 import java.util.function.BiConsumer;
@@ -16,7 +17,7 @@ public interface ChainedHttpConfig extends HttpConfig {
         List<Cookie> getCookies();
         Object getBody();
         String getContentType();
-        Map<String,BiConsumer<ChainedRequest,ToServer>> getEncoderMap();
+        Map<String,BiConsumer<ChainedHttpConfig,ToServer>> getEncoderMap();
         Charset getCharset();
 
         default Charset actualCharset() {
@@ -37,13 +38,8 @@ public interface ChainedHttpConfig extends HttpConfig {
             return map;
         }
 
-        default BiConsumer<ChainedRequest,ToServer> actualEncoder(final String contentType) {
-            if(NativeHandlers.Encoders.rawUpload(this)) {
-                return NativeHandlers.Encoders::handleRawUpload;
-            }
-            else {
-                return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
-            }
+        default BiConsumer<ChainedHttpConfig,ToServer> actualEncoder(final String contentType) {
+            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
         }
 
         default Auth actualAuth() {
@@ -65,22 +61,29 @@ public interface ChainedHttpConfig extends HttpConfig {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
         
-        default Function<FromServer,Object> actualParser(final String contentType) {
+        default BiFunction<ChainedHttpConfig,FromServer,Object> actualParser(final String contentType) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.parser(contentType), Traverser::notNull);
         }
+    }
+
+    Map<Map.Entry<String,Object>,Object> getContextMap();
+    
+    default Object actualContext(final String contentType, final Object id) {
+        final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry(contentType, id);
+        return traverse(this, (config) -> config.getParent(), (config) -> getContextMap().get(key), Traverser::notNull);
     }
 
     ChainedResponse getChainedResponse();
     ChainedRequest getChainedRequest();
     ChainedHttpConfig getParent();
 
-    default Function<FromServer,Object> findParser(final String contentType) {
-        final Function<FromServer,Object> found = getChainedResponse().actualParser(contentType);
+    default BiFunction<ChainedHttpConfig,FromServer,Object> findParser(final String contentType) {
+        final BiFunction<ChainedHttpConfig,FromServer,Object> found = getChainedResponse().actualParser(contentType);
         return found == null ? NativeHandlers.Parsers::streamToBytes : found;
     }
     
-    default BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> findEncoder() {
-        final BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder = getChainedRequest().actualEncoder(findContentType());
+    default BiConsumer<ChainedHttpConfig,ToServer> findEncoder() {
+        final BiConsumer<ChainedHttpConfig,ToServer> encoder = getChainedRequest().actualEncoder(findContentType());
         if(encoder == null) {
             throw new IllegalStateException("Did not find encoder");
         }

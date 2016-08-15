@@ -2,7 +2,7 @@ package groovyx.net.http;
 
 import spock.lang.*
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -11,7 +11,7 @@ class HttpConfigTest extends Specification {
     def "Basic Config"() {
         setup:
         BiConsumer jsonEncoder = NativeHandlers.Encoders.&json;
-        Function jsonParser = NativeHandlers.Parsers.&json;
+        BiFunction jsonParser = NativeHandlers.Parsers.&json;
 
         HttpConfig http = HttpConfigs.threadSafe().config {
             request.charset = StandardCharsets.UTF_8;
@@ -33,7 +33,7 @@ class HttpConfigTest extends Specification {
     def Chaining() {
         setup:
         BiConsumer xmlEncoder = NativeHandlers.Encoders.&xml;
-        Function xmlParser = NativeHandlers.Parsers.&xml;
+        BiFunction xmlParser = NativeHandlers.Parsers.&xml;
         Closure success = { res, o -> println(o); }
         Closure failure = { res -> println("failed"); }
         Closure on404 = { res -> println('why u 404?'); }

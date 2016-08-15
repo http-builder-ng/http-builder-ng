@@ -220,7 +220,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Custom Parser"() {
         setup:
-        def newParser = { fromServer -> Parsers.textToString(fromServer).readLines(); };
+        def newParser = { config, fromServer -> Parsers.textToString(config, fromServer).readLines(); };
         expect:
         httpBin.get {
             request.uri.path = '/stream/25'
@@ -296,8 +296,10 @@ class HttpBuilderTest extends Specification {
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
-            request.encoder(['text/json', 'application/json'], Jackson.encode(objectMapper));
-            response.parser(['text/json', 'application/json'], Jackson.parse(objectMapper, Map));
+            context(accept, Jackson.OBJECT_MAPPER_ID, objectMapper);
+            context(accept, Jackson.RESPONSE_TYPE, Map);
+            request.encoder(accept, Jackson.&encode);
+            response.parser(accept, Jackson.&parse);
 
         }.with {
             (it instanceof Map &&

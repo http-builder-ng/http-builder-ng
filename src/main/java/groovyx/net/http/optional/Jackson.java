@@ -1,35 +1,44 @@
 package groovyx.net.http.optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.BiConsumer;
 import groovyx.net.http.*;
 import java.io.StringWriter;
 import java.io.IOException;
+import static groovyx.net.http.NativeHandlers.Encoders.handleRawUpload;
 
 public class Jackson {
 
-    public static <T> Function<FromServer,Object> parse(final ObjectMapper mapper, final Class<T> type) {
-        return (fromServer) -> {
-            try {
-                return mapper.readValue(fromServer.getReader(), type);
-            }
-            catch(IOException e) {
-                throw new RuntimeException(e);
-            }
-        };
+    public static final String OBJECT_MAPPER_ID = "0w4XJJnlTNK8dvISuCDTlsusPQE=";
+    public static final String RESPONSE_TYPE = "GWW35uTkrHwonPt5odeUqBdR3EU=";
+
+    public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
+        try {
+            final ObjectMapper mapper = (ObjectMapper) config.actualContext(fromServer.getContentType(), OBJECT_MAPPER_ID);
+            final Class type = (Class) config.actualContext(fromServer.getContentType(), RESPONSE_TYPE);
+            return mapper.readValue(fromServer.getReader(), type);
+        }
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encode(final ObjectMapper mapper) {
-        return (request, ts) -> {
-            try {
-                final StringWriter writer = new StringWriter();
-                mapper.writeValue(writer, request.actualBody());
-                ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));
+    public static void encode(final ChainedHttpConfig config, final ToServer ts) {
+        try {
+            if(handleRawUpload(config, ts)) {
+                return;
             }
-            catch(IOException e) {
-                throw new RuntimeException(e);
-            }
-        };
+
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+            final ObjectMapper mapper = (ObjectMapper) config.actualContext(request.actualContentType(), OBJECT_MAPPER_ID);
+            final Class type = (Class) config.actualContext(request.actualContentType(), RESPONSE_TYPE);
+            final StringWriter writer = new StringWriter();
+            mapper.writeValue(writer, request.actualBody());
+            ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));
+        }
+        catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

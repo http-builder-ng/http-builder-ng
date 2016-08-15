@@ -108,4 +108,8 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
     public Execution getExecution() {
         return exec;
     }
+
+    public void context(final String contentType, final Object id, final Object obj) {
+        config.context(contentType, id, obj);
+    }
 }

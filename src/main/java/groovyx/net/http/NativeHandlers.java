@@ -1,6 +1,5 @@
 package groovyx.net.http;
 
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper;
@@ -27,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
@@ -35,7 +34,6 @@ import org.apache.xml.resolver.tools.CatalogResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 public class NativeHandlers {
 
@@ -121,29 +119,34 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
-        public static boolean rawUpload(final ChainedHttpConfig.ChainedRequest request) {
-            final Object body = request.actualBody();
-            return (body instanceof File ||
-                    body instanceof InputStream ||
-                    body instanceof Reader);
+        private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
+            return new ReaderInputStream(r, cs);
         }
 
-        public static void handleRawUpload(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+        public static InputStream stringToStream(final String s, final Charset cs) {
+            return new CharSequenceInputStream(s, cs);
+        }
+
+        public static boolean handleRawUpload(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
             final Object body = request.actualBody();
             final Charset charset = request.actualCharset();
             
             try {
                 if(body instanceof File) {
                     ts.toServer(new FileInputStream((File) body));
+                    return true;
                 }
                 else if(body instanceof InputStream) {
                     ts.toServer((InputStream) body);
+                    return true;
                 }
                 else if(body instanceof Reader) {
                     ts.toServer(new ReaderInputStream((Reader) body, charset));
+                    return true;
                 }
                 else {
-                    throw new IllegalArgumentException("type not supported by raw upload handler");
+                    return false;
                 }
             }
             catch(IOException e) {
@@ -158,8 +161,13 @@ public class NativeHandlers {
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-        public static void binary(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+        public static void binary(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
             final Object body = checkNull(request.actualBody());
+            if(handleRawUpload(config, ts)) {
+                return;
+            }
+            
             checkTypes(body, BINARY_TYPES);
             
             if(body instanceof byte[]) {
@@ -172,20 +180,17 @@ public class NativeHandlers {
 
         private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
         
-        private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
-            return new ReaderInputStream(r, cs);
-        }
-
-        public static InputStream stringToStream(final String s, final Charset cs) {
-            return new CharSequenceInputStream(s, cs);
-        }
-
         /**
          * Standard encoder for text types. Accepts String and Reader types
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-        public static void text(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) throws IOException {
+        public static void text(final ChainedHttpConfig config, final ToServer ts) throws IOException {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+            if(handleRawUpload(config, ts)) {
+                return;
+            }
+            
             final Object body = checkNull(request.actualBody());
             checkTypes(body, TEXT_TYPES);
             ts.toServer(stringToStream(body.toString(), request.actualCharset()));
@@ -202,7 +207,12 @@ public class NativeHandlers {
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-        public static void form(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+        public static void form(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+            if(handleRawUpload(config, ts)) {
+                return;
+            }
+            
             final Object body = checkNull(request.actualBody());
             checkTypes(body, FORM_TYPES);
 
@@ -230,7 +240,12 @@ public class NativeHandlers {
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-        public static void xml(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+        public static void xml(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+            if(handleRawUpload(config, ts)) {
+                return;
+            }
+            
             final Object body = checkNull(request.actualBody());
             checkTypes(body, XML_TYPES);
 
@@ -255,7 +270,12 @@ public class NativeHandlers {
          * @param request Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
-        public static void json(final ChainedHttpConfig.ChainedRequest request, final ToServer ts) {
+        public static void json(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+            if(handleRawUpload(config, ts)) {
+                return;
+            }
+            
             final Object body = checkNull(request.actualBody());
             final String json = ((body instanceof String || body instanceof GString)
                                  ? body.toString()
@@ -322,8 +342,8 @@ public class NativeHandlers {
          * @param file Download target file
          * @return A parser function which will download the body to the passed file
          */
-        public static Function<FromServer,Object> download(final File file) {
-            return (fs) -> {
+        public static BiFunction<ChainedHttpConfig,FromServer,Object> download(final File file) {
+            return (config, fs) -> {
                 try {
                     transfer(fs.getInputStream(), new FileOutputStream(file), true);
                     return file;
@@ -339,7 +359,7 @@ public class NativeHandlers {
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Raw bytes of body returned from http server
          */
-        public static byte[] streamToBytes(final FromServer fromServer) {
+        public static byte[] streamToBytes(final ChainedHttpConfig config, final FromServer fromServer) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             transfer(fromServer.getInputStream(), baos, true);
             return baos.toByteArray();
@@ -350,7 +370,7 @@ public class NativeHandlers {
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Body of response
          */
-        public static String textToString(final FromServer fromServer) {
+        public static String textToString(final ChainedHttpConfig config, final FromServer fromServer) {
             try {
                 final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());
                 final Expanding e = tlExpanding.get();
@@ -373,7 +393,7 @@ public class NativeHandlers {
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Form data
          */
-        public static Map<String,List<String>> form(final FromServer fromServer) {
+        public static Map<String,List<String>> form(final ChainedHttpConfig config, final FromServer fromServer) {
             return Form.decode(fromServer.getInputStream(), fromServer.getCharset());
         }
 
@@ -382,7 +402,7 @@ public class NativeHandlers {
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Body of response
          */
-        public static GPathResult xml(final FromServer fromServer) {
+        public static GPathResult xml(final ChainedHttpConfig config, final FromServer fromServer) {
             try {
                 final XmlSlurper xml = new XmlSlurper();
                 xml.setEntityResolver(catalogResolver);
@@ -400,7 +420,7 @@ public class NativeHandlers {
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Body of response
          */
-        public static Object json(final FromServer fromServer) {
+        public static Object json(final ChainedHttpConfig config, final FromServer fromServer) {
             return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
         }
     }

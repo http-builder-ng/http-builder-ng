@@ -5,12 +5,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public interface HttpConfig {
 
@@ -59,9 +58,9 @@ public interface HttpConfig {
         
         void cookie(String name, String value, Date expires);
 
-        void encoder(String contentType, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
-        void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> val);
-        BiConsumer<ChainedHttpConfig.ChainedRequest,ToServer> encoder(String contentType);
+        void encoder(String contentType, BiConsumer<ChainedHttpConfig,ToServer> val);
+        void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig,ToServer> val);
+        BiConsumer<ChainedHttpConfig,ToServer> encoder(String contentType);
     }
     
     interface Response {
@@ -73,11 +72,19 @@ public interface HttpConfig {
         void success(Closure<Object> closure);
         void failure(Closure<Object> closure);
 
-        void parser(String contentType, Function<FromServer,Object> val);
-        void parser(List<String> contentTypes, Function<FromServer,Object> val);
-        Function<FromServer,Object> parser(String contentType);
+        void parser(String contentType, BiFunction<ChainedHttpConfig,FromServer,Object> val);
+        void parser(List<String> contentTypes, BiFunction<ChainedHttpConfig,FromServer,Object> val);
+        BiFunction<ChainedHttpConfig,FromServer,Object> parser(String contentType);
     }
 
+    void context(String contentType, Object id, Object obj);
+    
+    default void context(final List<String> contentTypes, final Object id, final Object obj) {
+        for(String contentType : contentTypes) {
+            context(contentType, id, obj);
+        }
+    }
+    
     Request getRequest();
     Response getResponse();
 }
