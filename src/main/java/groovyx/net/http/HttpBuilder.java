@@ -41,6 +41,14 @@ public abstract class HttpBuilder implements Closeable {
         closure.call();
         return factory.apply(impl);
     }
+    
+    private ChainedHttpConfig configureRequest(final Closure closure) {
+        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
+        closure.setDelegate(myConfig);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return myConfig;
+    }
 
     private final EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> interceptors;
     
@@ -147,14 +155,6 @@ public abstract class HttpBuilder implements Closeable {
     
     public <T> CompletableFuture<T> deleteAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> delete(type, closure), getExecutor());
-    }
-
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
-        closure.setDelegate(myConfig);
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
-        return myConfig;
     }
 
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {

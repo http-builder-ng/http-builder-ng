@@ -1,5 +1,6 @@
 package groovyx.net.http;
 
+import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import static groovyx.net.http.Traverser.*;
@@ -39,7 +40,17 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
 
         default BiConsumer<ChainedHttpConfig,ToServer> actualEncoder(final String contentType) {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.encoder(contentType), Traverser::notNull);
+            final Function<ChainedRequest, BiConsumer<ChainedHttpConfig,ToServer>> theValue = (cr) -> {
+                BiConsumer<ChainedHttpConfig,ToServer> ret = cr.encoder(contentType);
+                if(ret != null) {
+                    return ret;
+                }
+                else {
+                    return cr.encoder(ContentTypes.ANY.get(0));
+                }
+            };
+            
+            return traverse(this, (cr) -> cr.getParent(), theValue, Traverser::notNull);
         }
 
         default Auth actualAuth() {
@@ -62,7 +73,17 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
         
         default BiFunction<ChainedHttpConfig,FromServer,Object> actualParser(final String contentType) {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.parser(contentType), Traverser::notNull);
+            final Function<ChainedResponse, BiFunction<ChainedHttpConfig,FromServer,Object>> theValue = (cr) -> {
+                BiFunction<ChainedHttpConfig,FromServer,Object> ret = cr.parser(contentType);
+                if(ret != null) {
+                    return ret;
+                }
+                else {
+                    return cr.parser(ContentTypes.ANY.get(0));
+                }
+            };
+
+            return traverse(this, (cr) -> cr.getParent(), theValue, Traverser::notNull);
         }
     }
 
@@ -70,7 +91,19 @@ public interface ChainedHttpConfig extends HttpConfig {
     
     default Object actualContext(final String contentType, final Object id) {
         final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry(contentType, id);
-        return traverse(this, (config) -> config.getParent(), (config) -> getContextMap().get(key), Traverser::notNull);
+        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.get(0), id);
+        
+        final Function<ChainedHttpConfig,Object> theValue = (config) -> {
+            Object ctx = config.getContextMap().get(key);
+            if(ctx != null) {
+                return ctx;
+            }
+            else {
+                return config.getContextMap().get(anyKey);
+            }
+        };
+        
+        return traverse(this, (config) -> config.getParent(), theValue, Traverser::notNull);
     }
 
     ChainedResponse getChainedResponse();

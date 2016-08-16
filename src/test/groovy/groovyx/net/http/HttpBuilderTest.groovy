@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.json.JsonSlurper;
 import groovyx.net.http.optional.ApacheHttpBuilder;
 import groovyx.net.http.optional.Jackson;
+import static groovyx.net.http.optional.Download.toTempFile;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import spock.lang.*
 import static groovyx.net.http.NativeHandlers.*;
-import static groovyx.net.http.NativeHandlers.Parsers.download;
 
 class HttpBuilderTest extends Specification {
 
@@ -242,11 +242,7 @@ class HttpBuilderTest extends Specification {
 
     def "Download"() {
         setup:
-        def file = File.createTempFile("tmp", ".html");
-
-        google.get {
-            response.parser 'text/html', download(file)
-        }
+        def file = google.get { toTempFile(delegate); };
 
         expect:
         file.length() > 0;

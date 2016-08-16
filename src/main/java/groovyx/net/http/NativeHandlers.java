@@ -338,23 +338,6 @@ public class NativeHandlers {
         }
 
         /**
-         * Generates a parser which downloads the http body to the passed file
-         * @param file Download target file
-         * @return A parser function which will download the body to the passed file
-         */
-        public static BiFunction<ChainedHttpConfig,FromServer,Object> download(final File file) {
-            return (config, fs) -> {
-                try {
-                    transfer(fs.getInputStream(), new FileOutputStream(file), true);
-                    return file;
-                }
-                catch(FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
-
-        /**
          * Standard parser for raw bytes
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Raw bytes of body returned from http server
