@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.json.JsonSlurper;
 import groovyx.net.http.optional.Jackson;
 import static groovyx.net.http.optional.Download.toTempFile;
+import static groovyx.net.http.optional.Csv.toCsv;
 import java.util.concurrent.Executors;
 import java.util.function.Function
 import spock.lang.*
@@ -291,11 +292,8 @@ class JavaHttpBuilderTest extends Specification {
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
-            context(accept, Jackson.OBJECT_MAPPER_ID, objectMapper);
-            context(accept, Jackson.RESPONSE_TYPE, Map);
-            request.encoder(accept, Jackson.&encode);
-            response.parser(accept, Jackson.&parse);
-
+            Jackson.mapper(delegate, objectMapper);
+            Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
              headers.Accept.split(';') as List<String> == accept && 
@@ -303,4 +301,18 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
+        def "Robots.txt as CSV"() {
+        setup:
+        List<String[]> result = httpBin.get {
+            request.uri.path = '/robots.txt'
+            toCsv(delegate, 'text/plain', ':' as Character, null)
+        }
+
+        expect:
+        result.size() == 2
+        result[0][0] == 'User-agent'
+        result[0][1].trim() == '*'
+        result[1][0] == 'Disallow'
+        result[1][1].trim() == '/deny'
+    }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import spock.lang.*
 import static groovyx.net.http.NativeHandlers.*;
+import static groovyx.net.http.optional.Csv.toCsv;
 
 class HttpBuilderTest extends Specification {
 
@@ -292,15 +293,27 @@ class HttpBuilderTest extends Specification {
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
-            context(accept, Jackson.OBJECT_MAPPER_ID, objectMapper);
-            context(accept, Jackson.RESPONSE_TYPE, Map);
-            request.encoder(accept, Jackson.&encode);
-            response.parser(accept, Jackson.&parse);
-
+            Jackson.mapper(delegate, objectMapper);
+            Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
              headers.Accept.split(';') as List<String> == accept && 
              new JsonSlurper().parseText(data) == toSend);
         }
+    }
+
+    def "Robots.txt as CSV"() {
+        setup:
+        List<String[]> result = httpBin.get {
+            request.uri.path = '/robots.txt'
+            toCsv(delegate, 'text/plain', ':' as Character, null)
+        }
+
+        expect:
+        result.size() == 2
+        result[0][0] == 'User-agent'
+        result[0][1].trim() == '*'
+        result[1][0] == 'Disallow'
+        result[1][1].trim() == '/deny'
     }
 }

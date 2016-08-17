@@ -41,4 +41,18 @@ public class Jackson {
             throw new RuntimeException(e);
         }
     }
+
+    public static void mapper(final HttpConfig config, final ObjectMapper mapper) {
+        config.context(ContentTypes.JSON, OBJECT_MAPPER_ID, mapper);
+    }
+
+    public static void use(final HttpConfig config) {
+        config.getRequest().encoder(ContentTypes.JSON, Jackson::encode);
+        config.getResponse().parser(ContentTypes.JSON, Jackson::parse);
+    }
+    
+    public static void toType(final HttpConfig config, final Class type) {
+        use(config);
+        config.context(ContentTypes.JSON, RESPONSE_TYPE, type);
+    }
 }

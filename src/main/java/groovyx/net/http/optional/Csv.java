@@ -97,4 +97,23 @@ public class Csv {
         
         ts.toServer(stringToStream(writer.toString(), request.actualCharset()));
     }
+
+    public static void toCsv(final HttpConfig delegate, final String contentType,
+                             final Character separator, final Character quote) {
+        delegate.context(contentType, Context.ID, new Context(separator, quote));
+        delegate.getRequest().encoder(contentType, Csv::encode);
+        delegate.getResponse().parser(contentType, Csv::parse);
+    }
+    
+    public static void toCsv(final HttpConfig delegate, final char separator) {
+        toCsv(delegate, "text/csv", separator, null);
+    }
+
+    public static void toCsv(final HttpConfig delegate, final char separator, final char quote) {
+        toCsv(delegate, "text/csv", separator, quote);
+    }
+
+    public static void toTsv(final HttpConfig delegate, final char quote) {
+        toCsv(delegate, "text/tab-separated-values", '\t', quote);
+    }
 }
