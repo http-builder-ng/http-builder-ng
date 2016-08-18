@@ -1,12 +1,10 @@
 plugins {
     id 'com.jfrog.bintray' version '1.7'
+    id "com.github.hierynomus.license" version "0.13.1"
+    id 'groovy'
+    id 'maven'
+    id 'maven-publish'
 }
-
-
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'groovy'
 
 sourceCompatibility = 8
 targetCompatibility = 8
@@ -38,7 +36,6 @@ dependencies {
     }
     
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
-    
 }
 
 javadoc {
@@ -91,4 +88,16 @@ bintray {
             vcsUrl = 'https://github.com/dwclark/http-builder-ng'
         }
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}
+
+license {
+    header rootProject.file('license_header.txt')
+    ext.name = 'David Clark'
+    ext.year = Calendar.instance.get(Calendar.YEAR)
+
+    excludes(['**/*.txt'])
 }

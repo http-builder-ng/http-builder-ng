@@ -29,11 +29,26 @@ httpBin.post {
 
 Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
+## Artifacts
+
+Http Builder NG artifacts are available on [Bintay](https://bintray.com/davidwclark/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
+
+    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.12'
+    
+For Maven, add the following to your `pom.xml` file:
+
+    <dependency>
+      <groupId>org.codehaus.groovy.modules</groupId>
+      <artifactId>http-builder-ng</artifactId>
+      <version>0.9.12</version>
+      <type>pom</type>
+    </dependency>
+
 ## Build Instructions
 
 Http Builder NG is built using [gradle](https://gradle.org). To perform a complete build and install it locally use the following incantation:
 
-`$ gradle clean build install`
+`$ ./gradlew clean build install`
 
 ## History
 
