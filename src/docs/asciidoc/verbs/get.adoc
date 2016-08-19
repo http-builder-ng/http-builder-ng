@@ -1,0 +1,20 @@
+=== GET
+
+> TBD: detailed discussion...
+
+[source,groovy]
+----
+google.get {
+    response.parser 'text/html', Parsers.&textToString
+}
+----
+
+> TBD: detailed discussion...
+
+[source,groovy]
+----
+google.get(String){
+    response.parser 'text/html', Parsers.&textToString
+    request.uri.query = [ q: 'Big Bird' ]
+}
+----

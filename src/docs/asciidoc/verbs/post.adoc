@@ -1,0 +1,42 @@
+=== POST
+
+[source,groovy]
+----
+httpBin.post {
+    request.uri.path = '/post'
+    request.body = [ foo: 'my foo', bar: 'my bar' ];
+    request.contentType = 'application/x-www-form-urlencoded';
+}
+----
+
+
+[source,groovy]
+----
+def http = HttpBuilder.configure(apacheBuilder) {
+    request.uri = 'http://httpbin.org/post'
+    request.body = [ foo: 'my foo', bar: 'my bar' ];
+    request.contentType = 'application/x-www-form-urlencoded';
+}.post()
+----
+
+
+[source,groovy]
+----
+httpBin.post {
+    request.uri.path = '/post'
+    request.uri.query = [ one: '1', two: '2' ];
+    request.accept = [ 'application/json','application/javascript','text/javascript' ];
+    request.body = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
+    request.contentType = 'application/json';
+}
+----
+
+
+[source,groovy]
+----
+httpBin.post {
+    request.uri.path = '/post'
+    request.contentType = 'application/json';
+    request.headers = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
+}
+----

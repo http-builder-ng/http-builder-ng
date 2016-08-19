@@ -25,6 +25,10 @@ import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.EnumMap;
 
+/**
+ * The <code>HttpBuilder</code> class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and
+ * the HTTP verbs to be executed.
+ */
 public abstract class HttpBuilder implements Closeable {
 
     private static volatile Function<HttpObjectConfig, ? extends HttpBuilder> factory = JavaHttpBuilder::new;

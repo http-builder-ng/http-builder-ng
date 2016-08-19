@@ -26,14 +26,45 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
+/**
+ * Provides the public interface used for configuring the HTTP Builder NG client.
+ */
 public interface HttpConfig {
 
+    /**
+     * Defines the allowed values of the response status.
+     */
     enum Status { SUCCESS, FAILURE };
+
+    /**
+     * Defines the allowed values of the HTTP authentication type.
+     */
     enum AuthType { BASIC, DIGEST };
 
+    /**
+     *  Defines the accessible HTTP authentication information.
+     */
     interface Auth {
+
+        /**
+         * Retrieve the authentication type for the request.
+         *
+         * @return the AuthType for the Request
+         */
         AuthType getAuthType();
+
+        /**
+         * Retrieve the user information from the request.
+         *
+         * @return the user information
+         */
         String getUser();
+
+        /**
+         * Retrieve the password information from the request.
+         *
+         * @return the password information
+         */
         String getPassword();
 
         default void basic(String user, String password) {
@@ -49,6 +80,9 @@ public interface HttpConfig {
         void digest(String user, String password, boolean preemptive);
     }
 
+    /**
+     * Defines the accessible HTTP request information.
+     */
     interface Request {
         Auth getAuth();
         void setContentType(String val);
@@ -77,7 +111,10 @@ public interface HttpConfig {
         void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig,ToServer> val);
         BiConsumer<ChainedHttpConfig,ToServer> encoder(String contentType);
     }
-    
+
+    /**
+     * Defines the accessible HTTP response information.
+     */
     interface Response {
         void when(Status status, Closure<Object> closure);
         void when(Integer code, Closure<Object> closure);
@@ -99,7 +136,18 @@ public interface HttpConfig {
             context(contentType, id, obj);
         }
     }
-    
+
+    /**
+     * Used to retrieve information about the HTTP request.
+     *
+     * @return the HTTP request
+     */
     Request getRequest();
+
+    /**
+     * Used to retrieve information about the HTTP response.
+     *
+     * @return the HTTP response
+     */
     Response getResponse();
 }
