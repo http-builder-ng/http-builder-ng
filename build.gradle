@@ -4,6 +4,7 @@ plugins {
     id 'groovy'
     id 'maven'
     id 'maven-publish'
+    id 'jacoco'
 }
 
 sourceCompatibility = 8
@@ -96,7 +97,9 @@ task wrapper(type: Wrapper) {
 
 license {
     header rootProject.file('license_header.txt')
-    ignoreFailures false
+
+    // Toggle ignoreFailures to false to enable license-checking that will fail the build
+    ignoreFailures true
 
     ext.name = 'David Clark'
     ext.year = Calendar.instance.get(Calendar.YEAR)

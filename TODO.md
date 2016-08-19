@@ -1,8 +1,11 @@
-- add licensing plugin
-    - make sure license format runs on build so no annoying failure
-- add CI support
 - add simple site
+    - coverage info
+    - javadocs
+    - test report
 - javadoc 
 - examples and/or user guide
 - code quality analysis and reports
-- test coverage
+    - findbugs, pmd, ?
+    
+- add CI support
+    - need permissions to add build hooks
