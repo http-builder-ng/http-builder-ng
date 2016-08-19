@@ -96,8 +96,10 @@ task wrapper(type: Wrapper) {
 
 license {
     header rootProject.file('license_header.txt')
+    ignoreFailures false
+
     ext.name = 'David Clark'
     ext.year = Calendar.instance.get(Calendar.YEAR)
 
-    excludes(['**/*.txt'])
+    excludes(['**/*.txt','**/*.dtd','**/*.xml'])
 }

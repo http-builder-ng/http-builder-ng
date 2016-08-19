@@ -1,4 +1,3 @@
-- gradle wrapper
 - add licensing plugin
     - make sure license format runs on build so no annoying failure
 - add CI support
