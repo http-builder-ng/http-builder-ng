@@ -1,7 +1,6 @@
-- add simple site
-    - coverage info
-    - javadocs
-    - test report
+! converage images are missing
+! need permissions to add hooks for CI
+
 - javadoc 
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ChainedHttpConfig.java
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/FromServer.java
@@ -19,13 +18,6 @@
         
 - code quality analysis and reports
     - findbugs, pmd, ?
-    
-- add CI support
-    - need permissions to add build hooks
-
-- document
-    - how to gen docs
-    - how to gen site
     
 - roll simple server into a plugin
 

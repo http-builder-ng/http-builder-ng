@@ -1,5 +1,8 @@
 # Http Builder NG, The Easy Http Client for Groovy
 
+* Site: https://dwclark.github.io/http-builder-ng/
+* Project: https://github.com/dwclark/http-builder-ng
+
 ## Quick Overview
 
 Http Builder NG is a modern Groovy DSL for making http requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which version of Groovy you are using. The main goal of Http Builder NG is to allow you to make http requests in a natural and readable way. For example:
