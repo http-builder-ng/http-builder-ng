@@ -15,6 +15,7 @@ plugins {
     id 'maven'
     id 'maven-publish'
     id 'jacoco'
+    id "me.champeau.jbake" version "0.2"
 }
 
 apply plugin: 'org.asciidoctor.convert'
@@ -33,21 +34,21 @@ dependencies {
     //required
     compile('xml-resolver:xml-resolver:1.2')
     compile('org.slf4j:slf4j-api:1.7.21')
-    
+
     //optionals
-    def optionals = [ 'com.opencsv:opencsv:3.8',
-                      'org.apache.httpcomponents:httpclient:4.5.2',
-                      'oauth.signpost:signpost-commonshttp4:1.2.1.1',
-                      'oauth.signpost:signpost-core:1.2.1.1',
-                      'org.codehaus.groovy:groovy-all:2.4.6',
-                      'org.jsoup:jsoup:1.9.2',
-                      'net.sourceforge.nekohtml:nekohtml:1.9.22',
-                      'com.fasterxml.jackson.core:jackson-databind:2.8.1' ];
+    def optionals = ['com.opencsv:opencsv:3.8',
+                     'org.apache.httpcomponents:httpclient:4.5.2',
+                     'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+                     'oauth.signpost:signpost-core:1.2.1.1',
+                     'org.codehaus.groovy:groovy-all:2.4.6',
+                     'org.jsoup:jsoup:1.9.2',
+                     'net.sourceforge.nekohtml:nekohtml:1.9.22',
+                     'com.fasterxml.jackson.core:jackson-databind:2.8.1'];
 
     optionals.each { opt ->
         compileOnly(opt); testCompile(opt);
     }
-    
+
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
 }
 
@@ -86,12 +87,12 @@ bintray {
     def bintrayUser = project.hasProperty('user') ? project.property('user') : null;
     def bintrayKey = project.hasProperty('key') ? project.property('key') : null;
 
-    if(bintrayUser && bintrayKey) {
+    if (bintrayUser && bintrayKey) {
         user = bintrayUser
         key = bintrayKey
-        
+
         publications = ['mavenJava']
-        
+
         pkg {
             repo = 'dclark'
             name = 'http-builder-ng'
@@ -116,7 +117,7 @@ license {
     ext.name = 'David Clark'
     ext.year = Calendar.instance.get(Calendar.YEAR)
 
-    excludes(['**/*.txt','**/*.dtd','**/*.xml'])
+    excludes(['**/*.txt', '**/*.dtd', '**/*.xml'])
 }
 
 asciidoctor {
@@ -124,9 +125,22 @@ asciidoctor {
 
     backends = ['html5']
 
-    attributes 'source-highlighter'    : 'coderay',
-        'coderay-linenums-mode' : 'table',
-        icon                    : 'font',
-        linkattrs               : true,
-        encoding                : 'utf-8'
+    attributes 'source-highlighter': 'coderay',
+        'coderay-linenums-mode': 'table',
+        icon: 'font',
+        linkattrs: true,
+        encoding: 'utf-8'
+}
+
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'asciidoctor', 'jbake']) << {
+    logger.lifecycle 'Building documentation web site...'
+
+    ant.copy(todir: 'build/jbake') {
+        fileset(dir: 'build/docs', includes: '**/**')
+        fileset(dir: 'build/reports', includes: '**/**')
+    }
+
+    ant.copy(todir: 'build/jbake/guide') {
+        fileset(dir: 'build/asciidoc', includes: '**/**')
+    }
 }

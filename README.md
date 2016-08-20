@@ -50,6 +50,14 @@ Http Builder NG is built using [gradle](https://gradle.org). To perform a comple
 
 `$ ./gradlew clean build install`
 
+You can also generate the documentation using one of the following commands:
+
+    ./gradlew javadoc
+    ./gradlew asciidoctor
+    ./gradlew site
+
+which will generate the API Documentation, User Guide and Documentation web site respectively.
+
 ## History
 
 Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to Jason Gritman who maintained it for several years.

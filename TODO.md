@@ -27,3 +27,12 @@
     - how to gen docs
     - how to gen site
     
+- roll simple server into a plugin
+
+serve {
+    port 8080
+    contextPath '/'
+    resourceBase '.'
+    rootDir './build/jbake'
+}
+how to stop it
