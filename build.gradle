@@ -144,3 +144,8 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
         fileset(dir: 'build/asciidoc', includes: '**/**')
     }
 }
+
+task publishSite(type: GradleBuild, group:'Publishing', description: 'Publishes the documentation web site.') {
+    buildFile = 'publish.gradle'
+    tasks = ['publishGhPages']
+}

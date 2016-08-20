@@ -1,0 +1,21 @@
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.ajoberstar:gradle-git:1.0.0'
+    }
+}
+
+apply plugin: 'org.ajoberstar.github-pages'
+
+githubPages {
+    repoUri = 'git@github.com:dwclark/http-builder-ng'
+    pages {
+        from(file('build/jbake')) {
+            into '.'
+        }
+    }
+}
