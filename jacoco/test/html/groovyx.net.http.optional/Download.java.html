@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Download.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http.optional</a> &gt; <span class="el_source">Download.java</span></div><h1>Download.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http.optional;
+
+import groovyx.net.http.*;
+import static groovyx.net.http.NativeHandlers.Parsers.transfer;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+<span class="nc" id="L25">public class Download {</span>
+
+    public static final String ID = &quot;LdazOKMfPTGymyyz5eLb/djgY3A=&quot;;
+    
+    public static File fileParser(final ChainedHttpConfig config, final FromServer fs) {
+        try {
+<span class="fc" id="L31">            final File file = (File) config.actualContext(fs.getContentType(), ID);</span>
+<span class="fc" id="L32">            transfer(fs.getInputStream(), new FileOutputStream(file), true);</span>
+<span class="fc" id="L33">            return file;</span>
+        }
+<span class="nc" id="L35">        catch(IOException e) {</span>
+<span class="nc" id="L36">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    public static OutputStream streamParser(final ChainedHttpConfig config, final FromServer fs) {
+<span class="nc" id="L41">        final OutputStream ostream = (OutputStream) config.actualContext(fs.getContentType(), ID);</span>
+<span class="nc" id="L42">        transfer(fs.getInputStream(), ostream, false);</span>
+<span class="nc" id="L43">        return ostream;</span>
+    }
+
+    public static void toFile(final HttpConfig config, final String contentType, final File file) {
+<span class="fc" id="L47">        config.context(contentType, ID, file);</span>
+<span class="fc" id="L48">        config.getResponse().parser(contentType, Download::fileParser);</span>
+<span class="fc" id="L49">    }</span>
+
+    public static void toTempFile(final HttpConfig config, final String contentType) {
+        try {
+<span class="nc" id="L53">            toFile(config, contentType, File.createTempFile(&quot;tmp&quot;, &quot;.tmp&quot;));</span>
+        }
+<span class="nc" id="L55">        catch(IOException e) {</span>
+<span class="nc" id="L56">            throw new RuntimeException(e);</span>
+<span class="nc" id="L57">        }</span>
+<span class="nc" id="L58">    }</span>
+
+    public static void toFile(final HttpConfig config, final File file) {
+<span class="fc" id="L61">        toFile(config, ContentTypes.ANY.get(0), file);</span>
+<span class="fc" id="L62">    }</span>
+
+    public static void toTempFile(final HttpConfig config) {
+        try {
+<span class="fc" id="L66">            toFile(config, File.createTempFile(&quot;tmp&quot;, &quot;.tmp&quot;));</span>
+        }
+<span class="nc" id="L68">        catch(IOException e) {</span>
+<span class="nc" id="L69">            throw new RuntimeException(e);</span>
+<span class="fc" id="L70">        }</span>
+<span class="fc" id="L71">    }</span>
+
+    public static void toStream(final HttpConfig config, final String contentType, final OutputStream ostream) {
+<span class="nc" id="L74">        config.context(contentType, ID, ostream);</span>
+<span class="nc" id="L75">        config.getResponse().parser(contentType, Download::streamParser);</span>
+<span class="nc" id="L76">    }</span>
+
+    public static void toStream(final HttpConfig config, final OutputStream ostream) {
+<span class="nc" id="L79">        toStream(config, ContentTypes.ANY.get(0), ostream);</span>
+<span class="nc" id="L80">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

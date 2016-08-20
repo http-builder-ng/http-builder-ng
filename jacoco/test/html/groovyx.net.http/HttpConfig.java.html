@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>HttpConfig.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpConfig.java</span></div><h1>HttpConfig.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import groovy.lang.Closure;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+
+/**
+ * Provides the public interface used for configuring the HTTP Builder NG client.
+ */
+public interface HttpConfig {
+
+    /**
+     * Defines the allowed values of the response status.
+     */
+<span class="nc" id="L37">    enum Status { SUCCESS, FAILURE };</span>
+
+    /**
+     * Defines the allowed values of the HTTP authentication type.
+     */
+<span class="pc" id="L42">    enum AuthType { BASIC, DIGEST };</span>
+
+    /**
+     *  Defines the accessible HTTP authentication information.
+     */
+    interface Auth {
+
+        /**
+         * Retrieve the authentication type for the request.
+         *
+         * @return the AuthType for the Request
+         */
+        AuthType getAuthType();
+
+        /**
+         * Retrieve the user information from the request.
+         *
+         * @return the user information
+         */
+        String getUser();
+
+        /**
+         * Retrieve the password information from the request.
+         *
+         * @return the password information
+         */
+        String getPassword();
+
+        default void basic(String user, String password) {
+<span class="fc" id="L71">            basic(user, password, false);</span>
+<span class="fc" id="L72">        }</span>
+        
+        void basic(String user, String password, boolean preemptive);
+
+        default void digest(String user, String password) {
+<span class="fc" id="L77">            digest(user, password, false);</span>
+<span class="fc" id="L78">        }</span>
+        
+        void digest(String user, String password, boolean preemptive);
+    }
+
+    /**
+     * Defines the accessible HTTP request information.
+     */
+    interface Request {
+        Auth getAuth();
+        void setContentType(String val);
+        void setCharset(String val);
+        void setCharset(Charset val);
+        
+        UriBuilder getUri();
+        void setUri(String val) throws URISyntaxException;
+        void setUri(URI val);
+        void setUri(URL val) throws URISyntaxException;
+
+        Map&lt;String,String&gt; getHeaders();
+        void setHeaders(Map&lt;String,String&gt; toAdd);
+
+        void setAccept(String[] values);
+        void setAccept(List&lt;String&gt; values);
+        void setBody(Object val);
+
+        default void cookie(String name, String value) {
+<span class="fc" id="L105">            cookie(name, value, null);</span>
+<span class="fc" id="L106">        }</span>
+        
+        void cookie(String name, String value, Date expires);
+
+        void encoder(String contentType, BiConsumer&lt;ChainedHttpConfig,ToServer&gt; val);
+        void encoder(List&lt;String&gt; contentTypes, BiConsumer&lt;ChainedHttpConfig,ToServer&gt; val);
+        BiConsumer&lt;ChainedHttpConfig,ToServer&gt; encoder(String contentType);
+    }
+
+    /**
+     * Defines the accessible HTTP response information.
+     */
+    interface Response {
+        void when(Status status, Closure&lt;Object&gt; closure);
+        void when(Integer code, Closure&lt;Object&gt; closure);
+        void when(String code, Closure&lt;Object&gt; closure);
+        Closure&lt;Object&gt; when(Integer code);
+
+        void success(Closure&lt;Object&gt; closure);
+        void failure(Closure&lt;Object&gt; closure);
+
+        void parser(String contentType, BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; val);
+        void parser(List&lt;String&gt; contentTypes, BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; val);
+        BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; parser(String contentType);
+    }
+
+    void context(String contentType, Object id, Object obj);
+    
+    default void context(final List&lt;String&gt; contentTypes, final Object id, final Object obj) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        for(String contentType : contentTypes) {</span>
+<span class="fc" id="L136">            context(contentType, id, obj);</span>
+<span class="fc" id="L137">        }</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Used to retrieve information about the HTTP request.
+     *
+     * @return the HTTP request
+     */
+    Request getRequest();
+
+    /**
+     * Used to retrieve information about the HTTP response.
+     *
+     * @return the HTTP response
+     */
+    Response getResponse();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>HttpBuilder.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpBuilder.java</span></div><h1>HttpBuilder.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import org.codehaus.groovy.runtime.MethodClosure;
+import java.io.Closeable;
+import java.util.function.Function;
+import java.util.function.BiFunction;
+import java.util.EnumMap;
+
+/**
+ * The &lt;code&gt;HttpBuilder&lt;/code&gt; class is the main entry point into the &quot;Http Builder NG&quot; API. It provides access to the HTTP Client configuration and
+ * the HTTP verbs to be executed.
+ */
+public abstract class HttpBuilder implements Closeable {
+
+<span class="fc" id="L34">    private static volatile Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory = JavaHttpBuilder::new;</span>
+
+    public static Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; getDefaultFactory() {
+<span class="nc" id="L37">        return factory;</span>
+    }
+
+    public static void setDefaultFactory(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; val) {
+<span class="nc" id="L41">        factory = val;</span>
+<span class="nc" id="L42">    }</span>
+
+<span class="fc" id="L44">    static void noOp() { }</span>
+<span class="fc" id="L45">    static Closure NO_OP = new MethodClosure(HttpBuilder.class, &quot;noOp&quot;);</span>
+
+    public static HttpBuilder configure(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory) {
+<span class="nc" id="L48">        return configure(factory, NO_OP);</span>
+    }
+
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+<span class="nc" id="L52">        return configure(factory, closure);</span>
+    }
+    
+    public static HttpBuilder configure(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory,
+                                        @DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+<span class="fc" id="L57">        HttpObjectConfig impl = new HttpObjectConfigImpl();</span>
+<span class="fc" id="L58">        closure.setDelegate(impl);</span>
+<span class="fc" id="L59">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L60">        closure.call();</span>
+<span class="fc" id="L61">        return factory.apply(impl);</span>
+    }
+    
+    private ChainedHttpConfig configureRequest(final Closure closure) {
+<span class="fc" id="L65">        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
+<span class="fc" id="L66">        closure.setDelegate(myConfig);</span>
+<span class="fc" id="L67">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L68">        closure.call();</span>
+<span class="fc" id="L69">        return myConfig;</span>
+    }
+
+    private final EnumMap&lt;HttpVerb,BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt;&gt; interceptors;
+    
+<span class="fc" id="L74">    protected HttpBuilder(final HttpObjectConfig objectConfig) {</span>
+<span class="fc" id="L75">        this.interceptors = new EnumMap&lt;&gt;(objectConfig.getExecution().getInterceptors());</span>
+<span class="fc" id="L76">    }</span>
+
+    public Object get() {
+<span class="fc" id="L79">        return get(NO_OP);</span>
+    }
+    
+    public &lt;T&gt; T get(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L83">        return type.cast(get(closure));</span>
+    }
+
+    public CompletableFuture&lt;Object&gt; getAsync() {
+<span class="nc" id="L87">        return CompletableFuture.supplyAsync(() -&gt; get(), getExecutor());</span>
+    }
+    
+    public CompletableFuture&lt;Object&gt; getAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L91">        return CompletableFuture.supplyAsync(() -&gt; get(closure), getExecutor());</span>
+    }
+
+    public &lt;T&gt; CompletableFuture&lt;T&gt; getAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L95">        return CompletableFuture.supplyAsync(() -&gt; get(type, closure), getExecutor());</span>
+    }
+
+    public Object head() {
+<span class="fc" id="L99">        return head(NO_OP);</span>
+    }
+
+    public &lt;T&gt; T head(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L103">        return type.cast(head(closure));</span>
+    }
+
+    public CompletableFuture&lt;Object&gt; headAsync() {
+<span class="fc" id="L107">        return CompletableFuture.supplyAsync(() -&gt; head(), getExecutor());</span>
+    }
+    
+    public CompletableFuture&lt;Object&gt; headAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L111">        return CompletableFuture.supplyAsync(() -&gt; head(closure), getExecutor());</span>
+    }
+
+    public &lt;T&gt; CompletableFuture&lt;T&gt; headAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L115">        return CompletableFuture.supplyAsync(() -&gt; head(type, closure), getExecutor());</span>
+    }
+    
+    public Object post() {
+<span class="fc" id="L119">        return post(NO_OP);</span>
+    }
+
+    public &lt;T&gt; T post(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L123">        return type.cast(post(closure));</span>
+    }
+
+    public CompletableFuture&lt;Object&gt; postAsync() {
+<span class="nc" id="L127">        return CompletableFuture.supplyAsync(() -&gt; post(NO_OP), getExecutor());</span>
+    }
+
+    public Object postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L131">        return CompletableFuture.supplyAsync(() -&gt; post(closure), getExecutor());</span>
+    }
+    
+    public &lt;T&gt; CompletableFuture&lt;T&gt; postAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L135">        return CompletableFuture.supplyAsync(() -&gt; post(type, closure), getExecutor());</span>
+    }
+
+    public Object put() {
+<span class="nc" id="L139">        return put(NO_OP);</span>
+    }
+
+    public &lt;T&gt; T put(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L143">        return type.cast(put(closure));</span>
+    }
+
+    public CompletableFuture&lt;Object&gt; putAsync() {
+<span class="nc" id="L147">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
+    }
+
+    public Object putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L151">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
+    }
+    
+    public &lt;T&gt; CompletableFuture&lt;T&gt; putAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L155">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
+    }
+
+    //deletes
+    public Object delete() {
+<span class="nc" id="L160">        return delete(NO_OP);</span>
+    }
+
+    public &lt;T&gt; T delete(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L164">        return type.cast(delete(closure));</span>
+    }
+
+    public CompletableFuture&lt;Object&gt; deleteAsync() {
+<span class="nc" id="L168">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
+    }
+
+    public Object deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L172">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
+    }
+    
+    public &lt;T&gt; CompletableFuture&lt;T&gt; deleteAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="nc" id="L176">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
+    }
+
+    public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L180">        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);</span>
+    }
+    
+    public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L184">        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);</span>
+    }
+    
+    public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L188">        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);</span>
+    }
+    
+    public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L192">        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);</span>
+    }
+    
+    public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L196">        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);</span>
+    }
+
+    protected abstract Object doGet(final ChainedHttpConfig config);
+    protected abstract Object doHead(final ChainedHttpConfig config);
+    protected abstract Object doPost(final ChainedHttpConfig config);
+    protected abstract Object doPut(final ChainedHttpConfig config);
+    protected abstract Object doDelete(final ChainedHttpConfig config);
+    protected abstract ChainedHttpConfig getObjectConfig();
+    
+    public abstract Executor getExecutor();    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
