@@ -18,5 +18,7 @@ package groovyx.net.http;
 import java.io.InputStream;
 
 public interface ToServer {
+    // TODO: should this be renamed to Encoder?
+
     void toServer(InputStream inputStream);
 }

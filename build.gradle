@@ -49,7 +49,14 @@ dependencies {
         compileOnly(opt); testCompile(opt);
     }
 
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    testCompile('org.mock-server:mockserver-client-java:3.10.4') {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
+    testCompile('org.mock-server:mockserver-netty:3.10.4') {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
 }
 
 javadoc {
@@ -145,7 +152,7 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
     }
 }
 
-task publishSite(type: GradleBuild, group:'Publishing', description: 'Publishes the documentation web site.') {
+task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.') {
     buildFile = 'publish.gradle'
     tasks = ['publishGhPages']
 }
