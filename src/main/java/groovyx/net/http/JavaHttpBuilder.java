@@ -41,6 +41,13 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
+/**
+ * <code>HttpBuilder</code> implementation based on the Apache HttpClient library.
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via the
+ * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function)</code> or
+ * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)</code> methods.
+ */
 public class JavaHttpBuilder extends HttpBuilder {
 
     protected class Action {

@@ -17,8 +17,14 @@ package groovyx.net.http;
 
 import java.io.InputStream;
 
+/**
+ * FIXME: document
+ */
 public interface ToServer {
     // TODO: should this be renamed to Encoder?
 
+    /**
+     * FIXME: document
+     */
     void toServer(InputStream inputStream);
 }

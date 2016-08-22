@@ -28,7 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.net.URI;
 
+/**
+ * FIXME: document
+ */
 public interface FromServer {
+    // TODO: should this be renamed Decoder?
 
     public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
@@ -148,14 +152,44 @@ public interface FromServer {
         }
     }
 
+    /**
+     * FIXME: document
+     */
     InputStream getInputStream();
+
+    /**
+     * FIXME: document
+     */
     int getStatusCode();
+
+    /**
+     * FIXME: document
+     */
     String getMessage();
+
+    /**
+     * FIXME: document
+     */
     List<Header> getHeaders();
+
+    /**
+     * FIXME: document
+     */
     boolean getHasBody();
+
+    /**
+     * FIXME: document
+     */
     URI getUri();
+
+    /**
+     * FIXME: document
+     */
     void finish();
 
+    /**
+     * FIXME: document
+     */
     default Reader getReader() {
         return new BufferedReader(new InputStreamReader(getInputStream()));
     }

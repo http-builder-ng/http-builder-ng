@@ -227,47 +227,77 @@ public interface HttpConfig {
     interface Response {
 
         /**
-         * FIXME: document
+         * Configures the execution of the provided closure when the given status occurs in the response. The closure will be called with an instance
+         * of the response as a <code>FromServer</code> instance.
+         *
+         * @param status the response status enum
+         * @param closure the closure to be executed
          */
         void when(Status status, Closure<Object> closure);
 
         /**
-         * FIXME: document
+         * Configures the execution of the provided closure when the given status code occurs in the response. The closure will be called with an instance
+         * of the response as a <code>FromServer</code> instance.
+         *
+         * @param code the response status code
+         * @param closure the closure to be executed
          */
         void when(Integer code, Closure<Object> closure);
 
         /**
-         * FIXME: document
+         * Configures the execution of the provided closure when the given status code (as a String) occurs in the response. The closure will be called
+         * with an instance of the response as a <code>FromServer</code> instance.
+         *
+         * @param code the response status code string
+         * @param closure the closure to be executed
          */
         void when(String code, Closure<Object> closure);
 
         /**
-         * FIXME: document
+         * Used to retrieve the "when" closure associated with the given status code.
+         *
+         * @param code the status code
+         * @return the mapped closure
          */
         Closure<Object> when(Integer code);
 
         /**
-         * FIXME: document
+         * Configures the given closure to be executed when a successful response occurs (2xx code).  The closure will be called with an instance of
+         * the response as a <code>FromServer</code> instance.
+         *
+         * @param closure the closure to be mapped to success responses
          */
         void success(Closure<Object> closure);
 
         /**
-         * FIXME: document
+         * Configures the given closure to be executed when a failure response occurs (non- 2xx code).  The closure will be called with an instance of
+         * the response as a <code>FromServer</code> instance.
+         *
+         * @param closure the closure to be mapped to failure responses
          */
         void failure(Closure<Object> closure);
 
         /**
-         * FIXME: document
+         * Used to specify a response parser for the specified content type.
+         *
+         * @param contentType the content type where the parser will be applied
+         * @param val the parser wrapped in a function object
          */
         void parser(String contentType, BiFunction<ChainedHttpConfig, FromServer, Object> val);
 
         /**
-         * FIXME: document
+         * Used to specify a response parser for the specified content types.
+         *
+         * @param contentTypes the contents type where the parser will be applied
+         * @param val the parser wrapped in a function object
          */
         void parser(List<String> contentTypes, BiFunction<ChainedHttpConfig, FromServer, Object> val);
 
         /**
-         * FIXME: document
+         * Used to retrieve the parser configured for the specified content type.
+         *
+         * @param contentType the content type
+         * @return the mapped parser as a FromServer instance wrapped in a function object
          */
         BiFunction<ChainedHttpConfig, FromServer, Object> parser(String contentType);
     }

@@ -48,6 +48,13 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * <code>HttpBuilder</code> implementation based on the Apache HttpClient library.
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via the
+ * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function)</code> or
+ * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)</code> methods.
+ */
 public class ApacheHttpBuilder extends HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
