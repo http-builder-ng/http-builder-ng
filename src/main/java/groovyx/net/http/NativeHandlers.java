@@ -364,8 +364,10 @@ public class NativeHandlers {
         }
 
         /**
-         * Standard parser for text
-         * @param fromServer Backend indenpendent representation of data returned from http server
+         * Standard parser for text response content.
+         *
+         * @param config the http client configuration
+         * @param fromServer Backend independent representation of data returned from http server
          * @return Body of response
          */
         public static String textToString(final ChainedHttpConfig config, final FromServer fromServer) {
