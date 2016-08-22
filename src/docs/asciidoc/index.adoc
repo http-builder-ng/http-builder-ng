@@ -47,6 +47,47 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 > TBD: document full scope of `configure` options...
 
+Generally the `HttpBuilder` is configured using one of the static `configure` methods
+also show how to create simple inline verb call
+
+Disucss the two factory impls...
+
+These are specific to the configure closure...
+
+maxThreads
+executor
+sshlContext
+interceptor
+
+the following may be defined in the configure closure and shared across multiple calls, or
+configured and overwritten by the configure closure of the verbs
+
+request
+    auth
+    contentType
+    charset
+    uri
+    headers
+    accept
+    body
+    cookies
+    encoder
+
+response
+    when
+    parser
+    success/failure
+
+Authentication
+
+Basic
+Digest
+
+HTTPS/SSL
+
+notes about support and configuration...
+
+
 [source,groovy]
 ----
 int maxThreads = 2
@@ -57,6 +98,8 @@ def google = HttpBuilder.configure(apacheBuilder) {
     execution.executor =  Executors.newFixedThreadPool(maxThreads)
 }
 ----
+
+> The verb sections should be interesting examples for each of the verbs most common use cases
 
 == Verbs
 

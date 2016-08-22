@@ -4,17 +4,11 @@
 
 [source,groovy]
 ----
-google.get {
-    response.parser 'text/html', Parsers.&textToString
-}
+HttpBuilder.configure {
+    request.uri = 'http://localhost:10101/foo'
+}.get()
 ----
 
-> TBD: detailed discussion...
+Which will make a request to `http://localhost:10101/foo` and return its contents.
 
-[source,groovy]
-----
-google.get(String){
-    response.parser 'text/html', Parsers.&textToString
-    request.uri.query = [ q: 'Big Bird' ]
-}
-----
+show request with query string and json object conversion

@@ -16,6 +16,9 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +40,7 @@ import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
+
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
@@ -148,6 +150,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             try {
                 addHeaders();
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
+                        // FIXME: this seems to enforce HTTPS for auth - while a good practice, may not want to force
                         if(sslContext != null) {
                             HttpsURLConnection https = (HttpsURLConnection) connection;
                             https.setSSLSocketFactory(sslContext.getSocketFactory());

@@ -207,7 +207,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         this.executor = config.getExecution().getExecutor();
         this.cookieStore = new BasicCookieStore();
         HttpClientBuilder myBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
-        
+
         if(config.getExecution().getMaxThreads() > 1) {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
             cm.setMaxTotal(config.getExecution().getMaxThreads());
@@ -256,7 +256,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
         CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(new AuthScope(uri.getHost(), port(uri)),
+        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),
                                 new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
         c.setCredentialsProvider(provider);
     }
