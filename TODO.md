@@ -19,3 +19,5 @@
 - code quality analysis and reports
     - findbugs, pmd, ?
     
+    
+put the old ignoreSslIssues functionality back in
