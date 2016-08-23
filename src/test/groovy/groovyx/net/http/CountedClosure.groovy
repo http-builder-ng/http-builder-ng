@@ -15,7 +15,20 @@
  */
 package groovyx.net.http
 
-enum HttpClientType {
+/**
+ * Simple wrapper for a closure that counts calls made to it.
+ */
+class CountedClosure {
 
-    APACHE, JAVA
+    int count
+
+    boolean getCalled() { count > 0 }
+
+    final Closure<Object> closure = { ->
+        count++
+    }
+
+    void clear(){
+        count = 0
+    }
 }
