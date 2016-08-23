@@ -20,6 +20,8 @@ import org.junit.Rule
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
+import org.mockserver.model.HttpRequest
+import org.mockserver.model.HttpResponse
 import org.mockserver.model.NottableString
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -33,7 +35,7 @@ import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
 
-    // FIXME: test digest support
+    // FIXME: test digest support - probably just use the httpbin and make it conditional
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
@@ -52,39 +54,42 @@ class HttpGetSpec extends Specification {
             request.uri = "http://localhost:${serverRule.port}"
         }
 
-        server.when(request().withMethod('GET').withPath('/')).respond(response().withBody(htmlContent()))
+        server.when(get('/')).respond(responseContent(htmlContent()))
 
-        server.when(request().withMethod('GET').withPath('/foo').withQueryStringParameter('alpha', 'bravo')).respond(response().withBody(HTML_CONTENT_B).withStatusCode(200))
-        server.when(request().withMethod('GET').withPath('/foo').withCookie('biscuit', 'wafer')).respond(response().withBody(HTML_CONTENT_C).withStatusCode(200))
-        server.when(request().withMethod('GET').withPath('/foo')).respond(response().withBody(htmlContent()).withStatusCode(200))
+        server.when(get('/foo').withQueryStringParameter('alpha', 'bravo')).respond(responseContent(HTML_CONTENT_B))
+        server.when(get('/foo').withCookie('biscuit', 'wafer')).respond(responseContent(HTML_CONTENT_C))
+        server.when(get('/foo')).respond(responseContent(htmlContent()))
 
-        server.when(request().withMethod('GET').withPath('/xml')).respond(response().withBody(xmlContent()).withHeader('Content-Type', 'text/xml').withStatusCode(200))
-        server.when(request().withMethod('GET').withPath('/json')).respond(response().withBody(jsonContent()).withHeader('Content-Type', 'text/json').withStatusCode(200))
+        // parsers
 
-        server.when(request().withMethod('GET').withPath('/date')).respond(response().withBody('2016.08.25 14:43').withHeader('Content-Type', 'text/date'))
+        server.when(get('/xml')).respond(responseContent(xmlContent(), 'text/xml'))
+        server.when(get('/json')).respond(responseContent(jsonContent(), 'text/json'))
+
+        server.when(get('/date')).respond(responseContent('2016.08.25 14:43', 'text/date'))
 
         // Status handlers
 
         (2..5).each { s ->
-            server.when(request().withMethod('GET').withPath("/status${s}00")).respond(response().withStatusCode(s * 100))
+            server.when(get("/status${s}00")).respond(response().withStatusCode(s * 100))
         }
 
-        // BASIC
+        // BASIC auth
 
         String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
         def authHeader = new Header('Authorization', encodedCred)
 
-        server.when(request().withMethod('GET').withPath('/basic').withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
+        server.when(get('/basic').withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
             .respond(response().withHeader('WWW-Authenticate', 'Basic realm="Test Realm"').withStatusCode(401))
 
-        server.when(request().withMethod('GET').withPath('/basic').withHeader(authHeader))
-            .respond(response().withBody(htmlContent()))
+        server.when(get('/basic').withHeader(authHeader)).respond(responseContent(htmlContent()))
+    }
 
-        // DIGEST
+    private static HttpRequest get(final String path) {
+        request().withMethod('GET').withPath(path)
+    }
 
-        // FIXME: this needs to be a proper digest request conversation
-//        server.dumpToLog().when(request().withMethod('GET').withPath('/digest'))
-//            .respond(response().withBody(HTML_CONTENT_A))
+    private static HttpResponse responseContent(final String content, final String type = 'text/plain') {
+        response().withBody(content).withStatusCode(200).withHeader('Content-Type', type)
     }
 
     @Unroll def '[#client] GET /status(#status): verify when handler'() {
