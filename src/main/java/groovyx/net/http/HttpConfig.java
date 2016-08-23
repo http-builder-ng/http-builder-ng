@@ -262,7 +262,7 @@ public interface HttpConfig {
         Closure<Object> when(Integer code);
 
         /**
-         * Configures the given closure to be executed when a successful response occurs (2xx code).  The closure will be called with an instance of
+         * Configures the given closure to be executed when a successful response occurs (response code < 399).  The closure will be called with an instance of
          * the response as a <code>FromServer</code> instance.
          *
          * @param closure the closure to be mapped to success responses
@@ -270,7 +270,7 @@ public interface HttpConfig {
         void success(Closure<Object> closure);
 
         /**
-         * Configures the given closure to be executed when a failure response occurs (non- 2xx code).  The closure will be called with an instance of
+         * Configures the given closure to be executed when a failure response occurs (response code > 399).  The closure will be called with an instance of
          * the response as a <code>FromServer</code> instance.
          *
          * @param closure the closure to be mapped to failure responses
