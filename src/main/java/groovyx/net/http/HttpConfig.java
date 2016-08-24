@@ -28,7 +28,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 /**
- * Provides the public interface used for configuring the HTTP Builder NG client.
+ * Provides the public interface used for configuring the https://github.com/dwclark/http-builder-ng[HTTP Builder NG client].
  */
 public interface HttpConfig {
 
@@ -60,7 +60,7 @@ public interface HttpConfig {
 
         /**
          * Configures the request to use BASIC authentication with the given username and password. The authentication will not be preemptive. This
-         * method is an alias for calling: <code>basic(String, String, false)</code>.
+         * method is an alias for calling: `basic(String, String, false)`.
          *
          * @param user the username
          * @param password the user's password
@@ -80,7 +80,7 @@ public interface HttpConfig {
 
         /**
          * Configures the request to use DIGEST authentication with the given username and password. The authentication will not be preemptive. This
-         * method is an alias for calling: <code>digest(String, String, false)</code>.
+         * method is an alias for calling: `digest(String, String, false)`.
          *
          * @param user the username
          * @param password the user's password
@@ -112,7 +112,7 @@ public interface HttpConfig {
         Auth getAuth();
 
         /**
-         * Used to specify the <code>Content-type</code> header for the request.
+         * Used to specify the `Content-type` header for the request.
          *
          * @param val the content type value to be used
          */
@@ -133,7 +133,7 @@ public interface HttpConfig {
         void setCharset(Charset val);
 
         /**
-         * Retrieves the <code>UriBuilder</code> for the request, which provides methods for more fine-grained URI specification.
+         * Retrieves the `UriBuilder` for the request, which provides methods for more fine-grained URI specification.
          *
          * @return the UriBuilder for the request
          */
@@ -178,7 +178,7 @@ public interface HttpConfig {
 
         /**
          * Adds a cookie to the request with the specified name and value, and no expiration date. This method is an alias for calling:
-         * <code>cookie(String, String, null)</code>.
+         * `cookie(String, String, null)`.
          *
          * @param name the cookie name
          * @param value the cookie value
@@ -192,7 +192,7 @@ public interface HttpConfig {
          *
          * @param name the cookie name
          * @param value the cookie value
-         * @param expires the expiration date of the cookie (<code>null</code> is allowed)
+         * @param expires the expiration date of the cookie (`null` is allowed)
          */
         void cookie(String name, String value, Date expires);
 
@@ -200,7 +200,7 @@ public interface HttpConfig {
          * Specifies the request encoder (ToServer instance) to be used when encoding the given content type.
          *
          * @param contentType the content type
-         * @param val the request encoder (wrapped in a <code>BiConsumer</code> function)
+         * @param val the request encoder (wrapped in a `BiConsumer` function)
          */
         void encoder(String contentType, BiConsumer<ChainedHttpConfig, ToServer> val);
 
@@ -208,15 +208,15 @@ public interface HttpConfig {
          * Specifies the request encoder (ToServer instance) to be used when encoding the given list of content types.
          *
          * @param contentTypes the content types
-         * @param val the request encoder (wrapped in a <code>BiConsumer</code> function)
+         * @param val the request encoder (wrapped in a `BiConsumer` function)
          */
         void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig, ToServer> val);
 
         /**
-         * Retrieves the request encoder (ToServer instance) for the specified content type wrapped in a <code>BiConsumer</code> function.
+         * Retrieves the request encoder (ToServer instance) for the specified content type wrapped in a `BiConsumer` function.
          *
          * @param contentType the content type of the encoder to be retrieved
-         * @return the encoder for the specified content type (wrapped in a <code>BiConsumer</code> function)
+         * @return the encoder for the specified content type (wrapped in a `BiConsumer` function)
          */
         BiConsumer<ChainedHttpConfig, ToServer> encoder(String contentType);
     }
@@ -228,7 +228,7 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure when the given status occurs in the response. The closure will be called with an instance
-         * of the response as a <code>FromServer</code> instance.
+         * of the response as a `FromServer` instance.
          *
          * @param status the response status enum
          * @param closure the closure to be executed
@@ -237,7 +237,7 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure when the given status code occurs in the response. The closure will be called with an instance
-         * of the response as a <code>FromServer</code> instance.
+         * of the response as a `FromServer` instance.
          *
          * @param code the response status code
          * @param closure the closure to be executed
@@ -246,7 +246,7 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure when the given status code (as a String) occurs in the response. The closure will be called
-         * with an instance of the response as a <code>FromServer</code> instance.
+         * with an instance of the response as a `FromServer` instance.
          *
          * @param code the response status code string
          * @param closure the closure to be executed
@@ -263,7 +263,7 @@ public interface HttpConfig {
 
         /**
          * Configures the given closure to be executed when a successful response occurs (response code < 399).  The closure will be called with an instance of
-         * the response as a <code>FromServer</code> instance.
+         * the response as a `FromServer` instance.
          *
          * @param closure the closure to be mapped to success responses
          */
@@ -271,7 +271,7 @@ public interface HttpConfig {
 
         /**
          * Configures the given closure to be executed when a failure response occurs (response code > 399).  The closure will be called with an instance of
-         * the response as a <code>FromServer</code> instance.
+         * the response as a `FromServer` instance.
          *
          * @param closure the closure to be mapped to failure responses
          */

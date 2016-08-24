@@ -44,11 +44,11 @@ import java.util.zip.InflaterInputStream;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
- * <code>HttpBuilder</code> implementation based on the Apache HttpClient library.
+ * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
  *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function)</code> or
- * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)</code> methods.
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
  */
 public class JavaHttpBuilder extends HttpBuilder {
 

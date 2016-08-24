@@ -58,7 +58,7 @@ public interface HttpObjectConfig extends HttpConfig {
     interface Client {
 
         /**
-         * Used to specify the supported Cookie version. If not specified, a default of <code>0</code> is used to conform with the default used in the Java Servlet Cookie
+         * Used to specify the supported Cookie version. If not specified, a default of `0` is used to conform with the default used in the Java Servlet Cookie
          * API. Be aware that if you change the version here, you may need to modify the version expected by your server.
          *
          * @param version the Cookie version to be used.
@@ -66,7 +66,7 @@ public interface HttpObjectConfig extends HttpConfig {
         void setCookieVersion(int version);
 
         /**
-         * Retrieves the supported Cookie version. A version of <code>0</code> will be returned, if not explicitly overridden.
+         * Retrieves the supported Cookie version. A version of `0` will be returned, if not explicitly overridden.
          *
          * @return the Cookie version supported
          */

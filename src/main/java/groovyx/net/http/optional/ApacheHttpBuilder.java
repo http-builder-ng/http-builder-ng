@@ -49,11 +49,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <code>HttpBuilder</code> implementation based on the Apache HttpClient library.
+ * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
  *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function)</code> or
- * <code>groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)</code> methods.
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 

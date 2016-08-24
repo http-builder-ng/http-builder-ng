@@ -25,9 +25,5 @@
 - code quality analysis and reports
     - findbugs, pmd, other static analysis
     - https://docs.gradle.org/current/userguide/findbugs_plugin.html
-    
-- can I split the user guide into multiple pages and still maintain the TOC?
 
-- consider: http://asciidoctor.org/news/2013/06/03/asciidoclet-announcement/
-    - https://docs.gradle.org/current/dsl/org.gradle.api.tasks.javadoc.Javadoc.html
 - maybe move more of the per-property details into the javadocs and have guide more usage and interesting stuff

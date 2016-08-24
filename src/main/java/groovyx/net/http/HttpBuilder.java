@@ -45,33 +45,33 @@ public abstract class HttpBuilder implements Closeable {
     static Closure NO_OP = new MethodClosure(HttpBuilder.class, "noOp");
 
     /**
-     * Creates an <code>HttpBuilder</code> with the default configuration using the provided factory function (<code>JavaHttpBuilder</code> or
-     * <code>ApacheHttpBuilder</code>).
+     * Creates an `HttpBuilder` with the default configuration using the provided factory function (`JavaHttpBuilder` or
+     * `ApacheHttpBuilder`).
      *
-     * @param factory the <code>HttpObjectConfig</code> factory function (<code>JavaHttpBuilder</code> or <code>ApacheHttpBuilder</code>)
-     * @return the configured <code>HttpBuilder</code>
+     * @param factory the `HttpObjectConfig` factory function (`JavaHttpBuilder` or `ApacheHttpBuilder`)
+     * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory) {
         return configure(factory, NO_OP);
     }
 
     /**
-     * Creates an <code>HttpBuilder</code> configured by the provided configuration closure. The <code>JavaHttpBuilder</code> factory will be used
+     * Creates an `HttpBuilder` configured by the provided configuration closure. The `JavaHttpBuilder` factory will be used
      * for the underlying configuration.
      *
-     * @param closure the configuration closure (delegated to <code>HttpObjectConfig</code>)
-     * @return the configured <code>HttpBuilder</code>
+     * @param closure the configuration closure (delegated to `HttpObjectConfig`)
+     * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
         return configure(factory, closure);
     }
 
     /**
-     * Creates an <code>HttpBuilder</code> configured by the provided configuration closure.
+     * Creates an `HttpBuilder` configured by the provided configuration closure.
      *
-     * @param factory the <code>HttpObjectConfig</code> factory function (<code>JavaHttpBuilder</code> or <code>ApacheHttpBuilder</code>)
-     * @param closure the configuration closure (delegated to <code>HttpObjectConfig</code>)
-     * @return the configured <code>HttpBuilder</code>
+     * @param factory the `HttpObjectConfig` factory function (`JavaHttpBuilder` or `ApacheHttpBuilder`)
+     * @param closure the configuration closure (delegated to `HttpObjectConfig`)
+     * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory,
                                         @DelegatesTo(HttpObjectConfig.class) final Closure closure) {
@@ -109,7 +109,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes a GET request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public <T> T get(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -128,7 +128,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an asynchronous GET request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public CompletableFuture<Object> getAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -139,7 +139,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an asynchronous GET request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public <T> CompletableFuture<T> getAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -159,7 +159,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public <T> T head(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -178,7 +178,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an asynchronous HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public CompletableFuture<Object> headAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -189,7 +189,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an asynchronous HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public <T> CompletableFuture<T> headAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -209,7 +209,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes a POST request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public <T> T post(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -228,7 +228,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an asynchronous POST request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -239,7 +239,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an asynchronous POST request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public <T> CompletableFuture<T> postAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -259,7 +259,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes a PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public <T> T put(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -278,7 +278,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an asynchronous PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -289,7 +289,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an asynchronous PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public <T> CompletableFuture<T> putAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -309,7 +309,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes a DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public <T> T delete(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -328,7 +328,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an asynchronous DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -339,7 +339,7 @@ public abstract class HttpBuilder implements Closeable {
      * Executes an asynchronous DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return a CompletableFuture for retrieving the resulting content
      */
     public <T> CompletableFuture<T> deleteAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -349,7 +349,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes a GET request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -359,7 +359,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes an HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -369,7 +369,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes a POST request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -379,7 +379,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes a PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
@@ -389,7 +389,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Executes a DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to <code>HttpConfig</code>)
+     * @param closure the additional configuration closure (delegated to `HttpConfig`)
      * @return the resulting content
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {

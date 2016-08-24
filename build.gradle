@@ -30,6 +30,10 @@ repositories {
     jcenter()
 }
 
+configurations {
+    asciidoclet
+}
+
 dependencies {
     //required
     compile('xml-resolver:xml-resolver:1.2')
@@ -53,10 +57,17 @@ dependencies {
 
     testCompile('org.mock-server:mockserver-client-java:3.10.4')
     testCompile('org.mock-server:mockserver-netty:3.10.4')
+
+    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
 }
 
 javadoc {
+    options.docletpath = configurations.asciidoclet.files.asType(List)
     options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+    options.doclet = 'org.asciidoctor.Asciidoclet'
+//    options.overview = "src/main/java/overview.adoc"
+    options.addStringOption "-base-dir", "${projectDir}"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=http://example.com[${project.name} ${project.version}]"
 }
 
 task sourcesJar(type: Jar) {
