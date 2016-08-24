@@ -17,7 +17,6 @@
     4) Description of how to integrate a new http client library
         
 - code quality analysis and reports
-    - findbugs, pmd, ?
+    - findbugs, pmd, other static analysis
     
     
-put the old ignoreSslIssues functionality back in

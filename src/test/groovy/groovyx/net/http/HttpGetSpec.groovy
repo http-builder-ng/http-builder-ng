@@ -15,6 +15,7 @@
  */
 package groovyx.net.http
 
+import groovy.transform.Memoized
 import groovyx.net.http.optional.ApacheHttpBuilder
 import org.junit.Rule
 import org.mockserver.client.server.MockServerClient
@@ -26,6 +27,7 @@ import org.mockserver.model.NottableString
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.Executors
 import java.util.function.Function
 
 import static HttpClientType.APACHE
@@ -36,24 +38,20 @@ import static org.mockserver.model.HttpResponse.response
 class HttpGetSpec extends Specification {
 
     // FIXME: test digest support - probably just use the httpbin and make it conditional
+    // TODO: the when methods allow modification of the returned value?
+    // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
     private static final String HTML_CONTENT_B = htmlContent('Testing B')
     private static final String HTML_CONTENT_C = htmlContent('Testing C')
 
+    private static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
+    private static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function
+
     private MockServerClient server
-    private HttpBuilder apacheHttp, javaHttp
 
     def setup() {
-        apacheHttp = HttpBuilder.configure({ c -> new ApacheHttpBuilder(c); } as Function) {
-            request.uri = "http://localhost:${serverRule.port}"
-        }
-
-        javaHttp = HttpBuilder.configure({ c -> new JavaHttpBuilder(c); } as Function) {
-            request.uri = "http://localhost:${serverRule.port}"
-        }
-
         server.when(get('/')).respond(responseContent(htmlContent()))
 
         server.when(get('/foo').withQueryStringParameter('alpha', 'bravo')).respond(responseContent(HTML_CONTENT_B))
@@ -315,8 +313,69 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    private HttpBuilder httpBuilder(final HttpClientType factory) {
-        factory == APACHE ? apacheHttp : javaHttp
+    /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
+     *       then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
+     */
+    // TODO: this test should be in a category that can be turned off for offline testing
+    @Unroll def '[#client] GET (DIGEST) /digest-auth'() {
+        given:
+        def config = {
+            request.uri = 'http://httpbin.org/'
+            execution.maxThreads = 2
+            execution.executor = Executors.newFixedThreadPool(2)
+        }
+
+        when:
+        def result = httpBuilder(client,config).get {
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+            response.failure { r -> 'Ignored' }
+        }
+
+        then:
+        result == 'Ignored'
+
+        when:
+        result = httpBuilder(client,config).get {
+            request.uri = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+        }
+
+        then:
+        result.authenticated
+        result.user == 'david'
+
+        when:
+        result = httpBuilder(client,config).getAsync {
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+            response.failure { r -> 'Ignored' }
+        }.get()
+
+        then:
+        result == 'Ignored'
+
+        when:
+        result = httpBuilder(client,config).getAsync() {
+            request.uri = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+        }.get()
+
+        then:
+        result.authenticated
+        result.user == 'david'
+
+        where:
+        client << [APACHE, JAVA]
+    }
+
+    private Function clientFactory(final HttpClientType clientType) {
+        clientType == APACHE ? apacheClientFactory : javaClientFactory
+    }
+
+    @Memoized
+    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = "http://localhost:${serverRule.port}" }) {
+        HttpBuilder.configure(clientFactory(clientType), config)
     }
 
     private static String htmlContent(String text = 'Nothing special') {
