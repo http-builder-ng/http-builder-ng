@@ -6,6 +6,10 @@
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/FromServer.java
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ToServer.java
     
+- add reports to site
+    - findbugs
+    - (others)
+    
 - User Guide
     - GET
     - HEAD
@@ -23,7 +27,7 @@
     4) Description of how to integrate a new http client library
         
 - code quality analysis and reports
-    - findbugs, pmd, other static analysis
-    - https://docs.gradle.org/current/userguide/findbugs_plugin.html
+    - pmd, other static analysis
+    - check should fire all of them?
 
 - maybe move more of the per-property details into the javadocs and have guide more usage and interesting stuff

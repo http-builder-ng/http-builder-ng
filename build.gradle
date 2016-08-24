@@ -15,6 +15,7 @@ plugins {
     id 'maven'
     id 'maven-publish'
     id 'jacoco'
+    id 'findbugs'
     id "me.champeau.jbake" version "0.2"
 }
 
@@ -162,4 +163,13 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
 task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.') {
     buildFile = 'publish.gradle'
     tasks = ['publishGhPages']
+}
+
+tasks.withType(FindBugs) {
+    ignoreFailures = true       // let's not kill the build for this
+    reports {
+        xml.enabled false
+        html.enabled true
+        //html.stylesheet resources.text.fromFile('config/xsl/findbugs-custom.xsl')
+    }
 }
