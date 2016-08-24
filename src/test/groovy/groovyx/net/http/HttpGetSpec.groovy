@@ -24,8 +24,6 @@ import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.NottableString
-import spock.lang.Ignore
-import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -237,8 +235,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    @Unroll @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/7')
-    def '[#label] GET /foo (cookie): returns content'() {
+    @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
         def config = {
             request.uri.path = '/foo'

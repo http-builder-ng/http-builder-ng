@@ -15,12 +15,14 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.SSLContext;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import javax.net.ssl.SSLContext;
-import static groovyx.net.http.HttpConfigs.*;
+
+import static groovyx.net.http.HttpConfigs.basic;
+import static groovyx.net.http.HttpConfigs.root;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
   
@@ -31,6 +33,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
     }
     
     final Exec exec = new Exec();
+    final ClientConfig clientConfig = new ClientConfig();
 
     public static Object nullInterceptor(final ChainedHttpConfig config, final Function<ChainedHttpConfig,Object> func) {
         return func.apply(config);
@@ -100,6 +103,19 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         }
     }
 
+    private static class ClientConfig implements Client {
+
+        private int cookieVersion = 0;
+
+        @Override public void setCookieVersion(int version) {
+            this.cookieVersion = version;
+        }
+
+        @Override public int getCookieVersion() {
+            return cookieVersion;
+        }
+    }
+
     private static class SingleThreaded implements Executor {
         public void execute(Runnable r) {
             r.run();
@@ -122,6 +138,10 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
     public Execution getExecution() {
         return exec;
+    }
+
+    @Override public Client getClient() {
+        return clientConfig;
     }
 
     public void context(final String contentType, final Object id, final Object obj) {

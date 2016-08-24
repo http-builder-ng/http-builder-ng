@@ -52,6 +52,27 @@ public interface HttpObjectConfig extends HttpConfig {
         EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> getInterceptors();
     }
 
+    /**
+     * Defines the client configuration options available for the underlying HTTP client.
+     */
+    interface Client {
+
+        /**
+         * Used to specify the supported Cookie version. If not specified, a default of <code>0</code> is used to conform with the default used in the Java Servlet Cookie
+         * API. Be aware that if you change the version here, you may need to modify the version expected by your server.
+         *
+         * @param version the Cookie version to be used.
+         */
+        void setCookieVersion(int version);
+
+        /**
+         * Retrieves the supported Cookie version. A version of <code>0</code> will be returned, if not explicitly overridden.
+         *
+         * @return the Cookie version supported
+         */
+        int getCookieVersion();
+    }
+
     ChainedHttpConfig getChainedConfig();
 
     /**
@@ -60,5 +81,12 @@ public interface HttpObjectConfig extends HttpConfig {
      * @return the Execution configuration instance
      */
     Execution getExecution();
+
+    /**
+     * Retrieves the client configuration interface implementation.
+     *
+     * @return the Client configuration instance
+     */
+    Client getClient();
 }
 

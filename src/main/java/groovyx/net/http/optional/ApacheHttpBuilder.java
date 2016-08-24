@@ -200,11 +200,13 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private CloseableHttpClient client;
     final private ChainedHttpConfig config;
     final private Executor executor;
+    final private HttpObjectConfig.Client clientConfig;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
+        this.clientConfig = config.getClient();
         this.cookieStore = new BasicCookieStore();
         HttpClientBuilder myBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
 
@@ -312,6 +314,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         List<Cookie> cookies = cr.actualCookies(new ArrayList());
         for(Cookie cookie : cookies) {
             final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
+            apacheCookie.setVersion(clientConfig.getCookieVersion());
             apacheCookie.setDomain(uri.getHost());
             apacheCookie.setPath(uri.getPath());
             if(cookie.getExpires() != null) {
