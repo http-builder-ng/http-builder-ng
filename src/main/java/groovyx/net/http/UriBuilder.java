@@ -26,6 +26,9 @@ import static groovyx.net.http.Traverser.*;
 import org.codehaus.groovy.runtime.GStringImpl;
 import java.io.IOException;
 
+/**
+ * FIXME: document
+ */
 public abstract class UriBuilder {
 
     public static final int DEFAULT_PORT = -1;
