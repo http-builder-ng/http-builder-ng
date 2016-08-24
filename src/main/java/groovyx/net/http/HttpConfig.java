@@ -28,7 +28,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 /**
- * Provides the public interface used for configuring the https://github.com/dwclark/http-builder-ng[HTTP Builder NG client].
+ * Provides the public interface used for the {@link HttpBuilder} shared and per-verb configuration.
  */
 public interface HttpConfig {
 
