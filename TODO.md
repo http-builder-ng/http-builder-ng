@@ -4,10 +4,16 @@
 - javadoc 
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ChainedHttpConfig.java
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/FromServer.java
-    https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/HttpObjectConfig.java
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ToServer.java
+    
 - User Guide
-    - examples of each verb
+    - GET
+    - HEAD
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+    - TRACE
     - examples of HTTPS
     - examples with authentication
     - json/xml/binary body content handling

@@ -21,24 +21,44 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.EnumMap;
 
+/**
+ * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options.
+ */
 public interface HttpObjectConfig extends HttpConfig {
 
+    /**
+     * Defines execution configuration for the underlying HTTP client.
+     */
     interface Execution {
+        // TODO: is maxThreads used only by Apache client?
         void setMaxThreads(int val);
         int getMaxThreads();
-        
+
+        // TODO: what is relationship/difference between maxThreads and executor?
         void setExecutor(Executor val);
         Executor getExecutor();
-        
+
+        /**
+         * FIXME: document
+         */
         void setSslContext(SSLContext val);
         SSLContext getSslContext();
 
+        /**
+         * FIXME: document
+         */
         void interceptor(HttpVerb verb, BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func);
         void interceptor(HttpVerb[] verbs, BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func);
         EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> getInterceptors();
     }
 
     ChainedHttpConfig getChainedConfig();
+
+    /**
+     * Retrieves the execution configuration interface implementation.
+     *
+     * @return the Execution configuration instance
+     */
     Execution getExecution();
 }
 
