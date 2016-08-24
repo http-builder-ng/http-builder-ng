@@ -24,6 +24,9 @@ import org.mockserver.model.Header
 import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.NottableString
+import spock.lang.Ignore
+import spock.lang.Issue
+import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -37,7 +40,6 @@ import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
 
-    // FIXME: test digest support - probably just use the httpbin and make it conditional
     // TODO: the when methods allow modification of the returned value?
     // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
 
@@ -235,7 +237,8 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    @Unroll def '[#label] GET /foo (cookie): returns content'() {
+    @Unroll @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/7')
+    def '[#label] GET /foo (cookie): returns content'() {
         given:
         def config = {
             request.uri.path = '/foo'
@@ -249,7 +252,7 @@ class HttpGetSpec extends Specification {
         httpBuilder(label).getAsync(config).get() == HTML_CONTENT_C
 
         where:
-        label << [APACHE] //, JAVA]  // FIXME: the JAVA fails - determine if impl wrong or server wrong
+        label << [APACHE, JAVA]
     }
 
     @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
@@ -266,7 +269,7 @@ class HttpGetSpec extends Specification {
         httpBuilder(label).getAsync(config).get() == HTML_CONTENT_B
 
         where:
-        label << [APACHE] //, JAVA]  // FIXME: the JAVA fails - determine if impl wrong or server wrong
+        label << [APACHE, JAVA]
     }
 
     @Unroll def '[#label] GET (BASIC) /basic: returns content'() {
@@ -313,11 +316,10 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
-     *       then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
-     */
-    // TODO: this test should be in a category that can be turned off for offline testing
-    @Unroll def '[#client] GET (DIGEST) /digest-auth'() {
+    @Unroll @Requires(HttpBin) def '[#client] GET (DIGEST) /digest-auth'() {
+        /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
+                 then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
+         */
         given:
         def config = {
             request.uri = 'http://httpbin.org/'
@@ -326,7 +328,7 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client,config).get {
+        def result = httpBuilder(client, config).get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -336,7 +338,7 @@ class HttpGetSpec extends Specification {
         result == 'Ignored'
 
         when:
-        result = httpBuilder(client,config).get {
+        result = httpBuilder(client, config).get {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
         }
@@ -346,7 +348,7 @@ class HttpGetSpec extends Specification {
         result.user == 'david'
 
         when:
-        result = httpBuilder(client,config).getAsync {
+        result = httpBuilder(client, config).getAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -356,7 +358,7 @@ class HttpGetSpec extends Specification {
         result == 'Ignored'
 
         when:
-        result = httpBuilder(client,config).getAsync() {
+        result = httpBuilder(client, config).getAsync() {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
         }.get()
