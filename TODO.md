@@ -1,4 +1,3 @@
-! coverage images are missing
 ! need permissions to add hooks for CI
 
 - javadoc 

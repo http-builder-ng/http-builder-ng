@@ -155,6 +155,13 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
         fileset(dir: 'build/reports', includes: '**/**')
     }
 
+    // Make the jacoco .resources directory non-hidden so the gh pages plugin will find it
+    ant.move(todir:'build/jbake/jacoco/test/html/resources'){
+        fileset(dir: 'build/jbake/jacoco/test/html/.resources')
+    }
+
+    ant.replace(dir:'build/jbake/jacoco/test/html', token:'.resources/', value:'resources/')
+
     ant.copy(todir: 'build/jbake/guide') {
         fileset(dir: 'build/asciidoc', includes: '**/**')
     }
