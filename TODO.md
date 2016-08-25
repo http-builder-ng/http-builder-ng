@@ -29,5 +29,3 @@
 - code quality analysis and reports
     - pmd, other static analysis
     - check should fire all of them?
-
-- maybe move more of the per-property details into the javadocs and have guide more usage and interesting stuff
