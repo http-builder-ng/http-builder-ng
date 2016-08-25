@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package groovyx.net.http.optional;
 
 import groovyx.net.http.*;
@@ -33,6 +48,13 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via the
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ */
 public class ApacheHttpBuilder extends HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
@@ -178,14 +200,16 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private CloseableHttpClient client;
     final private ChainedHttpConfig config;
     final private Executor executor;
+    final private HttpObjectConfig.Client clientConfig;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
+        this.clientConfig = config.getClient();
         this.cookieStore = new BasicCookieStore();
         HttpClientBuilder myBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
-        
+
         if(config.getExecution().getMaxThreads() > 1) {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
             cm.setMaxTotal(config.getExecution().getMaxThreads());
@@ -234,7 +258,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
         CredentialsProvider provider = new BasicCredentialsProvider();
-        provider.setCredentials(new AuthScope(uri.getHost(), port(uri)),
+        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),
                                 new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));
         c.setCredentialsProvider(provider);
     }
@@ -290,6 +314,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         List<Cookie> cookies = cr.actualCookies(new ArrayList());
         for(Cookie cookie : cookies) {
             final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
+            apacheCookie.setVersion(clientConfig.getCookieVersion());
             apacheCookie.setDomain(uri.getHost());
             apacheCookie.setPath(uri.getPath());
             if(cookie.getExpires() != null) {

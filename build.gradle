@@ -1,48 +1,74 @@
-plugins {
-    id 'com.jfrog.bintray' version '1.7'
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+    }
 }
 
+plugins {
+    id 'com.jfrog.bintray' version '1.7'
+    id "com.github.hierynomus.license" version "0.13.1"
+    id 'groovy'
+    id 'maven'
+    id 'maven-publish'
+    id 'jacoco'
+    id 'findbugs'
+    id "me.champeau.jbake" version "0.2"
+}
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'groovy'
+apply plugin: 'org.asciidoctor.convert'
 
 sourceCompatibility = 8
 targetCompatibility = 8
 
 group = 'org.codehaus.groovy.modules'
-version = '0.9.12'
+version = '0.9.13'
 
 repositories {
     jcenter()
+}
+
+configurations {
+    asciidoclet
 }
 
 dependencies {
     //required
     compile('xml-resolver:xml-resolver:1.2')
     compile('org.slf4j:slf4j-api:1.7.21')
-    
+
     //optionals
-    def optionals = [ 'com.opencsv:opencsv:3.8',
-                      'org.apache.httpcomponents:httpclient:4.5.2',
-                      'oauth.signpost:signpost-commonshttp4:1.2.1.1',
-                      'oauth.signpost:signpost-core:1.2.1.1',
-                      'org.codehaus.groovy:groovy-all:2.4.6',
-                      'org.jsoup:jsoup:1.9.2',
-                      'net.sourceforge.nekohtml:nekohtml:1.9.22',
-                      'com.fasterxml.jackson.core:jackson-databind:2.8.1' ];
+    def optionals = ['com.opencsv:opencsv:3.8',
+                     'org.apache.httpcomponents:httpclient:4.5.2',
+                     'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+                     'oauth.signpost:signpost-core:1.2.1.1',
+                     'org.codehaus.groovy:groovy-all:2.4.6',
+                     'org.jsoup:jsoup:1.9.2',
+                     'net.sourceforge.nekohtml:nekohtml:1.9.22',
+                     'com.fasterxml.jackson.core:jackson-databind:2.8.1'];
 
     optionals.each { opt ->
         compileOnly(opt); testCompile(opt);
     }
-    
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
-    
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+
+    testCompile('org.mock-server:mockserver-client-java:3.10.4')
+    testCompile('org.mock-server:mockserver-netty:3.10.4')
+
+    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
 }
 
 javadoc {
+    options.docletpath = configurations.asciidoclet.files.asType(List)
     options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+    options.doclet = 'org.asciidoctor.Asciidoclet'
+    options.overview = "src/main/java/overview.adoc"
+    options.addStringOption "-base-dir", "${projectDir}"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/dwclark/http-builder-ng[${project.name} ${project.version}]"
 }
 
 task sourcesJar(type: Jar) {
@@ -76,12 +102,12 @@ bintray {
     def bintrayUser = project.hasProperty('user') ? project.property('user') : null;
     def bintrayKey = project.hasProperty('key') ? project.property('key') : null;
 
-    if(bintrayUser && bintrayKey) {
+    if (bintrayUser && bintrayKey) {
         user = bintrayUser
         key = bintrayKey
-        
+
         publications = ['mavenJava']
-        
+
         pkg {
             repo = 'dclark'
             name = 'http-builder-ng'
@@ -90,5 +116,60 @@ bintray {
             labels = ['groovy']
             vcsUrl = 'https://github.com/dwclark/http-builder-ng'
         }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14.1'
+}
+
+license {
+    header rootProject.file('license_header.txt')
+
+    // Toggle ignoreFailures to false to enable license-checking that will fail the build
+    ignoreFailures true
+
+    ext.name = 'David Clark'
+    ext.year = Calendar.instance.get(Calendar.YEAR)
+
+    excludes(['**/*.txt', '**/*.dtd', '**/*.xml'])
+}
+
+asciidoctor {
+    options doctype: 'book'
+
+    backends = ['html5']
+
+    attributes 'source-highlighter': 'coderay',
+        'coderay-linenums-mode': 'table',
+        icon: 'font',
+        linkattrs: true,
+        encoding: 'utf-8'
+}
+
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'asciidoctor', 'jbake']) << {
+    logger.lifecycle 'Building documentation web site...'
+
+    ant.copy(todir: 'build/jbake') {
+        fileset(dir: 'build/docs', includes: '**/**')
+        fileset(dir: 'build/reports', includes: '**/**')
+    }
+
+    ant.copy(todir: 'build/jbake/guide') {
+        fileset(dir: 'build/asciidoc', includes: '**/**')
+    }
+}
+
+task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.') {
+    buildFile = 'publish.gradle'
+    tasks = ['publishGhPages']
+}
+
+tasks.withType(FindBugs) {
+    ignoreFailures = true       // let's not kill the build for this
+    reports {
+        xml.enabled false
+        html.enabled true
+        //html.stylesheet resources.text.fromFile('config/xsl/findbugs-custom.xsl')
     }
 }

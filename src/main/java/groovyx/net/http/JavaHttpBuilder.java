@@ -1,6 +1,24 @@
+/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +40,16 @@ import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
+
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
+/**
+ * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via the
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ */
 public class JavaHttpBuilder extends HttpBuilder {
 
     protected class Action {
@@ -68,6 +92,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             final List<Cookie> cookies = cr.actualCookies(new ArrayList());
             for(Cookie cookie : cookies) {
                 final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+                httpCookie.setVersion(clienConfig.getCookieVersion());
                 httpCookie.setDomain(uri.getHost());
                 httpCookie.setPath(uri.getPath());
                 if(cookie.getExpires() != null) {
@@ -126,6 +151,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             try {
                 addHeaders();
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
+                        // FIXME: this seems to enforce HTTPS for auth - while a good practice, may not want to force
                         if(sslContext != null) {
                             HttpsURLConnection https = (HttpsURLConnection) connection;
                             https.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -277,12 +303,14 @@ public class JavaHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
+    final private HttpObjectConfig.Client clienConfig;
     
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.sslContext = config.getExecution().getSslContext();
+        this.clienConfig = config.getClient();
     }
 
     protected ChainedHttpConfig getObjectConfig() {

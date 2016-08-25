@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package groovyx.net.http
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +35,7 @@ class HttpBuilderTest extends Specification {
     def setup() {
         def max = 2;
         def pool = Executors.newFixedThreadPool(max);
-        
+
         httpBin = HttpBuilder.configure(apacheBuilder) {
             request.uri = 'http://httpbin.org/';
             execution.maxThreads = max
@@ -33,7 +48,7 @@ class HttpBuilderTest extends Specification {
             execution.executor = pool;
         };
     }
-    
+
     def "Basic GET"() {
         expect:
         google.get {
@@ -42,7 +57,7 @@ class HttpBuilderTest extends Specification {
             indexOf('</html>') != -1;
         }
     }
-    
+
     def "GET with Parameters"() {
         expect:
         google.get(String) {
@@ -76,7 +91,7 @@ class HttpBuilderTest extends Specification {
             request.body = toSend;
             request.contentType = 'application/x-www-form-urlencoded';
         }
-        
+
         expect:
         http.post().form == toSend;
     }
@@ -95,7 +110,7 @@ class HttpBuilderTest extends Specification {
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept && 
+             headers.Accept.split(';') as List<String> == accept &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }
@@ -122,7 +137,7 @@ class HttpBuilderTest extends Specification {
                 assert(resp.headers.size() > 0);
             }
         }
-        
+
         expect:
         !result
     }
@@ -178,7 +193,7 @@ class HttpBuilderTest extends Specification {
         "Ignored" == httpBin.get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
-            response.failure { r -> "Ignored" } 
+            response.failure { r -> "Ignored" }
         };
 
         httpBin.get {
@@ -247,7 +262,7 @@ class HttpBuilderTest extends Specification {
 
         expect:
         file.length() > 0;
-        
+
         cleanup:
         file.delete();
     }
@@ -279,7 +294,7 @@ class HttpBuilderTest extends Specification {
         obj;
         obj instanceof org.jsoup.nodes.Document;
     }
-    
+
     def "Optional POST Json With Parameters With Jackson"() {
         setup:
         def objectMapper = new ObjectMapper();
@@ -297,7 +312,7 @@ class HttpBuilderTest extends Specification {
             Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept && 
+             headers.Accept.split(';') as List<String> == accept &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }
