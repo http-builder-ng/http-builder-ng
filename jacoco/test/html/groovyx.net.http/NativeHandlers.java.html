@@ -15,7 +15,6 @@
  */
 package groovyx.net.http;
 
-import java.nio.CharBuffer;
 import groovy.json.JsonBuilder;
 import groovy.json.JsonSlurper;
 import groovy.lang.Closure;
@@ -24,25 +23,6 @@ import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
-import java.io.FileNotFoundException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.File;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.function.BiFunction;
-import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
@@ -50,19 +30,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-<span class="nc" id="L53">public class NativeHandlers {</span>
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-<span class="fc" id="L55">    private static final Logger log = LoggerFactory.getLogger(NativeHandlers.class);</span>
+<span class="nc" id="L51">public class NativeHandlers {</span>
+
+<span class="fc" id="L53">    private static final Logger log = LoggerFactory.getLogger(NativeHandlers.class);</span>
 
     /**
      * Default success handler, just returns the passed data, which is the data
      * returned by the invoked parser.
-     * @param fromServer Backend indpendent representation of what the server returned
+     *
+     * @param fromServer Backend independent representation of what the server returned
      * @param data The parsed data
      * @return The data object.
      */
     public static Object success(final FromServer fromServer, final Object data) {
-<span class="fc" id="L65">        return data;</span>
+<span class="fc" id="L64">        return data;</span>
     }
 
     /**
@@ -73,131 +72,132 @@ import org.xml.sax.SAXException;
      * @throws HttpException
      */
     public static Object failure(final FromServer fromServer, final Object data) {
-<span class="nc" id="L76">        throw new HttpException(fromServer, data);</span>
+<span class="nc" id="L75">        throw new HttpException(fromServer, data);</span>
     }
 
-<span class="fc" id="L79">    protected static class Expanding {</span>
-<span class="fc" id="L80">        CharBuffer charBuffer = CharBuffer.allocate(2048);</span>
-<span class="fc" id="L81">        final char[] charAry = new char[2048];</span>
+<span class="fc" id="L78">    protected static class Expanding {</span>
+<span class="fc" id="L79">        CharBuffer charBuffer = CharBuffer.allocate(2048);</span>
+<span class="fc" id="L80">        final char[] charAry = new char[2048];</span>
         
         private void resize(final int toWrite) {
-<span class="fc" id="L84">            final int byAtLeast = toWrite - charBuffer.remaining();</span>
-<span class="fc" id="L85">            int next = charBuffer.capacity() &lt;&lt; 1;</span>
-<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            while((next - charBuffer.capacity()) + charBuffer.remaining() &lt; byAtLeast) {</span>
-<span class="nc" id="L87">                next = next &lt;&lt; 1;</span>
+<span class="fc" id="L83">            final int byAtLeast = toWrite - charBuffer.remaining();</span>
+<span class="fc" id="L84">            int next = charBuffer.capacity() &lt;&lt; 1;</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            while((next - charBuffer.capacity()) + charBuffer.remaining() &lt; byAtLeast) {</span>
+<span class="nc" id="L86">                next = next &lt;&lt; 1;</span>
             }
             
-<span class="fc" id="L90">            CharBuffer tmp = CharBuffer.allocate(next);</span>
-<span class="fc" id="L91">            charBuffer.flip();</span>
-<span class="fc" id="L92">            tmp.put(charBuffer);</span>
-<span class="fc" id="L93">            charBuffer = tmp;</span>
-<span class="fc" id="L94">        }</span>
+<span class="fc" id="L89">            CharBuffer tmp = CharBuffer.allocate(next);</span>
+<span class="fc" id="L90">            charBuffer.flip();</span>
+<span class="fc" id="L91">            tmp.put(charBuffer);</span>
+<span class="fc" id="L92">            charBuffer = tmp;</span>
+<span class="fc" id="L93">        }</span>
         
         public void append(final int total) {
-<span class="fc bfc" id="L97" title="All 2 branches covered.">            if(charBuffer.remaining() &lt; total) {</span>
-<span class="fc" id="L98">                resize(total);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if(charBuffer.remaining() &lt; total) {</span>
+<span class="fc" id="L97">                resize(total);</span>
             }
             
-<span class="fc" id="L101">            charBuffer.put(charAry, 0, total);</span>
-<span class="fc" id="L102">        }</span>
+<span class="fc" id="L100">            charBuffer.put(charAry, 0, total);</span>
+<span class="fc" id="L101">        }</span>
     }
     
-<span class="fc" id="L105">    protected static final ThreadLocal&lt;Expanding&gt; tlExpanding = new ThreadLocal&lt;Expanding&gt;() {</span>
+<span class="fc" id="L104">    protected static final ThreadLocal&lt;Expanding&gt; tlExpanding = new ThreadLocal&lt;Expanding&gt;() {</span>
             @Override protected Expanding initialValue() {
-<span class="fc" id="L107">                return new Expanding();</span>
+<span class="fc" id="L106">                return new Expanding();</span>
             }
         };
 
-    
-<span class="nc" id="L112">    public static class Encoders {</span>
+<span class="nc" id="L110">    public static class Encoders {</span>
 
         public static Object checkNull(final Object body) {
-<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if(body == null) {</span>
-<span class="nc" id="L116">                throw new NullPointerException(&quot;Effective body cannot be null&quot;);</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">            if(body == null) {</span>
+<span class="nc" id="L114">                throw new NullPointerException(&quot;Effective body cannot be null&quot;);</span>
             }
 
-<span class="fc" id="L119">            return body;</span>
+<span class="fc" id="L117">            return body;</span>
         }
 
         public static void checkTypes(final Object body, final Class[] allowedTypes) {
-<span class="fc" id="L123">            final Class type = body.getClass();</span>
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">            for(Class allowed : allowedTypes) {</span>
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                if(allowed.isAssignableFrom(type)) {</span>
-<span class="fc" id="L126">                    return;</span>
+<span class="fc" id="L121">            final Class type = body.getClass();</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">            for(Class allowed : allowedTypes) {</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">                if(allowed.isAssignableFrom(type)) {</span>
+<span class="fc" id="L124">                    return;</span>
                 }
             }
 
-<span class="nc" id="L130">            final String msg = String.format(&quot;Cannot encode bodies of type %s, only bodies of: %s&quot;,</span>
-<span class="nc" id="L131">                                             type.getName(),</span>
-<span class="nc" id="L132">                                             Arrays.stream(allowedTypes).map(Class::getName).collect(Collectors.joining(&quot;, &quot;)));</span>
+<span class="nc" id="L128">            final String msg = String.format(&quot;Cannot encode bodies of type %s, only bodies of: %s&quot;,</span>
+<span class="nc" id="L129">                                             type.getName(),</span>
+<span class="nc" id="L130">                                             Arrays.stream(allowedTypes).map(Class::getName).collect(Collectors.joining(&quot;, &quot;)));</span>
 
-<span class="nc" id="L134">            throw new IllegalArgumentException(msg);</span>
+<span class="nc" id="L132">            throw new IllegalArgumentException(msg);</span>
         }
 
         private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
-<span class="nc" id="L138">            return new ReaderInputStream(r, cs);</span>
+<span class="nc" id="L136">            return new ReaderInputStream(r, cs);</span>
         }
 
         public static InputStream stringToStream(final String s, final Charset cs) {
-<span class="fc" id="L142">            return new CharSequenceInputStream(s, cs);</span>
+<span class="fc" id="L140">            return new CharSequenceInputStream(s, cs);</span>
         }
 
         public static boolean handleRawUpload(final ChainedHttpConfig config, final ToServer ts) {
-<span class="fc" id="L146">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
-<span class="fc" id="L147">            final Object body = request.actualBody();</span>
-<span class="fc" id="L148">            final Charset charset = request.actualCharset();</span>
+<span class="fc" id="L144">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="fc" id="L145">            final Object body = request.actualBody();</span>
+<span class="fc" id="L146">            final Charset charset = request.actualCharset();</span>
             
             try {
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">                if(body instanceof File) {</span>
-<span class="nc" id="L152">                    ts.toServer(new FileInputStream((File) body));</span>
-<span class="nc" id="L153">                    return true;</span>
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">                if(body instanceof File) {</span>
+<span class="nc" id="L150">                    ts.toServer(new FileInputStream((File) body));</span>
+<span class="nc" id="L151">                    return true;</span>
                 }
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">                else if(body instanceof InputStream) {</span>
-<span class="nc" id="L156">                    ts.toServer((InputStream) body);</span>
-<span class="nc" id="L157">                    return true;</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">                else if(body instanceof InputStream) {</span>
+<span class="nc" id="L154">                    ts.toServer((InputStream) body);</span>
+<span class="nc" id="L155">                    return true;</span>
                 }
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">                else if(body instanceof Reader) {</span>
-<span class="nc" id="L160">                    ts.toServer(new ReaderInputStream((Reader) body, charset));</span>
-<span class="nc" id="L161">                    return true;</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">                else if(body instanceof Reader) {</span>
+<span class="nc" id="L158">                    ts.toServer(new ReaderInputStream((Reader) body, charset));</span>
+<span class="nc" id="L159">                    return true;</span>
                 }
                 else {
-<span class="fc" id="L164">                    return false;</span>
+<span class="fc" id="L162">                    return false;</span>
                 }
             }
-<span class="nc" id="L167">            catch(IOException e) {</span>
-<span class="nc" id="L168">                throw new RuntimeException(e);</span>
+<span class="nc" id="L165">            catch(IOException e) {</span>
+<span class="nc" id="L166">                throw new RuntimeException(e);</span>
             }
         }
 
-<span class="fc" id="L172">        private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class, Closure.class };</span>
+<span class="fc" id="L170">        private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class, Closure.class };</span>
 
         /**
          * Standard encoder for binary types. Accepts ByteArrayInputStream, InputStream, and byte[] types.
-         * @param request Fully configured chained request
+         *
+         * @param config Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
         public static void binary(final ChainedHttpConfig config, final ToServer ts) {
-<span class="nc" id="L180">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
-<span class="nc" id="L181">            final Object body = checkNull(request.actualBody());</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
-<span class="nc" id="L183">                return;</span>
+<span class="nc" id="L179">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc" id="L180">            final Object body = checkNull(request.actualBody());</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L182">                return;</span>
             }
             
-<span class="nc" id="L186">            checkTypes(body, BINARY_TYPES);</span>
+<span class="nc" id="L185">            checkTypes(body, BINARY_TYPES);</span>
             
-<span class="nc bnc" id="L188" title="All 2 branches missed.">            if(body instanceof byte[]) {</span>
-<span class="nc" id="L189">                ts.toServer(new ByteArrayInputStream((byte[]) body));</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">            if(body instanceof byte[]) {</span>
+<span class="nc" id="L188">                ts.toServer(new ByteArrayInputStream((byte[]) body));</span>
             }
             else {
-<span class="nc" id="L192">                throw new UnsupportedOperationException();</span>
+<span class="nc" id="L191">                throw new UnsupportedOperationException();</span>
             }
-<span class="nc" id="L194">        }</span>
+<span class="nc" id="L193">        }</span>
 
-<span class="fc" id="L196">        private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };</span>
+<span class="fc" id="L195">        private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };</span>
         
         /**
          * Standard encoder for text types. Accepts String and Reader types
-         * @param request Fully configured chained request
+         *
+         * @param config Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
         public static void text(final ChainedHttpConfig config, final ToServer ts) throws IOException {
@@ -219,7 +219,7 @@ import org.xml.sax.SAXException;
          * url encoded and is passed to the ToServer parameter as is. If the body is a Map type then
          * the output is generated by the {@link Form} class.
          * 
-         * @param request Fully configured chained request
+         * @param config Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
         public static void form(final ChainedHttpConfig config, final ToServer ts) {
@@ -247,179 +247,186 @@ import org.xml.sax.SAXException;
 <span class="fc" id="L247">        private static final Class[] XML_TYPES = new Class[] { String.class, StreamingMarkupBuilder.class };</span>
 
         /**
-         * Standard encoder for requests with an xml body. 
+         * Standard encoder for requests with an xml body.
+         *
          * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to xml using Groovy's {@link StreamingMarkupBuilder}.
          *
-         * @param request Fully configured chained request
+         * @param config Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
         public static void xml(final ChainedHttpConfig config, final ToServer ts) {
-<span class="nc" id="L259">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
-<span class="nc bnc" id="L260" title="All 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
-<span class="nc" id="L261">                return;</span>
+<span class="nc" id="L260">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc bnc" id="L261" title="All 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L262">                return;</span>
             }
             
-<span class="nc" id="L264">            final Object body = checkNull(request.actualBody());</span>
-<span class="nc" id="L265">            checkTypes(body, XML_TYPES);</span>
+<span class="nc" id="L265">            final Object body = checkNull(request.actualBody());</span>
+<span class="nc" id="L266">            checkTypes(body, XML_TYPES);</span>
 
-<span class="nc bnc" id="L267" title="All 2 branches missed.">            if(body instanceof String) {</span>
-<span class="nc" id="L268">                ts.toServer(stringToStream((String) body, request.actualCharset()));</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">            if(body instanceof String) {</span>
+<span class="nc" id="L269">                ts.toServer(stringToStream((String) body, request.actualCharset()));</span>
             }
-<span class="nc bnc" id="L270" title="All 2 branches missed.">            else if(body instanceof Closure) {</span>
-<span class="nc" id="L271">                final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();</span>
-<span class="nc" id="L272">                ts.toServer(stringToStream(smb.bind(body).toString(), request.actualCharset()));</span>
-<span class="nc" id="L273">            }</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            else if(body instanceof Closure) {</span>
+<span class="nc" id="L272">                final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();</span>
+<span class="nc" id="L273">                ts.toServer(stringToStream(smb.bind(body).toString(), request.actualCharset()));</span>
+<span class="nc" id="L274">            }</span>
             else {
-<span class="nc" id="L275">                throw new UnsupportedOperationException();</span>
+<span class="nc" id="L276">                throw new UnsupportedOperationException();</span>
             }
-<span class="nc" id="L277">        }</span>
+<span class="nc" id="L278">        }</span>
 
         /**
-         * Standard encoder for requests with a json body. 
+         * Standard encoder for requests with a json body.
+         *
          * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to json using Groovy's {@link JsonBuilder}.
          *
-         * @param request Fully configured chained request
+         * @param config Fully configured chained request
          * @param ts Formatted http body is passed to the ToServer argument
          */
         public static void json(final ChainedHttpConfig config, final ToServer ts) {
-<span class="fc" id="L289">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
-<span class="pc bpc" id="L290" title="1 of 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
-<span class="nc" id="L291">                return;</span>
+<span class="fc" id="L291">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L293">                return;</span>
             }
             
-<span class="fc" id="L294">            final Object body = checkNull(request.actualBody());</span>
-<span class="pc bpc" id="L295" title="2 of 4 branches missed.">            final String json = ((body instanceof String || body instanceof GString)</span>
-<span class="pc" id="L296">                                 ? body.toString()</span>
-<span class="fc" id="L297">                                 : new JsonBuilder(body).toString());</span>
-<span class="fc" id="L298">            ts.toServer(stringToStream(json, request.actualCharset()));</span>
-<span class="fc" id="L299">        }</span>
+<span class="fc" id="L296">            final Object body = checkNull(request.actualBody());</span>
+<span class="pc bpc" id="L297" title="2 of 4 branches missed.">            final String json = ((body instanceof String || body instanceof GString)</span>
+<span class="pc" id="L298">                                 ? body.toString()</span>
+<span class="fc" id="L299">                                 : new JsonBuilder(body).toString());</span>
+<span class="fc" id="L300">            ts.toServer(stringToStream(json, request.actualCharset()));</span>
+<span class="fc" id="L301">        }</span>
     }
 
-<span class="nc" id="L302">    public static class Parsers {</span>
+<span class="nc" id="L304">    public static class Parsers {</span>
 
-<span class="fc" id="L304">        public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;</span>
-<span class="fc" id="L305">        private static final Logger log = LoggerFactory.getLogger(Parsers.class);</span>
+<span class="fc" id="L306">        public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;</span>
+<span class="fc" id="L307">        private static final Logger log = LoggerFactory.getLogger(Parsers.class);</span>
+
         /**
-         * This CatalogResolver is static to avoid the overhead of re-parsing
-         * the catalog definition file every time.  Unfortunately, there's no
-         * way to share a single Catalog instance between resolvers.  The
-         * {@link Catalog} class is technically not thread-safe, but as long as you
+         * This CatalogResolver is static to avoid the overhead of re-parsing the catalog definition file every time.  Unfortunately, there's no
+         * way to share a single Catalog instance between resolvers.  The {@link Catalog} class is technically not thread-safe, but as long as you
          * do not parse catalog files while using the resolver, it should be fine.
          */
         public static CatalogResolver catalogResolver;
         
         static {
-<span class="fc" id="L316">            CatalogManager catalogManager = new CatalogManager();</span>
-<span class="fc" id="L317">            catalogManager.setIgnoreMissingProperties( true );</span>
-<span class="fc" id="L318">            catalogManager.setUseStaticCatalog( false );</span>
-<span class="fc" id="L319">            catalogManager.setRelativeCatalogs( true );</span>
+<span class="fc" id="L317">            CatalogManager catalogManager = new CatalogManager();</span>
+<span class="fc" id="L318">            catalogManager.setIgnoreMissingProperties( true );</span>
+<span class="fc" id="L319">            catalogManager.setUseStaticCatalog( false );</span>
+<span class="fc" id="L320">            catalogManager.setRelativeCatalogs( true );</span>
             
             try {
-<span class="fc" id="L322">                catalogResolver = new CatalogResolver( catalogManager );</span>
-<span class="fc" id="L323">                catalogResolver.getCatalog().parseCatalog(NativeHandlers.class.getResource(&quot;/catalog/html.xml&quot;));</span>
+<span class="fc" id="L323">                catalogResolver = new CatalogResolver( catalogManager );</span>
+<span class="fc" id="L324">                catalogResolver.getCatalog().parseCatalog(NativeHandlers.class.getResource(&quot;/catalog/html.xml&quot;));</span>
             }
-<span class="nc" id="L325">            catch(IOException ex) {</span>
-<span class="nc bnc" id="L326" title="All 2 branches missed.">                if(log.isWarnEnabled()) {</span>
-<span class="nc" id="L327">                    log.warn(&quot;Could not resolve default XML catalog&quot;, ex);</span>
+<span class="nc" id="L326">            catch(IOException ex) {</span>
+<span class="nc bnc" id="L327" title="All 2 branches missed.">                if(log.isWarnEnabled()) {</span>
+<span class="nc" id="L328">                    log.warn(&quot;Could not resolve default XML catalog&quot;, ex);</span>
                 }
-<span class="fc" id="L329">            }</span>
-<span class="fc" id="L330">        }</span>
+<span class="fc" id="L330">            }</span>
+<span class="fc" id="L331">        }</span>
 
         public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
             try {
-<span class="fc" id="L334">                final byte[] bytes = new byte[2_048];</span>
+<span class="fc" id="L335">                final byte[] bytes = new byte[2_048];</span>
                 int read;
-<span class="fc bfc" id="L336" title="All 2 branches covered.">                while((read = istream.read(bytes)) != -1) {</span>
-<span class="fc" id="L337">                    ostream.write(bytes, 0, read);</span>
+<span class="fc bfc" id="L337" title="All 2 branches covered.">                while((read = istream.read(bytes)) != -1) {</span>
+<span class="fc" id="L338">                    ostream.write(bytes, 0, read);</span>
                 }
             }
-<span class="nc" id="L340">            catch(IOException e) {</span>
-<span class="nc" id="L341">                throw new RuntimeException(e);</span>
+<span class="nc" id="L341">            catch(IOException e) {</span>
+<span class="nc" id="L342">                throw new RuntimeException(e);</span>
             }
             finally {
-<span class="pc bpc" id="L344" title="2 of 4 branches missed.">                if(close) {</span>
+<span class="pc bpc" id="L345" title="2 of 4 branches missed.">                if(close) {</span>
                     try {
-<span class="pc" id="L346">                        ostream.close();</span>
+<span class="pc" id="L347">                        ostream.close();</span>
                     }
-<span class="nc" id="L348">                    catch(IOException ioe) {</span>
-<span class="nc" id="L349">                        throw new RuntimeException(ioe);</span>
-<span class="pc" id="L350">                    }</span>
+<span class="nc" id="L349">                    catch(IOException ioe) {</span>
+<span class="nc" id="L350">                        throw new RuntimeException(ioe);</span>
+<span class="pc" id="L351">                    }</span>
                 }
             }
-<span class="fc" id="L353">        }</span>
+<span class="fc" id="L354">        }</span>
 
         /**
-         * Standard parser for raw bytes
+         * Standard parser for raw bytes.
+         *
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Raw bytes of body returned from http server
          */
         public static byte[] streamToBytes(final ChainedHttpConfig config, final FromServer fromServer) {
-<span class="nc" id="L361">            final ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="nc" id="L362">            transfer(fromServer.getInputStream(), baos, true);</span>
-<span class="nc" id="L363">            return baos.toByteArray();</span>
+<span class="fc" id="L363">            final ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L364">            transfer(fromServer.getInputStream(), baos, true);</span>
+<span class="fc" id="L365">            return baos.toByteArray();</span>
         }
 
         /**
-         * Standard parser for text
-         * @param fromServer Backend indenpendent representation of data returned from http server
+         * Standard parser for text response content.
+         *
+         * @param config the http client configuration
+         * @param fromServer Backend independent representation of data returned from http server
          * @return Body of response
          */
         public static String textToString(final ChainedHttpConfig config, final FromServer fromServer) {
             try {
-<span class="fc" id="L373">                final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());</span>
-<span class="fc" id="L374">                final Expanding e = tlExpanding.get();</span>
-<span class="fc" id="L375">                e.charBuffer.clear();</span>
+<span class="fc" id="L377">                final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());</span>
+<span class="fc" id="L378">                final Expanding e = tlExpanding.get();</span>
+<span class="fc" id="L379">                e.charBuffer.clear();</span>
                 int total;
-<span class="fc bfc" id="L377" title="All 2 branches covered.">                while((total = reader.read(e.charAry)) != -1) {</span>
-<span class="fc" id="L378">                    e.append(total);</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">                while((total = reader.read(e.charAry)) != -1) {</span>
+<span class="fc" id="L382">                    e.append(total);</span>
                 }
                 
-<span class="fc" id="L381">                e.charBuffer.flip();</span>
-<span class="fc" id="L382">                return e.charBuffer.toString();</span>
+<span class="fc" id="L385">                e.charBuffer.flip();</span>
+<span class="fc" id="L386">                return e.charBuffer.toString();</span>
             }
-<span class="nc" id="L384">            catch(IOException ioe) {</span>
-<span class="nc" id="L385">                throw new RuntimeException(ioe);</span>
+<span class="nc" id="L388">            catch(IOException ioe) {</span>
+<span class="nc" id="L389">                throw new RuntimeException(ioe);</span>
             }
         }
         
         /**
-         * Standard parser for responses with content type 'application/x-www-form-urlencoded'
+         * Standard parser for responses with content type 'application/x-www-form-urlencoded'.
+         *
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Form data
          */
         public static Map&lt;String,List&lt;String&gt;&gt; form(final ChainedHttpConfig config, final FromServer fromServer) {
-<span class="nc" id="L395">            return Form.decode(fromServer.getInputStream(), fromServer.getCharset());</span>
+<span class="nc" id="L400">            return Form.decode(fromServer.getInputStream(), fromServer.getCharset());</span>
         }
 
         /**
-         * Standard parser for xml responses
+         * Standard parser for xml responses.
+         *
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Body of response
          */
         public static GPathResult xml(final ChainedHttpConfig config, final FromServer fromServer) {
             try {
-<span class="nc" id="L405">                final XmlSlurper xml = new XmlSlurper();</span>
-<span class="nc" id="L406">                xml.setEntityResolver(catalogResolver);</span>
-<span class="nc" id="L407">                xml.setFeature(&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;, false);</span>
-<span class="nc" id="L408">                xml.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
-<span class="nc" id="L409">                return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
+<span class="fc" id="L411">                final XmlSlurper xml = new XmlSlurper();</span>
+<span class="fc" id="L412">                xml.setEntityResolver(catalogResolver);</span>
+<span class="fc" id="L413">                xml.setFeature(&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;, false);</span>
+<span class="fc" id="L414">                xml.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
+<span class="fc" id="L415">                return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
             }
-<span class="nc" id="L411">            catch(IOException | SAXException | ParserConfigurationException ex) {</span>
-<span class="nc" id="L412">                throw new RuntimeException(ex);</span>
+<span class="nc" id="L417">            catch(IOException | SAXException | ParserConfigurationException ex) {</span>
+<span class="nc" id="L418">                throw new RuntimeException(ex);</span>
             }
         }
 
         /**
-         * Standard parser for json responses
+         * Standard parser for json responses.
+         *
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Body of response
          */
         public static Object json(final ChainedHttpConfig config, final FromServer fromServer) {
-<span class="fc" id="L422">            return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
+<span class="fc" id="L429">            return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
         }
     }
 }

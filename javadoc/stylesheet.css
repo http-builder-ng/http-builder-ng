@@ -1,9 +1,19 @@
+/* Asciidoclet Java 7/8 javadoc stylesheet
+ * 
+ * Javadoc stylesheet based on http://docs.oracle.com/javase/8/docs/api/stylesheet.css
+ * with additional styles from Asciidoctor.
+ */
+
+@import url('coderay-asciidoctor.css'); 
+
 /* Javadoc style sheet */
 /*
 Overall document style
 */
 
-@import url('resources/fonts/dejavu.css');
+/* Asciidoclet
+@import url('resources/fonts/dejavu.css'); 
+*/
 
 body {
     background-color:#ffffff;
@@ -57,23 +67,17 @@ h6 {
 ul {
     list-style-type:disc;
 }
-code, tt {
+code, tt, dt code, table tr td dt code {
+    color:rgba(0,0,0,.9);
     font-family:'DejaVu Sans Mono', monospace;
-    font-size:14px;
-    padding-top:4px;
-    margin-top:8px;
-    line-height:1.4em;
+    font-size:13px;
+    line-height:1.4;
 }
-dt code {
-    font-family:'DejaVu Sans Mono', monospace;
-    font-size:14px;
-    padding-top:4px;
+pre > code {
+    font-size: 14px !important;
 }
 table tr td dt code {
-    font-family:'DejaVu Sans Mono', monospace;
-    font-size:14px;
     vertical-align:top;
-    padding-top:4px;
 }
 sup {
     font-size:8px;
@@ -94,7 +98,8 @@ Document title and Copyright styles
     margin-top:-9px;
 }
 .legalCopy {
-    margin-left:.5em;
+    margin:.5em;
+    float:left;
 }
 .bar a, .bar a:link, .bar a:visited, .bar a:active {
     color:#FFFFFF;
@@ -278,17 +283,20 @@ Page layout container styles
     list-style:none;
     padding-top:2px;
 }
-.contentContainer .description dl dt, .contentContainer .details dl dt, .serializedFormContainer dl dt {
-    font-size:12px;
+/*.contentContainer dl dt, .contentContainer .description dl dt, .contentContainer .details dl dt, .serializedFormContainer dl dt { */
+.contentContainer dl dt, .serializedFormContainer dl dt, .dlist dl dt {
+    font-size:13px;
     font-weight:bold;
     margin:10px 0 0 0;
-    color:#4E4E4E;
 }
-.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
+
+/*.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd { */
+.contentContainer dl dd, .serializedFormContainer dl dd {
     margin:5px 0 10px 0px;
     font-size:14px;
     font-family:'DejaVu Sans Mono',monospace;
 }
+
 .serializedFormContainer dl.nameValue dt {
     margin-left:1px;
     font-size:1.1em;
@@ -356,8 +364,9 @@ table tr td dl, table tr td dl dt, table tr td dl dd {
 }
 /*
 Table styles
+- Asciidoclet - added .packageSummary to table styles below, used by Java 7 output.
 */
-.overviewSummary, .memberSummary, .typeSummary, .useSummary, .constantsSummary, .deprecatedSummary {
+.overviewSummary, .memberSummary, .typeSummary, .useSummary, .constantsSummary, .deprecatedSummary, .packageSummary {
     width:100%;
     border-left:1px solid #EEE; 
     border-right:1px solid #EEE; 
@@ -366,7 +375,7 @@ Table styles
 .overviewSummary, .memberSummary  {
     padding:0px;
 }
-.overviewSummary caption, .memberSummary caption, .typeSummary caption,
+.overviewSummary caption, .memberSummary caption, .typeSummary caption, .packageSummary caption,
 .useSummary caption, .constantsSummary caption, .deprecatedSummary caption {
     position:relative;
     text-align:left;
@@ -381,17 +390,17 @@ Table styles
     margin:0px;
     white-space:pre;
 }
-.overviewSummary caption a:link, .memberSummary caption a:link, .typeSummary caption a:link,
+.overviewSummary caption a:link, .memberSummary caption a:link, .typeSummary caption a:link, .packageSummary caption a:link,
 .useSummary caption a:link, .constantsSummary caption a:link, .deprecatedSummary caption a:link,
-.overviewSummary caption a:hover, .memberSummary caption a:hover, .typeSummary caption a:hover,
+.overviewSummary caption a:hover, .memberSummary caption a:hover, .typeSummary caption a:hover, .packageSummary caption a:hover,
 .useSummary caption a:hover, .constantsSummary caption a:hover, .deprecatedSummary caption a:hover,
-.overviewSummary caption a:active, .memberSummary caption a:active, .typeSummary caption a:active,
+.overviewSummary caption a:active, .memberSummary caption a:active, .typeSummary caption a:active, .packageSummary caption a:active,
 .useSummary caption a:active, .constantsSummary caption a:active, .deprecatedSummary caption a:active,
-.overviewSummary caption a:visited, .memberSummary caption a:visited, .typeSummary caption a:visited,
+.overviewSummary caption a:visited, .memberSummary caption a:visited, .typeSummary caption a:visited, .packageSummary caption a:visited,
 .useSummary caption a:visited, .constantsSummary caption a:visited, .deprecatedSummary caption a:visited {
     color:#FFFFFF;
 }
-.overviewSummary caption span, .memberSummary caption span, .typeSummary caption span,
+.overviewSummary caption span, .memberSummary caption span, .typeSummary caption span, .packageSummary caption span,
 .useSummary caption span, .constantsSummary caption span, .deprecatedSummary caption span {
     white-space:nowrap;
     padding-top:5px;
@@ -434,7 +443,7 @@ Table styles
     float:none;
     display:inline;
 }
-.overviewSummary .tabEnd, .memberSummary .tabEnd, .typeSummary .tabEnd,
+.overviewSummary .tabEnd, .memberSummary .tabEnd, .typeSummary .tabEnd, .packageSummary .tabEnd,
 .useSummary .tabEnd, .constantsSummary .tabEnd, .deprecatedSummary .tabEnd {
     display:none;
     width:5px;
@@ -459,10 +468,11 @@ Table styles
     float:left;
 
 }
-.overviewSummary td, .memberSummary td, .typeSummary td,
+.overviewSummary td, .memberSummary td, .typeSummary td, .packageSummary td,
 .useSummary td, .constantsSummary td, .deprecatedSummary td {
     text-align:left;
     padding:0px 0px 12px 10px;
+    width:100%;
 }
 th.colOne, th.colFirst, th.colLast, .useSummary th, .constantsSummary th,
 td.colOne, td.colFirst, td.colLast, .useSummary td, .constantsSummary td{
@@ -487,11 +497,10 @@ td.colOne, th.colOne {
     font-size:13px;
 }
 .overviewSummary td.colFirst, .overviewSummary th.colFirst,
-.useSummary td.colFirst, .useSummary th.colFirst,
 .overviewSummary td.colOne, .overviewSummary th.colOne,
 .memberSummary td.colFirst, .memberSummary th.colFirst,
 .memberSummary td.colOne, .memberSummary th.colOne,
-.typeSummary td.colFirst{
+.typeSummary td.colFirst, .packageSummary td.colFirst{
     width:25%;
     vertical-align:top;
 }
@@ -550,10 +559,27 @@ h1.hidden {
     overflow:hidden;
     font-size:10px;
 }
-.block {
+div.block {
     display:block;
     margin:3px 10px 2px 0px;
-    color:#474747;
+    color:rgba(0,0,0,.8);
+}
+
+div.block h1, div.block h2, div.block h3, div.block h4, div.block h5, div.block h6 {
+    font-family:'DejaVu Sans', Arial, Helvetica, sans-serif;
+    font-weight:300;
+    font-style: normal;
+    color:#7a4a0e;
+}
+div.block *:not(pre) > code {
+    font-weight: normal;
+    padding: 2px 4px;
+    background-color: #f7f7f7;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+}
+div.block a {
+    text-decoration: underline;
 }
 .deprecatedLabel, .descfrmTypeLabel, .memberNameLabel, .memberNameLink,
 .overrideSpecifyLabel, .packageHierarchyLabel, .paramLabel, .returnLabel,
@@ -572,3 +598,135 @@ div.block div.block span.interfaceName {
 div.contentContainer ul.blockList li.blockList h2{
     padding-bottom:0px;
 }
+
+/* Asciidoclet styles - adapted from
+ * https://github.com/asciidoctor/asciidoctor/blob/master/data/stylesheets/asciidoctor-default.css
+ */
+
+/* Asciidoclet - reset to normal paragraph font in description text, javadoc wants monospace for some reason */
+.contentContainer dl dd {
+    font-family: 'DejaVu Serif', Georgia, "Times New Roman", Times, serif;
+}
+
+span.strong { font-weight: bold; }
+
+/* select on .ulist, .olist */
+.ulist ul, .olist ol { margin-left: 1.5em; padding: inherit; }
+ul.no-bullet, ol.no-bullet { margin-left: 1.5em; }
+.ulist ul li ul, .ulist ul li ol { margin-left: 1.25em; margin-bottom: 0; font-size: 1em; }
+ul.square li ul, ul.circle li ul, ul.disc li ul { list-style: inherit; }
+ul.square { list-style-type: square; }
+ul.circle { list-style-type: circle; }
+ul.disc { list-style-type: disc; }
+ul.no-bullet { list-style: none; }
+.olist ol li ul, .olist ol li ol { margin-left: 1.25em; margin-bottom: 0; }
+
+blockquote { margin: 0 0 1.25em; padding: 0.5625em 1.25em 0 1.1875em; border-left: 3px solid #487c58; }
+blockquote cite { display: block; font-size: inherit; color: #454545; }
+blockquote cite:before { content: "\2014 \0020"; }
+blockquote cite a, blockquote cite a:visited { color: #454545; }
+blockquote, blockquote p { line-height: 1.6; color: #6e6e6e; }
+
+/* Added div.block */
+div.block table { background: white; margin-bottom: 1.25em; border: solid 1px #dddddd; }
+div.block table thead, div.block table tfoot { background: whitesmoke; font-weight: bold; }
+div.block table thead tr th, div.block table thead tr td, div.block table tfoot tr th, div.block table tfoot tr td { padding: 0.5em 0.625em 0.625em; font-size: inherit; color: #333333; text-align: left; }
+div.block table tr th, div.block table tr td { padding: 0.5625em 0.625em; font-size: inherit; color: #333333; }
+div.block table tr.even, div.block table tr.alt, div.block table tr:nth-of-type(even) { background: #f9f9f9; }
+
+.subheader, #content #toctitle, .admonitionblock td.content > .title, .exampleblock > .title, .imageblock > .title, .listingblock > .title, .literalblock > .title, .mathblock > .title, .openblock > .title, .paragraph > .title, .quoteblock > .title, .tableblock > .title, .verseblock > .title, .videoblock > .title, .dlist > .title, .olist > .title, .ulist > .title, .qlist > .title, .hdlist > .title, .tableblock > caption { line-height: 1.4; color: #7a4a0e; font-weight: 300; margin-top: 0.5em; margin-bottom: 0.25em; }
+
+.imageblock, .literalblock, .listingblock, .mathblock, .verseblock, .videoblock { margin-bottom: 1.25em; }
+.admonitionblock td.content > .title, .exampleblock > .title, .imageblock > .title, .listingblock > .title, .literalblock > .title, .mathblock > .title, .openblock > .title, .paragraph > .title, .quoteblock > .title, .tableblock > .title, .verseblock > .title, .videoblock > .title, .dlist > .title, .olist > .title, .ulist > .title, .qlist > .title, .hdlist > .title { text-align: left; font-family: "DejaVu Sans", Arial, Helvetica; font-weight: 300; font-style: italic; }
+.tableblock > caption { text-align: left; font-family: "DejaVu Sans", Arial, Helvetica; font-weight: 300; font-style: italic; white-space: nowrap; overflow: visible; max-width: 0; }
+table.tableblock #preamble > .sectionbody > .paragraph:first-of-type p { font-size: inherit; }
+div.block .admonitionblock > table { border: 0; background: none; width: 100%; }
+.admonitionblock > table td.icon { text-align: center; width: 80px; }
+.admonitionblock > table td.icon img { max-width: none; }
+.admonitionblock > table td.icon .title { font-weight: 300; text-transform: uppercase; }
+.admonitionblock > table td.content { padding-left: 1.125em; padding-right: 1.25em; border-left: 1px solid #d8d8d8; color: #6e6e6e; }
+.admonitionblock > table td.content > :last-child > :last-child { margin-bottom: 0; }
+.exampleblock > .content { border-style: solid; border-width: 1px; border-color: #e6e6e6; margin-bottom: 1.25em; padding: 1.25em; background: white; -webkit-border-radius: 4px; border-radius: 4px; }
+.exampleblock > .content > :first-child { margin-top: 0; }
+.exampleblock > .content > :last-child { margin-bottom: 0; }
+.exampleblock > .content h1, .exampleblock > .content h2, .exampleblock > .content h3, .exampleblock > .content #toctitle, .sidebarblock.exampleblock > .content > .title, .exampleblock > .content h4, .exampleblock > .content h5, .exampleblock > .content h6, .exampleblock > .content p { color: #333333; }
+.exampleblock > .content h1, .exampleblock > .content h2, .exampleblock > .content h3, .exampleblock > .content #toctitle, .sidebarblock.exampleblock > .content > .title, .exampleblock > .content h4, .exampleblock > .content h5, .exampleblock > .content h6 { line-height: 1; margin-bottom: 0.625em; }
+.exampleblock > .content h1.subheader, .exampleblock > .content h2.subheader, .exampleblock > .content h3.subheader, .exampleblock > .content .subheader#toctitle, .sidebarblock.exampleblock > .content > .subheader.title, .exampleblock > .content h4.subheader, .exampleblock > .content h5.subheader, .exampleblock > .content h6.subheader { line-height: 1.4; }
+.exampleblock.result > .content { -webkit-box-shadow: 0 1px 8px #e3e3dd; box-shadow: 0 1px 8px #e3e3dd; }
+.sidebarblock { border-style: solid; border-width: 1px; border-color: #e3e3dd; margin-bottom: 1.25em; padding: 1.25em; background: #fafaf9; -webkit-border-radius: 4px; border-radius: 4px; }
+.sidebarblock > :first-child { margin-top: 0; }
+.sidebarblock > :last-child { margin-bottom: 0; }
+.sidebarblock h1, .sidebarblock h2, .sidebarblock h3, .sidebarblock #toctitle, .sidebarblock > .content > .title, .sidebarblock h4, .sidebarblock h5, .sidebarblock h6, .sidebarblock p { color: #333333; }
+.sidebarblock h1, .sidebarblock h2, .sidebarblock h3, .sidebarblock #toctitle, .sidebarblock > .content > .title, .sidebarblock h4, .sidebarblock h5, .sidebarblock h6 { line-height: 1; margin-bottom: 0.625em; }
+.sidebarblock h1.subheader, .sidebarblock h2.subheader, .sidebarblock h3.subheader, .sidebarblock .subheader#toctitle, .sidebarblock > .content > .subheader.title, .sidebarblock h4.subheader, .sidebarblock h5.subheader, .sidebarblock h6.subheader { line-height: 1.4; }
+.sidebarblock > .content > .title { color: #7a4a0e; margin-top: 0; line-height: 1.6; }
+.exampleblock > .content > :last-child > :last-child, .exampleblock > .content .olist > ol > li:last-child > :last-child, .exampleblock > .content .ulist > ul > li:last-child > :last-child, .exampleblock > .content .qlist > ol > li:last-child > :last-child, .sidebarblock > .content > :last-child > :last-child, .sidebarblock > .content .olist > ol > li:last-child > :last-child, .sidebarblock > .content .ulist > ul > li:last-child > :last-child, .sidebarblock > .content .qlist > ol > li:last-child > :last-child { margin-bottom: 0; }
+.literalblock pre,.listingblock pre:not(.highlight),.listingblock pre[class="highlight"],.listingblock pre[class^="highlight "],.listingblock pre.CodeRay{ background: #f7f7f7 }
+.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{-webkit-border-radius:4px;border-radius:4px;word-wrap:break-word;padding:1em;font-size:.8125em}
+.literalblock pre.nowrap,.literalblock pre[class].nowrap,.listingblock pre.nowrap,.listingblock pre[class].nowrap{overflow-x:auto;white-space:pre;word-wrap:normal}
+.listingblock>.content{position:relative}
+.listingblock code[data-lang]:before{display:none;content:attr(data-lang);position:absolute;font-size:.75em;top:.425rem;right:.5rem;line-height:1;text-transform:uppercase;color:#999}
+.listingblock:hover code[data-lang]:before{display:block}
+.listingblock.terminal pre .command:before{content:attr(data-prompt);padding-right:.5em;color:#999}
+.listingblock.terminal pre .command:not([data-prompt]):before{content:"$"}
+
+.quoteblock { margin: 0 0 1.25em 0; padding: 0.5625em 1.25em 0 1.1875em; border-left: 3px solid #487c58; }
+.quoteblock blockquote { margin: 0 0 1.25em 0; padding: 0 0 0.625em 0; border: 0; }
+.quoteblock blockquote > .paragraph:last-child p { margin-bottom: 0; }
+.quoteblock .attribution { margin-top: -0.625em; padding-bottom: 0.625em; font-size: inherit; color: #454545; line-height: 1.6; }
+.quoteblock .attribution br { display: none; }
+.quoteblock .attribution cite { display: block; }
+
+table.tableblock{max-width:100%;border-collapse:separate;border-spacing:0}
+table.tableblock td>.paragraph:last-child p>p:last-child,table.tableblock th>p:last-child,table.tableblock td>p:last-child{margin-bottom:0}
+table.spread{width:100%}
+table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
+table.grid-all th.tableblock,table.grid-all td.tableblock{border-width:0 1px 1px 0}
+table.grid-all tfoot>tr>th.tableblock,table.grid-all tfoot>tr>td.tableblock{border-width:1px 1px 0 0}
+table.grid-cols th.tableblock,table.grid-cols td.tableblock{border-width:0 1px 0 0}
+table.grid-all *>tr>.tableblock:last-child,table.grid-cols *>tr>.tableblock:last-child{border-right-width:0}
+table.grid-rows th.tableblock,table.grid-rows td.tableblock{border-width:0 0 1px 0}
+table.grid-all tbody>tr:last-child>th.tableblock,table.grid-all tbody>tr:last-child>td.tableblock,table.grid-all thead:last-child>tr>th.tableblock,table.grid-rows tbody>tr:last-child>th.tableblock,table.grid-rows tbody>tr:last-child>td.tableblock,table.grid-rows thead:last-child>tr>th.tableblock{border-bottom-width:0}
+table.grid-rows tfoot>tr>th.tableblock,table.grid-rows tfoot>tr>td.tableblock{border-width:1px 0 0 0}
+table.frame-all{border-width:1px}
+table.frame-sides{border-width:0 1px}
+table.frame-topbot{border-width:1px 0}
+th.halign-left,td.halign-left{text-align:left}
+th.halign-right,td.halign-right{text-align:right}
+th.halign-center,td.halign-center{text-align:center}
+th.valign-top,td.valign-top{vertical-align:top}
+th.valign-bottom,td.valign-bottom{vertical-align:bottom}
+th.valign-middle,td.valign-middle{vertical-align:middle}
+
+.dlist dl dd, .contentContainer .description .dlist dl dd, .contentContainer .details .dlist dl dd { margin-left: 1.125em; }
+
+.contentContainer hr {
+  border: 0 solid #ddddd8;
+  border-top-width: 1px;
+  height: 0;
+  margin: 1em 0 1.25em 0;
+}
+
+.contentContainer hr + br {
+  display: none;
+}
+
+p.tableblock {
+    margin-top: .5em;
+    margin-bottom: 0;
+}
+
+/* Javadoc puts its output inside a <ul> element which confuses nested ul, ol styles in user text.
+ * Select on asciidoctor's div.ulist & div.olist to get correct nested bullet styles. */
+.ulist > ul {
+    list-style-type: disc;
+}
+
+.ulist > ul .ulist > ul, .olist > ol .ulist > ul {
+    list-style-type: circle;
+}
+
+.olist > ol .olist > ol .ulist > ul, .olist > ol .ulist > ul .ulist > ul, .ulist > ul .olist > ol .ulist > ul, .ulist > ul .ulist > ul .ulist > ul {
+    list-style-type: square;
+}
+

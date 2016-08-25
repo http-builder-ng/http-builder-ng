@@ -28,7 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.net.URI;
 
+/**
+ * FIXME: document
+ */
 public interface FromServer {
+    // TODO: should this be renamed Decoder?
 
     public static final String DEFAULT_CONTENT_TYPE = &quot;application/octet-stream&quot;;
 
@@ -38,126 +42,156 @@ public interface FromServer {
         private volatile Map&lt;String,List&lt;String&gt;&gt; keysValues;
         
         public static Header full(final String full) {
-<span class="fc" id="L41">            final int pos = full.indexOf(':');</span>
-<span class="fc" id="L42">            return new Header(full.substring(0, pos).trim(), cleanValue(full.substring(pos + 1).trim()));</span>
+<span class="fc" id="L45">            final int pos = full.indexOf(':');</span>
+<span class="fc" id="L46">            return new Header(full.substring(0, pos).trim(), cleanValue(full.substring(pos + 1).trim()));</span>
         }
 
         public static Header keyValue(final String key, final String value) {
-<span class="fc" id="L46">            return new Header(key, value);</span>
+<span class="fc" id="L50">            return new Header(key, value);</span>
         }
 
         public static Header find(final List&lt;Header&gt; headers, final String key) {
-<span class="fc" id="L50">            return headers.stream().filter((h) -&gt; h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);</span>
+<span class="fc" id="L54">            return headers.stream().filter((h) -&gt; h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);</span>
         }
         
-<span class="fc" id="L53">        private Header(final String key, final String value) {</span>
-<span class="fc" id="L54">            this.key = key;</span>
-<span class="fc" id="L55">            this.value = value;</span>
-<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">        private Header(final String key, final String value) {</span>
+<span class="fc" id="L58">            this.key = key;</span>
+<span class="fc" id="L59">            this.value = value;</span>
+<span class="fc" id="L60">        }</span>
 
         @Override
         public String toString() {
-<span class="nc" id="L60">            return key + &quot;: &quot; + value;</span>
+<span class="nc" id="L64">            return key + &quot;: &quot; + value;</span>
         }
 
         public String getKey() {
-<span class="fc" id="L64">            return key;</span>
+<span class="fc" id="L68">            return key;</span>
         }
 
         public String getValue() {
-<span class="fc" id="L68">            return value;</span>
+<span class="fc" id="L72">            return value;</span>
         }
 
         public boolean isMultiValued() {
-<span class="fc bfc" id="L72" title="All 2 branches covered.">            return value.indexOf(';') != -1;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            return value.indexOf(';') != -1;</span>
         }
 
         public static String cleanValue(final String v) {
-<span class="fc bfc" id="L76" title="All 2 branches covered.">            if(v.startsWith(&quot;\&quot;&quot;)) {</span>
-<span class="fc" id="L77">                return v.substring(1, v.length() - 1);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if(v.startsWith(&quot;\&quot;&quot;)) {</span>
+<span class="fc" id="L81">                return v.substring(1, v.length() - 1);</span>
             }
             else {
-<span class="fc" id="L80">                return v;</span>
+<span class="fc" id="L84">                return v;</span>
             }
         }
 
         public static void putValue(final Map&lt;String,List&lt;String&gt;&gt; map, final String v) {
-<span class="fc" id="L85">            final String[] sub = v.split(&quot;=&quot;);</span>
-<span class="fc" id="L86">            final String subKey = sub[0].trim();</span>
-<span class="fc" id="L87">            final String subValue = cleanValue(sub[1].trim());</span>
-<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if(map.containsKey(subKey)) {</span>
-<span class="nc" id="L89">                final List&lt;String&gt; list = new ArrayList(map.get(subKey));</span>
-<span class="nc" id="L90">                list.add(subValue);</span>
-<span class="nc" id="L91">                map.put(subKey, list);</span>
-<span class="nc" id="L92">            }</span>
+<span class="fc" id="L89">            final String[] sub = v.split(&quot;=&quot;);</span>
+<span class="fc" id="L90">            final String subKey = sub[0].trim();</span>
+<span class="fc" id="L91">            final String subValue = cleanValue(sub[1].trim());</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">            if(map.containsKey(subKey)) {</span>
+<span class="nc" id="L93">                final List&lt;String&gt; list = new ArrayList(map.get(subKey));</span>
+<span class="nc" id="L94">                list.add(subValue);</span>
+<span class="nc" id="L95">                map.put(subKey, list);</span>
+<span class="nc" id="L96">            }</span>
             else {
-<span class="fc" id="L94">                map.put(subKey, Collections.singletonList(subValue));</span>
+<span class="fc" id="L98">                map.put(subKey, Collections.singletonList(subValue));</span>
             }
-<span class="fc" id="L96">        }</span>
+<span class="fc" id="L100">        }</span>
         
         public Map&lt;String,List&lt;String&gt;&gt; getKeysValues() {
-<span class="fc bfc" id="L99" title="All 2 branches covered.">            if(keysValues != null) {</span>
-<span class="fc" id="L100">                return keysValues;</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            if(keysValues != null) {</span>
+<span class="fc" id="L104">                return keysValues;</span>
             }
             
-<span class="fc bfc" id="L103" title="All 2 branches covered.">            if(isMultiValued()) {</span>
-<span class="fc" id="L104">                final Map&lt;String,List&lt;String&gt;&gt; tmp = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L105">                final String[] ary = value.split(&quot;;&quot;);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            if(isMultiValued()) {</span>
+<span class="fc" id="L108">                final Map&lt;String,List&lt;String&gt;&gt; tmp = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L109">                final String[] ary = value.split(&quot;;&quot;);</span>
 
-<span class="fc bfc" id="L107" title="All 2 branches covered.">                if(ary[0].indexOf('=') == -1) {</span>
-<span class="fc" id="L108">                    tmp.put(key, Collections.singletonList(ary[0].trim()));</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                if(ary[0].indexOf('=') == -1) {</span>
+<span class="fc" id="L112">                    tmp.put(key, Collections.singletonList(ary[0].trim()));</span>
                 }
                 else {
-<span class="fc" id="L111">                    tmp.put(key, Collections.singletonList(&quot;&quot;));</span>
-<span class="fc" id="L112">                    putValue(tmp, ary[0].replace(key + &quot;:&quot;, &quot;&quot;).trim());</span>
+<span class="fc" id="L115">                    tmp.put(key, Collections.singletonList(&quot;&quot;));</span>
+<span class="fc" id="L116">                    putValue(tmp, ary[0].replace(key + &quot;:&quot;, &quot;&quot;).trim());</span>
                 }
                 
-<span class="fc bfc" id="L115" title="All 2 branches covered.">                for(int i = 1; i &lt; ary.length; ++i) {</span>
-<span class="fc" id="L116">                    putValue(tmp, ary[i].trim());</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                for(int i = 1; i &lt; ary.length; ++i) {</span>
+<span class="fc" id="L120">                    putValue(tmp, ary[i].trim());</span>
                 }
 
-<span class="fc" id="L119">                keysValues = Collections.unmodifiableMap(tmp);</span>
-<span class="fc" id="L120">            }</span>
+<span class="fc" id="L123">                keysValues = Collections.unmodifiableMap(tmp);</span>
+<span class="fc" id="L124">            }</span>
             else {
-<span class="fc" id="L122">                keysValues = Collections.singletonMap(key, Collections.singletonList(value));</span>
+<span class="fc" id="L126">                keysValues = Collections.singletonMap(key, Collections.singletonList(value));</span>
             }
 
-<span class="fc" id="L125">            return keysValues;</span>
+<span class="fc" id="L129">            return keysValues;</span>
         }
     }
 
     default String getContentType() {
-<span class="fc" id="L130">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if(header == null) {</span>
-<span class="nc" id="L132">            return DEFAULT_CONTENT_TYPE;</span>
+<span class="fc" id="L134">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if(header == null) {</span>
+<span class="fc" id="L136">            return DEFAULT_CONTENT_TYPE;</span>
         }
         else {
-<span class="fc" id="L135">            return header.getKeysValues().get(header.getKey()).get(0);</span>
+<span class="fc" id="L139">            return header.getKeysValues().get(header.getKey()).get(0);</span>
         }
     }
 
     default Charset getCharset() {
-<span class="fc" id="L140">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="pc bpc" id="L141" title="1 of 4 branches missed.">        if(header == null || !header.isMultiValued() ||</span>
-<span class="pc bpc" id="L142" title="1 of 2 branches missed.">           !header.getKeysValues().containsKey(&quot;charset&quot;) ||</span>
-<span class="pc bpc" id="L143" title="1 of 2 branches missed.">           header.getKeysValues().get(&quot;charset&quot;).size() == 0) {</span>
-<span class="fc" id="L144">            return StandardCharsets.UTF_8;</span>
+<span class="fc" id="L144">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="pc bpc" id="L145" title="1 of 4 branches missed.">        if(header == null || !header.isMultiValued() ||</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">           !header.getKeysValues().containsKey(&quot;charset&quot;) ||</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">           header.getKeysValues().get(&quot;charset&quot;).size() == 0) {</span>
+<span class="fc" id="L148">            return StandardCharsets.UTF_8;</span>
         }
         else {
-<span class="fc" id="L147">            return Charset.forName(header.getKeysValues().get(&quot;charset&quot;).get(0));</span>
+<span class="fc" id="L151">            return Charset.forName(header.getKeysValues().get(&quot;charset&quot;).get(0));</span>
         }
     }
 
+    /**
+     * FIXME: document
+     */
     InputStream getInputStream();
+
+    /**
+     * FIXME: document
+     */
     int getStatusCode();
+
+    /**
+     * FIXME: document
+     */
     String getMessage();
+
+    /**
+     * FIXME: document
+     */
     List&lt;Header&gt; getHeaders();
+
+    /**
+     * FIXME: document
+     */
     boolean getHasBody();
+
+    /**
+     * FIXME: document
+     */
     URI getUri();
+
+    /**
+     * FIXME: document
+     */
     void finish();
 
+    /**
+     * FIXME: document
+     */
     default Reader getReader() {
-<span class="fc" id="L160">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
+<span class="fc" id="L194">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

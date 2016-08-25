@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.9.12,</span>
+<span id="revnumber">version 0.9.13,</span>
 <span id="revdate">August 2016</span>
 </div>
 <div id="toc" class="toc2">
@@ -524,11 +524,21 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_history">History</a></li>
 <li><a href="#_license">License</a></li>
 <li><a href="#_architecture">Architecture</a></li>
-<li><a href="#_common_configuration">Common Configuration</a></li>
-<li><a href="#_verbs">Verbs</a>
+<li><a href="#_configuration">Configuration</a>
+<ul class="sectlevel2">
+<li><a href="#_authentication">Authentication</a>
+<ul class="sectlevel3">
+<li><a href="#_basic">BASIC</a></li>
+<li><a href="#_digest">DIGEST</a></li>
+</ul>
+</li>
+<li><a href="#_https_ssl">HTTPS/SSL</a></li>
+<li><a href="#_response_code_when_code_handlers">Response <code>when</code> Handlers</a></li>
+</ul>
+</li>
+<li><a href="#_verb_examples">Verb Examples</a>
 <ul class="sectlevel2">
 <li><a href="#_get">GET</a></li>
-<li><a href="#_post">POST</a></li>
 <li><a href="#_put">PUT</a></li>
 <li><a href="#_head">HEAD</a></li>
 <li><a href="#_delete">DELETE</a></li>
@@ -606,195 +616,125 @@ Unless required by applicable law or agreed to in writing, software distributed 
 <div class="sect1">
 <h2 id="_architecture">Architecture</h2>
 <div class="sectionbody">
-<div class="quoteblock">
-<blockquote>
 <div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
+<p>FIXME: come up with overview and maybe some diagrams</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_common_configuration">Common Configuration</h2>
+<h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
-<div class="quoteblock">
-<blockquote>
 <div class="paragraph">
-<p>TBD: document full scope of <code>configure</code> options&#8230;&#8203;</p>
+<p>The specific configuration options are discussed in the JavaDocs for the <code>HttpBuilder</code>, <code>HttpConfig</code> and <code>HttpObjectConfig</code> interfaces.</p>
 </div>
-</blockquote>
+<div class="sect2">
+<h3 id="_authentication">Authentication</h3>
+<div class="paragraph">
+<p>There are two methods of authentication supported: BASIC and DIGEST.</p>
+</div>
+<div class="sect3">
+<h4 id="_basic">BASIC</h4>
+<div class="paragraph">
+<p><a href="https://en.wikipedia.org/wiki/Basic_access_authentication">BASIC Authentication</a> is supported via the <code>HttpConfig.Request.Auth</code> interface:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">int</span> maxThreads = <span class="integer">2</span>
-
-<span class="keyword">def</span> google = HttpBuilder.configure(apacheBuilder) {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://www.google.com</span><span class="delimiter">'</span></span>
-    execution.maxThreads = maxThreads
-    execution.executor =  <span class="predefined-type">Executors</span>.newFixedThreadPool(maxThreads)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = HttpBuilder.configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:10101</span><span class="delimiter">'</span></span>
+    request.auth.basic <span class="string"><span class="delimiter">'</span><span class="content">admin</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">myp@$$w0rd</span><span class="delimiter">'</span></span>
 }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is nothing more to do on the client side.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_digest">DIGEST</h4>
+<div class="paragraph">
+<p><a href="https://en.wikipedia.org/wiki/Digest_access_authentication">DIGEST Authentication</a> is supported via the <code>HttpConfig.Request.Auth</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = HttpBuilder.configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:10101</span><span class="delimiter">'</span></span>
+    request.auth.digest <span class="string"><span class="delimiter">'</span><span class="content">admin</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">myp@$$w0rd</span><span class="delimiter">'</span></span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>There is nothing more to do on the client side.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_https_ssl">HTTPS/SSL</h3>
+<div class="paragraph">
+<p>FIXME: document</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_response_code_when_code_handlers">Response <code>when</code> Handlers</h3>
+<div class="paragraph">
+<p>FIXME: document</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_verbs">Verbs</h2>
+<h2 id="_verb_examples">Verb Examples</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_get">GET</h3>
-<div class="quoteblock">
-<blockquote>
 <div class="paragraph">
-<p>TBD: detailed discussion&#8230;&#8203;</p>
+<p>FIXME: simple get
+=== POST</p>
 </div>
-</blockquote>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">google.get {
-    response.parser <span class="string"><span class="delimiter">'</span><span class="content">text/html</span><span class="delimiter">'</span></span>, Parsers.&amp;textToString
-}</code></pre>
-</div>
-</div>
-<div class="quoteblock">
-<blockquote>
 <div class="paragraph">
-<p>TBD: detailed discussion&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">google.get(<span class="predefined-type">String</span>){
-    response.parser <span class="string"><span class="delimiter">'</span><span class="content">text/html</span><span class="delimiter">'</span></span>, Parsers.&amp;textToString
-    request.uri.query = [ <span class="key">q</span>: <span class="string"><span class="delimiter">'</span><span class="content">Big Bird</span><span class="delimiter">'</span></span> ]
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_post">POST</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">httpBin.post {
-    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/post</span><span class="delimiter">'</span></span>
-    request.body = [ <span class="key">foo</span>: <span class="string"><span class="delimiter">'</span><span class="content">my foo</span><span class="delimiter">'</span></span>, <span class="key">bar</span>: <span class="string"><span class="delimiter">'</span><span class="content">my bar</span><span class="delimiter">'</span></span> ];
-    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>;
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = HttpBuilder.configure(apacheBuilder) {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://httpbin.org/post</span><span class="delimiter">'</span></span>
-    request.body = [ <span class="key">foo</span>: <span class="string"><span class="delimiter">'</span><span class="content">my foo</span><span class="delimiter">'</span></span>, <span class="key">bar</span>: <span class="string"><span class="delimiter">'</span><span class="content">my bar</span><span class="delimiter">'</span></span> ];
-    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>;
-}.post()</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">httpBin.post {
-    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/post</span><span class="delimiter">'</span></span>
-    request.uri.query = [ <span class="key">one</span>: <span class="string"><span class="delimiter">'</span><span class="content">1</span><span class="delimiter">'</span></span>, <span class="key">two</span>: <span class="string"><span class="delimiter">'</span><span class="content">2</span><span class="delimiter">'</span></span> ];
-    request.accept = [ <span class="string"><span class="delimiter">'</span><span class="content">application/json</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">application/javascript</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">text/javascript</span><span class="delimiter">'</span></span> ];
-    request.body = [ <span class="key">lastName</span>: <span class="string"><span class="delimiter">'</span><span class="content">Count</span><span class="delimiter">'</span></span>, <span class="key">firstName</span>: <span class="string"><span class="delimiter">'</span><span class="content">The</span><span class="delimiter">'</span></span>, <span class="key">address</span>: [ <span class="key">street</span>: <span class="string"><span class="delimiter">'</span><span class="content">123 Sesame Street</span><span class="delimiter">'</span></span> ] ];
-    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/json</span><span class="delimiter">'</span></span>;
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">httpBin.post {
-    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/post</span><span class="delimiter">'</span></span>
-    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/json</span><span class="delimiter">'</span></span>;
-    request.headers = [ <span class="key">One</span>: <span class="string"><span class="delimiter">'</span><span class="content">1</span><span class="delimiter">'</span></span>, <span class="key">Two</span>: <span class="string"><span class="delimiter">'</span><span class="content">2</span><span class="delimiter">'</span></span>, <span class="key">Buckle</span>: <span class="string"><span class="delimiter">'</span><span class="content">my shoe</span><span class="delimiter">'</span></span> ].asImmutable();
-}</code></pre>
-</div>
+<p>TODO: document</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_put">PUT</h3>
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 <div class="sect2">
 <h3 id="_head">HEAD</h3>
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 <div class="sect2">
 <h3 id="_delete">DELETE</h3>
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 <div class="sect2">
 <h3 id="_trace">TRACE</h3>
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 <div class="sect2">
 <h3 id="_options">OPTIONS</h3>
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_encoders_parsers">Encoders &amp; Parsers</h2>
 <div class="sectionbody">
-<div class="quoteblock">
-<blockquote>
 <div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
+<p>TODO: using them and implementing customs</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
-<div class="quoteblock">
-<blockquote>
-<div class="paragraph">
-<p>TBD&#8230;&#8203;</p>
-</div>
-</blockquote>
-</div>
+
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.12<br>
-Last updated 2016-08-20 11:41:49 -05:00
+Version 0.9.13<br>
+Last updated 2016-08-25 07:01:53 -05:00
 </div>
 </div>
 </body>

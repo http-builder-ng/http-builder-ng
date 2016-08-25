@@ -1,0 +1,676 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+		.tablerow0 {
+			background: #EEEEEE;
+		}
+
+		.tablerow1 {
+			background: white;
+		}
+
+		.detailrow0 {
+			background: #EEEEEE;
+		}
+
+		.detailrow1 {
+			background: white;
+		}
+
+		.tableheader {
+			background: #b9b9fe;
+			font-size: larger;
+		}
+
+		.tablerow0:hover, .tablerow1:hover {
+			background: #aaffaa;
+		}
+
+		.priority-1 {
+		    color: red;
+		    font-weight: bold;
+		}
+		.priority-2 {
+		    color: orange;
+		    font-weight: bold;
+		}
+		.priority-3 {
+		    color: green;
+		    font-weight: bold;
+		}
+		.priority-4 {
+		    color: blue;
+		    font-weight: bold;
+		}
+		</style>
+<script type="text/javascript">
+			function toggleRow(elid) {
+				if (document.getElementById) {
+					element = document.getElementById(elid);
+					if (element) {
+						if (element.style.display == 'none') {
+							element.style.display = 'block';
+							//window.status = 'Toggle on!';
+						} else {
+							element.style.display = 'none';
+							//window.status = 'Toggle off!';
+						}
+					}
+				}
+			}
+		</script>
+</head>
+<body>
+<h1>
+<a href="http://findbugs.sourceforge.net">FindBugs</a> Report</h1>
+<h2>Project Information</h2>
+<p>Project: 
+		</p>
+<p>FindBugs version: 3.0.1</p>
+<p>Code analyzed:</p>
+<ul>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig$Response.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpException.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ChainedHttpConfig$ChainedRequest.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ChainedHttpConfig$ChainedResponse.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ChainedHttpConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/CharSequenceInputStream.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ContentTypes.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Cookie.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Form$1.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Form$Buffers.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Form.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/FromServer$Header.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/FromServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpBuilder.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig$Auth.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig$AuthType.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig$Request.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig$Status.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BaseHttpConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BaseRequest.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BaseResponse.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BasicAuth.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BasicHttpConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BasicRequest.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$BasicResponse.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$ThreadSafeAuth.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$ThreadSafeHttpConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$ThreadSafeRequest.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs$ThreadSafeResponse.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpConfigs.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfig$Client.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfig$Execution.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfigImpl$1.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfigImpl$ClientConfig.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfigImpl$Exec.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfigImpl$SingleThreaded.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpObjectConfigImpl.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/HttpVerb.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/JavaHttpBuilder$Action$JavaFromServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/JavaHttpBuilder$Action$JavaToServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/JavaHttpBuilder$Action.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/JavaHttpBuilder$ThreadLocalAuth.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/JavaHttpBuilder.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/NativeHandlers$1.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/NativeHandlers$Encoders.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/NativeHandlers$Expanding.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/NativeHandlers$Parsers.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/NativeHandlers.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/ApacheHttpBuilder$ApacheFromServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/ApacheHttpBuilder$ApacheToServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/ApacheHttpBuilder$Handler.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/ApacheHttpBuilder.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/Csv$Context.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/Csv.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/Download.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/Html.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/optional/Jackson.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ReaderInputStream.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Safe.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/ToServer.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/Traverser.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/UriBuilder$Basic.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/UriBuilder$ThreadSafe.class</li>
+<li>/media/cjstehno/Storage/projects/http-builder-ng/build/classes/main/groovyx/net/http/UriBuilder.class</li>
+</ul>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Metrics</h2>
+<p>2115 lines of code analyzed,
+	in 66 classes, 
+	in 2 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right">7</td>
+<td align="right">3.31</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">8</td>
+<td align="right">3.78</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>15</b>
+</td>
+<td align="right">
+<b>7.09</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Contents</h2>
+<ul>
+<li>
+<a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</li>
+<li>
+<a href="#Warnings_EXPERIMENTAL">Experimental Warnings</a>
+</li>
+<li>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</li>
+<li>
+<a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</li>
+<li>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</li>
+<li>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</li>
+<li>
+<a href="#Details">Details</a>
+</li>
+</ul>
+<h1>Summary</h1>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_EXPERIMENTAL">Experimental Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">2</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</td>
+<td align="right">7</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">3</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>15</b>
+</td>
+</tr>
+</table>
+<h1>Warnings</h1>
+<p>Click on a warning row to see full context information.</p>
+<h2>
+<a name="Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66344');">
+<td>
+<span class="priority-2">OS</span>
+</td>
+<td>groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer) may fail to close stream</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66344" style="display: none;">
+<a href="#OS_OPEN_STREAM">Bug type OS_OPEN_STREAM (click for details)</a>
+<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 377]</p>
+</td>
+</tr>
+</table>
+<h2>
+<a name="Warnings_EXPERIMENTAL">Experimental Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66204');">
+<td>
+<span class="priority-2">OBL</span>
+</td>
+<td>groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer) may fail to clean up java.io.InputStream</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66204" style="display: none;">
+<a href="#OBL_UNSATISFIED_OBLIGATION">Bug type OBL_UNSATISFIED_OBLIGATION (click for details)</a>
+<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 150] is not discharged<br/>Path continues at NativeHandlers.java:[line 151]<br/>Remaining obligations: {InputStream x 1}</p>
+</td>
+</tr>
+</table>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66015');">
+<td>
+<span class="priority-1">Dm</span>
+</td>
+<td>Found reliance on default encoding in groovyx.net.http.FromServer.getReader(): new java.io.InputStreamReader(InputStream)</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66015" style="display: none;">
+<a href="#DM_DEFAULT_ENCODING">Bug type DM_DEFAULT_ENCODING (click for details)</a>
+<br/>In class groovyx.net.http.FromServer<br/>In method groovyx.net.http.FromServer.getReader()<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At FromServer.java:[line 194]</p>
+</td>
+</tr>
+<tr class="tablerow0" onclick="toggleRow('N66084');">
+<td>
+<span class="priority-1">Dm</span>
+</td>
+<td>Found reliance on default encoding in groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String): new java.io.InputStreamReader(InputStream)</td>
+</tr>
+<tr class="detailrow0">
+<td/>
+<td>
+<p id="N66084" style="display: none;">
+<a href="#DM_DEFAULT_ENCODING">Bug type DM_DEFAULT_ENCODING (click for details)</a>
+<br/>In class groovyx.net.http.HttpConfigs$BaseHttpConfig<br/>In method groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String)<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At HttpConfigs.java:[line 467]</p>
+</td>
+</tr>
+</table>
+<h2>
+<a name="Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N65872');">
+<td>
+<span class="priority-2">EI</span>
+</td>
+<td>groovyx.net.http.Cookie.getExpires() may expose internal representation by returning Cookie.expires</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N65872" style="display: none;">
+<a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+<br/>In class groovyx.net.http.Cookie<br/>In method groovyx.net.http.Cookie.getExpires()<br/>Field groovyx.net.http.Cookie.expires<br/>At Cookie.java:[line 44]</p>
+</td>
+</tr>
+<tr class="tablerow0" onclick="toggleRow('N65940');">
+<td>
+<span class="priority-2">EI2</span>
+</td>
+<td>new groovyx.net.http.Cookie(String, String, Date) may expose internal representation by storing an externally mutable object into Cookie.expires</td>
+</tr>
+<tr class="detailrow0">
+<td/>
+<td>
+<p id="N65940" style="display: none;">
+<a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+<br/>In class groovyx.net.http.Cookie<br/>In method new groovyx.net.http.Cookie(String, String, Date)<br/>Field groovyx.net.http.Cookie.expires<br/>Local variable named expires<br/>At Cookie.java:[line 32]</p>
+</td>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N65768');">
+<td>
+<span class="priority-1">MS</span>
+</td>
+<td>groovyx.net.http.ContentTypes.ANY is a mutable collection</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N65768" style="display: none;">
+<a href="#MS_MUTABLE_COLLECTION">Bug type MS_MUTABLE_COLLECTION (click for details)</a>
+<br/>In class groovyx.net.http.ContentTypes<br/>Field groovyx.net.http.ContentTypes.ANY<br/>At ContentTypes.java:[line 22]</p>
+</td>
+</tr>
+<tr class="tablerow0" onclick="toggleRow('N65820');">
+<td>
+<span class="priority-1">MS</span>
+</td>
+<td>groovyx.net.http.ContentTypes.JSON is a mutable collection</td>
+</tr>
+<tr class="detailrow0">
+<td/>
+<td>
+<p id="N65820" style="display: none;">
+<a href="#MS_MUTABLE_COLLECTION">Bug type MS_MUTABLE_COLLECTION (click for details)</a>
+<br/>In class groovyx.net.http.ContentTypes<br/>Field groovyx.net.http.ContentTypes.JSON<br/>At ContentTypes.java:[line 24]</p>
+</td>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66292');">
+<td>
+<span class="priority-1">MS</span>
+</td>
+<td>groovyx.net.http.NativeHandlers$Parsers.catalogResolver isn't final but should be</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66292" style="display: none;">
+<a href="#MS_SHOULD_BE_FINAL">Bug type MS_SHOULD_BE_FINAL (click for details)</a>
+<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 323]</p>
+</td>
+</tr>
+<tr class="tablerow0" onclick="toggleRow('N66480');">
+<td>
+<span class="priority-1">MS</span>
+</td>
+<td>groovyx.net.http.optional.Csv$Context.DEFAULT_CSV isn't final but should be</td>
+</tr>
+<tr class="detailrow0">
+<td/>
+<td>
+<p id="N66480" style="display: none;">
+<a href="#MS_SHOULD_BE_FINAL">Bug type MS_SHOULD_BE_FINAL (click for details)</a>
+<br/>In class groovyx.net.http.optional.Csv$Context<br/>Field groovyx.net.http.optional.Csv$Context.DEFAULT_CSV<br/>At Csv.java:[line 40]</p>
+</td>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66532');">
+<td>
+<span class="priority-1">MS</span>
+</td>
+<td>groovyx.net.http.optional.Csv$Context.DEFAULT_TSV isn't final but should be</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66532" style="display: none;">
+<a href="#MS_SHOULD_BE_FINAL">Bug type MS_SHOULD_BE_FINAL (click for details)</a>
+<br/>In class groovyx.net.http.optional.Csv$Context<br/>Field groovyx.net.http.optional.Csv$Context.DEFAULT_TSV<br/>At Csv.java:[line 41]</p>
+</td>
+</tr>
+</table>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66410');">
+<td>
+<span class="priority-2">SIC</span>
+</td>
+<td>Should groovyx.net.http.optional.ApacheHttpBuilder$ApacheFromServer be a _static_ inner class?</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66410" style="display: none;">
+<a href="#SIC_INNER_SHOULD_BE_STATIC">Bug type SIC_INNER_SHOULD_BE_STATIC (click for details)</a>
+<br/>In class groovyx.net.http.optional.ApacheHttpBuilder$ApacheFromServer<br/>At ApacheHttpBuilder.java:[lines 70-119]</p>
+</td>
+</tr>
+<tr class="tablerow0" onclick="toggleRow('N66445');">
+<td>
+<span class="priority-2">SIC</span>
+</td>
+<td>Should groovyx.net.http.optional.ApacheHttpBuilder$ApacheToServer be a _static_ inner class?</td>
+</tr>
+<tr class="detailrow0">
+<td/>
+<td>
+<p id="N66445" style="display: none;">
+<a href="#SIC_INNER_SHOULD_BE_STATIC">Bug type SIC_INNER_SHOULD_BE_STATIC (click for details)</a>
+<br/>In class groovyx.net.http.optional.ApacheHttpBuilder$ApacheToServer<br/>At ApacheHttpBuilder.java:[lines 127-169]</p>
+</td>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66153');">
+<td>
+<span class="priority-2">UrF</span>
+</td>
+<td>Unread field: groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66153" style="display: none;">
+<a href="#URF_UNREAD_FIELD">Bug type URF_UNREAD_FIELD (click for details)</a>
+<br/>In class groovyx.net.http.HttpConfigs$ThreadSafeAuth<br/>Field groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive<br/>At HttpConfigs.java:[line 92]</p>
+</td>
+</tr>
+</table>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="0">
+<tr class="tableheader">
+<th align="left">Code</th>
+<th align="left">Warning</th>
+</tr>
+<tr class="tablerow1" onclick="toggleRow('N66584');">
+<td>
+<span class="priority-2">DLS</span>
+</td>
+<td>Dead store to type in groovyx.net.http.optional.Jackson.encode(ChainedHttpConfig, ToServer)</td>
+</tr>
+<tr class="detailrow1">
+<td/>
+<td>
+<p id="N66584" style="display: none;">
+<a href="#DLS_DEAD_LOCAL_STORE">Bug type DLS_DEAD_LOCAL_STORE (click for details)</a>
+<br/>In class groovyx.net.http.optional.Jackson<br/>In method groovyx.net.http.optional.Jackson.encode(ChainedHttpConfig, ToServer)<br/>Local variable named type<br/>At Jackson.java:[line 50]</p>
+</td>
+</tr>
+</table>
+<h1>
+<a name="Details">Details</a>
+</h1>
+<h2>
+<a name="DLS_DEAD_LOCAL_STORE">DLS_DEAD_LOCAL_STORE: Dead store to local variable</a>
+</h2>
+
+<p>
+This instruction assigns a value to a local variable,
+but the value is not read or used in any subsequent instruction.
+Often, this indicates an error, because the value computed is never
+used.
+</p>
+<p>
+Note that Sun's javac compiler often generates dead stores for
+final local variables.  Because FindBugs is a bytecode-based tool,
+there is no easy way to eliminate these false positives.
+</p>
+
+    
+<h2>
+<a name="DM_DEFAULT_ENCODING">DM_DEFAULT_ENCODING: Reliance on default encoding</a>
+</h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      
+<h2>
+<a name="EI_EXPOSE_REP">EI_EXPOSE_REP: May expose internal representation by returning reference to mutable object</a>
+</h2>
+
+  <p> Returning a reference to a mutable object value stored in one of the object's fields
+  exposes the internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Returning a new copy of the object is better approach in many situations.</p>
+
+    
+<h2>
+<a name="EI_EXPOSE_REP2">EI_EXPOSE_REP2: May expose internal representation by incorporating reference to mutable object</a>
+</h2>
+
+  <p> This code stores a reference to an externally mutable object into the
+  internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Storing a copy of the object is better approach in many situations.</p>
+
+    
+<h2>
+<a name="MS_MUTABLE_COLLECTION">MS_MUTABLE_COLLECTION: Field is a mutable collection</a>
+</h2>
+
+ <p>A mutable collection instance is assigned to a final static field, 
+   thus can be changed by malicious code or by accident from another package.
+   Consider wrapping this field into Collections.unmodifiableSet/List/Map/etc.
+   to avoid this vulnerability.</p>
+
+    
+<h2>
+<a name="MS_SHOULD_BE_FINAL">MS_SHOULD_BE_FINAL: Field isn't final but should be</a>
+</h2>
+
+   <p>
+This static field public but not final, and
+could be changed by malicious code or
+        by accident from another package.
+        The field could be made final to avoid
+        this vulnerability.</p>
+
+    
+<h2>
+<a name="OBL_UNSATISFIED_OBLIGATION">OBL_UNSATISFIED_OBLIGATION: Method may fail to clean up stream or resource</a>
+</h2>
+          
+          <p>
+          This method may fail to clean up (close, dispose of) a stream,
+          database object, or other
+          resource requiring an explicit cleanup operation.
+          </p>
+
+          <p>
+          In general, if a method opens a stream or other resource,
+          the method should use a try/finally block to ensure that
+          the stream or resource is cleaned up before the method
+          returns.
+          </p>
+
+          <p>
+          This bug pattern is essentially the same as the
+          OS_OPEN_STREAM and ODR_OPEN_DATABASE_RESOURCE
+          bug patterns, but is based on a different
+          (and hopefully better) static analysis technique.
+          We are interested is getting feedback about the
+          usefulness of this bug pattern.
+          To send feedback, either:
+          </p>
+          <ul>
+            <li>send email to findbugs@cs.umd.edu</li>
+            <li>file a bug report: <a href="http://findbugs.sourceforge.net/reportingBugs.html">http://findbugs.sourceforge.net/reportingBugs.html</a></li>
+          </ul>
+
+          <p>
+          In particular,
+          the false-positive suppression heuristics for this
+          bug pattern have not been extensively tuned, so
+          reports about false positives are helpful to us.
+          </p>
+
+          <p>
+          See Weimer and Necula, <i>Finding and Preventing Run-Time Error Handling Mistakes</i>, for
+          a description of the analysis technique.
+          </p>
+          
+      
+<h2>
+<a name="OS_OPEN_STREAM">OS_OPEN_STREAM: Method may fail to close stream</a>
+</h2>
+
+<p> The method creates an IO stream object, does not assign it to any
+fields, pass it to other methods that might close it,
+or return it, and does not appear to close
+the stream on all paths out of the method.&nbsp; This may result in
+a file descriptor leak.&nbsp; It is generally a good
+idea to use a <code>finally</code> block to ensure that streams are
+closed.</p>
+
+    
+<h2>
+<a name="SIC_INNER_SHOULD_BE_STATIC">SIC_INNER_SHOULD_BE_STATIC: Should be a static inner class</a>
+</h2>
+
+  <p> This class is an inner class, but does not use its embedded reference
+  to the object which created it.&nbsp; This reference makes the instances
+  of the class larger, and may keep the reference to the creator object
+  alive longer than necessary.&nbsp; If possible, the class should be
+   made static.
+</p>
+
+    
+<h2>
+<a name="URF_UNREAD_FIELD">URF_UNREAD_FIELD: Unread field</a>
+</h2>
+
+  <p> This field is never read.&nbsp; Consider removing it from the class.</p>
+
+    </body>
+</html>
