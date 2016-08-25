@@ -147,7 +147,7 @@ asciidoctor {
         encoding: 'utf-8'
 }
 
-task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'asciidoctor', 'jbake']) << {
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor', 'jbake']) << {
     logger.lifecycle 'Building documentation web site...'
 
     ant.copy(todir: 'build/jbake') {
@@ -174,9 +174,11 @@ task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes
 
 tasks.withType(FindBugs) {
     ignoreFailures = true       // let's not kill the build for this
+    effort = 'max'
+    reportLevel = 'low'
     reports {
         xml.enabled false
         html.enabled true
-        //html.stylesheet resources.text.fromFile('config/xsl/findbugs-custom.xsl')
+        html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
     }
 }
