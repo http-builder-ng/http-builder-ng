@@ -66,9 +66,9 @@ javadoc {
     options.docletpath = configurations.asciidoclet.files.asType(List)
     options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
     options.doclet = 'org.asciidoctor.Asciidoclet'
-//    options.overview = "src/main/java/overview.adoc"
+    options.overview = "src/main/java/overview.adoc"
     options.addStringOption "-base-dir", "${projectDir}"
-    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=http://example.com[${project.name} ${project.version}]"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/dwclark/http-builder-ng[${project.name} ${project.version}]"
 }
 
 task sourcesJar(type: Jar) {

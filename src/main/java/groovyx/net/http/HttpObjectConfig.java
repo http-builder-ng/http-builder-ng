@@ -22,19 +22,32 @@ import java.util.function.Function;
 import java.util.EnumMap;
 
 /**
- * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options.
+ * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
+ * the {@link HttpBuilder} `configure()` closure, rather than in the verb configuration closure.
+ *
+ * [source,groovy]
+ * ----
+ * def http = HttpBuilder.configure {
+ *      execution.maxThreads = 2
+ *      execution.executor = Executors.newFixedThreadPool(2)
+ * }
+ * ----
  */
 public interface HttpObjectConfig extends HttpConfig {
 
     /**
-     * Defines execution configuration for the underlying HTTP client.
+     * The `Execution` configuration interface provides a means of configuring the execution-specific properties of the underlying HTTP client.
      */
     interface Execution {
-        // TODO: is maxThreads used only by Apache client?
+        /**
+         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         */
         void setMaxThreads(int val);
         int getMaxThreads();
 
-        // TODO: what is relationship/difference between maxThreads and executor?
+        /**
+         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         */
         void setExecutor(Executor val);
         Executor getExecutor();
 
@@ -53,13 +66,23 @@ public interface HttpObjectConfig extends HttpConfig {
     }
 
     /**
-     * Defines the client configuration options available for the underlying HTTP client.
+     * The `Client` configuration interface allows configuration of client-centric properties. Currently, the only supported property is `cookieVersion`
+     * which is the supported HTTP Cookie version used by the underlying clients. The {@link HttpBuilder} implementations will support Cookies at
+     * version `0` by default, which is what the Java Servlet API accepts by default. This can be modified, but care must be taken to ensure that your
+     * server supports and accepts the configured Cookie version.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *      cookieVersion = 1
+     * }
+     * ----
      */
     interface Client {
 
         /**
-         * Used to specify the supported Cookie version. If not specified, a default of `0` is used to conform with the default used in the Java Servlet Cookie
-         * API. Be aware that if you change the version here, you may need to modify the version expected by your server.
+         * Used to specify the supported Cookie version. If not specified, a default of `0` is used to conform with the default used in the
+         * Java Servlet Cookie API. Be aware that if you change the version here, you may need to modify the version expected by your server.
          *
          * @param version the Cookie version to be used.
          */
@@ -78,14 +101,14 @@ public interface HttpObjectConfig extends HttpConfig {
     /**
      * Retrieves the execution configuration interface implementation.
      *
-     * @return the Execution configuration instance
+     * @return the `Execution` configuration instance
      */
     Execution getExecution();
 
     /**
      * Retrieves the client configuration interface implementation.
      *
-     * @return the Client configuration instance
+     * @return the `Client` configuration instance
      */
     Client getClient();
 }

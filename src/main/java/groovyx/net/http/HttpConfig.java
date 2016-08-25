@@ -33,7 +33,7 @@ import java.util.function.BiFunction;
 public interface HttpConfig {
 
     /**
-     * Defines the allowed values of the response status.
+     * Defines the an enumeration of the overall HTTP response status categories.
      */
     enum Status { SUCCESS, FAILURE };
 
@@ -43,24 +43,44 @@ public interface HttpConfig {
     enum AuthType { BASIC, DIGEST };
 
     /**
-     *  Defines the accessible HTTP authentication information.
+     *  Defines the configurable HTTP request authentication properties.
      */
     interface Auth {
 
         /**
          * Retrieve the authentication type for the request.
          *
-         * @return the AuthType for the Request
+         * @return the {@link AuthType} for the Request
          */
         AuthType getAuthType();
 
+        /**
+         * Retrieves the configured user for the request.
+         *
+         * @return the configured user
+         */
         String getUser();
 
+        /**
+         * Retrieves the configured password for the request.
+         *
+         * @return the configured password for the request
+         */
         String getPassword();
 
         /**
-         * Configures the request to use BASIC authentication with the given username and password. The authentication will not be preemptive. This
+         * Configures the request to use BASIC authentication with the given `username` and `password`. The authentication will not be preemptive. This
          * method is an alias for calling: `basic(String, String, false)`.
+         *
+         * TODO: what does "preemptive" mean in this case
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.auth.basic 'admin', '$3cr3t'
+         * }
+         * ----
          *
          * @param user the username
          * @param password the user's password
@@ -70,17 +90,35 @@ public interface HttpConfig {
         }
 
         /**
-         * Configures the request to use BASIC authentication with the given information.
+         * Configures the request to use BASIC authentication with the given `username` and `password`.
+         *
+         * TODO: what does "preemptive" mean in this case
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.auth.basic 'admin', '$3cr3t', true
+         * }
+         * ----
          *
          * @param user the username
          * @param password the user's password
-         * @param preemptive
+         * @param preemptive whether or not this call is preemptive
          */
         void basic(String user, String password, boolean preemptive);
 
         /**
          * Configures the request to use DIGEST authentication with the given username and password. The authentication will not be preemptive. This
          * method is an alias for calling: `digest(String, String, false)`.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.auth.digest 'admin', '$3cr3t'
+         * }
+         * ----
          *
          * @param user the username
          * @param password the user's password
@@ -92,15 +130,27 @@ public interface HttpConfig {
         /**
          * Configures the request to use DIGEST authentication with the given information.
          *
+         * TODO: what does "preemptive" mean in this case
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.auth.digest 'admin', '$3cr3t', true
+         * }
+         * ----
+         *
          * @param user the username
          * @param password the user's password
-         * @param preemptive
+         * @param preemptive whether or not this call is preemptive
          */
         void digest(String user, String password, boolean preemptive);
     }
 
     /**
-     * Defines the accessible HTTP request information.
+     * Defines the configurable HTTP request properties.
+     *
+     * The `uri` property is the only one that must be defined either in the {@link HttpBuilder} or in the verb configuration.
      */
     interface Request {
 
@@ -112,73 +162,267 @@ public interface HttpConfig {
         Auth getAuth();
 
         /**
-         * Used to specify the `Content-type` header for the request.
+         * The `contentType` property is used to specify the `Content-Type` header value for the request.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.contentType = 'text/json'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.contentType = 'text/csv'
+         * }
+         * ----
+         *
+         * By default, the value will be `text/plain`. The {@link ContentTypes} class provides a helper for some of the more common content type values.
          *
          * @param val the content type value to be used
          */
         void setContentType(String val);
 
         /**
-         * Used to specify the content type character set to be used by the request.
+         * The `charset` property is used to specify the character set (as a String) used by the request.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.charset = 'utf-16'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.charset = 'utf-8'
+         * }
+         * ----
          *
          * @param val the content type character set value to be used
          */
         void setCharset(String val);
 
         /**
-         * Used to specify the content type character set to be used by the request.
+         * The `charset` property is used to specify the character set (as a {@link Charset}) used by the request.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.charset = 'utf-16'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.charset = 'utf-8'
+         * }
+         * ----
          *
          * @param val the content type character set value to be used
          */
         void setCharset(Charset val);
 
         /**
-         * Retrieves the `UriBuilder` for the request, which provides methods for more fine-grained URI specification.
+         * Retrieves the {@link UriBuilder} for the request, which provides methods for more fine-grained URI specification.
          *
-         * @return the UriBuilder for the request
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         * }
+         * ----
+         *
+         * @return the {@link UriBuilder} for the request
          */
         UriBuilder getUri();
 
         /**
-         * Used to specify the request URI as a String.
+         * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `String` in this case.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         * }
+         * ----
+         *
+         * Which allows multiple verb requests to be configured against the same {@link HttpBuilder}. See the {@link UriBuilder} documentation for
+         * more details.
+         *
+         * The `uri` is the only required configuration property.
          *
          * @param val the URI to be used for the request, as a String
          */
         void setUri(String val) throws URISyntaxException;
 
         /**
-         * Used to specify the request URI.
+         * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URI` in this case.
          *
-         * @param val the URI to be used for the request.
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = new URI('http://localhost:10101')
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         * }
+         * ----
+         *
+         * Which allows multiple verb requests to be configured against the same {@link HttpBuilder}. See the {@link UriBuilder} documentation for
+         * more details.
+         *
+         * The `uri` is the only required configuration property.
+         *
+         * @param val the URI to be used for the request, as a URI
          */
         void setUri(URI val);
 
         /**
-         * Used to specify the request URI as a URL instance.
+         * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URL` in this case.
          *
-         * @param val the URI to be used for the request, as a URL instance
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = new URL('http://localhost:10101')
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         * }
+         * ----
+         *
+         * Which allows multiple verb requests to be configured against the same {@link HttpBuilder}. See the {@link UriBuilder} documentation for
+         * more details.
+         *
+         * The `uri` is the only required configuration property.
+         *
+         * @param val the URI to be used for the request, as a URL
          */
         void setUri(URL val) throws URISyntaxException;
 
+        /**
+         * Used to retrieve the request headers.
+         *
+         * @return the `Map` of request headers
+         */
         Map<String, String> getHeaders();
 
+        /**
+         * The `headers` property allows the direct specification of the request headers as a `Map<String,String>`. Be aware that `Content-Type` and
+         * `Accept` are actually header values and it is up to the implementation to determine which configuration will win out if both are configured.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.headers = [
+         *          ClientId: '987sdfsdf9uh'
+         *      ]
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.headers = [
+         *          AccessCode: '99887766'
+         *      ]
+         * }
+         * ----
+         *
+         * WARNING: The headers are additive; however, a header specified in the verb configuration may overwrite one defined in the global configuration.
+         *
+         * @param toAdd the headers to be added to the request headers
+         */
         void setHeaders(Map<String, String> toAdd);
 
+        /**
+         * The `accept` property allows configuration of the request `Accept` header, which may be used to specify certain media types which are
+         * acceptable for the response.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.accept = ['image/jpeg']
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.accept = ['image/tiff', 'image/png']
+         * }
+         * ----
+         *
+         * @param values the accept header values as a String array
+         */
         void setAccept(String[] values);
 
+        /**
+         * The `accept` property allows configuration of the request `Accept` header, which may be used to specify certain media types which are
+         * acceptable for the response.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.accept = ['image/jpeg']
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.accept = ['image/tiff', 'image/png']
+         * }
+         * ----
+         *
+         * @param values the accept header values as a List
+         */
         void setAccept(List<String> values);
 
         /**
-         * Used to specify the body content for the request. The request body content may be altered by configured encoders internally or may be
-         * passed on unmodified.
+         * The `body` property is used to configure the body content for the request. The request body content may be altered by configured encoders
+         * internally or may be passed on unmodified.
+         *
+         * FIXME: more details to be added
          *
          * @param val the request body content
          */
         void setBody(Object val);
 
         /**
-         * Adds a cookie to the request with the specified name and value, and no expiration date. This method is an alias for calling:
-         * `cookie(String, String, null)`.
+         * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name` and `value`.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.cookie 'seen-before', 'true'
+         * }
+         * ----
+         *
+         * WARNING: Cookies are additive, once a Cookie is defined (e.g. in the global configuration), you cannot overwrite it in per-verb configurations.
+         *
+         * As noted in the {@link groovyx.net.http.HttpObjectConfig.Client} configuration, the default Cookie version supported is `0`, but this may
+         * be modified.
          *
          * @param name the cookie name
          * @param value the cookie value
@@ -188,67 +432,132 @@ public interface HttpConfig {
         }
 
         /**
-         * Adds a cookie to the request with the specified information.
+         * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
+         * `expires` Date.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         *      request.cookie 'seen-before', 'true'
+         * }
+         *
+         * http.post {
+         *      request.uri.path = '/bar'
+         *      request.cookie 'last-page', 'item-list', Date.parse('MM/dd/yyyy', '12/31/2016')
+         * }
+         * ----
+         *
+         * WARNING: Cookies are additive, once a Cookie is defined (e.g. in the global configuration), you cannot overwrite it in per-verb configurations.
+         *
+         * As noted in the {@link groovyx.net.http.HttpObjectConfig.Client} configuration, the default Cookie version supported is `0`, but this may
+         * be modified.
          *
          * @param name the cookie name
          * @param value the cookie value
-         * @param expires the expiration date of the cookie (`null` is allowed)
+         * @param expires the cookie expiration date
          */
         void cookie(String name, String value, Date expires);
 
+        // TODO: might be nice to have a cookie method that accepts java.time.DateTime
+
         /**
-         * Specifies the request encoder (ToServer instance) to be used when encoding the given content type.
+         * Specifies the request encoder ({@link ToServer} instance) to be used when encoding the given content type.
          *
          * @param contentType the content type
-         * @param val the request encoder (wrapped in a `BiConsumer` function)
+         * @param val the request encoder (wrapped in a {@link BiConsumer} function)
          */
         void encoder(String contentType, BiConsumer<ChainedHttpConfig, ToServer> val);
 
         /**
-         * Specifies the request encoder (ToServer instance) to be used when encoding the given list of content types.
+         * Specifies the request encoder ({@link ToServer} instance) to be used when encoding the given list of content types.
          *
          * @param contentTypes the content types
-         * @param val the request encoder (wrapped in a `BiConsumer` function)
+         * @param val the request encoder (wrapped in a {@link BiConsumer} function)
          */
         void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig, ToServer> val);
 
         /**
-         * Retrieves the request encoder (ToServer instance) for the specified content type wrapped in a `BiConsumer` function.
+         * Retrieves the request encoder ({@link ToServer} instance) for the specified content type wrapped in a {@link BiConsumer} function.
          *
          * @param contentType the content type of the encoder to be retrieved
-         * @return the encoder for the specified content type (wrapped in a `BiConsumer` function)
+         * @return the encoder for the specified content type (wrapped in a {@link BiConsumer} function)
          */
         BiConsumer<ChainedHttpConfig, ToServer> encoder(String contentType);
     }
 
     /**
-     * Defines the accessible HTTP response information.
+     * Defines the configurable HTTP response properties.
+     *
+     * TODO: more discussion about interactions between "when" methods
      */
     interface Response {
 
         /**
-         * Configures the execution of the provided closure when the given status occurs in the response. The closure will be called with an instance
+         * Configures the execution of the provided closure "when" the given status occurs in the response. The `closure` will be called with an instance
          * of the response as a `FromServer` instance.
          *
-         * @param status the response status enum
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.when(Status.SUCCESS){
+         *          // executed when a successful response is received
+         *      }
+         * }
+         * ----
+         *
+         * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
         void when(Status status, Closure<Object> closure);
 
         /**
-         * Configures the execution of the provided closure when the given status code occurs in the response. The closure will be called with an instance
+         * Configures the execution of the provided closure "when" the given status code occurs in the response. The `closure` will be called with an instance
          * of the response as a `FromServer` instance.
          *
-         * @param code the response status code
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.when(404){
+         *          // executed when a 'not found' response is received
+         *      }
+         * }
+         * ----
+         *
+         * @param code the response code to be caught
          * @param closure the closure to be executed
          */
         void when(Integer code, Closure<Object> closure);
 
         /**
-         * Configures the execution of the provided closure when the given status code (as a String) occurs in the response. The closure will be called
-         * with an instance of the response as a `FromServer` instance.
+         * Configures the execution of the provided closure "when" the given status code (as a String) occurs in the response. The `closure` will be
+         * called with an instance of the response as a `FromServer` instance.
          *
-         * @param code the response status code string
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.when('404'){
+         *          // executed when a 'not found' response is received
+         *      }
+         * }
+         * ----
+         *
+         * @param code the response code to be caught
          * @param closure the closure to be executed
          */
         void when(String code, Closure<Object> closure);
@@ -262,23 +571,51 @@ public interface HttpConfig {
         Closure<Object> when(Integer code);
 
         /**
-         * Configures the given closure to be executed when a successful response occurs (response code < 399).  The closure will be called with an instance of
-         * the response as a `FromServer` instance.
+         * Configures the execution of the provided closure "when" a successful response is received (code < 400). The `closure` will be called with
+         * an instance of the response as a `FromServer` instance.
          *
-         * @param closure the closure to be mapped to success responses
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.success(){
+         *          // executed when a successful response is received
+         *      }
+         * }
+         * ----
+         *
+         * @param closure the closure to be executed
          */
         void success(Closure<Object> closure);
 
         /**
-         * Configures the given closure to be executed when a failure response occurs (response code > 399).  The closure will be called with an instance of
-         * the response as a `FromServer` instance.
+         * Configures the execution of the provided closure "when" a failure response is received (code >= 400). The `closure` will be called with
+         * an instance of the response as a `FromServer` instance.
          *
-         * @param closure the closure to be mapped to failure responses
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.failure(){
+         *          // executed when a failure response is received
+         *      }
+         * }
+         * ----
+         *
+         * @param closure the closure to be executed
          */
         void failure(Closure<Object> closure);
 
         /**
-         * Used to specify a response parser for the specified content type.
+         * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
          *
          * @param contentType the content type where the parser will be applied
          * @param val the parser wrapped in a function object
@@ -286,7 +623,7 @@ public interface HttpConfig {
         void parser(String contentType, BiFunction<ChainedHttpConfig, FromServer, Object> val);
 
         /**
-         * Used to specify a response parser for the specified content types.
+         * Used to specify a response parser ({@link FromServer} instance) for the specified content types, wrapped in a {@link BiFunction}.
          *
          * @param contentTypes the contents type where the parser will be applied
          * @param val the parser wrapped in a function object
@@ -297,7 +634,7 @@ public interface HttpConfig {
          * Used to retrieve the parser configured for the specified content type.
          *
          * @param contentType the content type
-         * @return the mapped parser as a FromServer instance wrapped in a function object
+         * @return the mapped parser as a {@link FromServer} instance wrapped in a function object
          */
         BiFunction<ChainedHttpConfig, FromServer, Object> parser(String contentType);
     }
@@ -317,14 +654,14 @@ public interface HttpConfig {
     }
 
     /**
-     * Used to retrieve information about the HTTP request.
+     * Used to retrieve configuration information about the HTTP request.
      *
      * @return the HTTP request
      */
     Request getRequest();
 
     /**
-     * Used to retrieve information about the HTTP response.
+     * Used to retrieve configuration information about the HTTP response.
      *
      * @return the HTTP response
      */

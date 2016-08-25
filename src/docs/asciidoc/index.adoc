@@ -41,225 +41,69 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 == Architecture
 
-> TBD: come up with overview and maybe some diagrams
+FIXME: come up with overview and maybe some diagrams
 
-== Common Configuration
+== Configuration
 
-The `HttpBuilder` is configured using one of the three static `configure` methods:
+The specific configuration options are discussed in the JavaDocs for the `HttpBuilder`, `HttpConfig` and `HttpObjectConfig` interfaces.
 
-[source,groovy]
-----
-HttpBuilder configure(Function<HttpObjectConfig, ? extends HttpBuilder> factory)
+=== Authentication
 
-HttpBuilder configure(@DelegatesTo(HttpObjectConfig) Closure closure)
+There are two methods of authentication supported: BASIC and DIGEST.
 
-HttpBuilder configure(Function<HttpObjectConfig, ? extends HttpBuilder> factory, @DelegatesTo(HttpObjectConfig) Closure closure)
-----
+==== BASIC
 
-Where the `factory` parameter is a `Function` used to instantiate the underlying builder with the appropriate HTTP Client implementation. Two implementations are provided by default, one based on the
-Apache HTTPClient, and the other based on the `HttpURLConnection` class. It is generally preferable to use the Apache implementation for most use cases; however, the `HttpURLConnection` is instantiated
-by default. Both are fully supported.
-
-The `closure` parameter is used to provide configuration for the client instance. Configuration at this level will be applied to all verbs executed on the client. There are two configuration interfaces
-available _only_ at the global configuration level: `Execution` and `Client`. The rest of the configuration interfaces are available at the global and per-verb levels.
-
-=== `Execution` Configuration
-
-The `Execution` configuration interface provides a means of configuring the execution-specific properties of the underlying HTTP client.
-
-> TBD: more details, relations of thread/executor, ssl context, and interceptors
-
-=== `Client` Configuration
-
-The `Client` configuration interface allows configuration of client-centric properties. Currently, the only supported property is the supported HTTP Cookie version used by the underlying clients. The
-`HttpBuilder` implementations will support Cookies at version `0` by default, which is what the Java Servlet API accepts. This can be modified, but care must be taken to ensure that your server
-supports and accepts the configured Cookie version.
-
-=== `Request` Configuration
-
-The `Request` configuration interface provides configuration options available on the outgoing HTTP request.
-
-==== `uri`
-
-The `request.uri` is the URI of the HTTP endpoint for the request. It may be specified as a `URI`, a `String` or modified as a `UriBuilder`. The `uri` may be configured in the global configuration as
-a base URL and then appended in the per-verb configuration, as follows:
+https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC Authentication] is supported via the `HttpConfig.Request.Auth` interface:
 
 [source,groovy]
 ----
 def http = HttpBuilder.configure {
     request.uri = 'http://localhost:10101'
-}
-
-http.get {
-    request.uri.path = '/foo'
-}
-
-http.post {
-    request.uri.path = '/bar'
+    request.auth.basic 'admin', 'myp@$$w0rd'
 }
 ----
 
-Which allows multiple verb requests to be configured against the same `HttpBuilder`. See the `UriBuilder` documentation for more details.
+There is nothing more to do on the client side.
 
-The `uri` is the only required configuration property.
+==== DIGEST
 
-==== `contentType`
-
-The `contentType` property is used to specify the `Content-Type` header value for the request.
+https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST Authentication] is supported via the `HttpConfig.Request.Auth` interface:
 
 [source,groovy]
 ----
 def http = HttpBuilder.configure {
     request.uri = 'http://localhost:10101'
-    request.contentType 'text/json'
-}
-
-http.post {
-    request.uri.path = '/bar'
-    request.contentType 'text/csv'
+    request.auth.digest 'admin', 'myp@$$w0rd'
 }
 ----
 
-By default, the value will be `text/plain`.
+There is nothing more to do on the client side.
 
-==== `charset`
+=== HTTPS/SSL
 
-The `charset` property is used to specify the character set used by the request.
+FIXME: document
 
-[source,groovy]
-----
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.charset 'utf-16'
-}
+=== Response `when` Handlers
 
-http.post {
-    request.uri.path = '/bar'
-    request.charset 'utf-8'
-}
-----
+FIXME: document
 
-It is often advisable to specify the `charset`, when `contentType` is specified. By default, the value will be `utf-8`.
-
-==== `headers`
-
-The `headers` property allows the direct specification of the request headers as a `Map<String,String>`. Be aware that `Content-Type` is technically a header value and it is up to the implementation
-to determine which configuration will win out if both are configured.
-
-[source,groovy]
-----
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.headers([ ClientId: '987sdfsdf9uh' ])
-}
-
-http.post {
-    request.uri.path = '/bar'
-    request.headers([ AccessCode: '99887766' ])
-}
-----
-
-==== `accept`
-
-The `accept` property allows configuration of the request `Accept` header, which may be used to specify certain media types which are acceptable for the response.
-
-[source,groovy]
-----
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.accept 'image/jpeg'
-}
-
-http.post {
-    request.uri.path = '/bar'
-    request.accept 'image/tiff', 'image/png'
-}
-----
-
-==== `cookie`
-
-The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and optional `expires` Date.
-
-[source,groovy]
-----
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.cookie 'seen-before', 'true'
-}
-
-http.post {
-    request.uri.path = '/bar'
-    request.cookie 'last-page', 'item-list', Date.parse('MM/dd/yyyy', '12/31/2016')
-}
-----
-
-WARNING: Cookies are additive, once a Cookie is defined (e.g. in the global configuration), you cannot overwrite it in per-verb configurations.
-
-As noted in the `Client` configuration above, the default Cookie version supported is `0`, but this may be modified.
-
-==== `body`
-
-==== `encoder`
-
-==== `auth`
-
-        Basic
-        Digest
-
-=== `Response` Configuration
-
-    when
-    parser
-    success/failure
-
-
-HTTPS/SSL
-
-notes about support and configuration...
-
-
-[source,groovy]
-----
-int maxThreads = 2
-
-def google = HttpBuilder.configure(apacheBuilder) {
-    request.uri = 'http://www.google.com'
-    execution.maxThreads = maxThreads
-    execution.executor =  Executors.newFixedThreadPool(maxThreads)
-}
-----
-
-> The verb sections should be interesting examples for each of the verbs most common use cases
-
-== Verbs
+== Verb Examples
 
 include::verbs/get.adoc[]
 include::verbs/post.adoc[]
 
 === PUT
 
-> TBD...
-
 === HEAD
-
-> TBD...
 
 === DELETE
 
-> TBD...
-
 === TRACE
-
-> TBD...
 
 === OPTIONS
 
-> TBD...
-
 == Encoders & Parsers
 
-> TBD...
+TODO: using them and implementing customs
 
 == Client Library Integration
-
-> TBD...

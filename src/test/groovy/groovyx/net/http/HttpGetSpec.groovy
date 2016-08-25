@@ -40,6 +40,7 @@ class HttpGetSpec extends Specification {
 
     // TODO: the when methods allow modification of the returned value?
     // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
+    // TODO: more detailed testing of the whens and their input props
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
