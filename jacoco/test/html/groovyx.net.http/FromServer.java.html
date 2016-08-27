@@ -19,166 +19,231 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.net.URI;
+import java.util.*;
 
 /**
- * FIXME: document
+ * Adapter interface used to provide a bridge for response data between the {@link HttpBuilder} API and the underlying client implementation.
  */
 public interface FromServer {
-    // TODO: should this be renamed Decoder?
 
     public static final String DEFAULT_CONTENT_TYPE = &quot;application/octet-stream&quot;;
 
+    /**
+     * Defines the interface to the HTTP headers contained in the response. (see also
+     * https://en.wikipedia.org/wiki/List_of_HTTP_header_fields[List of HTTP Header Fields])
+     */
     static class Header {
+
         private final String key;
         private final String value;
         private volatile Map&lt;String,List&lt;String&gt;&gt; keysValues;
-        
+
+        /**
+         * Creates a `Header` from a full header string. The string format is colon-delimited as `KEY:VALUE`.
+         *
+         * [source,groovy]
+         * ----
+         * Header header = Header.full('Content-Type:text/plain')
+         * assert header.key == 'Content-Type'
+         * assert header.value == 'text/plain'
+         * ----
+         *
+         * @param full the full header string
+         * @return the `Header` representing the given header string
+         */
         public static Header full(final String full) {
-<span class="fc" id="L45">            final int pos = full.indexOf(':');</span>
-<span class="fc" id="L46">            return new Header(full.substring(0, pos).trim(), cleanValue(full.substring(pos + 1).trim()));</span>
+<span class="fc" id="L58">            final int pos = full.indexOf(':');</span>
+<span class="fc" id="L59">            return new Header(full.substring(0, pos).trim(), cleanValue(full.substring(pos + 1).trim()));</span>
         }
 
+        /**
+         * Creates a `Header` from a given `key` and `value`.
+         *
+         * @param key the header key
+         * @param value the header value
+         * @return the populated `Header`
+         */
         public static Header keyValue(final String key, final String value) {
-<span class="fc" id="L50">            return new Header(key, value);</span>
+<span class="fc" id="L70">            return new Header(key, value);</span>
         }
 
+        /**
+         * Used to find a specific `Header` by key from a {@link List} of `Header`s.
+         *
+         * @param headers the {@link List} of `Header`s to be searched
+         * @param key the key of the desired `Header`
+         * @return the `Header` with the matching key (or `null`)
+         */
         public static Header find(final List&lt;Header&gt; headers, final String key) {
-<span class="fc" id="L54">            return headers.stream().filter((h) -&gt; h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);</span>
+<span class="fc" id="L81">            return headers.stream().filter((h) -&gt; h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);</span>
         }
         
-<span class="fc" id="L57">        private Header(final String key, final String value) {</span>
-<span class="fc" id="L58">            this.key = key;</span>
-<span class="fc" id="L59">            this.value = value;</span>
-<span class="fc" id="L60">        }</span>
+<span class="fc" id="L84">        private Header(final String key, final String value) {</span>
+<span class="fc" id="L85">            this.key = key;</span>
+<span class="fc" id="L86">            this.value = value;</span>
+<span class="fc" id="L87">        }</span>
 
         @Override
         public String toString() {
-<span class="nc" id="L64">            return key + &quot;: &quot; + value;</span>
+<span class="fc" id="L91">            return key + &quot;: &quot; + value;</span>
         }
 
+        /**
+         * Retrieves the header `key`.
+         *
+         * @return the header key
+         */
         public String getKey() {
-<span class="fc" id="L68">            return key;</span>
+<span class="fc" id="L100">            return key;</span>
         }
 
+        /**
+         * Retrieves the header `value`.
+         *
+         * @return the header value
+         */
         public String getValue() {
-<span class="fc" id="L72">            return value;</span>
+<span class="fc" id="L109">            return value;</span>
         }
 
+        /**
+         * Used to determine whether or not a `Header` is multi-valued.
+         *
+         * FIXME: more details about what it means to be multi-valued (what string looks like)
+         *
+         * @return true if the header is multi-valued
+         */
         public boolean isMultiValued() {
-<span class="fc bfc" id="L76" title="All 2 branches covered.">            return value.indexOf(';') != -1;</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">            return value.indexOf(';') != -1;</span>
         }
 
+        /**
+         * FIXME: document
+         */
         public static String cleanValue(final String v) {
-<span class="fc bfc" id="L80" title="All 2 branches covered.">            if(v.startsWith(&quot;\&quot;&quot;)) {</span>
-<span class="fc" id="L81">                return v.substring(1, v.length() - 1);</span>
-            }
-            else {
-<span class="fc" id="L84">                return v;</span>
-            }
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            return v.startsWith(&quot;\&quot;&quot;) ? v.substring(1, v.length() - 1) : v;</span>
         }
 
+        /**
+         * FIXME: document
+         */
         public static void putValue(final Map&lt;String,List&lt;String&gt;&gt; map, final String v) {
-<span class="fc" id="L89">            final String[] sub = v.split(&quot;=&quot;);</span>
-<span class="fc" id="L90">            final String subKey = sub[0].trim();</span>
-<span class="fc" id="L91">            final String subValue = cleanValue(sub[1].trim());</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">            if(map.containsKey(subKey)) {</span>
-<span class="nc" id="L93">                final List&lt;String&gt; list = new ArrayList(map.get(subKey));</span>
-<span class="nc" id="L94">                list.add(subValue);</span>
-<span class="nc" id="L95">                map.put(subKey, list);</span>
-<span class="nc" id="L96">            }</span>
+<span class="fc" id="L134">            final String[] sub = v.split(&quot;=&quot;);</span>
+<span class="fc" id="L135">            final String subKey = sub[0].trim();</span>
+<span class="fc" id="L136">            final String subValue = cleanValue(sub[1].trim());</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">            if(map.containsKey(subKey)) {</span>
+<span class="nc" id="L138">                final List&lt;String&gt; list = new ArrayList(map.get(subKey));</span>
+<span class="nc" id="L139">                list.add(subValue);</span>
+<span class="nc" id="L140">                map.put(subKey, list);</span>
+<span class="nc" id="L141">            }</span>
             else {
-<span class="fc" id="L98">                map.put(subKey, Collections.singletonList(subValue));</span>
+<span class="fc" id="L143">                map.put(subKey, Collections.singletonList(subValue));</span>
             }
-<span class="fc" id="L100">        }</span>
-        
+<span class="fc" id="L145">        }</span>
+
+        /**
+         * FIXME: document - see `FromServerSpec:'Header.keysValues'` for questions about this method. Not sure it works.
+         */
         public Map&lt;String,List&lt;String&gt;&gt; getKeysValues() {
-<span class="fc bfc" id="L103" title="All 2 branches covered.">            if(keysValues != null) {</span>
-<span class="fc" id="L104">                return keysValues;</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">            if(keysValues != null) {</span>
+<span class="fc" id="L152">                return keysValues;</span>
             }
             
-<span class="fc bfc" id="L107" title="All 2 branches covered.">            if(isMultiValued()) {</span>
-<span class="fc" id="L108">                final Map&lt;String,List&lt;String&gt;&gt; tmp = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L109">                final String[] ary = value.split(&quot;;&quot;);</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            if(isMultiValued()) {</span>
+<span class="fc" id="L156">                final Map&lt;String,List&lt;String&gt;&gt; tmp = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L157">                final String[] ary = value.split(&quot;;&quot;);</span>
 
-<span class="fc bfc" id="L111" title="All 2 branches covered.">                if(ary[0].indexOf('=') == -1) {</span>
-<span class="fc" id="L112">                    tmp.put(key, Collections.singletonList(ary[0].trim()));</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">                if(ary[0].indexOf('=') == -1) {</span>
+<span class="fc" id="L160">                    tmp.put(key, Collections.singletonList(ary[0].trim()));</span>
                 }
                 else {
-<span class="fc" id="L115">                    tmp.put(key, Collections.singletonList(&quot;&quot;));</span>
-<span class="fc" id="L116">                    putValue(tmp, ary[0].replace(key + &quot;:&quot;, &quot;&quot;).trim());</span>
+<span class="fc" id="L163">                    tmp.put(key, Collections.singletonList(&quot;&quot;));</span>
+<span class="fc" id="L164">                    putValue(tmp, ary[0].replace(key + &quot;:&quot;, &quot;&quot;).trim());</span>
                 }
                 
-<span class="fc bfc" id="L119" title="All 2 branches covered.">                for(int i = 1; i &lt; ary.length; ++i) {</span>
-<span class="fc" id="L120">                    putValue(tmp, ary[i].trim());</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">                for(int i = 1; i &lt; ary.length; ++i) {</span>
+<span class="fc" id="L168">                    putValue(tmp, ary[i].trim());</span>
                 }
 
-<span class="fc" id="L123">                keysValues = Collections.unmodifiableMap(tmp);</span>
-<span class="fc" id="L124">            }</span>
+<span class="fc" id="L171">                keysValues = Collections.unmodifiableMap(tmp);</span>
+<span class="fc" id="L172">            }</span>
             else {
-<span class="fc" id="L126">                keysValues = Collections.singletonMap(key, Collections.singletonList(value));</span>
+<span class="fc" id="L174">                keysValues = Collections.singletonMap(key, Collections.singletonList(value));</span>
             }
 
-<span class="fc" id="L129">            return keysValues;</span>
-        }
-    }
-
-    default String getContentType() {
-<span class="fc" id="L134">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="fc bfc" id="L135" title="All 2 branches covered.">        if(header == null) {</span>
-<span class="fc" id="L136">            return DEFAULT_CONTENT_TYPE;</span>
-        }
-        else {
-<span class="fc" id="L139">            return header.getKeysValues().get(header.getKey()).get(0);</span>
-        }
-    }
-
-    default Charset getCharset() {
-<span class="fc" id="L144">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="pc bpc" id="L145" title="1 of 4 branches missed.">        if(header == null || !header.isMultiValued() ||</span>
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">           !header.getKeysValues().containsKey(&quot;charset&quot;) ||</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">           header.getKeysValues().get(&quot;charset&quot;).size() == 0) {</span>
-<span class="fc" id="L148">            return StandardCharsets.UTF_8;</span>
-        }
-        else {
-<span class="fc" id="L151">            return Charset.forName(header.getKeysValues().get(&quot;charset&quot;).get(0));</span>
+<span class="fc" id="L177">            return keysValues;</span>
         }
     }
 
     /**
-     * FIXME: document
+     * Retrieves the value of the &quot;Content-Type&quot; header from the response.
+     *
+     * @return the value of the &quot;Content-Type&quot; response header
+     */
+    default String getContentType() {
+<span class="fc" id="L187">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        return header == null ? DEFAULT_CONTENT_TYPE : header.getKeysValues().get(header.getKey()).get(0);</span>
+    }
+
+    /**
+     * Retrieves the value of the charset from the &quot;Content-Type&quot; response header.
+     *
+     * @return the value of the charset from the &quot;Content-Type&quot; response header
+     */
+    default Charset getCharset() {
+<span class="fc" id="L197">        final Header header = Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="pc bpc" id="L198" title="1 of 4 branches missed.">        if(header == null || !header.isMultiValued() ||</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">           !header.getKeysValues().containsKey(&quot;charset&quot;) ||</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">           header.getKeysValues().get(&quot;charset&quot;).size() == 0) {</span>
+<span class="fc" id="L201">            return StandardCharsets.UTF_8;</span>
+        }
+        else {
+<span class="fc" id="L204">            return Charset.forName(header.getKeysValues().get(&quot;charset&quot;).get(0));</span>
+        }
+    }
+
+    /**
+     * Retrieves the {@link InputStream} containing the response content.
+     *
+     * @return the response content
      */
     InputStream getInputStream();
 
     /**
-     * FIXME: document
+     * Retrieves the response status code (https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[List of HTTP status code]).
+     *
+     * @return the response status code
      */
     int getStatusCode();
 
     /**
-     * FIXME: document
+     * Retrieves the response status message.
+     *
+     * @return the response status message (or null)
      */
     String getMessage();
 
     /**
-     * FIXME: document
+     * Retrieves a {@link List} of the response headers as ({@link Header} objects).
+     *
+     * @return a {@link List} of response headers
      */
     List&lt;Header&gt; getHeaders();
 
     /**
-     * FIXME: document
+     * Determines whether or not there is body content in the response.
+     *
+     * @return true if there is body content in the response
      */
     boolean getHasBody();
 
     /**
-     * FIXME: document
+     * Retrieves the {@link URI} of the original request.
+     *
+     * @return the {@link URI} of the original request
      */
     URI getUri();
 
@@ -188,10 +253,13 @@ public interface FromServer {
     void finish();
 
     /**
-     * FIXME: document
+     * Retrieves a {@link Reader} for the response body content (if there is any).
+     *
+     * @return a {@link Reader} for the response body content (may be empty)
      */
     default Reader getReader() {
-<span class="fc" id="L194">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
+        // TODO: verify what this does when there is no body content
+<span class="fc" id="L262">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

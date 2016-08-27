@@ -16,15 +16,19 @@
 package groovyx.net.http;
 
 import java.util.List;
-import java.util.Arrays;
 
-<span class="nc" id="L21">public class ContentTypes {</span>
-<span class="fc" id="L22">    public static final List&lt;String&gt; ANY = Arrays.asList(&quot;*/*&quot;);</span>
-<span class="fc" id="L23">    public static final List&lt;String&gt; TEXT = Arrays.asList(&quot;text/plain&quot;);</span>
-<span class="fc" id="L24">    public static final List&lt;String&gt; JSON = Arrays.asList(&quot;application/json&quot;,&quot;application/javascript&quot;,&quot;text/javascript&quot;);</span>
-<span class="fc" id="L25">    public static final List&lt;String&gt; XML = Arrays.asList(&quot;application/xml&quot;,&quot;text/xml&quot;,&quot;application/xhtml+xml&quot;,&quot;application/atom+xml&quot;);</span>
-<span class="fc" id="L26">    public static final List&lt;String&gt; HTML = Arrays.asList(&quot;text/html&quot;);</span>
-<span class="fc" id="L27">    public static final List&lt;String&gt; URLENC = Arrays.asList(&quot;application/x-www-form-urlencoded&quot;);</span>
-<span class="fc" id="L28">    public static final List&lt;String&gt; BINARY = Arrays.asList(&quot;application/octet-stream&quot;);</span>
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+
+<span class="nc" id="L23">public class ContentTypes {</span>
+    // TODO: seems like this should be an enum (?)
+
+<span class="fc" id="L26">    public static final List&lt;String&gt; ANY = unmodifiableList(asList(&quot;*/*&quot;));</span>
+<span class="fc" id="L27">    public static final List&lt;String&gt; TEXT = unmodifiableList(asList(&quot;text/plain&quot;));</span>
+<span class="fc" id="L28">    public static final List&lt;String&gt; JSON = unmodifiableList(asList(&quot;application/json&quot;, &quot;application/javascript&quot;, &quot;text/javascript&quot;));</span>
+<span class="fc" id="L29">    public static final List&lt;String&gt; XML = unmodifiableList(asList(&quot;application/xml&quot;, &quot;text/xml&quot;, &quot;application/xhtml+xml&quot;, &quot;application/atom+xml&quot;));</span>
+<span class="fc" id="L30">    public static final List&lt;String&gt; HTML = unmodifiableList(asList(&quot;text/html&quot;));</span>
+<span class="fc" id="L31">    public static final List&lt;String&gt; URLENC = unmodifiableList(asList(&quot;application/x-www-form-urlencoded&quot;));</span>
+<span class="fc" id="L32">    public static final List&lt;String&gt; BINARY = unmodifiableList(asList(&quot;application/octet-stream&quot;));</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

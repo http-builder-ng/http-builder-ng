@@ -488,14 +488,13 @@ public interface HttpConfig {
 
     /**
      * Defines the configurable HTTP response properties.
-     *
-     * TODO: more discussion about interactions between &quot;when&quot; methods
      */
     interface Response {
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance.
+         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
+         * the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -511,6 +510,9 @@ public interface HttpConfig {
          * }
          * ----
          *
+         * This method is the same as calling either the `success(Closure)` or `failure(Closure)` methods. Only one closure may be mapped to each
+         * status.
+         *
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
@@ -518,7 +520,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance.
+         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
+         * the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -541,7 +544,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code (as a String) occurs in the response. The `closure` will be
-         * called with an instance of the response as a `FromServer` instance.
+         * called with an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value
+         * of the request; this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -572,7 +576,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a successful response is received (code &lt; 400). The `closure` will be called with
-         * an instance of the response as a `FromServer` instance.
+         * an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request;
+         * this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -588,13 +593,16 @@ public interface HttpConfig {
          * }
          * ----
          *
+         * This method is the same as calling either the `when(Status.SUCCESS, Closure)` method.
+         *
          * @param closure the closure to be executed
          */
         void success(Closure&lt;Object&gt; closure);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a failure response is received (code &gt;= 400). The `closure` will be called with
-         * an instance of the response as a `FromServer` instance.
+         * an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request;
+         * this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -609,6 +617,8 @@ public interface HttpConfig {
          *      }
          * }
          * ----
+         *
+         * This method is the same as calling either the `when(Status.FAILURE, Closure)` method.
          *
          * @param closure the closure to be executed
          */
@@ -648,10 +658,10 @@ public interface HttpConfig {
      * FIXME: document
      */
     default void context(final List&lt;String&gt; contentTypes, final Object id, final Object obj) {
-<span class="fc bfc" id="L651" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
-<span class="fc" id="L652">            context(contentType, id, obj);</span>
-<span class="fc" id="L653">        }</span>
-<span class="fc" id="L654">    }</span>
+<span class="fc bfc" id="L661" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
+<span class="fc" id="L662">            context(contentType, id, obj);</span>
+<span class="fc" id="L663">        }</span>
+<span class="fc" id="L664">    }</span>
 
     /**
      * Used to retrieve configuration information about the HTTP request.

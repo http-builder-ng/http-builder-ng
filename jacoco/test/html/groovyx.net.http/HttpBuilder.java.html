@@ -48,10 +48,33 @@ import java.util.function.Function;
  *
  * The `closure` parameter is used to provide configuration for the client instance - the allowed configuration values are provided by the configuration
  * interfaces (delegated to by the closure): {@link HttpConfig} and {@link HttpObjectConfig}.
+ *
+ * Once you have the `HttpBuilder` configured, you can execute HTTP verb operations (e.g. GET, POST):
+ *
+ * [source,groovy]
+ * ----
+ * def http = HttpBuilder.configure {
+ *     request.uri = 'http://localhost:10101/rest'
+ * }
+ *
+ * def content = http.get {
+ *     request.uri.path = '/list'
+ * }
+ *
+ * def result = http.post {
+ *     request.uri.path = '/save'
+ *     request.body = infoRecord
+ *     request.contentType = ContentTypes.JSON[0]
+ * }
+ * ----
+ *
+ * :linkattrs:
+ *
+ * See the HTTP verb method docs (below) or the https://dwclark.github.io/http-builder-ng/guide/html5/[User Guide^] for more examples.
  */
 public abstract class HttpBuilder implements Closeable {
 
-<span class="fc" id="L54">    private static volatile Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory = JavaHttpBuilder::new;</span>
+<span class="fc" id="L77">    private static volatile Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory = JavaHttpBuilder::new;</span>
 
     /**
      * Used to retrieve the default client factory.
@@ -59,7 +82,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the default client factory function
      */
     public static Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; getDefaultFactory() {
-<span class="nc" id="L62">        return factory;</span>
+<span class="nc" id="L85">        return factory;</span>
     }
 
     /**
@@ -68,11 +91,11 @@ public abstract class HttpBuilder implements Closeable {
      * @param val the default client factory as a ({@link Function}
      */
     public static void setDefaultFactory(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; val) {
-<span class="nc" id="L71">        factory = val;</span>
-<span class="nc" id="L72">    }</span>
+<span class="nc" id="L94">        factory = val;</span>
+<span class="nc" id="L95">    }</span>
 
-<span class="fc" id="L74">    static void noOp() { }</span>
-<span class="fc" id="L75">    static Closure NO_OP = new MethodClosure(HttpBuilder.class, &quot;noOp&quot;);</span>
+<span class="fc" id="L97">    static void noOp() { }</span>
+<span class="fc" id="L98">    static Closure NO_OP = new MethodClosure(HttpBuilder.class, &quot;noOp&quot;);</span>
 
     /**
      * Creates an `HttpBuilder` with the default configuration using the provided factory function ({@link JavaHttpBuilder} or
@@ -89,7 +112,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory) {
-<span class="nc" id="L92">        return configure(factory, NO_OP);</span>
+<span class="nc" id="L115">        return configure(factory, NO_OP);</span>
     }
 
     /**
@@ -110,7 +133,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="nc" id="L113">        return configure(factory, closure);</span>
+<span class="nc" id="L136">        return configure(factory, closure);</span>
     }
 
     /**
@@ -134,26 +157,26 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory, @DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="fc" id="L137">        HttpObjectConfig impl = new HttpObjectConfigImpl();</span>
-<span class="fc" id="L138">        closure.setDelegate(impl);</span>
-<span class="fc" id="L139">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
-<span class="fc" id="L140">        closure.call();</span>
-<span class="fc" id="L141">        return factory.apply(impl);</span>
-    }
-    
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-<span class="fc" id="L145">        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
-<span class="fc" id="L146">        closure.setDelegate(myConfig);</span>
-<span class="fc" id="L147">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
-<span class="fc" id="L148">        closure.call();</span>
-<span class="fc" id="L149">        return myConfig;</span>
+<span class="fc" id="L160">        HttpObjectConfig impl = new HttpObjectConfigImpl();</span>
+<span class="fc" id="L161">        closure.setDelegate(impl);</span>
+<span class="fc" id="L162">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L163">        closure.call();</span>
+<span class="fc" id="L164">        return factory.apply(impl);</span>
     }
 
-    private final EnumMap&lt;HttpVerb,BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt;&gt; interceptors;
-    
-<span class="fc" id="L154">    protected HttpBuilder(final HttpObjectConfig objectConfig) {</span>
-<span class="fc" id="L155">        this.interceptors = new EnumMap&lt;&gt;(objectConfig.getExecution().getInterceptors());</span>
-<span class="fc" id="L156">    }</span>
+    private ChainedHttpConfig configureRequest(final Closure closure) {
+<span class="fc" id="L168">        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
+<span class="fc" id="L169">        closure.setDelegate(myConfig);</span>
+<span class="fc" id="L170">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L171">        closure.call();</span>
+<span class="fc" id="L172">        return myConfig;</span>
+    }
+
+    private final EnumMap&lt;HttpVerb, BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt;&gt; interceptors;
+
+<span class="fc" id="L177">    protected HttpBuilder(final HttpObjectConfig objectConfig) {</span>
+<span class="fc" id="L178">        this.interceptors = new EnumMap&lt;&gt;(objectConfig.getExecution().getInterceptors());</span>
+<span class="fc" id="L179">    }</span>
 
     /**
      * Executes a GET request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
@@ -170,7 +193,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get() {
-<span class="fc" id="L173">        return get(NO_OP);</span>
+<span class="fc" id="L196">        return get(NO_OP);</span>
     }
 
     /**
@@ -194,7 +217,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T get(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L197">        return type.cast(get(closure));</span>
+<span class="fc" id="L220">        return type.cast(get(closure));</span>
     }
 
     /**
@@ -213,7 +236,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a {@link CompletableFuture} for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; getAsync() {
-<span class="fc" id="L216">        return CompletableFuture.supplyAsync(() -&gt; get(), getExecutor());</span>
+<span class="fc" id="L239">        return CompletableFuture.supplyAsync(() -&gt; get(), getExecutor());</span>
     }
 
     /**
@@ -237,7 +260,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public CompletableFuture&lt;Object&gt; getAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L240">        return CompletableFuture.supplyAsync(() -&gt; get(closure), getExecutor());</span>
+<span class="fc" id="L263">        return CompletableFuture.supplyAsync(() -&gt; get(closure), getExecutor());</span>
     }
 
     /**
@@ -262,107 +285,244 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; getAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L265">        return CompletableFuture.supplyAsync(() -&gt; get(type, closure), getExecutor());</span>
+<span class="fc" id="L288">        return CompletableFuture.supplyAsync(() -&gt; get(type, closure), getExecutor());</span>
     }
 
     /**
-     * Executes an HEAD request on the configured URI.
+     * Executes a HEAD request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
+     * have a target for the request.
      *
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * http.head()
+     * ----
+     *
+     * @return the resulting content - which should always be `null` for this method
      */
     public Object head() {
-<span class="fc" id="L274">        return head(NO_OP);</span>
+<span class="fc" id="L306">        return head(NO_OP);</span>
     }
 
     /**
-     * Executes an HEAD request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes a HEAD request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast to
+     * the specified `type`. A response to a HEAD request contains no data; however, the `response.when()` methods may provide data based on response
+     * headers, which will be cast to the specified type.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101/date'
+     * }
+     * Date result = http.head(Date){
+     *      response.success { FromServer fromServer -&gt;
+     *          Date.parse('yyyy.MM.dd HH:mm', fromServer.headers.find { it.key == 'stamp' }.value)
+     *      }
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param type the type of the response content
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T head(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L285">        return type.cast(head(closure));</span>
+<span class="fc" id="L333">        return type.cast(head(closure));</span>
     }
 
     /**
-     * Executes an asynchronous HEAD request on the configured URI.
+     * Executes an asynchronous HEAD request on the configured URI (asynchronous alias to the `head()` method. The `request.uri` property should be
+     * configured in the global client configuration in order to have a target for the request.
      *
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * http.headAsync()
+     * ----
+     *
+     * There is no response content, unless provided by `request.when()` method closure.
+     *
+     * @return a {@link CompletableFuture} for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; headAsync() {
-<span class="fc" id="L294">        return CompletableFuture.supplyAsync(() -&gt; head(), getExecutor());</span>
+<span class="fc" id="L353">        return CompletableFuture.supplyAsync(() -&gt; head(), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous HEAD request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous HEAD request on the configured URI (asynchronous alias to the `head(Closure)` method), with additional configuration
+     * provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * http.headAsync(){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * The response will not contain content unless the `response.when()` method closure provides it based on the response headers.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content
      */
     public CompletableFuture&lt;Object&gt; headAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L304">        return CompletableFuture.supplyAsync(() -&gt; head(closure), getExecutor());</span>
+<span class="fc" id="L378">        return CompletableFuture.supplyAsync(() -&gt; head(closure), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous HEAD request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous HEAD request on the configured URI (asynchronous alias to the `head(Class,Closure)` method), with additional
+     * configuration provided by the configuration closure. The result will be cast to the specified `type`. A response to a HEAD request contains no
+     * data; however, the `response.when()` methods may provide data based on response headers, which will be cast to the specified type.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101/date'
+     * }
+     * CompletableFuture future = http.headAsync(Date){
+     *      response.success { FromServer fromServer -&gt;
+     *          Date.parse('yyyy.MM.dd HH:mm', fromServer.headers.find { it.key == 'stamp' }.value)
+     *      }
+     * }
+     * Date result = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param type the type of the response content
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return a {@link CompletableFuture} which may be used to access the resulting content (if present)
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; headAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L315">        return CompletableFuture.supplyAsync(() -&gt; head(type, closure), getExecutor());</span>
+<span class="fc" id="L406">        return CompletableFuture.supplyAsync(() -&gt; head(type, closure), getExecutor());</span>
     }
 
     /**
-     * Executes a POST request on the configured URI.
+     * Executes a POST request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
+     * have a target for the request.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.post()
+     * ----
      *
      * @return the resulting content
      */
     public Object post() {
-<span class="fc" id="L324">        return post(NO_OP);</span>
+<span class="fc" id="L424">        return post(NO_OP);</span>
     }
 
     /**
-     * Executes a POST request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an POST request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast
+     * to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * Date date = http.post(Date){
+     *     request.uri.path = '/date'
+     *     request.body = '{ &quot;timezone&quot;: &quot;America/Chicago&quot; }'
+     *     request.contentType = 'application/json'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T post(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L335">        return type.cast(post(closure));</span>
+<span class="fc" id="L452">        return type.cast(post(closure));</span>
     }
 
     /**
-     * Executes an asynchronous POST request on the configured URI.
+     * Executes an asynchronous POST request on the configured URI (asynchronous alias to the `post()` method). The `request.uri` property should be
+     * configured in the global client configuration in order to have a target for the request.
      *
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.postAsync()
+     * def result = future.get()
+     * ----
+     *
+     * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; postAsync() {
-<span class="nc" id="L344">        return CompletableFuture.supplyAsync(() -&gt; post(NO_OP), getExecutor());</span>
+<span class="fc" id="L471">        return CompletableFuture.supplyAsync(() -&gt; post(NO_OP), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous POST request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous POST request on the configured URI (an asynchronous alias to the `post(Closure)` method), with additional configuration
+     * provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.postAsync(){
+     *     request.uri.path = '/something'
+     *     request.body = 'My content'
+     *     request.contentType = 'text/plain'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the future result data
      */
-    public Object postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L354">        return CompletableFuture.supplyAsync(() -&gt; post(closure), getExecutor());</span>
+    public CompletableFuture&lt;Object&gt; postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L496">        return CompletableFuture.supplyAsync(() -&gt; post(closure), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous POST request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous POST request on the configured URI (asynchronous alias to the `post(Class,Closure)` method), with additional
+     * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletedFuture&lt;Date&gt; future = http.postAsync(Date){
+     *     request.uri.path = '/date'
+     *     request.body = '{ &quot;timezone&quot;: &quot;America/Chicago&quot; }'
+     *     request.contentType = 'application/json'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * Date date = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; postAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L365">        return CompletableFuture.supplyAsync(() -&gt; post(type, closure), getExecutor());</span>
+<span class="fc" id="L525">        return CompletableFuture.supplyAsync(() -&gt; post(type, closure), getExecutor());</span>
     }
 
     /**
@@ -371,7 +531,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put() {
-<span class="nc" id="L374">        return put(NO_OP);</span>
+<span class="nc" id="L534">        return put(NO_OP);</span>
     }
 
     /**
@@ -382,7 +542,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public &lt;T&gt; T put(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L385">        return type.cast(put(closure));</span>
+<span class="nc" id="L545">        return type.cast(put(closure));</span>
     }
 
     /**
@@ -391,7 +551,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a CompletableFuture for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; putAsync() {
-<span class="nc" id="L394">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
+<span class="nc" id="L554">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
     }
 
     /**
@@ -401,7 +561,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L404">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
+<span class="nc" id="L564">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
     }
 
     /**
@@ -412,7 +572,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a CompletableFuture for retrieving the resulting content
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; putAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L415">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
+<span class="nc" id="L575">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
     }
 
     /**
@@ -421,7 +581,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete() {
-<span class="nc" id="L424">        return delete(NO_OP);</span>
+<span class="nc" id="L584">        return delete(NO_OP);</span>
     }
 
     /**
@@ -432,7 +592,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public &lt;T&gt; T delete(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L435">        return type.cast(delete(closure));</span>
+<span class="nc" id="L595">        return type.cast(delete(closure));</span>
     }
 
     /**
@@ -441,7 +601,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a CompletableFuture for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; deleteAsync() {
-<span class="nc" id="L444">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
+<span class="nc" id="L604">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
     }
 
     /**
@@ -451,7 +611,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L454">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
+<span class="nc" id="L614">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
     }
 
     /**
@@ -462,7 +622,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a CompletableFuture for retrieving the resulting content
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; deleteAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L465">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
+<span class="nc" id="L625">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
     }
 
     /**
@@ -473,7 +633,7 @@ public abstract class HttpBuilder implements Closeable {
      * def http = HttpBuilder.configure {
      *     request.uri = 'http://localhost:10101'
      * }
-     * def result = http.getAsync(){
+     * def result = http.get(){
      *     request.uri.path = '/something'
      * }
      * ----
@@ -484,27 +644,53 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L487">        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);</span>
+<span class="fc" id="L647">        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);</span>
     }
 
     /**
-     * Executes an HEAD request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes a HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * http.head(){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content - which will be `null` unless provided by a `request.when()` closure
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L497">        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);</span>
+<span class="fc" id="L669">        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);</span>
     }
 
     /**
      * Executes a POST request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.post(){
+     *     request.uri.path = '/something'
+     *     request.body = 'My content'
+     *     request.contentType = 'text/plain'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content
      */
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L507">        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);</span>
+<span class="fc" id="L693">        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);</span>
     }
 
     /**
@@ -514,7 +700,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L517">        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);</span>
+<span class="fc" id="L703">        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);</span>
     }
 
     /**
@@ -524,16 +710,21 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L527">        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);</span>
+<span class="fc" id="L713">        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);</span>
     }
 
     protected abstract Object doGet(final ChainedHttpConfig config);
+
     protected abstract Object doHead(final ChainedHttpConfig config);
+
     protected abstract Object doPost(final ChainedHttpConfig config);
+
     protected abstract Object doPut(final ChainedHttpConfig config);
+
     protected abstract Object doDelete(final ChainedHttpConfig config);
+
     protected abstract ChainedHttpConfig getObjectConfig();
-    
-    public abstract Executor getExecutor();    
+
+    public abstract Executor getExecutor();
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
