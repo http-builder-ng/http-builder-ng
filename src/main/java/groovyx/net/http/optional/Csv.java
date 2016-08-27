@@ -15,18 +15,21 @@
  */
 package groovyx.net.http.optional;
 
-import com.opencsv.*;
-import groovyx.net.http.*;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import groovyx.net.http.ChainedHttpConfig;
+import groovyx.net.http.FromServer;
+import groovyx.net.http.HttpConfig;
+import groovyx.net.http.ToServer;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
+
 import static groovyx.net.http.NativeHandlers.Encoders.*;
 
 public class Csv {
@@ -37,8 +40,8 @@ public class Csv {
     public static class Context {
 
         public static final String ID = "3DOJ0FPjyD4GwLmpMjrCYnNJK60=";
-        public static Context DEFAULT_CSV = new Context(',');
-        public static Context DEFAULT_TSV = new Context('\t');
+        public static final Context DEFAULT_CSV = new Context(',');
+        public static final Context DEFAULT_TSV = new Context('\t');
         
         private final Character separator;
         private final Character quoteChar;

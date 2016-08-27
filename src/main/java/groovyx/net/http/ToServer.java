@@ -18,13 +18,15 @@ package groovyx.net.http;
 import java.io.InputStream;
 
 /**
- * FIXME: document
+ * Adapter interface used to translate request content from the {@link HttpBuilder} API to the specific format required by the underlying client
+ * implementation.
  */
 public interface ToServer {
-    // TODO: should this be renamed to Encoder?
 
     /**
-     * FIXME: document
+     * Translates the request content appropriately for the underlying client implementation.
+     *
+     * @param inputStream the request input stream to be translated.
      */
     void toServer(InputStream inputStream);
 }

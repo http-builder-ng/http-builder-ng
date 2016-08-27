@@ -488,14 +488,13 @@ public interface HttpConfig {
 
     /**
      * Defines the configurable HTTP response properties.
-     *
-     * TODO: more discussion about interactions between "when" methods
      */
     interface Response {
 
         /**
          * Configures the execution of the provided closure "when" the given status occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance.
+         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
+         * the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -511,6 +510,9 @@ public interface HttpConfig {
          * }
          * ----
          *
+         * This method is the same as calling either the `success(Closure)` or `failure(Closure)` methods. Only one closure may be mapped to each
+         * status.
+         *
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
@@ -518,7 +520,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure "when" the given status code occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance.
+         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
+         * the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -541,7 +544,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure "when" the given status code (as a String) occurs in the response. The `closure` will be
-         * called with an instance of the response as a `FromServer` instance.
+         * called with an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value
+         * of the request; this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -572,7 +576,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure "when" a successful response is received (code < 400). The `closure` will be called with
-         * an instance of the response as a `FromServer` instance.
+         * an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request;
+         * this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -588,13 +593,16 @@ public interface HttpConfig {
          * }
          * ----
          *
+         * This method is the same as calling either the `when(Status.SUCCESS, Closure)` method.
+         *
          * @param closure the closure to be executed
          */
         void success(Closure<Object> closure);
 
         /**
          * Configures the execution of the provided closure "when" a failure response is received (code >= 400). The `closure` will be called with
-         * an instance of the response as a `FromServer` instance.
+         * an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request;
+         * this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -609,6 +617,8 @@ public interface HttpConfig {
          *      }
          * }
          * ----
+         *
+         * This method is the same as calling either the `when(Status.FAILURE, Closure)` method.
          *
          * @param closure the closure to be executed
          */

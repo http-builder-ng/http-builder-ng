@@ -15,40 +15,31 @@
  */
 package groovyx.net.http
 
-import groovy.transform.Memoized
-import groovyx.net.http.optional.ApacheHttpBuilder
 import org.junit.Rule
 import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
-import org.mockserver.model.HttpRequest
-import org.mockserver.model.HttpResponse
 import org.mockserver.model.NottableString
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.Executors
-import java.util.function.Function
 
 import static HttpClientType.APACHE
 import static HttpClientType.JAVA
+import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
 
-    // TODO: the when methods allow modification of the returned value?
     // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
-    // TODO: more detailed testing of the whens and their input props
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
     private static final String HTML_CONTENT_B = htmlContent('Testing B')
     private static final String HTML_CONTENT_C = htmlContent('Testing C')
-
-    private static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
-    private static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function
 
     private MockServerClient server
 
@@ -81,14 +72,6 @@ class HttpGetSpec extends Specification {
             .respond(response().withHeader('WWW-Authenticate', 'Basic realm="Test Realm"').withStatusCode(401))
 
         server.when(get('/basic').withHeader(authHeader)).respond(responseContent(htmlContent()))
-    }
-
-    private static HttpRequest get(final String path) {
-        request().withMethod('GET').withPath(path)
-    }
-
-    private static HttpResponse responseContent(final String content, final String type = 'text/plain') {
-        response().withBody(content).withStatusCode(200).withHeader('Content-Type', type)
     }
 
     @Unroll def '[#client] GET /status(#status): verify when handler'() {
@@ -304,7 +287,7 @@ class HttpGetSpec extends Specification {
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(label).get(Date, config)
+        result = httpBuilder(label).getAsync(Date, config).get()
 
         then:
         result instanceof Date
@@ -369,34 +352,7 @@ class HttpGetSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    private Function clientFactory(final HttpClientType clientType) {
-        clientType == APACHE ? apacheClientFactory : javaClientFactory
-    }
-
-    @Memoized
     private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = "http://localhost:${serverRule.port}" }) {
-        HttpBuilder.configure(clientFactory(clientType), config)
-    }
-
-    private static String htmlContent(String text = 'Nothing special') {
-        "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String
-    }
-
-    private static String xmlContent(String text = 'Nothing special') {
-        "<?xml version=\"1.0\"?><root><child><elt name='foo' /><text>$text</text></child></root>" as String
-    }
-
-    private static String jsonContent(String text = 'Nothing special') {
-        """
-            {
-                "items":[
-                    {
-                        "name":"alpha",
-                        "score":123,
-                        "text": "${text}"
-                    }
-                ]
-            }
-        """.stripIndent()
+        MockServerHelper.httpBuilder(clientType, config)
     }
 }

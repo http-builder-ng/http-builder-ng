@@ -62,6 +62,11 @@ dependencies {
     asciidoclet 'org.asciidoctor:asciidoclet:1.+'
 }
 
+test {
+    forkEvery = 1
+    maxParallelForks = Runtime.runtime.availableProcessors()
+}
+
 javadoc {
     options.docletpath = configurations.asciidoclet.files.asType(List)
     options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
@@ -132,7 +137,7 @@ license {
     ext.name = 'David Clark'
     ext.year = Calendar.instance.get(Calendar.YEAR)
 
-    excludes(['**/*.txt', '**/*.dtd', '**/*.xml'])
+    excludes(['**/*.txt', '**/*.dtd', '**/*.xml', '**/*.ent', '**/*.jks'])
 }
 
 asciidoctor {

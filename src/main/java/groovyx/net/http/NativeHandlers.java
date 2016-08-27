@@ -31,15 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
+import java.io.*;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -132,7 +124,7 @@ public class NativeHandlers {
             throw new IllegalArgumentException(msg);
         }
 
-        private static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
+        public static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
             return new ReaderInputStream(r, cs);
         }
 
