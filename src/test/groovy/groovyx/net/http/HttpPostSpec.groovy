@@ -21,6 +21,7 @@ import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
 import org.mockserver.model.NottableString
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -158,8 +159,7 @@ class HttpPostSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    @Ignore('The Apache client throws an exception - possible bug')
-    // FIXME: http://stackoverflow.com/questions/8222929/httppost-failed-due-to-cannot-retry-request-with-a-non-repeatable-request-entit
+    @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/10')
     @Unroll def '[#client] POST (BASIC) /basic: returns content'() {
         expect:
         httpBuilder(client).post({

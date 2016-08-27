@@ -6,7 +6,6 @@
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ChainedHttpConfig.java
    
 - User Guide
-    - POST
     - PUT
     - DELETE
     - OPTIONS
@@ -23,4 +22,4 @@
     - Description of how to write encoders and parsers
     - Description of how to integrate a new http client library
     - configuration for HTTPS interactions (is there anything?)
-    - examples with authentication
+    - examples with authentication.

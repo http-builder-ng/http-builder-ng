@@ -15,7 +15,6 @@
  */
 package groovyx.net.http
 
-import groovy.transform.Memoized
 import groovyx.net.http.optional.ApacheHttpBuilder
 import org.mockserver.model.HttpRequest
 import org.mockserver.model.HttpResponse
@@ -28,7 +27,6 @@ class MockServerHelper {
     static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
     static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function
 
-    @Memoized
     private static HttpBuilder httpBuilder(final HttpClientType clientType, Closure config) {
         HttpBuilder.configure(clientType == HttpClientType.APACHE ? apacheClientFactory : javaClientFactory, config)
     }

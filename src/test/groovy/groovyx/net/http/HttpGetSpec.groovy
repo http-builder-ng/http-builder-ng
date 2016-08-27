@@ -309,7 +309,8 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client, config).get {
+        def httpClient = httpBuilder(client, config)
+        def result = httpClient.get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -319,7 +320,7 @@ class HttpGetSpec extends Specification {
         result == 'Ignored'
 
         when:
-        result = httpBuilder(client, config).get {
+        result = httpClient.get {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
         }
@@ -329,7 +330,8 @@ class HttpGetSpec extends Specification {
         result.user == 'david'
 
         when:
-        result = httpBuilder(client, config).getAsync {
+        httpClient = httpBuilder(client, config)
+        result = httpClient.getAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -339,7 +341,7 @@ class HttpGetSpec extends Specification {
         result == 'Ignored'
 
         when:
-        result = httpBuilder(client, config).getAsync() {
+        result = httpClient.getAsync() {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
         }.get()

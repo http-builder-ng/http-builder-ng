@@ -16,6 +16,7 @@
 package groovyx.net.http
 
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class FromServerSpec extends Specification {
@@ -42,7 +43,7 @@ class FromServerSpec extends Specification {
         header.toString() == 'Accept: image/jpeg'
     }
 
-    @Ignore('Pending further investigation - is this correct')
+    @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/9')
     def 'Header.keysValues'() {
         when:
         def header = FromServer.Header.keyValue('Forwarded', 'for=192.0.2.60;proto=http;by=203.0.113.43')

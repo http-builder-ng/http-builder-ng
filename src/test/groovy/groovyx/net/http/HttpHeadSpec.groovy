@@ -60,7 +60,7 @@ class HttpHeadSpec extends Specification {
         server.when(head('/foo').withCookie('biscuit', 'wafer')).respond(responseHeaders(HEADERS_B))
         server.when(head('/foo')).respond(responseHeaders())
 
-        server.when(head('/date')).respond(responseHeaders(stamp:'2016.08.25 14:43'))
+        server.when(head('/date')).respond(responseHeaders(stamp: '2016.08.25 14:43'))
 
         // Status handlers
 
@@ -177,7 +177,8 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client, config).head {
+        def httpClient = httpBuilder(client, config)
+        def result = httpClient.head {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -187,7 +188,7 @@ class HttpHeadSpec extends Specification {
         result == 'Ignored'
 
         when:
-        boolean authenticated = httpBuilder(client, config).head {
+        boolean authenticated = httpClient.head {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.success { true }
@@ -197,7 +198,8 @@ class HttpHeadSpec extends Specification {
         authenticated
 
         when:
-        result = httpBuilder(client, config).headAsync {
+        httpClient = httpBuilder(client, config)
+        result = httpClient.headAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.failure { r -> 'Ignored' }
@@ -207,7 +209,7 @@ class HttpHeadSpec extends Specification {
         result == 'Ignored'
 
         when:
-        authenticated = httpBuilder(client, config).headAsync() {
+        authenticated = httpClient.headAsync() {
             request.uri = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
             response.success { true }
