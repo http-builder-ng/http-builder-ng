@@ -1,31 +1,25 @@
-! coverage images are missing
 ! need permissions to add hooks for CI
+! add site url to GH info (next to description)
+- go through my TODO and FIXME tags
 
 - javadoc 
     https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ChainedHttpConfig.java
-    https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/FromServer.java
-    https://github.com/dwclark/http-builder-ng/blob/master/src/main/java/groovyx/net/http/ToServer.java
-    
-- add reports to site
-    - findbugs
-    - (others)
-    
+   
 - User Guide
-    - GET
-    - HEAD
-    - POST
     - PUT
     - DELETE
     - OPTIONS
     - TRACE
-    - examples of HTTPS
-    - examples with authentication
     - json/xml/binary body content handling
-    1) Examples for using http-builder-ng
-    2) Description of architecture and a brief description of the main API classes
-    3) Description of how to write encoders and parsers
-    4) Description of how to integrate a new http client library
-        
-- code quality analysis and reports
-    - pmd, other static analysis
-    - check should fire all of them?
+    - Description of architecture and a brief description of the main API classes
+    
+- test the encoders
+       
+- Guides/Recipe/Examples
+    - GET: get web page as HTML (JSoup) and scrape info out of page 
+    - HEAD: use to retrieve last modified date of remote resource
+    - POST: body as object with response as typed object
+    - Description of how to write encoders and parsers
+    - Description of how to integrate a new http client library
+    - configuration for HTTPS interactions (is there anything?)
+    - examples with authentication.

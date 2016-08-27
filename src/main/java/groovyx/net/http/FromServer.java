@@ -19,37 +19,64 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.net.URI;
+import java.util.*;
 
 /**
- * FIXME: document
+ * Adapter interface used to provide a bridge for response data between the {@link HttpBuilder} API and the underlying client implementation.
  */
 public interface FromServer {
-    // TODO: should this be renamed Decoder?
 
     public static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
+    /**
+     * Defines the interface to the HTTP headers contained in the response. (see also
+     * https://en.wikipedia.org/wiki/List_of_HTTP_header_fields[List of HTTP Header Fields])
+     */
     static class Header {
+
         private final String key;
         private final String value;
         private volatile Map<String,List<String>> keysValues;
-        
+
+        /**
+         * Creates a `Header` from a full header string. The string format is colon-delimited as `KEY:VALUE`.
+         *
+         * [source,groovy]
+         * ----
+         * Header header = Header.full('Content-Type:text/plain')
+         * assert header.key == 'Content-Type'
+         * assert header.value == 'text/plain'
+         * ----
+         *
+         * @param full the full header string
+         * @return the `Header` representing the given header string
+         */
         public static Header full(final String full) {
             final int pos = full.indexOf(':');
             return new Header(full.substring(0, pos).trim(), cleanValue(full.substring(pos + 1).trim()));
         }
 
+        /**
+         * Creates a `Header` from a given `key` and `value`.
+         *
+         * @param key the header key
+         * @param value the header value
+         * @return the populated `Header`
+         */
         public static Header keyValue(final String key, final String value) {
             return new Header(key, value);
         }
 
+        /**
+         * Used to find a specific `Header` by key from a {@link List} of `Header`s.
+         *
+         * @param headers the {@link List} of `Header`s to be searched
+         * @param key the key of the desired `Header`
+         * @return the `Header` with the matching key (or `null`)
+         */
         public static Header find(final List<Header> headers, final String key) {
             return headers.stream().filter((h) -> h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);
         }
@@ -64,27 +91,45 @@ public interface FromServer {
             return key + ": " + value;
         }
 
+        /**
+         * Retrieves the header `key`.
+         *
+         * @return the header key
+         */
         public String getKey() {
             return key;
         }
 
+        /**
+         * Retrieves the header `value`.
+         *
+         * @return the header value
+         */
         public String getValue() {
             return value;
         }
 
+        /**
+         * Used to determine whether or not a `Header` is multi-valued.
+         *
+         * FIXME: more details about what it means to be multi-valued (what string looks like)
+         *
+         * @return true if the header is multi-valued
+         */
         public boolean isMultiValued() {
             return value.indexOf(';') != -1;
         }
 
+        /**
+         * FIXME: document
+         */
         public static String cleanValue(final String v) {
-            if(v.startsWith("\"")) {
-                return v.substring(1, v.length() - 1);
-            }
-            else {
-                return v;
-            }
+            return v.startsWith("\"") ? v.substring(1, v.length() - 1) : v;
         }
 
+        /**
+         * FIXME: document
+         */
         public static void putValue(final Map<String,List<String>> map, final String v) {
             final String[] sub = v.split("=");
             final String subKey = sub[0].trim();
@@ -98,7 +143,10 @@ public interface FromServer {
                 map.put(subKey, Collections.singletonList(subValue));
             }
         }
-        
+
+        /**
+         * FIXME: document - see `FromServerSpec:'Header.keysValues'` for questions about this method. Not sure it works.
+         */
         public Map<String,List<String>> getKeysValues() {
             if(keysValues != null) {
                 return keysValues;
@@ -130,16 +178,21 @@ public interface FromServer {
         }
     }
 
+    /**
+     * Retrieves the value of the "Content-Type" header from the response.
+     *
+     * @return the value of the "Content-Type" response header
+     */
     default String getContentType() {
         final Header header = Header.find(getHeaders(), "Content-Type");
-        if(header == null) {
-            return DEFAULT_CONTENT_TYPE;
-        }
-        else {
-            return header.getKeysValues().get(header.getKey()).get(0);
-        }
+        return header == null ? DEFAULT_CONTENT_TYPE : header.getKeysValues().get(header.getKey()).get(0);
     }
 
+    /**
+     * Retrieves the value of the charset from the "Content-Type" response header.
+     *
+     * @return the value of the charset from the "Content-Type" response header
+     */
     default Charset getCharset() {
         final Header header = Header.find(getHeaders(), "Content-Type");
         if(header == null || !header.isMultiValued() ||
@@ -153,32 +206,44 @@ public interface FromServer {
     }
 
     /**
-     * FIXME: document
+     * Retrieves the {@link InputStream} containing the response content.
+     *
+     * @return the response content
      */
     InputStream getInputStream();
 
     /**
-     * FIXME: document
+     * Retrieves the response status code (https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[List of HTTP status code]).
+     *
+     * @return the response status code
      */
     int getStatusCode();
 
     /**
-     * FIXME: document
+     * Retrieves the response status message.
+     *
+     * @return the response status message (or null)
      */
     String getMessage();
 
     /**
-     * FIXME: document
+     * Retrieves a {@link List} of the response headers as ({@link Header} objects).
+     *
+     * @return a {@link List} of response headers
      */
     List<Header> getHeaders();
 
     /**
-     * FIXME: document
+     * Determines whether or not there is body content in the response.
+     *
+     * @return true if there is body content in the response
      */
     boolean getHasBody();
 
     /**
-     * FIXME: document
+     * Retrieves the {@link URI} of the original request.
+     *
+     * @return the {@link URI} of the original request
      */
     URI getUri();
 
@@ -188,9 +253,12 @@ public interface FromServer {
     void finish();
 
     /**
-     * FIXME: document
+     * Retrieves a {@link Reader} for the response body content (if there is any).
+     *
+     * @return a {@link Reader} for the response body content (may be empty)
      */
     default Reader getReader() {
+        // TODO: verify what this does when there is no body content
         return new BufferedReader(new InputStreamReader(getInputStream()));
     }
 }
