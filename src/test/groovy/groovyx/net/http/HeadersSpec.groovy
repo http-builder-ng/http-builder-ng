@@ -47,16 +47,18 @@ class HeadersSpec extends Specification {
         header(all["Accept-Patch"]) instanceof Header.CombinedMap;
         header(all['Cache-Control']) instanceof Header.MapPairs;
         header(all['Content-Length']) instanceof Header.SingleLong;
+        header(all['Allow']) instanceof Header.CsvList;
         header(all['Date']) instanceof Header.HttpDate;
     }
 
-    def "parse returns something"() {
+    def "parse returns correct type"() {
         expect:
-        header(all['Connection']).parsed;
-        header(all["Accept-Patch"]).parsed;
-        header(all['Cache-Control']).parsed;
-        header(all['Content-Length']).parsed;
-        header(all['Date']).parsed;
+        header(all['Connection']).parsed instanceof String
+        header(all["Accept-Patch"]).parsed instanceof Map
+        header(all['Cache-Control']).parsed instanceof Map
+        header(all['Content-Length']).parsed instanceof Number
+        header(all['Allow']).parsed instanceof List
+        header(all['Date']).parsed instanceof ZonedDateTime
     }
 
     def "correct values"() {
@@ -65,7 +67,19 @@ class HeadersSpec extends Specification {
         header(all['Accept-Patch']).parsed == [ 'Accept-Patch': 'text/example', charset: 'utf-8' ]
         header(all['Alt-Svc']).parsed == [ h2: "http2.example.com:443", ma: '7200' ];
         header(all['Content-Length']).parsed == 348L;
+        header(all['Allow']).parsed == [ 'GET', 'POST' ]
         // Tue, 15 Nov 1994 08:12:31 GMT
         header(all['Date']).parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
+    }
+
+    def "populate headers object"() {
+        setup:
+        def set = new HashSet();
+        all.each { key, value -> set.add(header(value)); };
+        def headers = new Headers(set);
+        
+        expect:
+        all.size() == set.size();
+        headers.headerSet().every { h -> h.parsed == headers.parsed(h.key); }
     }
 }
