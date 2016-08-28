@@ -1,7 +1,11 @@
 # Http Builder NG, The Easy Http Client for Groovy
 
+## Quick Links for the Impatient
+
 * Site: https://dwclark.github.io/http-builder-ng/
 * Project: https://github.com/dwclark/http-builder-ng
+* JavaDocs: https://dwclark.github.io/http-builder-ng/javadoc/
+* User Guide: https://dwclark.github.io/http-builder-ng/guide/html5/
 
 ## Quick Overview
 

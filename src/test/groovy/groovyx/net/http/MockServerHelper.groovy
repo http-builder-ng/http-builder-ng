@@ -27,8 +27,14 @@ class MockServerHelper {
     static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
     static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function
 
-    private static HttpBuilder httpBuilder(final HttpClientType clientType, Closure config) {
+    static HttpBuilder httpBuilder(final HttpClientType clientType, Closure config) {
         HttpBuilder.configure(clientType == HttpClientType.APACHE ? apacheClientFactory : javaClientFactory, config)
+    }
+
+    static HttpBuilder httpBuilder(final HttpClientType clientType, int port) {
+        httpBuilder(clientType) {
+            request.uri = "http://localhost:${port}"
+        }
     }
 
     static HttpRequest get(final String path) {
@@ -41,6 +47,18 @@ class MockServerHelper {
 
     static HttpRequest post(final String path, final String body, final String contentType = 'text/plain') {
         HttpRequest.request().withMethod('POST').withPath(path).withBody(body).withHeader('Content-Type', contentType)
+    }
+
+    static HttpRequest put(final String path) {
+        HttpRequest.request().withMethod('PUT').withPath(path)
+    }
+
+    static HttpRequest put(final String path, final String body, final String contentType = 'text/plain') {
+        HttpRequest.request().withMethod('PUT').withPath(path).withBody(body).withHeader('Content-Type', contentType)
+    }
+
+    static HttpRequest delete(final String path) {
+        HttpRequest.request().withMethod('DELETE').withPath(path)
     }
 
     static HttpRequest head(final String path) {
