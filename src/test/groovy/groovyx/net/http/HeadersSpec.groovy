@@ -71,15 +71,4 @@ class HeadersSpec extends Specification {
         // Tue, 15 Nov 1994 08:12:31 GMT
         header(all['Date']).parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
     }
-
-    def "populate headers object"() {
-        setup:
-        def set = new HashSet();
-        all.each { key, value -> set.add(header(value)); };
-        def headers = new Headers(set);
-        
-        expect:
-        all.size() == set.size();
-        headers.headerSet().every { h -> h.parsed == headers.parsed(h.key); }
-    }
 }
