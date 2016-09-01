@@ -350,7 +350,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     protected Object doPut(final ChainedHttpConfig requestConfig) {
 <span class="fc" id="L351">        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
 <span class="fc" id="L352">        final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));</span>
-<span class="pc bpc" id="L353" title="1 of 2 branches missed.">        if(cr.actualBody() != null) {</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">        if(cr.actualBody() != null) {</span>
 <span class="fc" id="L354">            put.setEntity(entity(requestConfig));</span>
         }
         

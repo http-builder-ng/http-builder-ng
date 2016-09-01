@@ -133,7 +133,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="nc" id="L136">        return configure(factory, closure);</span>
+<span class="fc" id="L136">        return configure(factory, closure);</span>
     }
 
     /**
@@ -526,103 +526,235 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
-     * Executes a PUT request on the configured URI.
+     * Executes a PUT request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
+     * have a target for the request.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.put()
+     * ----
      *
      * @return the resulting content
      */
     public Object put() {
-<span class="nc" id="L534">        return put(NO_OP);</span>
+<span class="fc" id="L543">        return put(NO_OP);</span>
     }
 
     /**
-     * Executes a PUT request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an PUT request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast
+     * to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * Date date = http.put(Date){
+     *     request.uri.path = '/date'
+     *     request.body = '{ &quot;timezone&quot;: &quot;America/Chicago&quot; }'
+     *     request.contentType = 'application/json'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T put(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L545">        return type.cast(put(closure));</span>
+<span class="fc" id="L571">        return type.cast(put(closure));</span>
     }
 
     /**
-     * Executes an asynchronous PUT request on the configured URI.
+     * Executes an asynchronous PUT request on the configured URI (asynchronous alias to the `put()` method). The `request.uri` property should be
+     * configured in the global client configuration in order to have a target for the request.
      *
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.putAsync()
+     * def result = future.get()
+     * ----
+     *
+     * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; putAsync() {
-<span class="nc" id="L554">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
+<span class="fc" id="L590">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous PUT request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous PUT request on the configured URI (an asynchronous alias to the `put(Closure)` method), with additional configuration
+     * provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.putAsync(){
+     *     request.uri.path = '/something'
+     *     request.body = 'My content'
+     *     request.contentType = 'text/plain'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the future result data
      */
-    public Object putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L564">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
+    public CompletableFuture&lt;Object&gt; putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L615">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous PUT request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous PUT request on the configured URI (asynchronous alias to the `put(Class,Closure)` method), with additional
+     * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletedFuture&lt;Date&gt; future = http.putAsync(Date){
+     *     request.uri.path = '/date'
+     *     request.body = '{ &quot;timezone&quot;: &quot;America/Chicago&quot; }'
+     *     request.contentType = 'application/json'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * Date date = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; putAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L575">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
+<span class="fc" id="L644">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
     }
 
     /**
-     * Executes a DELETE request on the configured URI.
+     * Executes a DELETE request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
+     * have a target for the request.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.delete()
+     * ----
      *
      * @return the resulting content
      */
     public Object delete() {
-<span class="nc" id="L584">        return delete(NO_OP);</span>
+<span class="fc" id="L662">        return delete(NO_OP);</span>
     }
 
     /**
-     * Executes a DELETE request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an DELETE request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast
+     * to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * Date date = http.delete(Date){
+     *     request.uri.path = '/date'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T delete(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L595">        return type.cast(delete(closure));</span>
+<span class="fc" id="L688">        return type.cast(delete(closure));</span>
     }
 
     /**
-     * Executes an asynchronous DELETE request on the configured URI.
+     * Executes an asynchronous DELETE request on the configured URI (asynchronous alias to the `delete()` method). The `request.uri` property should be
+     * configured in the global client configuration in order to have a target for the request.
      *
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.deleteAsync()
+     * def result = future.get()
+     * ----
+     *
+     * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; deleteAsync() {
-<span class="nc" id="L604">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
+<span class="fc" id="L707">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous DELETE request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous DELETE request on the configured URI (an asynchronous alias to the `delete(Closure)` method), with additional configuration
+     * provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.deleteAsync(){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the future result data
      */
-    public Object deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L614">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
+    public CompletableFuture&lt;Object&gt; deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L730">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
     }
 
     /**
-     * Executes an asynchronous DELETE request on the configured URI, with additional configuration provided by the configuration closure.
+     * Executes an asynchronous DELETE request on the configured URI (asynchronous alias to the `delete(Class,Closure)` method), with additional
+     * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
-     * @param type the type of the resulting response content
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
-     * @return a CompletableFuture for retrieving the resulting content
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletedFuture&lt;Date&gt; future = http.deleteAsync(Date){
+     *     request.uri.path = '/date'
+     *     response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer -&gt;
+     *         Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+     *     }
+     * }
+     * Date date = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; deleteAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="nc" id="L625">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
+<span class="fc" id="L757">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
     }
 
     /**
@@ -644,7 +776,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L647">        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);</span>
+<span class="fc" id="L779">        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);</span>
     }
 
     /**
@@ -666,7 +798,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content - which will be `null` unless provided by a `request.when()` closure
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L669">        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);</span>
+<span class="fc" id="L801">        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);</span>
     }
 
     /**
@@ -690,27 +822,53 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L693">        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);</span>
+<span class="fc" id="L825">        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);</span>
     }
 
     /**
      * Executes a PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.put(){
+     *     request.uri.path = '/something'
+     *     request.body = 'My content'
+     *     request.contentType = 'text/plain'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content
      */
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L703">        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);</span>
+<span class="fc" id="L849">        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);</span>
     }
 
     /**
      * Executes a DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
-     * @param closure the additional configuration closure (delegated to `HttpConfig`)
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.delete(){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L713">        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);</span>
+<span class="fc" id="L871">        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);</span>
     }
 
     protected abstract Object doGet(final ChainedHttpConfig config);

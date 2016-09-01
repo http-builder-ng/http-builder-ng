@@ -127,7 +127,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     default BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; findParser(final String contentType) {
 <span class="fc" id="L129">        final BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; found = getChainedResponse().actualParser(contentType);</span>
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        return found == null ? NativeHandlers.Parsers::streamToBytes : found;</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        return found == null ? NativeHandlers.Parsers::streamToBytes : found;</span>
     }
     
     default BiConsumer&lt;ChainedHttpConfig,ToServer&gt; findEncoder() {

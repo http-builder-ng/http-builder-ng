@@ -532,22 +532,17 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_digest">DIGEST</a></li>
 </ul>
 </li>
-<li><a href="#_https_ssl">HTTPS/SSL</a></li>
-<li><a href="#_response_code_when_code_handlers">Response <code>when</code> Handlers</a></li>
 </ul>
 </li>
-<li><a href="#_verb_examples">Verb Examples</a>
-<ul class="sectlevel2">
-<li><a href="#_get">GET</a></li>
-<li><a href="#_put">PUT</a></li>
-<li><a href="#_head">HEAD</a></li>
-<li><a href="#_delete">DELETE</a></li>
-<li><a href="#_trace">TRACE</a></li>
-<li><a href="#_options">OPTIONS</a></li>
-</ul>
-</li>
-<li><a href="#_encoders_parsers">Encoders &amp; Parsers</a></li>
+<li><a href="#_encoders">Encoders</a></li>
+<li><a href="#_parsers">Parsers</a></li>
 <li><a href="#_client_library_integration">Client Library Integration</a></li>
+<li><a href="#_examples">Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_resource_last_modified_head">Resource Last Modified (HEAD)</a></li>
+<li><a href="#_scraping_web_content_get">Scraping Web Content (GET)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -625,7 +620,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 <h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The specific configuration options are discussed in the JavaDocs for the <code>HttpBuilder</code>, <code>HttpConfig</code> and <code>HttpObjectConfig</code> interfaces.</p>
+<p>The specific configuration options are discussed in the JavaDocs for the <code><a href="https://dwclark.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpBuilder.html">HttpBuilder</a></code>,
+<code><a href="https://dwclark.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpConfig.html">HttpConfig</a></code> and
+<code><a href="https://dwclark.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpObjectConfig.html">HttpObjectConfig</a></code> interfaces.</p>
 </div>
 <div class="sect2">
 <h3 id="_authentication">Authentication</h3>
@@ -667,74 +664,147 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_https_ssl">HTTPS/SSL</h3>
-<div class="paragraph">
-<p>FIXME: document</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_response_code_when_code_handlers">Response <code>when</code> Handlers</h3>
-<div class="paragraph">
-<p>FIXME: document</p>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_verb_examples">Verb Examples</h2>
+<h2 id="_encoders">Encoders</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_get">GET</h3>
-<div class="paragraph">
-<p>FIXME: simple get
-=== POST</p>
-</div>
+<div class="quoteblock">
+<blockquote>
 <div class="paragraph">
 <p>TODO: document</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_put">PUT</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_head">HEAD</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_delete">DELETE</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_trace">TRACE</h3>
-
-</div>
-<div class="sect2">
-<h3 id="_options">OPTIONS</h3>
-
+</blockquote>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_encoders_parsers">Encoders &amp; Parsers</h2>
+<h2 id="_parsers">Parsers</h2>
 <div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
 <div class="paragraph">
-<p>TODO: using them and implementing customs</p>
+<p>TODO: document</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>The resulting data from a request is based on the response content type. The default parsers are listed below:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>HTML - <code>org.jsoup.nodes.Document</code></p>
+</li>
+<li>
+<p>JSON - Groovy JSON object (map)</p>
+</li>
+<li>
+<p>XML - <code>org.w3c.dom.Document</code></p>
+</li>
+<li>
+<p>TEXT - String of text</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>However, they may be overridden at configuration-time.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>TODO: document</p>
+</div>
+</blockquote>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples">Examples</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section contains some stand-alone examples of how you can use <code>HttpBuilder</code>. There are unit test versions for most of these examples. See the
+<code>ExamplesSpec.groovy</code> file for more details.</p>
+</div>
+<div class="sect2">
+<h3 id="_resource_last_modified_head">Resource Last Modified (HEAD)</h3>
+<div class="paragraph">
+<p>Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing the correct date, you can
+use the <code>Last-Modified</code> header for the resource to figure out the date. A <code>HEAD</code> request works nicely for this, since you don&#8217;t care about the actual
+file content at this time, you just want the header information. <code>HttpBuilder</code> makes this easy:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">String</span> uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
+<span class="predefined-type">Date</span> lastModified = configure {
+    request.uri = uri
+}.head(<span class="predefined-type">Date</span>) {
+    response.success { FromServer resp -&gt;
+        <span class="predefined-type">String</span> value = FromServer.Header.find(
+            resp.headers,
+            <span class="string"><span class="delimiter">'</span><span class="content">Last-Modified</span><span class="delimiter">'</span></span>
+        )?.value
+        value ? <span class="predefined-type">Date</span>.parse(
+            <span class="string"><span class="delimiter">'</span><span class="content">EEE, dd MMM yyyy  H:mm:ss zzz</span><span class="delimiter">'</span></span>,
+            value
+        ) : <span class="predefined-constant">null</span>
+    }
+}
 
+println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy 2.4.7 last modified </span><span class="inline"><span class="inline-delimiter">${</span>lastModified.format(<span class="string"><span class="delimiter">'</span><span class="content">MM/dd/yyyy HH:mm</span><span class="delimiter">'</span></span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a <code>HEAD</code> request on it and extract the
+<code>Last-Modified</code> header and convert it to a <code>java.util.Date</code> object and return it as the result. We end up with a resulting output line something like:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Groovy 2.4.7 last modified 06/07/2016 03:38</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scraping_web_content_get">Scraping Web Content (GET)</h3>
+<div class="paragraph">
+<p>Scraping content from web sites doesn&#8217;t seem to be a prevalent as it was years ago, but it&#8217;s a lot easier than it used to be. By default, <code>text/html</code>
+content is parsed with the <a href="https://jsoup.org/">JSoup</a> HTML parser into a <code>Document</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">Document</span> page = configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all</span><span class="delimiter">'</span></span>
+}.get()
+
+<span class="predefined-type">String</span> license = page.select(<span class="string"><span class="delimiter">'</span><span class="content">span.b.lic</span><span class="delimiter">'</span></span>).collect { <span class="local-variable">it</span>.text() }.join(<span class="string"><span class="delimiter">'</span><span class="content">, </span><span class="delimiter">'</span></span>)
+
+<span class="key">then</span>:
+println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy is licensed under: </span><span class="inline"><span class="inline-delimiter">${</span>license<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the example we make a <code>GET</code> request to the a secondary Maven repository to fetch the main entry page for the <code>groovy-all</code> artifact, which has the
+license information on it. The page is returned and parsed into a JSoup <code>Document</code> which we can then run a CSS selection query on to extract the
+license information and display it. You will end up with:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>Groovy is licensed under: Apache 2.0</pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 0.9.13<br>
-Last updated 2016-08-25 07:01:53 -05:00
+Last updated 2016-08-31 19:19:39 -05:00
 </div>
 </div>
 </body>
