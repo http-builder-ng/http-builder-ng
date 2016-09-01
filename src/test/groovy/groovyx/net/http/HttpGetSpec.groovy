@@ -148,6 +148,40 @@ class HttpGetSpec extends Specification {
         JAVA   | 500    | false   | true
     }
 
+    @Unroll def '[#label] GET /status(#status): with only failure handler'() {
+        given:
+        CountedClosure failureCounter = new CountedClosure()
+        
+        def config = {
+            request.uri.path = "/status${status}"
+            response.failure failureCounter.closure
+        }
+
+        when:
+        httpBuilder(label).get config
+
+        then:
+        failureCounter.called == failure
+        failureCounter.clear()
+
+        when:
+        httpBuilder(label).getAsync(config).get()
+
+        then:
+        failureCounter.called == failure
+
+        where:
+        label  | status | failure
+        APACHE | 200    | false
+        APACHE | 300    | false
+        APACHE | 400    | true
+        APACHE | 500    | true
+        JAVA   | 200    | false
+        JAVA   | 300    | false
+        JAVA   | 400    | true
+        JAVA   | 500    | true
+    }
+
     @Unroll def '[#label] GET /: returns content'() {
         expect:
         httpBuilder(label).get() == htmlContent()
@@ -309,15 +343,18 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def httpClient = httpBuilder(client, config)
-        def result = httpClient.get {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
+        def httpClient = httpBuilder(client, config);
+        def result = null;
+        if(client == APACHE) {
+            result = httpClient.get {
+                request.uri.path = '/digest-auth/auth/david/clark'
+                request.auth.digest 'david', 'clark'
+                response.failure { r, o -> return 'Ignored' }
+            }
         }
-
+        
         then:
-        result == 'Ignored'
+        client == JAVA || result == 'Ignored'
 
         when:
         result = httpClient.get {
@@ -331,14 +368,16 @@ class HttpGetSpec extends Specification {
 
         when:
         httpClient = httpBuilder(client, config)
-        result = httpClient.getAsync {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
-        }.get()
+        if(client == APACHE) {
+            result = httpClient.getAsync {
+                request.uri.path = '/digest-auth/auth/david/clark'
+                request.auth.digest 'david', 'clark'
+                response.failure { r -> 'Ignored' }
+            }.get()
+        }
 
         then:
-        result == 'Ignored'
+        client == JAVA || result == 'Ignored'
 
         when:
         result = httpClient.getAsync() {

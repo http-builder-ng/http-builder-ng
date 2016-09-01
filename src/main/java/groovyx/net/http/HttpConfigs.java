@@ -342,11 +342,11 @@ public class HttpConfigs {
                 return getByCode().get(code);
             }
             
-            if(code < 399 && getSuccess() != null) {
+            if(code < 400 && getSuccess() != null) {
                 return getSuccess();
             }
             
-            if(getFailure() != null) {
+            if(code >= 400 && getFailure() != null) {
                 return getFailure();
             }
 
