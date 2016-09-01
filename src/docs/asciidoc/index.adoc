@@ -79,31 +79,85 @@ def http = HttpBuilder.configure {
 
 There is nothing more to do on the client side.
 
-=== HTTPS/SSL
+== Encoders
 
-FIXME: document
+> TODO: document
 
-=== Response `when` Handlers
+== Parsers
 
-FIXME: document
+> TODO: document
 
-== Verb Examples
+The resulting data from a request is based on the response content type. The default parsers are listed below:
 
-include::verbs/get.adoc[]
-include::verbs/post.adoc[]
+* HTML - `org.jsoup.nodes.Document`
+* JSON - Groovy JSON object (map)
+* XML - `org.w3c.dom.Document`
+* TEXT - String of text
 
-=== PUT
-
-=== HEAD
-
-=== DELETE
-
-=== TRACE
-
-=== OPTIONS
-
-== Encoders & Parsers
-
-TODO: using them and implementing customs
+However, they may be overridden at configuration-time.
 
 == Client Library Integration
+
+> TODO: document
+
+== Examples
+
+This section contains some stand-alone examples of how you can use `HttpBuilder`. There are unit test versions for most of these examples. See the
+`ExamplesSpec.groovy` file for more details.
+
+=== Resource Last Modified (HEAD)
+
+Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing the correct date, you can
+use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works nicely for this, since you don't care about the actual
+file content at this time, you just want the header information. `HttpBuilder` makes this easy:
+
+[source,groovy]
+----
+String uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
+Date lastModified = configure {
+    request.uri = uri
+}.head(Date) {
+    response.success { FromServer resp ->
+        String value = FromServer.Header.find(
+            resp.headers,
+            'Last-Modified'
+        )?.value
+        value ? Date.parse(
+            'EEE, dd MMM yyyy  H:mm:ss zzz',
+            value
+        ) : null
+    }
+}
+
+println "Groovy 2.4.7 last modified ${lastModified.format('MM/dd/yyyy HH:mm')}"
+----
+
+In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a `HEAD` request on it and extract the
+`Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up with a resulting output line something like:
+
+    Groovy 2.4.7 last modified 06/07/2016 03:38
+
+=== Scraping Web Content (GET)
+
+Scraping content from web sites doesn't seem to be a prevalent as it was years ago, but it's a lot easier than it used to be. By default, `text/html`
+content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
+
+[source,groovy]
+----
+Document page = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+}.get()
+
+String license = page.select('span.b.lic').collect { it.text() }.join(', ')
+
+then:
+println "Groovy is licensed under: ${license}"
+----
+
+In the example we make a `GET` request to the a secondary Maven repository to fetch the main entry page for the `groovy-all` artifact, which has the
+license information on it. The page is returned and parsed into a JSoup `Document` which we can then run a CSS selection query on to extract the
+license information and display it. You will end up with:
+
+    Groovy is licensed under: Apache 2.0
+
+
