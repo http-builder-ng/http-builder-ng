@@ -20,6 +20,10 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
+/**
+ * Collection of Content-Type header values grouped together by their overall type. Generally the first element in the list is the most common
+ * content type value for the type.
+ */
 public class ContentTypes {
     // TODO: seems like this should be an enum (?)
 

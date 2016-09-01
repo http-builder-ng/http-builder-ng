@@ -67,10 +67,10 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /: returns content'() {
         expect:
-        httpBuilder(client).post() == htmlContent()
+        httpBuilder(client, serverRule.port).post() == htmlContent()
 
         and:
-        httpBuilder(client).postAsync().get() == htmlContent()
+        httpBuilder(client, serverRule.port).postAsync().get() == htmlContent()
 
         where:
         client << [APACHE, JAVA]
@@ -86,10 +86,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client).post(config) == result
+        httpBuilder(client, serverRule.port).post(config) == result
 
         and:
-        httpBuilder(client).postAsync(config).get() == result
+        httpBuilder(client, serverRule.port).postAsync(config).get() == result
 
         where:
         client | content     | contentType | parser                               || result
@@ -110,10 +110,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client).post(config) == htmlContent()
+        httpBuilder(client, serverRule.port).post(config) == htmlContent()
 
         and:
-        httpBuilder(client).postAsync(config).get() == htmlContent()
+        httpBuilder(client, serverRule.port).postAsync(config).get() == htmlContent()
 
         where:
         client << [APACHE, JAVA]
@@ -123,16 +123,16 @@ class HttpPostSpec extends Specification {
         given:
         def config = {
             request.uri.path = '/foo'
-            request.uri.query = [action:'login']
+            request.uri.query = [action: 'login']
             request.body = BODY_STRING
             request.contentType = TEXT[0]
         }
 
         expect:
-        httpBuilder(client).post(config) == htmlContent('Authenticate')
+        httpBuilder(client, serverRule.port).post(config) == htmlContent('Authenticate')
 
         and:
-        httpBuilder(client).postAsync(config).get() == htmlContent('Authenticate')
+        httpBuilder(client, serverRule.port).postAsync(config).get() == htmlContent('Authenticate')
 
         where:
         client << [APACHE, JAVA]
@@ -150,10 +150,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(client, serverRule.port).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(client).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(client, serverRule.port).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         where:
         client << [APACHE, JAVA]
@@ -162,7 +162,7 @@ class HttpPostSpec extends Specification {
     @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/10')
     @Unroll def '[#client] POST (BASIC) /basic: returns content'() {
         expect:
-        httpBuilder(client).post({
+        httpBuilder(client, serverRule.port).post({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
@@ -170,7 +170,7 @@ class HttpPostSpec extends Specification {
         }) == htmlContent()
 
         and:
-        httpBuilder(client).postAsync({
+        httpBuilder(client, serverRule.port).postAsync({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
@@ -182,9 +182,4 @@ class HttpPostSpec extends Specification {
     }
 
     // FIXME: is/should DIGEST be supported for POST request? - seems to not work at all in this impl
-
-    // FIXME: move this to common class (after POST)
-    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = "http://localhost:${serverRule.port}" }) {
-        MockServerHelper.httpBuilder(clientType, config)
-    }
 }

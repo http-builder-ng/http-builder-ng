@@ -17,7 +17,11 @@ package groovyx.net.http;
 
 import java.util.Date;
 
+/**
+ * Object representation of an HTTP Cookie.
+ */
 public class Cookie {
+
     private final String name;
     private final String value;
     private final Date expires;

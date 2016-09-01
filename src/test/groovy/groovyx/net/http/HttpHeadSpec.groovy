@@ -29,6 +29,7 @@ import java.util.concurrent.Executors
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
 import static groovyx.net.http.MockServerHelper.head
+import static groovyx.net.http.MockServerHelper.httpBuilder
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
@@ -52,9 +53,6 @@ class HttpHeadSpec extends Specification {
     private MockServerClient server
 
     def setup() {
-        // TODO: see how much of this is shared after POST test and consider putting in a shared trait (see notes below as well)
-        // - notice that the request methods (verbs) are different
-
         server.when(head('/')).respond(responseHeaders())
         server.when(head('/foo').withQueryStringParameter('alpha', 'bravo')).respond(responseHeaders(HEADERS_C))
         server.when(head('/foo').withCookie('biscuit', 'wafer')).respond(responseHeaders(HEADERS_B))
@@ -87,10 +85,10 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /: returns no content'() {
         expect:
-        !httpBuilder(client).head()
+        !httpBuilder(client,serverRule.port).head()
 
         and:
-        !httpBuilder(client).headAsync().get()
+        !httpBuilder(client,serverRule.port).headAsync().get()
 
         where:
         client << [APACHE, JAVA]
@@ -112,7 +110,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head(config)
+        httpBuilder(client,serverRule.port).head(config)
 
         then:
         !hasBody
@@ -120,7 +118,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -147,7 +145,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head(config)
+        httpBuilder(client,serverRule.port).head(config)
 
         then:
         !hasBody
@@ -155,7 +153,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         and:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -239,7 +237,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head(config)
+        httpBuilder(client,serverRule.port).head(config)
 
         then:
         !hasBody
@@ -247,7 +245,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -274,7 +272,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head(config)
+        httpBuilder(client,serverRule.port).head(config)
 
         then:
         !hasBody
@@ -282,7 +280,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -302,14 +300,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head config
+        httpBuilder(client,serverRule.port).head config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         counter.called
@@ -338,7 +336,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).head config
+        httpBuilder(client,serverRule.port).head config
 
         then:
         successCounter.called == success
@@ -348,7 +346,7 @@ class HttpHeadSpec extends Specification {
         failureCounter.clear()
 
         when:
-        httpBuilder(client).headAsync(config).get()
+        httpBuilder(client,serverRule.port).headAsync(config).get()
 
         then:
         successCounter.called == success
@@ -376,14 +374,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client).head(Date, config)
+        def result = httpBuilder(client,serverRule.port).head(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(client).headAsync(Date, config).get()
+        result = httpBuilder(client,serverRule.port).headAsync(Date, config).get()
 
         then:
         result instanceof Date
@@ -391,10 +389,6 @@ class HttpHeadSpec extends Specification {
 
         where:
         client << [APACHE, JAVA]
-    }
-
-    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = "http://localhost:${serverRule.port}" }) {
-        MockServerHelper.httpBuilder(clientType, config)
     }
 
     // TODO: maybe move this and the MockServerHelper to a Trait?
@@ -405,4 +399,3 @@ class HttpHeadSpec extends Specification {
         ]
     }
 }
-
