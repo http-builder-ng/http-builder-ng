@@ -176,14 +176,17 @@ class HttpHeadSpec extends Specification {
 
         when:
         def httpClient = httpBuilder(client, config)
-        def result = httpClient.head {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
+        def result = null;
+        if(client == APACHE) {
+            result = httpClient.head {
+                request.uri.path = '/digest-auth/auth/david/clark'
+                request.auth.digest 'david', 'clark'
+                response.failure { r -> 'Ignored' }
+            }
         }
 
         then:
-        result == 'Ignored'
+        client == JAVA || result == 'Ignored'
 
         when:
         boolean authenticated = httpClient.head {
@@ -197,14 +200,16 @@ class HttpHeadSpec extends Specification {
 
         when:
         httpClient = httpBuilder(client, config)
-        result = httpClient.headAsync {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
-        }.get()
-
+        if(client == APACHE) {
+            result = httpClient.headAsync {
+                request.uri.path = '/digest-auth/auth/david/clark'
+                request.auth.digest 'david', 'clark'
+                response.failure { r -> 'Ignored' }
+            }.get()
+        }
+        
         then:
-        result == 'Ignored'
+        client == JAVA || result == 'Ignored'
 
         when:
         authenticated = httpClient.headAsync() {

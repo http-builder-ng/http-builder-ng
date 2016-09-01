@@ -331,4 +331,19 @@ class HttpBuilderTest extends Specification {
         result[1][0] == 'Disallow'
         result[1][1].trim() == '/deny'
     }
+
+    def 'Failure Handler Without Success Handler'() {
+        setup:
+        def statusCode = 0;
+        
+        def response = google.get {
+            response.parser "text/html", Parsers.&textToString
+            response.failure { FromServer fs ->
+                statusCode = fs.statusCode;
+            }
+        }
+
+        expect:
+        statusCode == 0;
+    }
 }

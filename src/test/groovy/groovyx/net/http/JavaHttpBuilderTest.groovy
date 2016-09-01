@@ -185,16 +185,8 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-    //possibly this will work: https://gist.github.com/slightfoot/5624590
-    //Even easier, Java auth: https://docs.oracle.com/javase/8/docs/technotes/guides/net/http-auth.html
     def "Digest Auth"() {
         expect:
-        "Ignored" == httpBin.get {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> "Ignored" } 
-        };
-
         httpBin.get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -316,7 +308,7 @@ class JavaHttpBuilderTest extends Specification {
         }
     }
 
-        def "Robots.txt as CSV"() {
+    def "Robots.txt as CSV"() {
         setup:
         List<String[]> result = httpBin.get {
             request.uri.path = '/robots.txt'
@@ -329,5 +321,19 @@ class JavaHttpBuilderTest extends Specification {
         result[0][1].trim() == '*'
         result[1][0] == 'Disallow'
         result[1][1].trim() == '/deny'
+    }
+    
+    def "Failure Handler Without Success Handler"() {
+        setup:
+        def statusCode = 0;
+        
+        def response = google.get {
+            response.failure { FromServer fs ->
+                statusCode = fs.statusCode;
+            }
+        }
+
+        expect:
+        statusCode == 0;
     }
 }
