@@ -187,3 +187,14 @@ tasks.withType(FindBugs) {
         html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
     }
 }
+
+task updateVersion(group:'Documentation', description:'Updates the version in documentation based on the project version') << {
+    String newVersion = project.version
+    String oldVersion = project.property('from')
+
+    logger.lifecycle "Updating documentation versions from ${oldVersion} to ${newVersion}..."
+
+    ant.replace(file:'README.md', token:oldVersion, value:newVersion)
+    ant.replace(dir:'src/docs/asciidoc', token:oldVersion, value:newVersion)
+    ant.replace(dir:'src/jbake/templates', token:oldVersion, value:newVersion)
+}
