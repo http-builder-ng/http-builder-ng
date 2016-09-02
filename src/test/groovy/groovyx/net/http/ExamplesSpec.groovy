@@ -88,7 +88,7 @@ class ExamplesSpec extends Specification {
         }.get(Long, NO_OP)
 
         then:
-        println "Elaspsed time for request: $elapsed ms"
+        println "Elapsed time for request: $elapsed ms"
     }
 
     @Canonical

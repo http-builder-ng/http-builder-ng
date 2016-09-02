@@ -131,26 +131,32 @@ Default parsers are provided for: HTML (`org.jsoup.nodes.Document`), JSON (Groov
 
 == Interceptors
 
-> TODO: document
+The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response
+interceptors, which can perform operations before and after every request/response on the client. For example,
+if you wanted to make a POST request and return only the time elapsed during the request/response handling, you
+could do something like the following:
 
-        when:
-        long elapsed = configure {
-            request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
-            execution.interceptor(GET) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
-                long started = System.currentTimeMillis()
-                fx.apply(cfg)
-                System.currentTimeMillis() - started
-            }
-        }.get(Long, NO_OP)
+[source,groovy]
+----
+long elapsed = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+    execution.interceptor(GET) { cfg, fx ->
+        long started = System.currentTimeMillis()
+        fx.apply(cfg)
+        System.currentTimeMillis() - started
+    }
+}.get(Long, NO_OP)
 
-        then:
-        println "Elaspsed time for request: $elapsed ms"
+println "Elapsed time for request: $elapsed ms"
+----
 
-Elaspsed time for request: 865 ms
+This interceptor on the GET requests will calculate the time spent in the actual request handling (the
+call to `fx.apply(cfg)` and return the elapsed time as the result of the request (ignoring the actual
+response content from the server). The displayed result will be something like:
 
-could change data befoer and after request
+    Elapsed time for request: 865 ms
 
-
+Using interceptors you can also modify the data before and after the `apply()` method is called.
 
 == Client Library Integration
 
