@@ -15,17 +15,21 @@
  */
 package groovyx.net.http
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import groovy.json.JsonSlurper;
-import groovyx.net.http.optional.ApacheHttpBuilder;
-import groovyx.net.http.optional.Jackson;
-import static groovyx.net.http.optional.Download.toTempFile;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
-import spock.lang.*
-import static groovyx.net.http.NativeHandlers.*;
-import static groovyx.net.http.optional.Csv.toCsv;
+import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.json.JsonSlurper
+import groovyx.net.http.optional.ApacheHttpBuilder
+import groovyx.net.http.optional.Jackson
+import spock.lang.Requires
+import spock.lang.Specification
 
+import java.util.concurrent.Executors
+import java.util.function.Function
+
+import static groovyx.net.http.NativeHandlers.Parsers
+import static groovyx.net.http.optional.Csv.toCsv
+import static groovyx.net.http.optional.Download.toTempFile
+
+@Requires(HttpBin)
 class HttpBuilderTest extends Specification {
 
     static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;
@@ -62,7 +66,7 @@ class HttpBuilderTest extends Specification {
         expect:
         google.get(String) {
             response.parser "text/html", Parsers.&textToString
-            request.uri.query = [ q: 'Big Bird' ];
+            request.uri.query = [q: 'Big Bird'];
         }.with {
             contains('Big Bird');
         }
@@ -70,7 +74,7 @@ class HttpBuilderTest extends Specification {
 
     def "Basic POST Form"() {
         setup:
-        def toSend = [ foo: 'my foo', bar: 'my bar' ];
+        def toSend = [foo: 'my foo', bar: 'my bar'];
 
         expect:
         httpBin.post {
@@ -84,7 +88,7 @@ class HttpBuilderTest extends Specification {
 
     def "No Op POST Form"() {
         setup:
-        def toSend = [ foo: 'my foo', bar: 'my bar' ];
+        def toSend = [foo: 'my foo', bar: 'my bar'];
 
         def http = HttpBuilder.configure(apacheBuilder) {
             request.uri = 'http://httpbin.org/post'
@@ -98,26 +102,26 @@ class HttpBuilderTest extends Specification {
 
     def "POST Json With Parameters"() {
         setup:
-        def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
-        def accept = [ 'application/json','application/javascript','text/javascript' ];
+        def toSend = [lastName: 'Count', firstName: 'The', address: [street: '123 Sesame Street']];
+        def accept = ['application/json', 'application/javascript', 'text/javascript'];
 
         expect:
         httpBin.post {
             request.uri.path = '/post'
-            request.uri.query = [ one: '1', two: '2' ];
+            request.uri.query = [one: '1', two: '2'];
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept &&
-             new JsonSlurper().parseText(data) == toSend);
+                headers.Accept.split(';') as List<String> == accept &&
+                new JsonSlurper().parseText(data) == toSend);
         }
     }
 
     def "Test POST Random Headers"() {
         setup:
-        final myHeaders = [ One: '1', Two: '2', Buckle: 'my shoe' ].asImmutable();
+        final myHeaders = [One: '1', Two: '2', Buckle: 'my shoe'].asImmutable();
 
         expect:
         httpBin.post {
@@ -133,8 +137,8 @@ class HttpBuilderTest extends Specification {
         setup:
         def result = google.head {
             response.success { resp, o ->
-                assert(o == null);
-                assert(resp.headers.size() > 0);
+                assert (o == null);
+                assert (resp.headers.size() > 0);
             }
         }
 
@@ -153,19 +157,19 @@ class HttpBuilderTest extends Specification {
 
     def "PUT Json With Parameters"() {
         setup:
-        def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
+        def toSend = [lastName: 'Count', firstName: 'The', address: [street: '123 Sesame Street']];
 
         expect:
         httpBin.put {
             request.uri.path = '/put';
-            request.uri.query = [ one: '1', two: '2' ];
+            request.uri.query = [one: '1', two: '2'];
             request.accept = ContentTypes.JSON;
             request.body = toSend;
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == ContentTypes.JSON &&
-             new JsonSlurper().parseText(data) == toSend);
+                headers.Accept.split(';') as List<String> == ContentTypes.JSON &&
+                new JsonSlurper().parseText(data) == toSend);
         }
     }
 
@@ -223,7 +227,7 @@ class HttpBuilderTest extends Specification {
 
     def "Test Delete"() {
         setup:
-        def myArgs = [ one: 'i', two: 'ii' ]
+        def myArgs = [one: 'i', two: 'ii']
 
         expect:
         httpBin.delete {
@@ -272,7 +276,7 @@ class HttpBuilderTest extends Specification {
         def obj = HttpBuilder.configure(apacheBuilder) {
             execution.interceptor(HttpVerb.values()) { config, func ->
                 def orig = func.apply(config);
-                return [ orig: orig, msg: "I intercepted" ]
+                return [orig: orig, msg: "I intercepted"]
             }
 
             request.uri = 'http://www.google.com'
@@ -298,13 +302,13 @@ class HttpBuilderTest extends Specification {
     def "Optional POST Json With Parameters With Jackson"() {
         setup:
         def objectMapper = new ObjectMapper();
-        def toSend = [ lastName: 'Count', firstName: 'The', address: [ street: '123 Sesame Street' ] ];
-        def accept = [ 'application/json','application/javascript','text/javascript' ];
+        def toSend = [lastName: 'Count', firstName: 'The', address: [street: '123 Sesame Street']];
+        def accept = ['application/json', 'application/javascript', 'text/javascript'];
 
         expect:
         httpBin.post {
             request.uri.path = '/post'
-            request.uri.query = [ one: '1', two: '2' ];
+            request.uri.query = [one: '1', two: '2'];
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
@@ -312,8 +316,8 @@ class HttpBuilderTest extends Specification {
             Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept &&
-             new JsonSlurper().parseText(data) == toSend);
+                headers.Accept.split(';') as List<String> == accept &&
+                new JsonSlurper().parseText(data) == toSend);
         }
     }
 
@@ -335,7 +339,7 @@ class HttpBuilderTest extends Specification {
     def 'Failure Handler Without Success Handler'() {
         setup:
         def statusCode = 0;
-        
+
         def response = google.get {
             response.parser "text/html", Parsers.&textToString
             response.failure { FromServer fs ->

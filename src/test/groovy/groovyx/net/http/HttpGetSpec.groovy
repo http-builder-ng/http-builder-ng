@@ -195,22 +195,6 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    /*
-    public Object apply(final ChainedHttpConfig config, final Function<ChainedHttpConfig,Object> func) {
-            String metricsPath = cleanPath(config.request.uri.path) + '.time'
-            Object ret;
-            long time = metrics.timer(metricsPath).time { ret = func.apply(config); };
-            if(time > DUMP_THRESHOLD) {
-                log.warn("<SLOW NOVA CALL>, execution time: ${time/1_000_000L} ms, call info: " +
-                         "[ uri: ${config.chainedRequest.uri.toURI()}, body: ${config.chainedRequest.actualBody()} ]");
-            }
-
-            return ret;
-        }
-
-The func.apply(config) is the actual call to the client. The rest is setting up logging and metrics for the actual call.
-     */
-
     @Unroll def '[#label] GET /foo: returns content'() {
         given:
         def config = {
