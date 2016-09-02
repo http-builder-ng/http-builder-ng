@@ -63,7 +63,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         
         private final HttpResponse response;
         private final HttpEntity entity;
-        private final List<Header> headers;
+        private final List<Header<?>> headers;
         private final InputStream inputStream;
         private final URI uri;
     
@@ -106,7 +106,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             return response.getStatusLine().getReasonPhrase();
         }
 
-        public List<Header> getHeaders() {
+        public List<Header<?>> getHeaders() {
             return headers;
         }
 

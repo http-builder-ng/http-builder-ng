@@ -183,7 +183,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             private InputStream is;
             private boolean hasBody;
-            private List<Header> headers;
+            private List<Header<?>> headers;
             private URI uri;
             
             public JavaFromServer(final URI originalUri) {
@@ -205,7 +205,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             private InputStream handleEncoding(final InputStream is) throws IOException {
-                Header encodingHeader = Header.find(headers, "Content-Encoding");
+                Header<?> encodingHeader = Header.find(headers, "Content-Encoding");
                 if(encodingHeader != null) {
                     if(encodingHeader.getValue().equals("gzip")) {
                         return new GZIPInputStream(is);
@@ -218,8 +218,8 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return is;
             }
 
-            private List<Header> populateHeaders() {
-                final List<Header> ret = new ArrayList<>();
+            private List<Header<?>> populateHeaders() {
+                final List<Header<?>> ret = new ArrayList<>();
                 for(int i = 0; i < Integer.MAX_VALUE; ++i) {
                     final String key = connection.getHeaderFieldKey(i);
                     final String value = connection.getHeaderField(i);
@@ -257,7 +257,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 }
             }
             
-            public List<Header> getHeaders() {
+            public List<Header<?>> getHeaders() {
                 return headers;
             }
             

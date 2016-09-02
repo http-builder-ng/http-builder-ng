@@ -16,8 +16,8 @@
 package groovyx.net.http;
 
 import spock.lang.*;
-import groovyx.net.http.Header;
-import static groovyx.net.http.Header.header;
+import groovyx.net.http.FromServer.Header;
+import static groovyx.net.http.FromServer.Header.full;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -38,37 +38,37 @@ class HeadersSpec extends Specification {
 
     def "header parsing gives something back"() {
         expect:
-        all.every { key, raw -> Header.header(raw) instanceof Header; }
+        all.every { key, raw -> FromServer.Header.full(raw) instanceof Header; }
     }
 
     def "correct types"() {
         expect:
-        header(all['Connection']) instanceof Header.ValueOnly;
-        header(all["Accept-Patch"]) instanceof Header.CombinedMap;
-        header(all['Cache-Control']) instanceof Header.MapPairs;
-        header(all['Content-Length']) instanceof Header.SingleLong;
-        header(all['Allow']) instanceof Header.CsvList;
-        header(all['Date']) instanceof Header.HttpDate;
+        full(all['Connection']) instanceof FromServer.Header.ValueOnly;
+        full(all["Accept-Patch"]) instanceof FromServer.Header.CombinedMap;
+        full(all['Cache-Control']) instanceof FromServer.Header.MapPairs;
+        full(all['Content-Length']) instanceof FromServer.Header.SingleLong;
+        full(all['Allow']) instanceof FromServer.Header.CsvList;
+        full(all['Date']) instanceof FromServer.Header.HttpDate;
     }
 
     def "parse returns correct type"() {
         expect:
-        header(all['Connection']).parsed instanceof String
-        header(all["Accept-Patch"]).parsed instanceof Map
-        header(all['Cache-Control']).parsed instanceof Map
-        header(all['Content-Length']).parsed instanceof Number
-        header(all['Allow']).parsed instanceof List
-        header(all['Date']).parsed instanceof ZonedDateTime
+        full(all['Connection']).parsed instanceof String
+        full(all["Accept-Patch"]).parsed instanceof Map
+        full(all['Cache-Control']).parsed instanceof Map
+        full(all['Content-Length']).parsed instanceof Number
+        full(all['Allow']).parsed instanceof List
+        full(all['Date']).parsed instanceof ZonedDateTime
     }
 
     def "correct values"() {
         expect:
-        header(all['Connection']).parsed == 'close'
-        header(all['Accept-Patch']).parsed == [ 'Accept-Patch': 'text/example', charset: 'utf-8' ]
-        header(all['Alt-Svc']).parsed == [ h2: "http2.example.com:443", ma: '7200' ];
-        header(all['Content-Length']).parsed == 348L;
-        header(all['Allow']).parsed == [ 'GET', 'POST' ]
+        full(all['Connection']).parsed == 'close'
+        full(all['Accept-Patch']).parsed == [ 'Accept-Patch': 'text/example', charset: 'utf-8' ]
+        full(all['Alt-Svc']).parsed == [ h2: "http2.example.com:443", ma: '7200' ];
+        full(all['Content-Length']).parsed == 348L;
+        full(all['Allow']).parsed == [ 'GET', 'POST' ]
         // Tue, 15 Nov 1994 08:12:31 GMT
-        header(all['Date']).parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
+        full(all['Date']).parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
     }
 }

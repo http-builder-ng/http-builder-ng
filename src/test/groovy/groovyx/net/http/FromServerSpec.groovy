@@ -28,7 +28,7 @@ class FromServerSpec extends Specification {
         then:
         header.key == 'Content-Type'
         header.value == 'text/plain'
-        !header.multiValued
+        header.parsedType == Map
         header.toString() == 'Content-Type: text/plain'
     }
 
@@ -39,7 +39,7 @@ class FromServerSpec extends Specification {
         then:
         header.key == 'Accept'
         header.value == 'image/jpeg'
-        !header.multiValued
+        header.parsedType == String
         header.toString() == 'Accept: image/jpeg'
     }
 
