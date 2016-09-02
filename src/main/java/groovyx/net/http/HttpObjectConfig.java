@@ -58,10 +58,42 @@ public interface HttpObjectConfig extends HttpConfig {
         SSLContext getSslContext();
 
         /**
-         * FIXME: document
+         * Configures an interceptor (similar to an Http Servlet filter) which allows operations to be performed before and after a request, even alteration
+         * of the data.
+         *
+         * [source,groovy]
+         * ----
+         * long elapsed = configure {
+         *      request.uri = 'https://localhost:10101/foo'
+         *      execution.interceptor(GET) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
+         *          long started = System.currentTimeMillis()
+         *          fx.apply(cfg)
+         *          System.currentTimeMillis() - started
+         *      }
+         * }.get(Long, NO_OP)
+         * ----
+         *
+         * The example above would return the elapsed time for the request as the result of the request.
+         *
+         * @param verb the HTTP verb to intercept
+         * @param func the interceptor function
          */
         void interceptor(HttpVerb verb, BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func);
+
+        /**
+         * Configures an interceptor (similar to an Http Servlet filter) which allows operations to be performed before and after a request, even alteration
+         * of the data.
+         *
+         * @param verbs the HTTP verbs to intercept
+         * @param func the interceptor function
+         */
         void interceptor(HttpVerb[] verbs, BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func);
+
+        /**
+         * Used to retrieve the interceptors configured.
+         *
+         * @return all interceptors
+         */
         EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> getInterceptors();
     }
 

@@ -16,11 +16,16 @@
 package groovyx.net.http.optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.function.BiFunction;
-import java.util.function.BiConsumer;
-import groovyx.net.http.*;
-import java.io.StringWriter;
+import groovyx.net.http.ChainedHttpConfig;
+import groovyx.net.http.CharSequenceInputStream;
+import groovyx.net.http.ContentTypes;
+import groovyx.net.http.FromServer;
+import groovyx.net.http.HttpConfig;
+import groovyx.net.http.ToServer;
+
 import java.io.IOException;
+import java.io.StringWriter;
+
 import static groovyx.net.http.NativeHandlers.Encoders.handleRawUpload;
 
 public class Jackson {
