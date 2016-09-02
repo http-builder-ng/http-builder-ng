@@ -86,9 +86,9 @@ public interface FromServer {
         }
 
         /**
-         * Unsupported, headers are read-only
+         * Unsupported, headers are read-only.
          *
-         * @throws UnsupportedOperationException
+         * @throws UnsupportedOperationException always
          */
         public String setValue(final String val) {
             throw new UnsupportedOperationException();
@@ -154,7 +154,7 @@ public interface FromServer {
          * assert header.value == 'text/plain'
          * ----
          *
-         * @param full the full header string
+         * @param raw the full header string
          * @return the `Header` representing the given header string
          */
         public static Header<?> full(final String raw) {
@@ -185,8 +185,7 @@ public interface FromServer {
         }
 
         /**
-         * Type representing headers that are simple key/values, with no parseable structure in the value
-         * For example: Accept-Ranges: bytes
+         * Type representing headers that are simple key/values, with no parseable structure in the value. For example: `Accept-Ranges: bytes`.
          */
         public static class ValueOnly extends Header<String> {
             public ValueOnly(final String key, final String value) {
@@ -210,7 +209,7 @@ public interface FromServer {
         /**
          * Type representing headers that have values which are parseable as key/value pairs,
          * provided the header hey is included in the key/value map.
-         * For example: Content-Type: text/html; charset=utf-8
+         * For example: `Content-Type: text/html; charset=utf-8`
          */
         public static class CombinedMap extends Header<Map<String,String>> {
             public CombinedMap(final String key, final String value) {
@@ -240,8 +239,8 @@ public interface FromServer {
         }
 
         /**
-         * Type representing headers that have values which are comma separated lists
-         * For example: Allow: GET, HEAD
+         * Type representing headers that have values which are comma separated lists.
+         * For example: `Allow: GET, HEAD`
          */
         public static class CsvList extends Header<List<String>> {
             public CsvList(final String key, final String value) {
@@ -261,8 +260,9 @@ public interface FromServer {
          * Type representing headers that have values which are zoned date time values.
          * Values representing seconds from now are also converted to zoned date time values
          * with UTC/GMT zone offsets.
-         * Example 1: Retry-After: Fri, 07 Nov 2014 23:59:59 GMT
-         * Example 2: Retry-After: 120 
+         *
+         * * Example 1: `Retry-After: Fri, 07 Nov 2014 23:59:59 GMT`
+         * * Example 2: `Retry-After: 120`
          */
         public static class HttpDate extends Header<ZonedDateTime> {
             public HttpDate(final String key, final String value) {
@@ -300,7 +300,7 @@ public interface FromServer {
 
         /**
          * Type representing headers that have values which are parseable as key/value pairs.
-         * For example: Alt-Svc: h2="http2.example.com:443"; ma=7200
+         * For example: `Alt-Svc: h2="http2.example.com:443"; ma=7200`
          */
         public static class MapPairs extends Header<Map<String,String>> {
             public MapPairs(final String key, final String value) {
@@ -334,7 +334,7 @@ public interface FromServer {
 
         /**
          * Type representing headers that have values which are parseable as longs.
-         * For example: Content-Length: 348
+         * For example: `Content-Length: 348`
          */
         public static class SingleLong extends Header<Long> {
             public SingleLong(final String key, final String value) {

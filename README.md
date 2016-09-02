@@ -40,14 +40,14 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 Http Builder NG artifacts are available on [Bintay](https://bintray.com/davidwclark/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.13'
+    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.14'
     
 For Maven, add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng</artifactId>
-      <version>0.9.13</version>
+      <version>0.9.14</version>
       <type>pom</type>
     </dependency>
 
@@ -64,6 +64,30 @@ You can also generate the documentation using one of the following commands:
     ./gradlew site
 
 which will generate the API Documentation, User Guide and Documentation web site respectively.
+
+## Documentation Site
+
+The project provides a unified documentation web site. You can build the documentation site with:
+
+    ./gradlew site
+
+Once it is built, you can verify the generated content by running a local server:
+
+    groovy serve.groovy
+    
+which will provide the site at http://localhost:8080. Once you are ready to publish your site, simply run the following task:
+
+    ./gradlew publishSite
+    
+This task will push the site contents into the `gh-pages` branch of the project, assuming you have permissions to push content into the repo.
+
+## Version Updates
+
+When updating the version of the project, the documented version should also be updated using the `updateVersion` task. Modify the version in the project `build.gradle` file and make note of the existing version then run:
+
+    ./gradlew updateVersion -Pfrom=OLD_VERSION
+    
+where `OLD_VERSION` is the pre-existing version of the project. This will update the current version mentioned in the documentation (e.g. README, User Guide and site).
 
 ## History
 
