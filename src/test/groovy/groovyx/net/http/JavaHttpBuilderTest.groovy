@@ -168,7 +168,7 @@ class JavaHttpBuilderTest extends Specification {
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == ContentTypes.JSON &&
+             headers.Accept.split(';') as List<String> == (ContentTypes.JSON as List<String>) &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }

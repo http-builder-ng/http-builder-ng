@@ -58,7 +58,7 @@ public class Download {
     }
 
     public static void toFile(final HttpConfig config, final File file) {
-        toFile(config, ContentTypes.ANY.get(0), file);
+        toFile(config, ContentTypes.ANY.getAt(0), file);
     }
 
     public static void toTempFile(final HttpConfig config) {
@@ -76,6 +76,6 @@ public class Download {
     }
 
     public static void toStream(final HttpConfig config, final OutputStream ostream) {
-        toStream(config, ContentTypes.ANY.get(0), ostream);
+        toStream(config, ContentTypes.ANY.getAt(0), ostream);
     }
 }

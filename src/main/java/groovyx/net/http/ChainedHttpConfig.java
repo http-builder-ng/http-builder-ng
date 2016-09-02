@@ -61,7 +61,7 @@ public interface ChainedHttpConfig extends HttpConfig {
                     return ret;
                 }
                 else {
-                    return cr.encoder(ContentTypes.ANY.get(0));
+                    return cr.encoder(ContentTypes.ANY.getAt(0));
                 }
             };
             
@@ -94,7 +94,7 @@ public interface ChainedHttpConfig extends HttpConfig {
                     return ret;
                 }
                 else {
-                    return cr.parser(ContentTypes.ANY.get(0));
+                    return cr.parser(ContentTypes.ANY.getAt(0));
                 }
             };
 
@@ -106,7 +106,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     
     default Object actualContext(final String contentType, final Object id) {
         final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry(contentType, id);
-        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.get(0), id);
+        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.getAt(0), id);
         
         final Function<ChainedHttpConfig,Object> theValue = (config) -> {
             Object ctx = config.getContextMap().get(key);

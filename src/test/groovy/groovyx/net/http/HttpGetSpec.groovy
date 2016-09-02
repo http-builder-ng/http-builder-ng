@@ -36,8 +36,6 @@ import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
 
-    // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
-
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
     private static final String HTML_CONTENT_B = htmlContent('Testing B')

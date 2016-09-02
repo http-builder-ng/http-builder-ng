@@ -52,9 +52,17 @@ public interface HttpObjectConfig extends HttpConfig {
         Executor getExecutor();
 
         /**
-         * FIXME: document
+         * Specifies the {@link SSLContext} to be used by the configured client.
+         *
+         * @param val the {@link SSLContext}
          */
         void setSslContext(SSLContext val);
+
+        /**
+         * Retrieves the {@link SSLContext} configured for the underlying HTTP client.
+         *
+         * @return the configured {@link SSLContext}
+         */
         SSLContext getSslContext();
 
         /**
