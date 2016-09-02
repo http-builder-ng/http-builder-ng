@@ -65,6 +65,22 @@ You can also generate the documentation using one of the following commands:
 
 which will generate the API Documentation, User Guide and Documentation web site respectively.
 
+## Documentation Site
+
+The project provides a unified documentation web site. You can build the documentation site with:
+
+    ./gradlew site
+
+Once it is built, you can verify the generated content by running a local server:
+
+    groovy serve.groovy
+    
+which will provide the site at http://localhost:8080. Once you are ready to publish your site, simply run the following task:
+
+    ./gradlew publishSite
+    
+This task will push the site contents into the `gh-pages` branch of the project, assuming you have permissions to push content into the repo.
+
 ## History
 
 Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to Jason Gritman who maintained it for several years.
