@@ -16,6 +16,8 @@
 package groovyx.net.http;
 
 import spock.lang.*;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import static groovyx.net.http.FromServer.*;
 import static groovyx.net.http.FromServer.Header.*;
 
@@ -28,9 +30,7 @@ class HeaderTest extends Specification {
         expect:
         h.key == 'Accept';
         h.value == 'text/plain';
-        h.keysValues['Accept'] == ['text/plain'];
-        h.keysValues.size() == 1;
-        !h.multiValued;
+        h.parsedType == String
     }
 
     def "Host Header"() {
@@ -40,22 +40,17 @@ class HeaderTest extends Specification {
         expect:
         h.key == 'Host';
         h.value == 'en.wikipedia.org:8080';
-        h.keysValues['Host'] == ['en.wikipedia.org:8080'];
-        h.keysValues.size() == 1;
-        !h.multiValued;
-
+        h.parsedType == String;
     }
 
     def "ETag Header"() {
         setup:
         def h = FromServer.Header.full('ETag: "737060cd8c284d8af7ad3082f209582d"');
-
+        
         expect:
         h.key == 'ETag';
         h.value == '737060cd8c284d8af7ad3082f209582d';
-        h.keysValues['ETag'] == ['737060cd8c284d8af7ad3082f209582d'];
-        h.keysValues.size() == 1
-        !h.multiValued;
+        h.parsedType == String
     }
 
     def "Date Header"() {
@@ -65,9 +60,7 @@ class HeaderTest extends Specification {
         expect:
         h.key == 'Date';
         h.value == 'Tue, 15 Nov 1994 08:12:31 GMT';
-        h.keysValues['Date'] == ['Tue, 15 Nov 1994 08:12:31 GMT'];
-        h.keysValues.size() == 1;
-        !h.multiValued;
+        h.parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
     }
 
     def "Set Cookie Header"() {
@@ -77,9 +70,9 @@ class HeaderTest extends Specification {
         expect:
         h.key == 'Set-Cookie';
         h.value == 'UserID=JohnDoe; Max-Age=3600; Version=1';
-        h.keysValues.size() == 4;
-        h.keysValues['UserID'] == ['JohnDoe'];
-        h.keysValues['Version'] == [ '1' ];
+        h.parsed.size() == 3;
+        h.parsed['UserID'] == 'JohnDoe';
+        h.parsed['Version'] == '1';
     }
 
     def "Find Header"() {
@@ -102,8 +95,8 @@ class HeaderTest extends Specification {
         def h = full('Content-Type: text/html; charset=utf-8');
 
         expect:
-        h.keysValues['Content-Type'][0] == 'text/html';
-        h.keysValues['charset'][0] == 'utf-8';
+        h.parsed['Content-Type'] == 'text/html';
+        h.parsed['charset'] == 'utf-8';
     }
 }
 

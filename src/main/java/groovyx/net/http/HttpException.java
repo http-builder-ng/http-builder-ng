@@ -32,7 +32,7 @@ public class HttpException extends RuntimeException {
         return fromServer.getStatusCode();
     }
 
-    public List<FromServer.Header> getHeaders() {
+    public List<FromServer.Header<?>> getHeaders() {
         return fromServer.getHeaders();
     }
 
