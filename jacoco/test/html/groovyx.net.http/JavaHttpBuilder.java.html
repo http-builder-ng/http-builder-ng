@@ -183,7 +183,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             private InputStream is;
             private boolean hasBody;
-            private List&lt;Header&gt; headers;
+            private List&lt;Header&lt;?&gt;&gt; headers;
             private URI uri;
             
 <span class="fc" id="L189">            public JavaFromServer(final URI originalUri) {</span>
@@ -205,7 +205,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 <span class="fc" id="L205">            }</span>
 
             private InputStream handleEncoding(final InputStream is) throws IOException {
-<span class="fc" id="L208">                Header encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
+<span class="fc" id="L208">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
 <span class="fc bfc" id="L209" title="All 2 branches covered.">                if(encodingHeader != null) {</span>
 <span class="fc bfc" id="L210" title="All 2 branches covered.">                    if(encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
 <span class="fc" id="L211">                        return new GZIPInputStream(is);</span>
@@ -218,8 +218,8 @@ public class JavaHttpBuilder extends HttpBuilder {
 <span class="fc" id="L218">                return is;</span>
             }
 
-            private List&lt;Header&gt; populateHeaders() {
-<span class="fc" id="L222">                final List&lt;Header&gt; ret = new ArrayList&lt;&gt;();</span>
+            private List&lt;Header&lt;?&gt;&gt; populateHeaders() {
+<span class="fc" id="L222">                final List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
 <span class="pc bpc" id="L223" title="1 of 2 branches missed.">                for(int i = 0; i &lt; Integer.MAX_VALUE; ++i) {</span>
 <span class="fc" id="L224">                    final String key = connection.getHeaderFieldKey(i);</span>
 <span class="fc" id="L225">                    final String value = connection.getHeaderField(i);</span>
@@ -257,7 +257,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 }
             }
             
-            public List&lt;Header&gt; getHeaders() {
+            public List&lt;Header&lt;?&gt;&gt; getHeaders() {
 <span class="fc" id="L261">                return headers;</span>
             }
             

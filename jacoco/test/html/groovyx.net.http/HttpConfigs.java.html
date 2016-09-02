@@ -342,11 +342,11 @@ import groovyx.net.http.optional.*;
 <span class="fc" id="L342">                return getByCode().get(code);</span>
             }
             
-<span class="fc bfc" id="L345" title="All 4 branches covered.">            if(code &lt; 399 &amp;&amp; getSuccess() != null) {</span>
+<span class="fc bfc" id="L345" title="All 4 branches covered.">            if(code &lt; 400 &amp;&amp; getSuccess() != null) {</span>
 <span class="fc" id="L346">                return getSuccess();</span>
             }
             
-<span class="fc bfc" id="L349" title="All 2 branches covered.">            if(getFailure() != null) {</span>
+<span class="fc bfc" id="L349" title="All 4 branches covered.">            if(code &gt;= 400 &amp;&amp; getFailure() != null) {</span>
 <span class="fc" id="L350">                return getFailure();</span>
             }
 
