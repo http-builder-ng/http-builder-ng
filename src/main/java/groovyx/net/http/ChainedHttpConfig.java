@@ -83,7 +83,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
 
-        default Closure<Object> actualAction(final Integer code) {
+        default Closure<?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
         
@@ -148,7 +148,7 @@ public interface ChainedHttpConfig extends HttpConfig {
         return contentType;
     }
 
-    static Object[] closureArgs(final Closure<Object> closure, final FromServer fromServer, final Object o) {
+    static Object[] closureArgs(final Closure<?> closure, final FromServer fromServer, final Object o) {
         final int size = closure.getMaximumNumberOfParameters();
         final Object[] args = new Object[size];
         if(size >= 1) {

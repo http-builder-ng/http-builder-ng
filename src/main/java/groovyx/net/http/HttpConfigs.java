@@ -305,9 +305,9 @@ public class HttpConfigs {
 
     public static abstract class BaseResponse implements ChainedResponse {
 
-        abstract protected Map<Integer,Closure<Object>> getByCode();
-        abstract protected Closure<Object> getSuccess();
-        abstract protected Closure<Object> getFailure();
+        abstract protected Map<Integer,Closure<?>> getByCode();
+        abstract protected Closure<?> getSuccess();
+        abstract protected Closure<?> getFailure();
         abstract protected Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> getParserMap();
         
         private final ChainedResponse parent;
@@ -320,15 +320,15 @@ public class HttpConfigs {
             this.parent = parent;
         }
         
-        public void when(String code, Closure<Object> closure) {
+        public void when(String code, Closure<?> closure) {
             when(Integer.valueOf(code), closure);
         }
         
-        public void when(Integer code, Closure<Object> closure) {
+        public void when(Integer code, Closure<?> closure) {
             getByCode().put(code, closure);
         }
         
-        public void when(final HttpConfig.Status status, Closure<Object> closure) {
+        public void when(final HttpConfig.Status status, Closure<?> closure) {
             if(status == HttpConfig.Status.SUCCESS) {
                 success(closure);
             }
@@ -337,7 +337,7 @@ public class HttpConfigs {
             }
         }
 
-        public Closure<Object> when(final Integer code) {
+        public Closure<?> when(final Integer code) {
             if(getByCode().containsKey(code)) {
                 return getByCode().get(code);
             }
@@ -370,9 +370,9 @@ public class HttpConfigs {
     }
 
     public static class BasicResponse extends BaseResponse {
-        private final Map<Integer,Closure<Object>> byCode = new LinkedHashMap<>();
-        private Closure<Object> successHandler;
-        private Closure<Object> failureHandler;
+        private final Map<Integer,Closure<?>> byCode = new LinkedHashMap<>();
+        private Closure<?> successHandler;
+        private Closure<?> failureHandler;
         private final Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new LinkedHashMap<>();
 
         protected BasicResponse(final ChainedResponse parent) {
@@ -383,32 +383,32 @@ public class HttpConfigs {
             return parserMap;
         }
         
-        protected Map<Integer,Closure<Object>> getByCode() {
+        protected Map<Integer,Closure<?>> getByCode() {
             return byCode;
         }
 
-        protected Closure<Object> getSuccess() {
+        protected Closure<?> getSuccess() {
             return successHandler;
         }
         
-        protected Closure<Object> getFailure() {
+        protected Closure<?> getFailure() {
             return failureHandler;
         }
 
-        public void success(final Closure<Object> val) {
+        public void success(final Closure<?> val) {
             successHandler = val;
         }
 
-        public void failure(final Closure<Object> val) {
+        public void failure(final Closure<?> val) {
             failureHandler = val;
         }
     }
 
     public static class ThreadSafeResponse extends BaseResponse {
         private final ConcurrentMap<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new ConcurrentHashMap<>();
-        private final ConcurrentMap<Integer,Closure<Object>> byCode = new ConcurrentHashMap<>();
-        private volatile Closure<Object> successHandler;
-        private volatile Closure<Object> failureHandler;
+        private final ConcurrentMap<Integer,Closure<?>> byCode = new ConcurrentHashMap<>();
+        private volatile Closure<?> successHandler;
+        private volatile Closure<?> failureHandler;
 
         public ThreadSafeResponse(final ChainedResponse parent) {
             super(parent);
@@ -418,23 +418,23 @@ public class HttpConfigs {
             return parserMap;
         }
         
-        protected Map<Integer,Closure<Object>> getByCode() {
+        protected Map<Integer,Closure<?>> getByCode() {
             return byCode;
         }
 
-        protected Closure<Object> getSuccess() {
+        protected Closure<?> getSuccess() {
             return successHandler;
         }
         
-        protected Closure<Object> getFailure() {
+        protected Closure<?> getFailure() {
             return failureHandler;
         }
 
-        public void success(final Closure<Object> val) {
+        public void success(final Closure<?> val) {
             successHandler = val;
         }
 
-        public void failure(final Closure<Object> val) {
+        public void failure(final Closure<?> val) {
             failureHandler = val;
         }
     }
