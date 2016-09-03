@@ -181,7 +181,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             final ApacheFromServer fromServer = new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response);
             try {
                 final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final Closure<Object> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
+                final Closure<?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
                 if(fromServer.getHasBody()) {
                     final Object o = parser.apply(requestConfig, fromServer);
                     return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));

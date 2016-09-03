@@ -540,7 +540,7 @@ public interface HttpConfig {
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
-        void when(Status status, Closure<Object> closure);
+        void when(Status status, Closure<?> closure);
 
         /**
          * Configures the execution of the provided closure "when" the given status code occurs in the response. The `closure` will be called with an instance
@@ -564,7 +564,7 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(Integer code, Closure<Object> closure);
+        void when(Integer code, Closure<?> closure);
 
         /**
          * Configures the execution of the provided closure "when" the given status code (as a String) occurs in the response. The `closure` will be
@@ -588,7 +588,7 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(String code, Closure<Object> closure);
+        void when(String code, Closure<?> closure);
 
         /**
          * Used to retrieve the "when" closure associated with the given status code.
@@ -596,7 +596,7 @@ public interface HttpConfig {
          * @param code the status code
          * @return the mapped closure
          */
-        Closure<Object> when(Integer code);
+        Closure<?> when(Integer code);
 
         /**
          * Configures the execution of the provided closure "when" a successful response is received (code < 400). The `closure` will be called with
@@ -621,7 +621,7 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void success(Closure<Object> closure);
+        void success(Closure<?> closure);
 
         /**
          * Configures the execution of the provided closure "when" a failure response is received (code >= 400). The `closure` will be called with
@@ -646,7 +646,7 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void failure(Closure<Object> closure);
+        void failure(Closure<?> closure);
 
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
