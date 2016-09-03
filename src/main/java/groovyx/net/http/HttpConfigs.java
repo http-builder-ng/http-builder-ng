@@ -26,6 +26,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +46,7 @@ import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import static groovyx.net.http.ChainedHttpConfig.*;
 import static groovyx.net.http.Safe.*;
+
 import groovyx.net.http.optional.*;
 
 public class HttpConfigs {
@@ -155,7 +159,7 @@ public class HttpConfigs {
             getEncoderMap().put(contentType, val);
         }
         
-        public void encoder(final List<String> contentTypes, final BiConsumer<ChainedHttpConfig,ToServer> val) {
+        public void encoder(final Iterable<String> contentTypes, final BiConsumer<ChainedHttpConfig,ToServer> val) {
             for(String contentType : contentTypes) {
                 encoder(contentType, val);
             }
@@ -165,7 +169,7 @@ public class HttpConfigs {
             getHeaders().put("Accept", String.join(";", values));
         }
 
-        public void setAccept(final List<String> values) {
+        public void setAccept(final Iterable<String> values) {
             getHeaders().put("Accept", String.join(";", values));
         }
 
@@ -177,6 +181,11 @@ public class HttpConfigs {
         }
 
         public void cookie(final String name, final String value, final Date date) {
+            getCookies().add(new Cookie(name, value, date));
+        }
+
+        public void cookie(final String name, final String value, final LocalDateTime dateTime){
+            Date date = new Date(dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             getCookies().add(new Cookie(name, value, date));
         }
     }
@@ -362,7 +371,7 @@ public class HttpConfigs {
             getParserMap().put(contentType, val);
         }
         
-        public void parser(final List<String> contentTypes, BiFunction<ChainedHttpConfig,FromServer,Object> val) {
+        public void parser(final Iterable<String> contentTypes, BiFunction<ChainedHttpConfig,FromServer,Object> val) {
             for(String contentType : contentTypes) {
                 parser(contentType, val);
             }

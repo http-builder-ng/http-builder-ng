@@ -15,16 +15,20 @@
  */
 package groovyx.net.http
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import groovy.json.JsonSlurper;
-import groovyx.net.http.optional.Jackson;
-import static groovyx.net.http.optional.Download.toTempFile;
-import static groovyx.net.http.optional.Csv.toCsv;
-import java.util.concurrent.Executors;
-import java.util.function.Function
-import spock.lang.*
-import static groovyx.net.http.NativeHandlers.*;
+import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.json.JsonSlurper
+import groovyx.net.http.optional.Jackson
+import spock.lang.Requires
+import spock.lang.Specification
 
+import java.util.concurrent.Executors
+import java.util.function.Function
+
+import static groovyx.net.http.NativeHandlers.Parsers
+import static groovyx.net.http.optional.Csv.toCsv
+import static groovyx.net.http.optional.Download.toTempFile
+
+@Requires(HttpBin)
 class JavaHttpBuilderTest extends Specification {
 
     static final Function javaBuilder = { c -> new JavaHttpBuilder(c); } as Function;
@@ -34,7 +38,7 @@ class JavaHttpBuilderTest extends Specification {
     def setup() {
         def max = 2;
         def pool = Executors.newFixedThreadPool(max);
-        
+
         httpBin = HttpBuilder.configure(javaBuilder) {
             request.uri = 'http://httpbin.org/';
             execution.maxThreads = max
@@ -84,13 +88,13 @@ class JavaHttpBuilderTest extends Specification {
     def "No Op POST Form"() {
         setup:
         def toSend = [ foo: 'my foo', bar: 'my bar' ];
-        
+
         def http = HttpBuilder.configure(javaBuilder) {
             request.uri = 'http://httpbin.org/post'
             request.body = toSend;
             request.contentType = 'application/x-www-form-urlencoded';
         }
-        
+
         expect:
         http.post().form == toSend;
     }
@@ -109,7 +113,7 @@ class JavaHttpBuilderTest extends Specification {
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept && 
+             headers.Accept.split(';') as List<String> == accept &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }
@@ -137,7 +141,7 @@ class JavaHttpBuilderTest extends Specification {
                 return "Success"
             }
         }
-        
+
         expect:
         result == "Success";
     }
@@ -164,7 +168,7 @@ class JavaHttpBuilderTest extends Specification {
             request.contentType = 'application/json';
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == ContentTypes.JSON &&
+             headers.Accept.split(';') as List<String> == (ContentTypes.JSON as List<String>) &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }
@@ -194,7 +198,7 @@ class JavaHttpBuilderTest extends Specification {
             authenticated && user == 'david';
         }
     }
-    
+
     def "Test Set Cookies"() {
         expect:
         httpBin.get {
@@ -203,7 +207,7 @@ class JavaHttpBuilderTest extends Specification {
         }.with {
             cookies.foocookie == 'barcookie';
         }
-        
+
         httpBin.get {
             request.uri.path = '/cookies';
             request.cookie 'requestcookie', '12345'
@@ -253,7 +257,7 @@ class JavaHttpBuilderTest extends Specification {
 
         expect:
         file.length() > 0;
-        
+
         cleanup:
         file.delete();
     }
@@ -303,7 +307,7 @@ class JavaHttpBuilderTest extends Specification {
             Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
-             headers.Accept.split(';') as List<String> == accept && 
+             headers.Accept.split(';') as List<String> == accept &&
              new JsonSlurper().parseText(data) == toSend);
         }
     }
@@ -322,11 +326,11 @@ class JavaHttpBuilderTest extends Specification {
         result[1][0] == 'Disallow'
         result[1][1].trim() == '/deny'
     }
-    
+
     def "Failure Handler Without Success Handler"() {
         setup:
         def statusCode = 0;
-        
+
         def response = google.get {
             response.failure { FromServer fs ->
                 statusCode = fs.statusCode;

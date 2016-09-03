@@ -22,7 +22,6 @@ import org.mockserver.model.HttpResponse
 import java.util.function.Function
 
 class MockServerHelper {
-    // TODO: rename to something more meaningful
 
     static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
     static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function

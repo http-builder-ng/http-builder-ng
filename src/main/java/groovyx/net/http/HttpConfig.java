@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,8 +21,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -35,12 +35,20 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-    enum Status { SUCCESS, FAILURE };
+    enum Status {
+        SUCCESS, FAILURE
+    }
+
+    ;
 
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-    enum AuthType { BASIC, DIGEST };
+    enum AuthType {
+        BASIC, DIGEST
+    }
+
+    ;
 
     /**
      *  Defines the configurable HTTP request authentication properties.
@@ -72,8 +80,6 @@ public interface HttpConfig {
          * Configures the request to use BASIC authentication with the given `username` and `password`. The authentication will not be preemptive. This
          * method is an alias for calling: `basic(String, String, false)`.
          *
-         * TODO: what does "preemptive" mean in this case
-         *
          * [source,groovy]
          * ----
          * def http = HttpBuilder.configure {
@@ -92,8 +98,6 @@ public interface HttpConfig {
         /**
          * Configures the request to use BASIC authentication with the given `username` and `password`.
          *
-         * TODO: what does "preemptive" mean in this case
-         *
          * [source,groovy]
          * ----
          * def http = HttpBuilder.configure {
@@ -104,7 +108,7 @@ public interface HttpConfig {
          *
          * @param user the username
          * @param password the user's password
-         * @param preemptive whether or not this call is preemptive
+         * @param preemptive whether or not this call will override similar configuration in the chain
          */
         void basic(String user, String password, boolean preemptive);
 
@@ -130,8 +134,6 @@ public interface HttpConfig {
         /**
          * Configures the request to use DIGEST authentication with the given information.
          *
-         * TODO: what does "preemptive" mean in this case
-         *
          * [source,groovy]
          * ----
          * def http = HttpBuilder.configure {
@@ -142,7 +144,7 @@ public interface HttpConfig {
          *
          * @param user the username
          * @param password the user's password
-         * @param preemptive whether or not this call is preemptive
+         * @param preemptive whether or not this call will override similar configuration in the chain
          */
         void digest(String user, String password, boolean preemptive);
     }
@@ -396,13 +398,12 @@ public interface HttpConfig {
          *
          * @param values the accept header values as a List
          */
-        void setAccept(List<String> values);
+        void setAccept(Iterable<String> values);
 
         /**
          * The `body` property is used to configure the body content for the request. The request body content may be altered by configured encoders
-         * internally or may be passed on unmodified.
-         *
-         * FIXME: more details to be added
+         * internally or may be passed on unmodified. See {@link HttpConfig} and {@link HttpObjectConfig} for content-altering methods (encoders,
+         * decoders and interceptors).
          *
          * @param val the request body content
          */
@@ -428,7 +429,7 @@ public interface HttpConfig {
          * @param value the cookie value
          */
         default void cookie(String name, String value) {
-            cookie(name, value, null);
+            cookie(name, value, (Date) null);
         }
 
         /**
@@ -459,7 +460,30 @@ public interface HttpConfig {
          */
         void cookie(String name, String value, Date expires);
 
-        // TODO: might be nice to have a cookie method that accepts java.time.DateTime
+        /**
+         * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
+         * an expiration date as {@link LocalDateTime}.
+         *
+         * [source,groovy]
+         * ----
+         * HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }.post {
+         *      request.uri.path = '/bar'
+         *      request.cookie 'last-page', 'item-list', LocalDateTime.now().plus(1, ChronoUnit.MONTHS)
+         * }
+         * ----
+         *
+         * WARNING: Cookies are additive, once a Cookie is defined (e.g. in the global configuration), you cannot overwrite it in per-verb configurations.
+         *
+         * As noted in the {@link groovyx.net.http.HttpObjectConfig.Client} configuration, the default Cookie version supported is `0`, but this may
+         * be modified.
+         *
+         * @param name the cookie name
+         * @param value the cookie value
+         * @param expires the cookie expiration date
+         */
+        void cookie(String name, String value, LocalDateTime expires);
 
         /**
          * Specifies the request encoder ({@link ToServer} instance) to be used when encoding the given content type.
@@ -475,7 +499,7 @@ public interface HttpConfig {
          * @param contentTypes the content types
          * @param val the request encoder (wrapped in a {@link BiConsumer} function)
          */
-        void encoder(List<String> contentTypes, BiConsumer<ChainedHttpConfig, ToServer> val);
+        void encoder(Iterable<String> contentTypes, BiConsumer<ChainedHttpConfig, ToServer> val);
 
         /**
          * Retrieves the request encoder ({@link ToServer} instance) for the specified content type wrapped in a {@link BiConsumer} function.
@@ -638,7 +662,7 @@ public interface HttpConfig {
          * @param contentTypes the contents type where the parser will be applied
          * @param val the parser wrapped in a function object
          */
-        void parser(List<String> contentTypes, BiFunction<ChainedHttpConfig, FromServer, Object> val);
+        void parser(Iterable<String> contentTypes, BiFunction<ChainedHttpConfig, FromServer, Object> val);
 
         /**
          * Used to retrieve the parser configured for the specified content type.
@@ -657,7 +681,7 @@ public interface HttpConfig {
     /**
      * FIXME: document
      */
-    default void context(final List<String> contentTypes, final Object id, final Object obj) {
+    default void context(final Iterable<String> contentTypes, final Object id, final Object obj) {
         for (String contentType : contentTypes) {
             context(contentType, id, obj);
         }

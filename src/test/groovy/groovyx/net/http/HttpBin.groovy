@@ -21,6 +21,8 @@ import groovy.transform.TypeChecked
 /**
  * Used as the argument of a Spock @Requires annotation to denote that the annotated test(s) require the presence of the
  * httpbin.org web site for testing. If this site is not available, the annotated test(s) will be skipped.
+ *
+ * While this checks for the existence of a specific site, it can be used as a general test for internet access.
  */
 @InheritConstructors @TypeChecked
 class HttpBin extends Closure<Boolean> {
@@ -28,13 +30,17 @@ class HttpBin extends Closure<Boolean> {
     private static final URL HTTPBIN = 'http://httpbin.org/'.toURL()
 
     Boolean doCall() {
-        HttpURLConnection conn = HTTPBIN.openConnection() as HttpURLConnection
-        conn.setRequestMethod('HEAD')
-        conn.setUseCaches(true)
+        try {
+            HttpURLConnection conn = HTTPBIN.openConnection() as HttpURLConnection
+            conn.setRequestMethod('HEAD')
+            conn.setUseCaches(true)
 
-        boolean status = conn.responseCode < 400
-        conn.disconnect()
+            boolean status = conn.responseCode < 400
+            conn.disconnect()
 
-        status
+            status
+        } catch (ex) {
+            false
+        }
     }
 }

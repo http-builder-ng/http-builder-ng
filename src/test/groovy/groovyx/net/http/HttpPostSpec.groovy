@@ -29,7 +29,10 @@ import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
-import static groovyx.net.http.MockServerHelper.*
+import static groovyx.net.http.MockServerHelper.htmlContent
+import static groovyx.net.http.MockServerHelper.httpBuilder
+import static groovyx.net.http.MockServerHelper.post
+import static groovyx.net.http.MockServerHelper.responseContent
 import static org.mockserver.model.HttpResponse.response
 
 class HttpPostSpec extends Specification {
@@ -37,6 +40,7 @@ class HttpPostSpec extends Specification {
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
     private static final String DATE_STRING = '2016.08.25 14:43'
+    private static final Date DATE_OBJECT = Date.parse('yyyy.MM.dd HH:mm', DATE_STRING)
     private static final String JSON_STRING = '{ "name":"Bob", "age":42 }'
     private static final String BODY_STRING = 'This is CONTENT!!'
     private static final String HTML_CONTENT = htmlContent('Something Different')
@@ -52,7 +56,7 @@ class HttpPostSpec extends Specification {
         server.when(post('/foo', BODY_STRING)).respond(responseContent(HTML_CONTENT))
         server.when(post('/foo', JSON_STRING, JSON[0])).respond(responseContent(JSON_CONTENT, JSON[0]))
 
-        server.when(post('/date', BODY_STRING)).respond(responseContent(DATE_STRING, 'text/date'))
+        server.when(post('/date', 'DATE-TIME: 20160825-1443', 'text/datetime')).respond(responseContent(DATE_STRING, 'text/date'))
 
         // BASIC auth
 
@@ -142,8 +146,11 @@ class HttpPostSpec extends Specification {
         given:
         def config = {
             request.uri.path = '/date'
-            request.body = BODY_STRING
-            request.contentType = TEXT[0]
+            request.body = DATE_OBJECT
+            request.contentType = 'text/datetime'
+            request.encoder('text/datetime') { ChainedHttpConfig config, ToServer req ->
+                req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd-HHmm')}".bytes))
+            }
             response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer ->
                 Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
             }

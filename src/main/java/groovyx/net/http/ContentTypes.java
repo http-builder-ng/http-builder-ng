@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,10 @@
  */
 package groovyx.net.http;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
@@ -24,14 +27,44 @@ import static java.util.Collections.unmodifiableList;
  * Collection of Content-Type header values grouped together by their overall type. Generally the first element in the list is the most common
  * content type value for the type.
  */
-public class ContentTypes {
-    // TODO: seems like this should be an enum (?)
+public enum ContentTypes implements Iterable<String> {
 
-    public static final List<String> ANY = unmodifiableList(asList("*/*"));
-    public static final List<String> TEXT = unmodifiableList(asList("text/plain"));
-    public static final List<String> JSON = unmodifiableList(asList("application/json", "application/javascript", "text/javascript"));
-    public static final List<String> XML = unmodifiableList(asList("application/xml", "text/xml", "application/xhtml+xml", "application/atom+xml"));
-    public static final List<String> HTML = unmodifiableList(asList("text/html"));
-    public static final List<String> URLENC = unmodifiableList(asList("application/x-www-form-urlencoded"));
-    public static final List<String> BINARY = unmodifiableList(asList("application/octet-stream"));
+    ANY("*/*"),
+    TEXT("text/plain"),
+    JSON("application/json", "application/javascript", "text/javascript"),
+    XML("application/xml", "text/xml", "application/xhtml+xml", "application/atom+xml"),
+    HTML("text/html"),
+    URLENC("application/x-www-form-urlencoded"),
+    BINARY("application/octet-stream");
+
+    private final List<String> values;
+
+    ContentTypes(final String... values) {
+        this.values = unmodifiableList(asList(values));
+    }
+
+    public static ContentTypes fromValue(final String value) {
+        for (ContentTypes type : ContentTypes.values()) {
+            if (type.values.contains(value)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public String getAt(final int index){
+        return values.get(index);
+    }
+
+    @Override public Iterator<String> iterator() {
+        return values.iterator();
+    }
+
+    @Override public void forEach(Consumer<? super String> action) {
+        values.forEach(action);
+    }
+
+    @Override public Spliterator<String> spliterator() {
+        return values.spliterator();
+    }
 }

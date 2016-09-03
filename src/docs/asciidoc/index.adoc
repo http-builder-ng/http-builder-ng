@@ -83,24 +83,121 @@ There is nothing more to do on the client side.
 
 == Encoders
 
-> TODO: document
+Content encoders are used to convert request body content to a different format before handing off to the underlying HTTP client. An encoder is implemented as a
+`java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the provided implementation of the `ToServer` provides the data. See the `toServer(InputStream)`
+method.
+
+Encoders are provided in the request configuration (`HttpConfig.Request.encoder(String,BiConsumer<ChainedHttpConfig,ToServer>)`) mapped to a content type that they should be
+used to handle. Say we wanted to be able to send `Date` objects to the server in a specific format as the request body:
+
+[source,groovy]
+----
+HttpBuilder.configure {
+    request.uri = 'http://locahost:1234/schedule'
+    request.body = new Date()
+    request.contentType = 'text/date-time'
+    request.encoder('text/date-time'){ ChainedHttpConfig config, ToServer req->
+        req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes))
+    }
+}.post()
+----
+
+Notice that a Groovy `Closure` is usable as a `BiConsumer` function. The `Date` object in the request is formatted as String, converted to bytes and pushed to the request
+`InputStream`.
+
+Default encoders are provided for: CSV, JSON and TEXT content.
 
 == Parsers
 
-> TODO: document
+The response body content resulting form a request is parsed based on the response content type. Content parsers may be configured using the
+`HttpConfig.Response.parser(String, BiFunction<ChainedHttpConfig, FromServer, Object>)` method, which takes a `BiFunction` and the response content type it is mapped to. The function (or Closure)
+accepts a `ChainedHttpConfig` object, and a `FromServer` instance and returns the parsed `Object`. If we had a server providing the current time as a response like `DATE-TIME: MM/dd/yyyy HH:mm:ss`
+we could request the time with the following code:
 
-The resulting data from a request is based on the response content type. The default parsers are listed below:
+[source,groovy]
+----
+Date date = HttpBuilder.configure {
+    request.uri = 'http://localhost:1234/currenttime'
+}.get(Date){
+    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs, Object obj->
+        Date.parse('MM/dd/yyyy HH:mm:ss', fs.inputStream.text)
+    }
+}
+----
 
-* HTML - `org.jsoup.nodes.Document`
-* JSON - Groovy JSON object (map)
-* XML - `org.w3c.dom.Document`
-* TEXT - String of text
+which would parse the incoming response and convert it to a `Date` object.
 
-However, they may be overridden at configuration-time.
+Default parsers are provided for: HTML (`org.jsoup.nodes.Document`), JSON (Groovy JSON map), XML (`org.w3c.dom.Document`) and TEXT (String).
+
+== Interceptors
+
+The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response
+interceptors, which can perform operations before and after every request/response on the client. For example,
+if you wanted to make a POST request and return only the time elapsed during the request/response handling, you
+could do something like the following:
+
+[source,groovy]
+----
+long elapsed = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+    execution.interceptor(GET) { cfg, fx ->
+        long started = System.currentTimeMillis()
+        fx.apply(cfg)
+        System.currentTimeMillis() - started
+    }
+}.get(Long, NO_OP)
+
+println "Elapsed time for request: $elapsed ms"
+----
+
+This interceptor on the GET requests will calculate the time spent in the actual request handling (the
+call to `fx.apply(cfg)` and return the elapsed time as the result of the request (ignoring the actual
+response content from the server). The displayed result will be something like:
+
+    Elapsed time for request: 865 ms
+
+Using interceptors you can also modify the data before and after the `apply()` method is called.
 
 == Client Library Integration
 
-> TODO: document
+By default, the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on `HttpUrlConnection`; however, there is
+no reason other HTTP clients could not be used, perhaps the https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
+
+A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract methods for the handling the HTTP verbs:
+
+[source,groovy]
+----
+protected abstract Object doGet(final ChainedHttpConfig config);
+protected abstract Object doHead(final ChainedHttpConfig config);
+protected abstract Object doPost(final ChainedHttpConfig config);
+protected abstract Object doPut(final ChainedHttpConfig config);
+protected abstract Object doDelete(final ChainedHttpConfig config);
+----
+
+There is also an abstract method for retrieving the client configuration, though generally this will be a simple getter:
+
+[source,groovy]
+----
+protected abstract ChainedHttpConfig getObjectConfig();
+----
+
+And finally a method to retrieve the threading interface, again this is generally a getter for the configured thread executor.
+
+[source,groovy]
+----
+public abstract Executor getExecutor();
+----
+
+Once the abstract contract is satisfied, you can use the new client just as the others, with your client in the factory function:
+
+[source,groovy]
+----
+HttpBuilder.configure({ c -> new GoogleHttpBuilder(c); } as Function){
+    request.uri = 'http://localhost:10101/foo'
+}
+----
+
+If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
 
 == Examples
 
@@ -152,7 +249,6 @@ Document page = configure {
 
 String license = page.select('span.b.lic').collect { it.text() }.join(', ')
 
-then:
 println "Groovy is licensed under: ${license}"
 ----
 
@@ -162,4 +258,32 @@ license information and display it. You will end up with:
 
     Groovy is licensed under: Apache 2.0
 
+=== Sending/Receiving JSON Data (POST)
 
+Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful interfaces. You can do this by creating
+a POST request with a "Content-Type" of `application/json` and a custom response parser:
+
+[source,groovy]
+----
+ItemScore itemScore = configure {
+    request.uri = 'http://httpbin.org'
+    request.contentType = JSON[0]
+    response.parser(JSON[0]) { config, resp ->
+        new ItemScore(NativeHandlers.Parsers.json(config, resp).json)
+    }
+}.post(ItemScore) {
+    request.uri.path = '/post'
+    request.body = new ItemScore('ASDFASEACV235', 90786)
+}
+
+println "Your score for item (${itemScore.item}) was (${itemScore.score})."
+----
+
+The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the `application/json` response
+content type will be parsed to a JSON object (lazy map); however, in this case we want the response to be an instance of the `ItemScore` class. The example
+simply posts an `ItemScore` object (as a JSON string) to the server, which responds with the JSON string that it was provided.
+
+The additional `.json` property call on the parsed data is to extract the JSON data from the response envelope - the site provides other useful information about
+the request. The end result is the following display:
+
+    Your score for item (ASDFASEACV235) was (90786).

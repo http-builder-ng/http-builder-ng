@@ -25,16 +25,16 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.Executors
+import java.util.function.Function
 
 import static HttpClientType.APACHE
 import static HttpClientType.JAVA
+import static groovyx.net.http.HttpVerb.GET
 import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
-
-    // TODO: it seems that uri is not overwritten by the verb config - is this a bug or expected
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 

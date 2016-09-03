@@ -396,7 +396,6 @@ class HttpHeadSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    // TODO: maybe move this and the MockServerHelper to a Trait?
     private static Map<String, String> applyDefaultHeaders(final Map<String, String> headers) {
         headers + [
             'Content-Length': '0',
