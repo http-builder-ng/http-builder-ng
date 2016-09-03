@@ -46,7 +46,6 @@ import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import static groovyx.net.http.ChainedHttpConfig.*;
 import static groovyx.net.http.Safe.*;
-import static javafx.scene.input.KeyCode.Z;
 
 import groovyx.net.http.optional.*;
 
