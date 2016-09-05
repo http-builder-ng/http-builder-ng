@@ -267,8 +267,9 @@ public interface HttpConfig {
          * The `uri` is the only required configuration property.
          *
          * @param val the URI to be used for the request, as a String
+         * @throws IllegalArgumentException if there is a problem with the URI syntax
          */
-        void setUri(String val) throws URISyntaxException;
+        void setUri(String val);
 
         /**
          * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URI` in this case.
