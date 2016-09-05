@@ -6,10 +6,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
 import org.mockserver.junit.MockServerRule;
+import org.mockserver.model.HttpResponse;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
@@ -35,8 +36,13 @@ public class JavaUsageTest {
             config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
         });
 
-        server.when(request().withMethod("GET").withPath("/foo")).respond(response().withBody(CONTENT).withHeader("Content-Type", "text/plain"));
+        HttpResponse contentResponse = response().withBody(CONTENT).withHeader("Content-Type", "text/plain");
+
+        server.when(request().withMethod("GET").withPath("/foo")).respond(contentResponse);
         server.when(request().withMethod("HEAD").withPath("/foo")).respond(response().withHeader("Content-Type", "text/plain"));
+        server.when(request().withMethod("POST").withPath("/foo").withBody(CONTENT).withHeader("Content-Type", "text/plain")).respond(contentResponse);
+        server.when(request().withMethod("PUT").withPath("/foo").withBody(CONTENT).withHeader("Content-Type", "text/plain")).respond(contentResponse);
+        server.when(request().withMethod("DELETE").withPath("/foo")).respond(contentResponse);
     }
 
     @Test
@@ -87,7 +93,56 @@ public class JavaUsageTest {
         assertEquals(future.get(), CONTENT);
     }
 
-    @Test public void post_request() throws Exception {
+    @Test
+    public void post_request() throws Exception {
+        String result = http.post(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+            config.getRequest().setBody(CONTENT);
+            config.getRequest().setContentType("text/plain");
+        });
 
+        assertEquals(result, CONTENT);
+
+        CompletableFuture<String> future = http.postAsync(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+            config.getRequest().setBody(CONTENT);
+            config.getRequest().setContentType("text/plain");
+        });
+
+        assertEquals(future.get(), CONTENT);
+    }
+
+    @Test
+    public void put_request() throws Exception {
+        String result = http.put(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+            config.getRequest().setBody(CONTENT);
+            config.getRequest().setContentType("text/plain");
+        });
+
+        assertEquals(result, CONTENT);
+
+        CompletableFuture<String> future = http.putAsync(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+            config.getRequest().setBody(CONTENT);
+            config.getRequest().setContentType("text/plain");
+        });
+
+        assertEquals(future.get(), CONTENT);
+    }
+
+    @Test
+    public void delete_request() throws Exception {
+        String result = http.delete(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+        });
+
+        assertEquals(result, CONTENT);
+
+        CompletableFuture<String> future = http.deleteAsync(String.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+        });
+
+        assertEquals(future.get(), CONTENT);
     }
 }

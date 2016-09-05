@@ -548,6 +548,18 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> T post(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return type.cast(post(configuration));
+    }
+
+    /**
      * Executes an asynchronous POST request on the configured URI (asynchronous alias to the `post()` method). The `request.uri` property should be
      * configured in the global client configuration in order to have a target for the request.
      *
@@ -592,6 +604,16 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param configuration
+     * @return
+     */
+    public CompletableFuture<Object> postAsync(final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> post(configuration), getExecutor());
+    }
+
+    /**
      * Executes an asynchronous POST request on the configured URI (asynchronous alias to the `post(Class,Closure)` method), with additional
      * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
@@ -618,6 +640,18 @@ public abstract class HttpBuilder implements Closeable {
      */
     public <T> CompletableFuture<T> postAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> post(type, closure), getExecutor());
+    }
+
+    /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> CompletableFuture<T> postAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> post(type, configuration), getExecutor());
     }
 
     /**
@@ -667,6 +701,17 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param type
+     * @param closure
+     * @param <T>
+     * @return
+     */
+    public <T> T put(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return type.cast(put(configuration));
+    }
+
+    /**
      * Executes an asynchronous PUT request on the configured URI (asynchronous alias to the `put()` method). The `request.uri` property should be
      * configured in the global client configuration in order to have a target for the request.
      *
@@ -711,6 +756,15 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param closure
+     * @return
+     */
+    public CompletableFuture<Object> putAsync(final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> put(configuration), getExecutor());
+    }
+
+    /**
      * Executes an asynchronous PUT request on the configured URI (asynchronous alias to the `put(Class,Closure)` method), with additional
      * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
@@ -737,6 +791,17 @@ public abstract class HttpBuilder implements Closeable {
      */
     public <T> CompletableFuture<T> putAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> put(type, closure), getExecutor());
+    }
+
+    /**
+     * FIXME: document
+     * @param type
+     * @param closure
+     * @param <T>
+     * @return
+     */
+    public <T> CompletableFuture<T> putAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> put(type, configuration), getExecutor());
     }
 
     /**
@@ -784,6 +849,17 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param type
+     * @param closure
+     * @param <T>
+     * @return
+     */
+    public <T> T delete(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return type.cast(delete(configuration));
+    }
+
+    /**
      * Executes an asynchronous DELETE request on the configured URI (asynchronous alias to the `delete()` method). The `request.uri` property should be
      * configured in the global client configuration in order to have a target for the request.
      *
@@ -826,6 +902,15 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param closure
+     * @return
+     */
+    public CompletableFuture<Object> deleteAsync(final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> delete(configuration), getExecutor());
+    }
+
+    /**
      * Executes an asynchronous DELETE request on the configured URI (asynchronous alias to the `delete(Class,Closure)` method), with additional
      * configuration provided by the configuration closure. The result will be cast to the specified `type`.
      *
@@ -850,6 +935,17 @@ public abstract class HttpBuilder implements Closeable {
      */
     public <T> CompletableFuture<T> deleteAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> delete(type, closure), getExecutor());
+    }
+
+    /**
+     * FIXME: document
+     * @param type
+     * @param closure
+     * @param <T>
+     * @return
+     */
+    public <T> CompletableFuture<T> deleteAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> delete(type, configuration), getExecutor());
     }
 
     /**
@@ -941,6 +1037,15 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param configuration
+     * @return
+     */
+    public Object post(final Consumer<HttpConfig> configuration) {
+        return interceptors.get(HttpVerb.POST).apply(configureRequest(configuration), this::doPost);
+    }
+
+    /**
      * Executes a PUT request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * [source,groovy]
@@ -965,6 +1070,15 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     * @param closure
+     * @return
+     */
+    public Object put(final Consumer<HttpConfig> configuration) {
+        return interceptors.get(HttpVerb.PUT).apply(configureRequest(configuration), this::doPut);
+    }
+
+    /**
      * Executes a DELETE request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * [source,groovy]
@@ -984,6 +1098,15 @@ public abstract class HttpBuilder implements Closeable {
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
         return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);
+    }
+
+    /**
+     * FIMXE: document
+     * @param configuration
+     * @return
+     */
+    public Object delete(final Consumer<HttpConfig> configuration) {
+        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(configuration), this::doDelete);
     }
 
     protected abstract Object doGet(final ChainedHttpConfig config);
