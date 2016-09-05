@@ -1,5 +1,6 @@
 package groovyx.net.http;
 
+import groovy.lang.Closure;
 import groovyx.net.http.fn.FunctionClosure;
 import org.junit.Before;
 import org.junit.Rule;
@@ -8,9 +9,9 @@ import org.mockserver.client.server.MockServerClient;
 import org.mockserver.junit.MockServerRule;
 import org.mockserver.model.HttpResponse;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +48,7 @@ public class JavaUsageTest {
 
     @Test
     public void head_request() throws Exception {
-        FunctionClosure<FromServer, Object> successFunction = new FunctionClosure<FromServer, Object>() {
+        Closure<Object> successFunction = new FunctionClosure<FromServer, Object>() {
             @Override
             public Object apply(final FromServer from) {
                 assertFalse(from.getHasBody());
@@ -71,6 +72,24 @@ public class JavaUsageTest {
         });
 
         headers = (List<FromServer.Header>) future.get();
+
+        assertEquals(3, headers.size());
+        assertEquals(headers.get(0).toString(), "Content-Type: text/plain");
+        assertEquals(headers.get(1).toString(), "Content-Length: 0");
+        assertEquals(headers.get(2).toString(), "Connection: keep-alive");
+    }
+
+    @Test
+    public void head_request_with_raw_function() throws Exception {
+        Function<FromServer, Object> successFunction = from -> {
+            assertFalse(from.getHasBody());
+            return from.getHeaders();
+        };
+
+        List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
+            config.getRequest().getUri().setPath("/foo");
+            config.getResponse().success(successFunction);
+        });
 
         assertEquals(3, headers.size());
         assertEquals(headers.get(0).toString(), "Content-Type: text/plain");

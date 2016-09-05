@@ -16,6 +16,8 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+import groovy.time.BaseDuration;
+import groovyx.net.http.fn.FunctionClosureAdapter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +28,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Provides the public interface used for the {@link HttpBuilder} shared and per-verb configuration.
@@ -35,20 +38,12 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-    enum Status {
-        SUCCESS, FAILURE
-    }
-
-    ;
+    enum Status { SUCCESS, FAILURE };
 
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-    enum AuthType {
-        BASIC, DIGEST
-    }
-
-    ;
+    enum AuthType { BASIC, DIGEST };
 
     /**
      *  Defines the configurable HTTP request authentication properties.
@@ -544,6 +539,15 @@ public interface HttpConfig {
         void when(Status status, Closure<?> closure);
 
         /**
+         * FIXME: document
+         * @param status
+         * @param function
+         */
+        default void when(Status status, Function<FromServer, Object> function){
+            when(status, (Closure<?>) new FunctionClosureAdapter<>(function));
+        }
+
+        /**
          * Configures the execution of the provided closure "when" the given status code occurs in the response. The `closure` will be called with an instance
          * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
          * the closure to modify the captured response.
@@ -568,6 +572,13 @@ public interface HttpConfig {
         void when(Integer code, Closure<?> closure);
 
         /**
+         * FIXME: document
+         */
+        default void when(Integer code, Function<FromServer,?> function){
+            when(code, (Closure<?>)new FunctionClosureAdapter<>(function));
+        }
+
+        /**
          * Configures the execution of the provided closure "when" the given status code (as a String) occurs in the response. The `closure` will be
          * called with an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value
          * of the request; this allows the closure to modify the captured response.
@@ -590,6 +601,13 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         void when(String code, Closure<?> closure);
+
+        /**
+         * FIXME: document
+         */
+        default void when(String code, Function<FromServer,?> function){
+            when(code, (Closure<?>)new FunctionClosureAdapter<>(function));
+        }
 
         /**
          * Used to retrieve the "when" closure associated with the given status code.
@@ -625,6 +643,14 @@ public interface HttpConfig {
         void success(Closure<?> closure);
 
         /**
+         * FIXME: document
+         * @param function
+         */
+        default void success(Function<FromServer,?> function){
+            success((Closure<?>) new FunctionClosureAdapter<>(function));
+        }
+
+        /**
          * Configures the execution of the provided closure "when" a failure response is received (code >= 400). The `closure` will be called with
          * an instance of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request;
          * this allows the closure to modify the captured response.
@@ -648,6 +674,14 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         void failure(Closure<?> closure);
+
+        /**
+         * FIXME: document
+         * @param function
+         */
+        default void failure(Function<FromServer,?> function){
+            failure((Closure<?>) new FunctionClosureAdapter<>(function));
+        }
 
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
