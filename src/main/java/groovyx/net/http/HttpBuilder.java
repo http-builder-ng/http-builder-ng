@@ -24,6 +24,7 @@ import java.util.EnumMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -164,12 +165,39 @@ public abstract class HttpBuilder implements Closeable {
         return factory.apply(impl);
     }
 
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
-        closure.setDelegate(myConfig);
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
-        return myConfig;
+    /**
+     * Creates an `HttpBuilder` using the `defaultFactory` instance configured with the provided configuration closure.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * FIXME: document
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
+        return configure(factory, configuration);
+    }
+
+    /**
+     * FIXME: document
+     *
+     * @param factory
+     * @param configuration
+     * @return
+     */
+    public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory, final Consumer<HttpObjectConfig> configuration) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
+        configuration.accept(impl);
+
+        return factory.apply(impl);
     }
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
@@ -221,6 +249,18 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> T get(final Class<T> type, final Consumer<HttpConfig> configuration){
+        return type.cast(get(configuration));
+    }
+
+    /**
      * Executes an asynchronous GET request on the configured URI (asynchronous alias to the `get()` method. The `request.uri` property should be
      * configured in the global client configuration in order to have a target for the request.
      *
@@ -264,6 +304,16 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param configuration
+     * @return
+     */
+    public CompletableFuture<Object> getAsync(final Consumer<HttpConfig> configuration){
+        return CompletableFuture.supplyAsync(() -> get(configuration), getExecutor());
+    }
+
+    /**
      * Executes asynchronous GET request on the configured URI (alias for the `get(Class, Closure)` method), with additional configuration provided by
      * the configuration closure. The result will be cast to the specified `type`.
      *
@@ -286,6 +336,18 @@ public abstract class HttpBuilder implements Closeable {
      */
     public <T> CompletableFuture<T> getAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> get(type, closure), getExecutor());
+    }
+
+    /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> CompletableFuture<T> getAsync(final Class<T> type, final Consumer<HttpConfig> configuration){
+        return CompletableFuture.supplyAsync(() -> get(type, configuration), getExecutor());
     }
 
     /**
@@ -334,6 +396,18 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> T head(final Class<T> type, final Consumer<HttpConfig> configuration){
+        return type.cast(head(configuration));
+    }
+
+    /**
      * Executes an asynchronous HEAD request on the configured URI (asynchronous alias to the `head()` method. The `request.uri` property should be
      * configured in the global client configuration in order to have a target for the request.
      *
@@ -379,6 +453,16 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param configuration
+     * @return
+     */
+    public CompletableFuture<Object> headAsync(final Consumer<HttpConfig> configuration){
+        return CompletableFuture.supplyAsync(() -> head(configuration), getExecutor());
+    }
+
+    /**
      * Executes an asynchronous HEAD request on the configured URI (asynchronous alias to the `head(Class,Closure)` method), with additional
      * configuration provided by the configuration closure. The result will be cast to the specified `type`. A response to a HEAD request contains no
      * data; however, the `response.when()` methods may provide data based on response headers, which will be cast to the specified type.
@@ -404,6 +488,18 @@ public abstract class HttpBuilder implements Closeable {
      */
     public <T> CompletableFuture<T> headAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
         return CompletableFuture.supplyAsync(() -> head(type, closure), getExecutor());
+    }
+
+    /**
+     * FIXME: document
+     *
+     * @param type
+     * @param configuration
+     * @param <T>
+     * @return
+     */
+    public <T> CompletableFuture<T> headAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> head(type, configuration), getExecutor());
     }
 
     /**
@@ -780,6 +876,16 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * FIXME: document
+     *
+     * @param configuration
+     * @return
+     */
+    public Object get(final Consumer<HttpConfig> configuration){
+        return interceptors.get(HttpVerb.GET).apply(configureRequest(configuration), this::doGet);
+    }
+
+    /**
      * Executes a HEAD request on the configured URI, with additional configuration provided by the configuration closure.
      *
      * [source,groovy]
@@ -799,6 +905,16 @@ public abstract class HttpBuilder implements Closeable {
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
         return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);
+    }
+
+    /**
+     * FIXME: document
+     *
+     * @param configuration
+     * @return
+     */
+    public Object head(final Consumer<HttpConfig> configuration){
+        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(configuration), this::doHead);
     }
 
     /**
@@ -884,4 +1000,18 @@ public abstract class HttpBuilder implements Closeable {
     protected abstract ChainedHttpConfig getObjectConfig();
 
     public abstract Executor getExecutor();
+
+    private ChainedHttpConfig configureRequest(final Closure closure) {
+        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
+        closure.setDelegate(myConfig);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return myConfig;
+    }
+
+    private ChainedHttpConfig configureRequest(final Consumer<HttpConfig> configuration) {
+        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
+        configuration.accept(myConfig);
+        return myConfig;
+    }
 }
