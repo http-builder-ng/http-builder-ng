@@ -89,10 +89,10 @@ class HttpConfigTest extends Specification {
         end.request.actualCharset() == charset;
         end.request.uri.toURI() == myURI;
 
-        end.response.actualAction(200) == success;
-        end.response.actualAction(400) == failure;
-        end.response.actualAction(404) == on404;
-        intermediate.response.actualAction(404) == failure;
+        end.response.actualAction(200).closure == success;
+        end.response.actualAction(400).closure == failure;
+        end.response.actualAction(404).closure == on404;
+        intermediate.response.actualAction(404).closure == failure;
     }
 
     def Script() {

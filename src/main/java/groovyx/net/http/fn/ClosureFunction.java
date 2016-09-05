@@ -3,6 +3,7 @@ package groovyx.net.http.fn;
 
 import groovy.lang.Closure;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -21,3 +22,4 @@ public class ClosureFunction<IN, OUT> implements Function<IN, OUT> {
         return closure.call(in);
     }
 }
+

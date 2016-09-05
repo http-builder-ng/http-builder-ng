@@ -16,3 +16,4 @@
 * opportunity to refactor/reduce after implementation
 * consider creating separate interfaces for Groovy vs Java config
 * consider pushing the function/closure adapters down into the API so that users dont need to explicitly use them
+ (see if I can get rid of any of the explicit closure calls without losing functionality)

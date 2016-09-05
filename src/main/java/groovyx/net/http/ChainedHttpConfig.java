@@ -83,7 +83,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
 
-        default Closure<?> actualAction(final Integer code) {
+        default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
         

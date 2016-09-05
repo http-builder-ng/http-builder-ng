@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,8 +16,7 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
-import groovy.time.BaseDuration;
-import groovyx.net.http.fn.FunctionClosureAdapter;
+import groovyx.net.http.fn.ClosureBiFunction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,7 +27,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Provides the public interface used for the {@link HttpBuilder} shared and per-verb configuration.
@@ -536,16 +534,16 @@ public interface HttpConfig {
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
-        void when(Status status, Closure<?> closure);
+        default void when(Status status, Closure<?> closure) {
+            when(status, new ClosureBiFunction<>(closure));
+        }
 
         /**
          * FIXME: document
          * @param status
          * @param function
          */
-        default void when(Status status, Function<FromServer, Object> function){
-            when(status, (Closure<?>) new FunctionClosureAdapter<>(function));
-        }
+        void when(Status status, BiFunction<FromServer, Object, ?> function);
 
         /**
          * Configures the execution of the provided closure "when" the given status code occurs in the response. The `closure` will be called with an instance
@@ -569,14 +567,14 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(Integer code, Closure<?> closure);
+        default void when(Integer code, Closure<?> closure) {
+            when(code, new ClosureBiFunction<>(closure));
+        }
 
         /**
          * FIXME: document
          */
-        default void when(Integer code, Function<FromServer,?> function){
-            when(code, (Closure<?>)new FunctionClosureAdapter<>(function));
-        }
+        void when(Integer code, BiFunction<FromServer, Object, ?> function);
 
         /**
          * Configures the execution of the provided closure "when" the given status code (as a String) occurs in the response. The `closure` will be
@@ -600,14 +598,14 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(String code, Closure<?> closure);
+        default void when(String code, Closure<?> closure) {
+            when(code, new ClosureBiFunction<>(closure));
+        }
 
         /**
          * FIXME: document
          */
-        default void when(String code, Function<FromServer,?> function){
-            when(code, (Closure<?>)new FunctionClosureAdapter<>(function));
-        }
+        void when(String code, BiFunction<FromServer, Object, ?> function);
 
         /**
          * Used to retrieve the "when" closure associated with the given status code.
@@ -615,7 +613,7 @@ public interface HttpConfig {
          * @param code the status code
          * @return the mapped closure
          */
-        Closure<?> when(Integer code);
+        BiFunction<FromServer, Object, ?> when(Integer code);
 
         /**
          * Configures the execution of the provided closure "when" a successful response is received (code < 400). The `closure` will be called with
@@ -640,15 +638,15 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void success(Closure<?> closure);
+        default void success(Closure<?> closure) {
+            success(new ClosureBiFunction<>(closure));
+        }
 
         /**
          * FIXME: document
          * @param function
          */
-        default void success(Function<FromServer,?> function){
-            success((Closure<?>) new FunctionClosureAdapter<>(function));
-        }
+        void success(BiFunction<FromServer, Object, ?> function);
 
         /**
          * Configures the execution of the provided closure "when" a failure response is received (code >= 400). The `closure` will be called with
@@ -673,15 +671,15 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void failure(Closure<?> closure);
+        default void failure(Closure<?> closure) {
+            failure(new ClosureBiFunction<>(closure));
+        }
 
         /**
          * FIXME: document
          * @param function
          */
-        default void failure(Function<FromServer,?> function){
-            failure((Closure<?>) new FunctionClosureAdapter<>(function));
-        }
+        void failure(BiFunction<FromServer, Object, ?> function);
 
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.

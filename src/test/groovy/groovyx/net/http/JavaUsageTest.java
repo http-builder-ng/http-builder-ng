@@ -11,7 +11,7 @@ import org.mockserver.model.HttpResponse;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
@@ -81,7 +81,7 @@ public class JavaUsageTest {
 
     @Test
     public void head_request_with_raw_function() throws Exception {
-        Function<FromServer, Object> successFunction = from -> {
+        BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
             assertFalse(from.getHasBody());
             return from.getHeaders();
         };
