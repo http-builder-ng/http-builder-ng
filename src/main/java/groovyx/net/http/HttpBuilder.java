@@ -196,7 +196,6 @@ public abstract class HttpBuilder implements Closeable {
     public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory, final Consumer<HttpObjectConfig> configuration) {
         HttpObjectConfig impl = new HttpObjectConfigImpl();
         configuration.accept(impl);
-
         return factory.apply(impl);
     }
 
