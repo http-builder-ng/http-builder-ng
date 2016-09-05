@@ -138,7 +138,7 @@ public class HttpConfigs {
             setCharset(Charset.forName(val));
         }
         
-        public void setUri(final String val) throws URISyntaxException {
+        public void setUri(final String val) {
             getUri().setFull(val);
         }
 
