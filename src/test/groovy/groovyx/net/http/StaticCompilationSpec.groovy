@@ -23,5 +23,7 @@ class StaticCompilationSpec extends Specification {
                 return o.toString();
             }
         }
+
+        // No checks needed - simply verifying compilation
     }
 }
