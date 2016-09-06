@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
@@ -21,8 +21,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -35,12 +35,20 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-<span class="nc" id="L38">    enum Status { SUCCESS, FAILURE };</span>
+<span class="nc" id="L38">    enum Status {</span>
+<span class="nc" id="L39">        SUCCESS, FAILURE</span>
+    }
+
+    ;
 
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-<span class="pc" id="L43">    enum AuthType { BASIC, DIGEST };</span>
+<span class="pc" id="L47">    enum AuthType {</span>
+<span class="fc" id="L48">        BASIC, DIGEST</span>
+    }
+
+    ;
 
     /**
      *  Defines the configurable HTTP request authentication properties.
@@ -72,8 +80,6 @@ public interface HttpConfig {
          * Configures the request to use BASIC authentication with the given `username` and `password`. The authentication will not be preemptive. This
          * method is an alias for calling: `basic(String, String, false)`.
          *
-         * TODO: what does &quot;preemptive&quot; mean in this case
-         *
          * [source,groovy]
          * ----
          * def http = HttpBuilder.configure {
@@ -86,13 +92,11 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void basic(String user, String password) {
-<span class="fc" id="L89">            basic(user, password, false);</span>
-<span class="fc" id="L90">        }</span>
+<span class="fc" id="L95">            basic(user, password, false);</span>
+<span class="fc" id="L96">        }</span>
 
         /**
          * Configures the request to use BASIC authentication with the given `username` and `password`.
-         *
-         * TODO: what does &quot;preemptive&quot; mean in this case
          *
          * [source,groovy]
          * ----
@@ -104,7 +108,7 @@ public interface HttpConfig {
          *
          * @param user the username
          * @param password the user's password
-         * @param preemptive whether or not this call is preemptive
+         * @param preemptive whether or not this call will override similar configuration in the chain
          */
         void basic(String user, String password, boolean preemptive);
 
@@ -124,13 +128,11 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void digest(String user, String password) {
-<span class="fc" id="L127">            digest(user, password, false);</span>
-<span class="fc" id="L128">        }</span>
+<span class="fc" id="L131">            digest(user, password, false);</span>
+<span class="fc" id="L132">        }</span>
 
         /**
          * Configures the request to use DIGEST authentication with the given information.
-         *
-         * TODO: what does &quot;preemptive&quot; mean in this case
          *
          * [source,groovy]
          * ----
@@ -142,7 +144,7 @@ public interface HttpConfig {
          *
          * @param user the username
          * @param password the user's password
-         * @param preemptive whether or not this call is preemptive
+         * @param preemptive whether or not this call will override similar configuration in the chain
          */
         void digest(String user, String password, boolean preemptive);
     }
@@ -396,13 +398,12 @@ public interface HttpConfig {
          *
          * @param values the accept header values as a List
          */
-        void setAccept(List&lt;String&gt; values);
+        void setAccept(Iterable&lt;String&gt; values);
 
         /**
          * The `body` property is used to configure the body content for the request. The request body content may be altered by configured encoders
-         * internally or may be passed on unmodified.
-         *
-         * FIXME: more details to be added
+         * internally or may be passed on unmodified. See {@link HttpConfig} and {@link HttpObjectConfig} for content-altering methods (encoders,
+         * decoders and interceptors).
          *
          * @param val the request body content
          */
@@ -428,8 +429,8 @@ public interface HttpConfig {
          * @param value the cookie value
          */
         default void cookie(String name, String value) {
-<span class="fc" id="L431">            cookie(name, value, null);</span>
-<span class="fc" id="L432">        }</span>
+<span class="fc" id="L432">            cookie(name, value, (Date) null);</span>
+<span class="fc" id="L433">        }</span>
 
         /**
          * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
@@ -459,7 +460,30 @@ public interface HttpConfig {
          */
         void cookie(String name, String value, Date expires);
 
-        // TODO: might be nice to have a cookie method that accepts java.time.DateTime
+        /**
+         * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
+         * an expiration date as {@link LocalDateTime}.
+         *
+         * [source,groovy]
+         * ----
+         * HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }.post {
+         *      request.uri.path = '/bar'
+         *      request.cookie 'last-page', 'item-list', LocalDateTime.now().plus(1, ChronoUnit.MONTHS)
+         * }
+         * ----
+         *
+         * WARNING: Cookies are additive, once a Cookie is defined (e.g. in the global configuration), you cannot overwrite it in per-verb configurations.
+         *
+         * As noted in the {@link groovyx.net.http.HttpObjectConfig.Client} configuration, the default Cookie version supported is `0`, but this may
+         * be modified.
+         *
+         * @param name the cookie name
+         * @param value the cookie value
+         * @param expires the cookie expiration date
+         */
+        void cookie(String name, String value, LocalDateTime expires);
 
         /**
          * Specifies the request encoder ({@link ToServer} instance) to be used when encoding the given content type.
@@ -475,7 +499,7 @@ public interface HttpConfig {
          * @param contentTypes the content types
          * @param val the request encoder (wrapped in a {@link BiConsumer} function)
          */
-        void encoder(List&lt;String&gt; contentTypes, BiConsumer&lt;ChainedHttpConfig, ToServer&gt; val);
+        void encoder(Iterable&lt;String&gt; contentTypes, BiConsumer&lt;ChainedHttpConfig, ToServer&gt; val);
 
         /**
          * Retrieves the request encoder ({@link ToServer} instance) for the specified content type wrapped in a {@link BiConsumer} function.
@@ -516,7 +540,7 @@ public interface HttpConfig {
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
-        void when(Status status, Closure&lt;Object&gt; closure);
+        void when(Status status, Closure&lt;?&gt; closure);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code occurs in the response. The `closure` will be called with an instance
@@ -540,7 +564,7 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(Integer code, Closure&lt;Object&gt; closure);
+        void when(Integer code, Closure&lt;?&gt; closure);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code (as a String) occurs in the response. The `closure` will be
@@ -564,7 +588,7 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(String code, Closure&lt;Object&gt; closure);
+        void when(String code, Closure&lt;?&gt; closure);
 
         /**
          * Used to retrieve the &quot;when&quot; closure associated with the given status code.
@@ -572,7 +596,7 @@ public interface HttpConfig {
          * @param code the status code
          * @return the mapped closure
          */
-        Closure&lt;Object&gt; when(Integer code);
+        Closure&lt;?&gt; when(Integer code);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a successful response is received (code &lt; 400). The `closure` will be called with
@@ -597,7 +621,7 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void success(Closure&lt;Object&gt; closure);
+        void success(Closure&lt;?&gt; closure);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a failure response is received (code &gt;= 400). The `closure` will be called with
@@ -622,7 +646,7 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void failure(Closure&lt;Object&gt; closure);
+        void failure(Closure&lt;?&gt; closure);
 
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
@@ -638,7 +662,7 @@ public interface HttpConfig {
          * @param contentTypes the contents type where the parser will be applied
          * @param val the parser wrapped in a function object
          */
-        void parser(List&lt;String&gt; contentTypes, BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; val);
+        void parser(Iterable&lt;String&gt; contentTypes, BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; val);
 
         /**
          * Used to retrieve the parser configured for the specified content type.
@@ -657,11 +681,11 @@ public interface HttpConfig {
     /**
      * FIXME: document
      */
-    default void context(final List&lt;String&gt; contentTypes, final Object id, final Object obj) {
-<span class="fc bfc" id="L661" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
-<span class="fc" id="L662">            context(contentType, id, obj);</span>
-<span class="fc" id="L663">        }</span>
-<span class="fc" id="L664">    }</span>
+    default void context(final Iterable&lt;String&gt; contentTypes, final Object id, final Object obj) {
+<span class="fc bfc" id="L685" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
+<span class="fc" id="L686">            context(contentType, id, obj);</span>
+<span class="fc" id="L687">        }</span>
+<span class="fc" id="L688">    }</span>
 
     /**
      * Used to retrieve configuration information about the HTTP request.

@@ -85,12 +85,12 @@ import static groovyx.net.http.HttpConfigs.root;
         }
 
         public void interceptor(final HttpVerb verb, final BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt; func) {
-<span class="nc bnc" id="L88" title="All 2 branches missed.">            if(func == null) {</span>
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if(func == null) {</span>
 <span class="nc" id="L89">                throw new NullPointerException(&quot;func cannot be null&quot;);</span>
             }
             
-<span class="nc" id="L92">            interceptors.put(verb, func);</span>
-<span class="nc" id="L93">        }</span>
+<span class="fc" id="L92">            interceptors.put(verb, func);</span>
+<span class="fc" id="L93">        }</span>
 
         public void interceptor(final HttpVerb[] verbs, final BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt; func) {
 <span class="fc bfc" id="L96" title="All 2 branches covered.">            for(HttpVerb verb : verbs) {</span>

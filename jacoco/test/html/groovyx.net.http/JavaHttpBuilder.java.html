@@ -133,7 +133,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 <span class="fc" id="L133">            final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());</span>
             try {
 <span class="fc" id="L135">                final BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; parser = requestConfig.findParser(fromServer.getContentType());</span>
-<span class="fc" id="L136">                final Closure&lt;Object&gt; action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());</span>
+<span class="fc" id="L136">                final Closure&lt;?&gt; action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());</span>
 <span class="fc bfc" id="L137" title="All 2 branches covered.">                if(fromServer.getHasBody()) {</span>
 <span class="fc" id="L138">                    final Object o = parser.apply(requestConfig, fromServer);</span>
 <span class="fc" id="L139">                    return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));</span>

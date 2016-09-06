@@ -61,7 +61,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 <span class="fc" id="L61">                    return ret;</span>
                 }
                 else {
-<span class="fc" id="L64">                    return cr.encoder(ContentTypes.ANY.get(0));</span>
+<span class="fc" id="L64">                    return cr.encoder(ContentTypes.ANY.getAt(0));</span>
                 }
             };
             
@@ -83,7 +83,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
 
-        default Closure&lt;Object&gt; actualAction(final Integer code) {
+        default Closure&lt;?&gt; actualAction(final Integer code) {
 <span class="fc" id="L87">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.when(code), Traverser::notNull);</span>
         }
         
@@ -94,7 +94,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 <span class="fc" id="L94">                    return ret;</span>
                 }
                 else {
-<span class="fc" id="L97">                    return cr.parser(ContentTypes.ANY.get(0));</span>
+<span class="fc" id="L97">                    return cr.parser(ContentTypes.ANY.getAt(0));</span>
                 }
             };
 
@@ -106,7 +106,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     
     default Object actualContext(final String contentType, final Object id) {
 <span class="fc" id="L108">        final Map.Entry&lt;String,Object&gt; key = new AbstractMap.SimpleImmutableEntry(contentType, id);</span>
-<span class="fc" id="L109">        final Map.Entry&lt;String,Object&gt; anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.get(0), id);</span>
+<span class="fc" id="L109">        final Map.Entry&lt;String,Object&gt; anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.getAt(0), id);</span>
         
 <span class="fc" id="L111">        final Function&lt;ChainedHttpConfig,Object&gt; theValue = (config) -&gt; {</span>
 <span class="fc" id="L112">            Object ctx = config.getContextMap().get(key);</span>
@@ -148,7 +148,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 <span class="fc" id="L148">        return contentType;</span>
     }
 
-    static Object[] closureArgs(final Closure&lt;Object&gt; closure, final FromServer fromServer, final Object o) {
+    static Object[] closureArgs(final Closure&lt;?&gt; closure, final FromServer fromServer, final Object o) {
 <span class="fc" id="L152">        final int size = closure.getMaximumNumberOfParameters();</span>
 <span class="fc" id="L153">        final Object[] args = new Object[size];</span>
 <span class="fc bfc" id="L154" title="All 2 branches covered.">        if(size &gt;= 1) {</span>
