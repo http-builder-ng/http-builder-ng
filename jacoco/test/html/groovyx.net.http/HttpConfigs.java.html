@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../resources/report.css" type="text/css"/><link rel="shortcut icon" href="../resources/report.gif" type="image/gif"/><title>HttpConfigs.java</title><link rel="stylesheet" href="../resources/prettify.css" type="text/css"/><script type="text/javascript" src="../resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpConfigs.java</span></div><h1>HttpConfigs.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import groovy.lang.GroovyShell;
+import groovy.transform.TypeChecked;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import static groovyx.net.http.ChainedHttpConfig.*;
+import static groovyx.net.http.Safe.*;
+import groovyx.net.http.optional.*;
+
+<span class="nc" id="L48">public class HttpConfigs {</span>
+
+<span class="fc" id="L50">    public static class BasicAuth implements Auth {</span>
+        private String user;
+        private String password;
+        private boolean preemptive;
+        private AuthType authType;
+        
+        public void basic(final String user, final String password, final boolean preemptive) {
+<span class="fc" id="L57">            this.user = user;</span>
+<span class="fc" id="L58">            this.password = password;</span>
+<span class="fc" id="L59">            this.preemptive = preemptive;</span>
+<span class="fc" id="L60">            this.authType = AuthType.BASIC;</span>
+<span class="fc" id="L61">        }</span>
+
+        public void digest(final String user, final String password, final boolean preemptive) {
+<span class="fc" id="L64">            basic(user, password, preemptive);</span>
+<span class="fc" id="L65">            this.authType = AuthType.DIGEST;</span>
+<span class="fc" id="L66">        }</span>
+
+        public String getUser() {
+<span class="fc" id="L69">            return user;</span>
+        }
+
+        public String getPassword() {
+<span class="fc" id="L73">            return password;</span>
+        }
+
+        public AuthType getAuthType() {
+<span class="fc" id="L77">            return authType;</span>
+        }
+    }
+
+    public static class ThreadSafeAuth implements Auth {
+        volatile String user;
+        volatile String password;
+        volatile boolean preemptive;
+        volatile AuthType authType;
+        
+<span class="fc" id="L87">        public ThreadSafeAuth() { }</span>
+
+<span class="nc" id="L89">        public ThreadSafeAuth(final BasicAuth toCopy) {</span>
+<span class="nc" id="L90">            this.user = toCopy.user;</span>
+<span class="nc" id="L91">            this.password = toCopy.password;</span>
+<span class="nc" id="L92">            this.preemptive = toCopy.preemptive;</span>
+<span class="nc" id="L93">            this.authType = toCopy.authType;</span>
+<span class="nc" id="L94">        }</span>
+        
+        public void basic(final String user, final String password, final boolean preemptive) {
+<span class="nc" id="L97">            this.user = user;</span>
+<span class="nc" id="L98">            this.password = password;</span>
+<span class="nc" id="L99">            this.preemptive = preemptive;</span>
+<span class="nc" id="L100">            this.authType = AuthType.BASIC;</span>
+<span class="nc" id="L101">        }</span>
+
+        public void digest(final String user, final String password, final boolean preemptive) {
+<span class="nc" id="L104">            basic(user, password, preemptive);</span>
+<span class="nc" id="L105">            this.authType = AuthType.DIGEST;</span>
+<span class="nc" id="L106">        }</span>
+
+        public String getUser() {
+<span class="nc" id="L109">            return user;</span>
+        }
+
+        public String getPassword() {
+<span class="nc" id="L113">            return password;</span>
+        }
+
+        public AuthType getAuthType() {
+<span class="fc" id="L117">            return authType;</span>
+        }
+    }
+
+    public static abstract class BaseRequest implements ChainedRequest {
+
+        final ChainedRequest parent;
+
+<span class="fc" id="L125">        public BaseRequest(final ChainedRequest parent) {</span>
+<span class="fc" id="L126">            this.parent = parent;</span>
+<span class="fc" id="L127">        }</span>
+
+        public ChainedRequest getParent() {
+<span class="fc" id="L130">            return parent;</span>
+        }
+
+        public void setCharset(final String val) {
+<span class="nc" id="L134">            setCharset(Charset.forName(val));</span>
+<span class="nc" id="L135">        }</span>
+        
+        public void setUri(final String val) throws URISyntaxException {
+<span class="fc" id="L138">            getUri().setFull(val);</span>
+<span class="fc" id="L139">        }</span>
+
+        public void setUri(final URI val) {
+<span class="fc" id="L142">            getUri().setFull(val);</span>
+<span class="fc" id="L143">        }</span>
+
+        public void setUri(final URL val) throws URISyntaxException {
+<span class="nc" id="L146">            getUri().setFull(val.toURI());</span>
+<span class="nc" id="L147">        }</span>
+
+        public BiConsumer&lt;ChainedHttpConfig,ToServer&gt; encoder(final String contentType) {
+<span class="fc" id="L150">            final BiConsumer&lt;ChainedHttpConfig,ToServer&gt; enc =  getEncoderMap().get(contentType);</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">            return enc != null ? enc : null;</span>
+        }
+        
+        public void encoder(final String contentType, final BiConsumer&lt;ChainedHttpConfig,ToServer&gt; val) {
+<span class="fc" id="L155">            getEncoderMap().put(contentType, val);</span>
+<span class="fc" id="L156">        }</span>
+        
+        public void encoder(final List&lt;String&gt; contentTypes, final BiConsumer&lt;ChainedHttpConfig,ToServer&gt; val) {
+<span class="fc bfc" id="L159" title="All 2 branches covered.">            for(String contentType : contentTypes) {</span>
+<span class="fc" id="L160">                encoder(contentType, val);</span>
+<span class="fc" id="L161">            }</span>
+<span class="fc" id="L162">        }</span>
+
+        public void setAccept(final String[] values) {
+<span class="nc" id="L165">            getHeaders().put(&quot;Accept&quot;, String.join(&quot;;&quot;, values));</span>
+<span class="nc" id="L166">        }</span>
+
+        public void setAccept(final List&lt;String&gt; values) {
+<span class="fc" id="L169">            getHeaders().put(&quot;Accept&quot;, String.join(&quot;;&quot;, values));</span>
+<span class="fc" id="L170">        }</span>
+
+        public void setHeaders(final Map&lt;String,String&gt; toAdd) {
+<span class="fc" id="L173">            final Map&lt;String,String&gt; h = getHeaders();</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">            for(Map.Entry&lt;String,String&gt; entry : toAdd.entrySet()) {</span>
+<span class="fc" id="L175">                h.put(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L176">            }</span>
+<span class="fc" id="L177">        }</span>
+
+        public void cookie(final String name, final String value, final Date date) {
+<span class="fc" id="L180">            getCookies().add(new Cookie(name, value, date));</span>
+<span class="fc" id="L181">        }</span>
+    }
+
+    public static class BasicRequest extends BaseRequest {
+        private String contentType;
+        private Charset charset;
+        private UriBuilder uriBuilder;
+<span class="fc" id="L188">        private final Map&lt;String,String&gt; headers = new LinkedHashMap&lt;&gt;();</span>
+        private Object body;
+<span class="fc" id="L190">        private final Map&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; encoderMap = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L191">        private BasicAuth auth = new BasicAuth();</span>
+<span class="fc" id="L192">        private List&lt;Cookie&gt; cookies = new ArrayList(1);</span>
+        
+        protected BasicRequest(ChainedRequest parent) {
+<span class="fc" id="L195">            super(parent);</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">            this.uriBuilder = (parent == null) ? UriBuilder.basic(null) : UriBuilder.basic(parent.getUri());</span>
+<span class="fc" id="L197">        }</span>
+
+        public Map&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; getEncoderMap() {
+<span class="fc" id="L200">            return encoderMap;</span>
+        }
+
+        public List&lt;Cookie&gt; getCookies() {
+<span class="fc" id="L204">            return cookies;</span>
+        }
+        
+        public String getContentType() {
+<span class="fc" id="L208">            return contentType;</span>
+        }
+        
+        public void setContentType(final String val) {
+<span class="fc" id="L212">            this.contentType = val;</span>
+<span class="fc" id="L213">        }</span>
+
+        public void setCharset(final Charset val) {
+<span class="fc" id="L216">            this.charset = val;</span>
+<span class="fc" id="L217">        }</span>
+
+        public Charset getCharset() {
+<span class="fc" id="L220">            return charset;</span>
+        }
+        
+        public UriBuilder getUri() {
+<span class="fc" id="L224">            return uriBuilder;</span>
+        }
+        
+        public Map&lt;String,String&gt; getHeaders() {
+<span class="fc" id="L228">            return headers;</span>
+        }
+        
+        public Object getBody() {
+<span class="fc" id="L232">            return body;</span>
+        }
+        
+        public void setBody(Object val) {
+<span class="fc" id="L236">            this.body = val;</span>
+<span class="fc" id="L237">        }</span>
+
+        public BasicAuth getAuth() {
+<span class="fc" id="L240">            return auth;</span>
+        }
+    }
+    
+    public static class ThreadSafeRequest extends BaseRequest {
+        
+        private volatile String contentType;
+        private volatile Charset charset;
+        private volatile UriBuilder uriBuilder;
+<span class="fc" id="L249">        private final ConcurrentMap&lt;String,String&gt; headers = new ConcurrentHashMap&lt;&gt;();</span>
+        private volatile Object body;
+<span class="fc" id="L251">        private final ConcurrentMap&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; encoderMap = new ConcurrentHashMap&lt;&gt;();</span>
+        private final ThreadSafeAuth auth;
+<span class="fc" id="L253">        private final List&lt;Cookie&gt; cookies = new CopyOnWriteArrayList();</span>
+
+        public ThreadSafeRequest(final ChainedRequest parent) {
+<span class="fc" id="L256">            super(parent);</span>
+<span class="fc" id="L257">            this.auth = new ThreadSafeAuth();</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">            this.uriBuilder = (parent == null) ? UriBuilder.threadSafe(null) : UriBuilder.threadSafe(parent.getUri());</span>
+<span class="fc" id="L259">        }</span>
+
+        public List&lt;Cookie&gt; getCookies() {
+<span class="fc" id="L262">            return cookies;</span>
+        }
+        
+        public Map&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; getEncoderMap() {
+<span class="fc" id="L266">            return encoderMap;</span>
+        }
+
+        public String getContentType() {
+<span class="fc" id="L270">            return contentType;</span>
+        }
+        
+        public void setContentType(final String val) {
+<span class="fc" id="L274">            this.contentType = val;</span>
+<span class="fc" id="L275">        }</span>
+
+        public Charset getCharset() {
+<span class="fc" id="L278">            return charset;</span>
+        }
+        
+        public void setCharset(final Charset val) {
+<span class="fc" id="L282">            this.charset = val;</span>
+<span class="fc" id="L283">        }</span>
+        
+        public UriBuilder getUri() {
+<span class="fc" id="L286">            return uriBuilder;</span>
+        }
+        
+        public Map&lt;String,String&gt; getHeaders() {
+<span class="fc" id="L290">            return headers;</span>
+        }
+        
+        public Object getBody() {
+<span class="fc" id="L294">            return body;</span>
+        }
+        
+        public void setBody(Object val) {
+<span class="fc" id="L298">            this.body = val;</span>
+<span class="fc" id="L299">        }</span>
+
+        public ThreadSafeAuth getAuth() {
+<span class="fc" id="L302">            return auth;</span>
+        }
+    }
+
+    public static abstract class BaseResponse implements ChainedResponse {
+
+        abstract protected Map&lt;Integer,Closure&lt;Object&gt;&gt; getByCode();
+        abstract protected Closure&lt;Object&gt; getSuccess();
+        abstract protected Closure&lt;Object&gt; getFailure();
+        abstract protected Map&lt;String,BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; getParserMap();
+        
+        private final ChainedResponse parent;
+
+        public ChainedResponse getParent() {
+<span class="fc" id="L316">            return parent;</span>
+        }
+
+<span class="fc" id="L319">        protected BaseResponse(final ChainedResponse parent) {</span>
+<span class="fc" id="L320">            this.parent = parent;</span>
+<span class="fc" id="L321">        }</span>
+        
+        public void when(String code, Closure&lt;Object&gt; closure) {
+<span class="fc" id="L324">            when(Integer.valueOf(code), closure);</span>
+<span class="fc" id="L325">        }</span>
+        
+        public void when(Integer code, Closure&lt;Object&gt; closure) {
+<span class="fc" id="L328">            getByCode().put(code, closure);</span>
+<span class="fc" id="L329">        }</span>
+        
+        public void when(final HttpConfig.Status status, Closure&lt;Object&gt; closure) {
+<span class="nc bnc" id="L332" title="All 2 branches missed.">            if(status == HttpConfig.Status.SUCCESS) {</span>
+<span class="nc" id="L333">                success(closure);</span>
+            }
+            else {
+<span class="nc" id="L336">                failure(closure);</span>
+            }
+<span class="nc" id="L338">        }</span>
+
+        public Closure&lt;Object&gt; when(final Integer code) {
+<span class="fc bfc" id="L341" title="All 2 branches covered.">            if(getByCode().containsKey(code)) {</span>
+<span class="fc" id="L342">                return getByCode().get(code);</span>
+            }
+            
+<span class="fc bfc" id="L345" title="All 4 branches covered.">            if(code &lt; 400 &amp;&amp; getSuccess() != null) {</span>
+<span class="fc" id="L346">                return getSuccess();</span>
+            }
+            
+<span class="fc bfc" id="L349" title="All 4 branches covered.">            if(code &gt;= 400 &amp;&amp; getFailure() != null) {</span>
+<span class="fc" id="L350">                return getFailure();</span>
+            }
+
+<span class="fc" id="L353">            return null;</span>
+        }
+        
+        public BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; parser(final String contentType) {
+<span class="fc" id="L357">            final BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; p = getParserMap().get(contentType);</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">            return p != null ? p : null;</span>
+        }
+        
+        public void parser(final String contentType, BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; val) {
+<span class="fc" id="L362">            getParserMap().put(contentType, val);</span>
+<span class="fc" id="L363">        }</span>
+        
+        public void parser(final List&lt;String&gt; contentTypes, BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; val) {
+<span class="fc bfc" id="L366" title="All 2 branches covered.">            for(String contentType : contentTypes) {</span>
+<span class="fc" id="L367">                parser(contentType, val);</span>
+<span class="fc" id="L368">            }</span>
+<span class="fc" id="L369">        }</span>
+    }
+
+    public static class BasicResponse extends BaseResponse {
+<span class="fc" id="L373">        private final Map&lt;Integer,Closure&lt;Object&gt;&gt; byCode = new LinkedHashMap&lt;&gt;();</span>
+        private Closure&lt;Object&gt; successHandler;
+        private Closure&lt;Object&gt; failureHandler;
+<span class="fc" id="L376">        private final Map&lt;String,BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; parserMap = new LinkedHashMap&lt;&gt;();</span>
+
+        protected BasicResponse(final ChainedResponse parent) {
+<span class="fc" id="L379">            super(parent);</span>
+<span class="fc" id="L380">        }</span>
+        
+        public Map&lt;String,BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; getParserMap() {
+<span class="fc" id="L383">            return parserMap;</span>
+        }
+        
+        protected Map&lt;Integer,Closure&lt;Object&gt;&gt; getByCode() {
+<span class="fc" id="L387">            return byCode;</span>
+        }
+
+        protected Closure&lt;Object&gt; getSuccess() {
+<span class="fc" id="L391">            return successHandler;</span>
+        }
+        
+        protected Closure&lt;Object&gt; getFailure() {
+<span class="fc" id="L395">            return failureHandler;</span>
+        }
+
+        public void success(final Closure&lt;Object&gt; val) {
+<span class="fc" id="L399">            successHandler = val;</span>
+<span class="fc" id="L400">        }</span>
+
+        public void failure(final Closure&lt;Object&gt; val) {
+<span class="fc" id="L403">            failureHandler = val;</span>
+<span class="fc" id="L404">        }</span>
+    }
+
+    public static class ThreadSafeResponse extends BaseResponse {
+<span class="fc" id="L408">        private final ConcurrentMap&lt;String,BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; parserMap = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L409">        private final ConcurrentMap&lt;Integer,Closure&lt;Object&gt;&gt; byCode = new ConcurrentHashMap&lt;&gt;();</span>
+        private volatile Closure&lt;Object&gt; successHandler;
+        private volatile Closure&lt;Object&gt; failureHandler;
+
+        public ThreadSafeResponse(final ChainedResponse parent) {
+<span class="fc" id="L414">            super(parent);</span>
+<span class="fc" id="L415">        }</span>
+
+        protected Map&lt;String,BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; getParserMap() {
+<span class="fc" id="L418">            return parserMap;</span>
+        }
+        
+        protected Map&lt;Integer,Closure&lt;Object&gt;&gt; getByCode() {
+<span class="fc" id="L422">            return byCode;</span>
+        }
+
+        protected Closure&lt;Object&gt; getSuccess() {
+<span class="fc" id="L426">            return successHandler;</span>
+        }
+        
+        protected Closure&lt;Object&gt; getFailure() {
+<span class="fc" id="L430">            return failureHandler;</span>
+        }
+
+        public void success(final Closure&lt;Object&gt; val) {
+<span class="fc" id="L434">            successHandler = val;</span>
+<span class="fc" id="L435">        }</span>
+
+        public void failure(final Closure&lt;Object&gt; val) {
+<span class="fc" id="L438">            failureHandler = val;</span>
+<span class="fc" id="L439">        }</span>
+    }
+
+    public abstract static class BaseHttpConfig implements ChainedHttpConfig {
+
+        private final ChainedHttpConfig parent;
+
+<span class="fc" id="L446">        public BaseHttpConfig(ChainedHttpConfig parent) {</span>
+<span class="fc" id="L447">            this.parent = parent;</span>
+<span class="fc" id="L448">        }</span>
+
+        public ChainedHttpConfig getParent() {
+<span class="nc" id="L451">            return parent;</span>
+        }
+        
+        public ChainedHttpConfig configure(final String scriptClassPath) {
+<span class="fc" id="L455">            final CompilerConfiguration compilerConfig = new CompilerConfiguration();</span>
+<span class="fc" id="L456">            final ImportCustomizer icustom = new ImportCustomizer();</span>
+<span class="fc" id="L457">            icustom.addImports(&quot;groovyx.net.http.NativeHandlers&quot;);</span>
+<span class="fc" id="L458">            icustom.addStaticStars(&quot;groovyx.net.http.ContentTypes&quot;);</span>
+<span class="fc" id="L459">            final Map&lt;String,String&gt; map = Collections.singletonMap(&quot;extensions&quot;, TYPE_CHECKING_SCRIPT);</span>
+<span class="fc" id="L460">            final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(map, TypeChecked.class);</span>
+<span class="fc" id="L461">            compilerConfig.addCompilationCustomizers(icustom, ast);</span>
+<span class="fc" id="L462">            final GroovyShell shell = new GroovyShell(getClass().getClassLoader(), compilerConfig);</span>
+<span class="fc" id="L463">            shell.setVariable(&quot;request&quot;, getRequest());</span>
+<span class="fc" id="L464">            shell.setVariable(&quot;response&quot;, getResponse());</span>
+            
+<span class="pc" id="L466">            try(final InputStream is = getClass().getClassLoader().getResourceAsStream(scriptClassPath)) {</span>
+<span class="fc" id="L467">                final InputStreamReader reader = new InputStreamReader(is);</span>
+<span class="fc" id="L468">                shell.evaluate(reader);</span>
+<span class="fc" id="L469">                return this;</span>
+<span class="pc bpc" id="L470" title="6 of 8 branches missed.">            }</span>
+<span class="nc" id="L471">            catch(IOException ioe) {</span>
+<span class="nc" id="L472">                throw new RuntimeException();</span>
+            }
+        }
+
+        public ChainedHttpConfig config(@DelegatesTo(HttpConfig.class) final Closure closure) {
+<span class="fc" id="L477">            closure.setDelegate(this);</span>
+<span class="fc" id="L478">            closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L479">            closure.call();</span>
+<span class="fc" id="L480">            return this;</span>
+        }
+
+        public void context(final String contentType, final Object id, final Object obj) {
+<span class="fc" id="L484">            getContextMap().put(new AbstractMap.SimpleImmutableEntry&lt;&gt;(contentType, id), obj);</span>
+<span class="fc" id="L485">        }</span>
+    }
+    
+    public static class ThreadSafeHttpConfig extends BaseHttpConfig {
+        private final ThreadSafeRequest request;
+        private final ThreadSafeResponse response;
+<span class="fc" id="L491">        private final ConcurrentMap&lt;Map.Entry&lt;String,Object&gt;,Object&gt; contextMap = new ConcurrentHashMap&lt;&gt;();</span>
+        
+        public ThreadSafeHttpConfig(final ChainedHttpConfig parent) {
+<span class="fc" id="L494">            super(parent);</span>
+<span class="fc bfc" id="L495" title="All 2 branches covered.">            if(parent == null) {</span>
+<span class="fc" id="L496">                this.request = new ThreadSafeRequest(null);</span>
+<span class="fc" id="L497">                this.response = new ThreadSafeResponse(null);</span>
+            }
+            else {
+<span class="fc" id="L500">                this.request = new ThreadSafeRequest(parent.getChainedRequest());</span>
+<span class="fc" id="L501">                this.response = new ThreadSafeResponse(parent.getChainedResponse());</span>
+            }
+<span class="fc" id="L503">        }</span>
+
+        public Request getRequest() {
+<span class="fc" id="L506">            return request;</span>
+        }
+
+        public Response getResponse() {
+<span class="fc" id="L510">            return response;</span>
+        }
+
+        public ChainedRequest getChainedRequest() {
+<span class="fc" id="L514">            return request;</span>
+        }
+
+        public ChainedResponse getChainedResponse() {
+<span class="fc" id="L518">            return response;</span>
+        }
+
+        public Map&lt;Map.Entry&lt;String,Object&gt;,Object&gt; getContextMap() {
+<span class="fc" id="L522">            return contextMap;</span>
+        }
+    }
+
+    public static class BasicHttpConfig extends BaseHttpConfig {
+        private final BasicRequest request;
+        private final BasicResponse response;
+<span class="fc" id="L529">        private final Map&lt;Map.Entry&lt;String,Object&gt;,Object&gt; contextMap = new LinkedHashMap&lt;&gt;(1);</span>
+        
+        public BasicHttpConfig(final ChainedHttpConfig parent) {
+<span class="fc" id="L532">            super(parent);</span>
+<span class="fc bfc" id="L533" title="All 2 branches covered.">            if(parent == null) {</span>
+<span class="fc" id="L534">                this.request = new BasicRequest(null);</span>
+<span class="fc" id="L535">                this.response = new BasicResponse(null);</span>
+            }
+            else {
+<span class="fc" id="L538">                this.request = new BasicRequest(parent.getChainedRequest());</span>
+<span class="fc" id="L539">                this.response = new BasicResponse(parent.getChainedResponse());</span>
+            }
+<span class="fc" id="L541">        }</span>
+
+        public Request getRequest() {
+<span class="fc" id="L544">            return request;</span>
+        }
+
+        public Response getResponse() {
+<span class="fc" id="L548">            return response;</span>
+        }
+
+        public ChainedRequest getChainedRequest() {
+<span class="fc" id="L552">            return request;</span>
+        }
+
+        public ChainedResponse getChainedResponse() {
+<span class="fc" id="L556">            return response;</span>
+        }
+
+        public Map&lt;Map.Entry&lt;String,Object&gt;,Object&gt; getContextMap() {
+<span class="fc" id="L560">            return contextMap;</span>
+        }
+    }
+
+    private static final String CONFIG = &quot;59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy&quot;;
+    private static final ThreadSafeHttpConfig root;
+
+    static {
+<span class="fc" id="L568">        root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure(CONFIG);</span>
+        
+<span class="fc" id="L570">        register(root, ifClassIsLoaded(&quot;org.cyberneko.html.parsers.SAXParser&quot;),</span>
+<span class="fc" id="L571">                 &quot;text/html&quot;, () -&gt; NativeHandlers.Encoders::xml, Html.neckoParserSupplier);</span>
+        
+<span class="fc" id="L573">        register(root, ifClassIsLoaded(&quot;org.jsoup.Jsoup&quot;),</span>
+                 &quot;text/html&quot;, Html.jsoupEncoderSupplier, Html.jsoupParserSupplier);
+        
+<span class="pc bpc" id="L576" title="1 of 2 branches missed.">        if(register(root, ifClassIsLoaded(&quot;com.opencsv.CSVReader&quot;),</span>
+                    &quot;text/csv&quot;, Csv.encoderSupplier, Csv.parserSupplier)) {
+<span class="fc" id="L578">            root.context(&quot;text/csv&quot;, Csv.Context.ID, Csv.Context.DEFAULT_CSV);</span>
+        }
+        
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">        if(register(root, ifClassIsLoaded(&quot;com.opencsv.CSVReader&quot;),</span>
+                    &quot;text/tab-separated-values&quot;, Csv.encoderSupplier, Csv.parserSupplier)) {
+<span class="fc" id="L583">            root.context(&quot;text/tab-separated-values&quot;, Csv.Context.ID, Csv.Context.DEFAULT_TSV);</span>
+        }
+<span class="fc" id="L585">    }</span>
+
+    public static ChainedHttpConfig root() {
+<span class="fc" id="L588">        return root;</span>
+    }
+
+    public static ChainedHttpConfig threadSafe(final ChainedHttpConfig parent) {
+<span class="fc" id="L592">        return new ThreadSafeHttpConfig(parent);</span>
+    }
+
+    public static ChainedHttpConfig classLevel(final boolean threadSafe) {
+<span class="nc bnc" id="L596" title="All 2 branches missed.">        return threadSafe ? threadSafe(root) : basic(root);</span>
+    }
+
+    public static ChainedHttpConfig basic(final ChainedHttpConfig parent) {
+<span class="fc" id="L600">        return new BasicHttpConfig(parent);</span>
+    }
+
+    public static ChainedHttpConfig requestLevel(final ChainedHttpConfig parent) {
+<span class="fc" id="L604">        return new BasicHttpConfig(parent);</span>
+    }
+
+    private static final String TYPE_CHECKING_SCRIPT = &quot;typecheckhttpconfig.groovy&quot;;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
