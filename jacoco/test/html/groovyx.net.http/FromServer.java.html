@@ -217,7 +217,7 @@ public interface FromServer {
 <span class="fc" id="L217">            }</span>
 
             public Map&lt;String,String&gt; parse() {
-<span class="fc" id="L220">                Map&lt;String,String&gt; ret = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L220">                Map&lt;String,String&gt; ret = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
 <span class="fc" id="L221">                final String[] ary = getValue().split(&quot;;&quot;);</span>
 <span class="fc" id="L222">                ret.put(key, cleanQuotes(ary[0].trim()));</span>
 <span class="fc bfc" id="L223" title="All 2 branches covered.">                if(ary.length &gt; 1) {</span>
@@ -319,7 +319,9 @@ public interface FromServer {
                                        else {
 <span class="fc" id="L320">                                           return cleanQuotes(ary[1].trim());</span>
                                        }
-                                   }));
+                                   },
+<span class="nc" id="L323">                                   (oldVal,newVal) -&gt; newVal,</span>
+<span class="fc" id="L324">                                   () -&gt; new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER)));</span>
             }
 
             /**
@@ -328,7 +330,7 @@ public interface FromServer {
              * @return the parsed header type
              */
             public Class&lt;?&gt; getParsedType() {
-<span class="nc" id="L331">                return Map.class;</span>
+<span class="nc" id="L333">                return Map.class;</span>
             }
         }
 
@@ -338,11 +340,11 @@ public interface FromServer {
          */
         public static class SingleLong extends Header&lt;Long&gt; {
             public SingleLong(final String key, final String value) {
-<span class="fc" id="L341">                super(key, value);</span>
-<span class="fc" id="L342">            }</span>
+<span class="fc" id="L343">                super(key, value);</span>
+<span class="fc" id="L344">            }</span>
 
             public Long parse() {
-<span class="fc" id="L345">                return Long.valueOf(getValue());</span>
+<span class="fc" id="L347">                return Long.valueOf(getValue());</span>
             }
 
             /**
@@ -351,57 +353,57 @@ public interface FromServer {
              * @return the parsed header type
              */
             public Class&lt;?&gt; getParsedType() {
-<span class="nc" id="L354">                return Long.class;</span>
+<span class="nc" id="L356">                return Long.class;</span>
             }
         }
 
         private static final Map&lt;String,BiFunction&lt;String,String,? extends Header&gt;&gt; constructors;
     
         static {
-<span class="fc" id="L361">            final Map&lt;String,BiFunction&lt;String,String,? extends Header&gt;&gt; tmp = new LinkedHashMap&lt;&gt;();</span>
-<span class="fc" id="L362">            tmp.put(&quot;Access-Control-Allow-Origin&quot;, ValueOnly::new);</span>
-<span class="fc" id="L363">            tmp.put(&quot;Accept-Patch&quot;, CombinedMap::new);</span>
-<span class="fc" id="L364">            tmp.put(&quot;Accept-Ranges&quot;, ValueOnly::new);</span>
-<span class="fc" id="L365">            tmp.put(&quot;Age&quot;, SingleLong::new);</span>
-<span class="fc" id="L366">            tmp.put(&quot;Allow&quot;, CsvList::new);</span>
-<span class="fc" id="L367">            tmp.put(&quot;Alt-Svc&quot;, MapPairs::new);</span>
-<span class="fc" id="L368">            tmp.put(&quot;Cache-Control&quot;, MapPairs::new);</span>
-<span class="fc" id="L369">            tmp.put(&quot;Connection&quot;, ValueOnly::new);</span>
-<span class="fc" id="L370">            tmp.put(&quot;Content-Disposition&quot;, CombinedMap::new);</span>
-<span class="fc" id="L371">            tmp.put(&quot;Content-Encoding&quot;, ValueOnly::new);</span>
-<span class="fc" id="L372">            tmp.put(&quot;Content-Language&quot;, ValueOnly::new);</span>
-<span class="fc" id="L373">            tmp.put(&quot;Content-Length&quot;, SingleLong::new);</span>
-<span class="fc" id="L374">            tmp.put(&quot;Content-Location&quot;, ValueOnly::new);</span>
-<span class="fc" id="L375">            tmp.put(&quot;Content-MD5&quot;, ValueOnly::new);</span>
-<span class="fc" id="L376">            tmp.put(&quot;Content-Range&quot;, ValueOnly::new);</span>
-<span class="fc" id="L377">            tmp.put(&quot;Content-Type&quot;, CombinedMap::new);</span>
-<span class="fc" id="L378">            tmp.put(&quot;Date&quot;, HttpDate::new);</span>
-<span class="fc" id="L379">            tmp.put(&quot;ETag&quot;, ValueOnly::new);</span>
-<span class="fc" id="L380">            tmp.put(&quot;Expires&quot;, HttpDate::new);</span>
-<span class="fc" id="L381">            tmp.put(&quot;Last-Modified&quot;, HttpDate::new);</span>
-<span class="fc" id="L382">            tmp.put(&quot;Link&quot;, CombinedMap::new);</span>
-<span class="fc" id="L383">            tmp.put(&quot;Location&quot;, ValueOnly::new);</span>
-<span class="fc" id="L384">            tmp.put(&quot;P3P&quot;, MapPairs::new);</span>
-<span class="fc" id="L385">            tmp.put(&quot;Pragma&quot;, ValueOnly::new);</span>
-<span class="fc" id="L386">            tmp.put(&quot;Proxy-Authenticate&quot;, ValueOnly::new);</span>
-<span class="fc" id="L387">            tmp.put(&quot;Public-Key-Pins&quot;, MapPairs::new);</span>
-<span class="fc" id="L388">            tmp.put(&quot;Refresh&quot;, CombinedMap::new);</span>
-<span class="fc" id="L389">            tmp.put(&quot;Retry-After&quot;, HttpDate::new);</span>
-<span class="fc" id="L390">            tmp.put(&quot;Server&quot;, ValueOnly::new);</span>
-<span class="fc" id="L391">            tmp.put(&quot;Set-Cookie&quot;, MapPairs::new);</span>
-<span class="fc" id="L392">            tmp.put(&quot;Status&quot;, ValueOnly::new);</span>
-<span class="fc" id="L393">            tmp.put(&quot;Strict-Transport-Security&quot;, MapPairs::new);</span>
-<span class="fc" id="L394">            tmp.put(&quot;Trailer&quot;, ValueOnly::new);</span>
-<span class="fc" id="L395">            tmp.put(&quot;Transfer-Encoding&quot;, ValueOnly::new);</span>
-<span class="fc" id="L396">            tmp.put(&quot;TSV&quot;, ValueOnly::new);</span>
-<span class="fc" id="L397">            tmp.put(&quot;Upgrade&quot;, CsvList::new);</span>
-<span class="fc" id="L398">            tmp.put(&quot;Vary&quot;, ValueOnly::new);</span>
-<span class="fc" id="L399">            tmp.put(&quot;Via&quot;, CsvList::new);</span>
-<span class="fc" id="L400">            tmp.put(&quot;Warning&quot;, ValueOnly::new);</span>
-<span class="fc" id="L401">            tmp.put(&quot;WWW-Authenticate&quot;, ValueOnly::new);</span>
-<span class="fc" id="L402">            tmp.put(&quot;X-Frame-Options&quot;, ValueOnly::new);</span>
-<span class="fc" id="L403">            constructors = unmodifiableMap(tmp);</span>
-<span class="fc" id="L404">        }</span>
+<span class="fc" id="L363">            final Map&lt;String,BiFunction&lt;String,String,? extends Header&gt;&gt; tmp = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
+<span class="fc" id="L364">            tmp.put(&quot;Access-Control-Allow-Origin&quot;, ValueOnly::new);</span>
+<span class="fc" id="L365">            tmp.put(&quot;Accept-Patch&quot;, CombinedMap::new);</span>
+<span class="fc" id="L366">            tmp.put(&quot;Accept-Ranges&quot;, ValueOnly::new);</span>
+<span class="fc" id="L367">            tmp.put(&quot;Age&quot;, SingleLong::new);</span>
+<span class="fc" id="L368">            tmp.put(&quot;Allow&quot;, CsvList::new);</span>
+<span class="fc" id="L369">            tmp.put(&quot;Alt-Svc&quot;, MapPairs::new);</span>
+<span class="fc" id="L370">            tmp.put(&quot;Cache-Control&quot;, MapPairs::new);</span>
+<span class="fc" id="L371">            tmp.put(&quot;Connection&quot;, ValueOnly::new);</span>
+<span class="fc" id="L372">            tmp.put(&quot;Content-Disposition&quot;, CombinedMap::new);</span>
+<span class="fc" id="L373">            tmp.put(&quot;Content-Encoding&quot;, ValueOnly::new);</span>
+<span class="fc" id="L374">            tmp.put(&quot;Content-Language&quot;, ValueOnly::new);</span>
+<span class="fc" id="L375">            tmp.put(&quot;Content-Length&quot;, SingleLong::new);</span>
+<span class="fc" id="L376">            tmp.put(&quot;Content-Location&quot;, ValueOnly::new);</span>
+<span class="fc" id="L377">            tmp.put(&quot;Content-MD5&quot;, ValueOnly::new);</span>
+<span class="fc" id="L378">            tmp.put(&quot;Content-Range&quot;, ValueOnly::new);</span>
+<span class="fc" id="L379">            tmp.put(&quot;Content-Type&quot;, CombinedMap::new);</span>
+<span class="fc" id="L380">            tmp.put(&quot;Date&quot;, HttpDate::new);</span>
+<span class="fc" id="L381">            tmp.put(&quot;ETag&quot;, ValueOnly::new);</span>
+<span class="fc" id="L382">            tmp.put(&quot;Expires&quot;, HttpDate::new);</span>
+<span class="fc" id="L383">            tmp.put(&quot;Last-Modified&quot;, HttpDate::new);</span>
+<span class="fc" id="L384">            tmp.put(&quot;Link&quot;, CombinedMap::new);</span>
+<span class="fc" id="L385">            tmp.put(&quot;Location&quot;, ValueOnly::new);</span>
+<span class="fc" id="L386">            tmp.put(&quot;P3P&quot;, MapPairs::new);</span>
+<span class="fc" id="L387">            tmp.put(&quot;Pragma&quot;, ValueOnly::new);</span>
+<span class="fc" id="L388">            tmp.put(&quot;Proxy-Authenticate&quot;, ValueOnly::new);</span>
+<span class="fc" id="L389">            tmp.put(&quot;Public-Key-Pins&quot;, MapPairs::new);</span>
+<span class="fc" id="L390">            tmp.put(&quot;Refresh&quot;, CombinedMap::new);</span>
+<span class="fc" id="L391">            tmp.put(&quot;Retry-After&quot;, HttpDate::new);</span>
+<span class="fc" id="L392">            tmp.put(&quot;Server&quot;, ValueOnly::new);</span>
+<span class="fc" id="L393">            tmp.put(&quot;Set-Cookie&quot;, MapPairs::new);</span>
+<span class="fc" id="L394">            tmp.put(&quot;Status&quot;, ValueOnly::new);</span>
+<span class="fc" id="L395">            tmp.put(&quot;Strict-Transport-Security&quot;, MapPairs::new);</span>
+<span class="fc" id="L396">            tmp.put(&quot;Trailer&quot;, ValueOnly::new);</span>
+<span class="fc" id="L397">            tmp.put(&quot;Transfer-Encoding&quot;, ValueOnly::new);</span>
+<span class="fc" id="L398">            tmp.put(&quot;TSV&quot;, ValueOnly::new);</span>
+<span class="fc" id="L399">            tmp.put(&quot;Upgrade&quot;, CsvList::new);</span>
+<span class="fc" id="L400">            tmp.put(&quot;Vary&quot;, ValueOnly::new);</span>
+<span class="fc" id="L401">            tmp.put(&quot;Via&quot;, CsvList::new);</span>
+<span class="fc" id="L402">            tmp.put(&quot;Warning&quot;, ValueOnly::new);</span>
+<span class="fc" id="L403">            tmp.put(&quot;WWW-Authenticate&quot;, ValueOnly::new);</span>
+<span class="fc" id="L404">            tmp.put(&quot;X-Frame-Options&quot;, ValueOnly::new);</span>
+<span class="fc" id="L405">            constructors = unmodifiableMap(tmp);</span>
+<span class="fc" id="L406">        }</span>
     }
 
     /**
@@ -410,12 +412,12 @@ public interface FromServer {
      * @return the value of the &quot;Content-Type&quot; response header
      */
     default String getContentType() {
-<span class="fc" id="L413">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="fc bfc" id="L414" title="All 2 branches covered.">        if(header == null) {</span>
-<span class="fc" id="L415">            return DEFAULT_CONTENT_TYPE;</span>
+<span class="fc" id="L415">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="fc bfc" id="L416" title="All 2 branches covered.">        if(header == null) {</span>
+<span class="fc" id="L417">            return DEFAULT_CONTENT_TYPE;</span>
         }
         else {
-<span class="fc" id="L418">            return header.getParsed().get(&quot;Content-Type&quot;);</span>
+<span class="fc" id="L420">            return header.getParsed().get(&quot;Content-Type&quot;);</span>
         }
     }
 
@@ -425,16 +427,16 @@ public interface FromServer {
      * @return the value of the charset from the &quot;Content-Type&quot; response header
      */
     default Charset getCharset() {
-<span class="fc" id="L428">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
-<span class="pc bpc" id="L429" title="1 of 2 branches missed.">        if(header == null) {</span>
-<span class="nc" id="L430">            return StandardCharsets.UTF_8;</span>
+<span class="fc" id="L430">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">        if(header == null) {</span>
+<span class="nc" id="L432">            return StandardCharsets.UTF_8;</span>
         }
         
-<span class="fc bfc" id="L433" title="All 2 branches covered.">        if(header.getParsed().containsKey(&quot;charset&quot;)) {</span>
-<span class="fc" id="L434">            Charset.forName(header.getParsed().get(&quot;charset&quot;));</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">        if(header.getParsed().containsKey(&quot;charset&quot;)) {</span>
+<span class="fc" id="L436">            Charset.forName(header.getParsed().get(&quot;charset&quot;));</span>
         }
 
-<span class="fc" id="L437">        return StandardCharsets.UTF_8;</span>
+<span class="fc" id="L439">        return StandardCharsets.UTF_8;</span>
     }
 
     /**
@@ -491,7 +493,7 @@ public interface FromServer {
      */
     default Reader getReader() {
         // TODO: verify what this does when there is no body content
-<span class="fc" id="L494">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
+<span class="fc" id="L496">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
