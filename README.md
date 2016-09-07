@@ -81,6 +81,24 @@ which will provide the site at http://localhost:8080. Once you are ready to publ
     
 This task will push the site contents into the `gh-pages` branch of the project, assuming you have permissions to push content into the repo.
 
+## Artifact Release
+    
+When ready to release a new version of the project, create a Pull Request from the `development` branch to the `master` branch and accept it or have it reviewed. Once the Pull Request
+has been merged into `master`, run:
+
+    ./gradlew release
+    
+which will check the documented project version against the project version, publish the artifact and the documentation web site. You will need to confirm the publication of the new
+artifact on the Bintray web site. Once that is done, you can run:
+
+    ./gradlew verifyRelease 
+    
+to ensure that the artifacts and site have been published - this step is optional but recommended.
+
+NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
+
+At this point, the release is complete and you should bump the version in the `develoment` branch, and follow the instructions below to prepare the branch for the next release.
+
 ## Version Updates
 
 When updating the version of the project, the documented version should also be updated using the `updateVersion` task. Modify the version in the project `build.gradle` file and make note of the existing version then run:
