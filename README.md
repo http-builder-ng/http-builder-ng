@@ -93,11 +93,11 @@ artifact on the Bintray web site. Once that is done, you can run:
 
     ./gradlew verifyRelease 
     
-to ensure that the artifacts and site have been published - this step is optional but recommended.
+to ensure that the artifacts and site have been published - this followup step is optional but recommended.
 
-NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
+> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
 
-At this point, the release is complete and you should bump the version in the `develoment` branch, and follow the instructions below to prepare the branch for the next release.
+At this point, the release is complete and you should bump the version in the `development` branch, and follow the instructions below to prepare the branch for the next release.
 
 ## Version Updates
 
