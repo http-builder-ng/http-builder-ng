@@ -101,4 +101,14 @@ class UriBuilderSpec extends Specification {
         and:
         builder.setUserInfo('dog').toURI() ==  new URI('https://dog@nohost:9191/foo?bravo=100&alpha=1#horse')
     }
+
+    def 'commas allowed in query string'() {
+        given:
+        UriBuilder tsafe = UriBuilder.threadSafe(root())
+        UriBuilder tunsafe = basic(root())
+
+        expect:
+        tsafe.setFull('http://foo.com/endpoint').setQuery(ids: '1,2,3').toURI() == new URI('http://foo.com/endpoint?ids=1,2,3')
+        tunsafe.setFull('http://foo.com/endpoint').setQuery(ids: '1,2,3').toURI() == new URI('http://foo.com/endpoint?ids=1,2,3')
+    }
 }
