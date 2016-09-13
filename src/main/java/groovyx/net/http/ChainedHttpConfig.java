@@ -15,16 +15,16 @@
  */
 package groovyx.net.http;
 
-import java.util.function.Function;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-import static groovyx.net.http.Traverser.*;
+import java.nio.charset.Charset;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
-import java.util.AbstractMap;
-import java.nio.charset.Charset;
-import groovy.lang.Closure;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static groovyx.net.http.Traverser.traverse;
 
 public interface ChainedHttpConfig extends HttpConfig {
 
