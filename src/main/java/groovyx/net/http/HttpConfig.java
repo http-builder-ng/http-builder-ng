@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,12 +36,20 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-    enum Status { SUCCESS, FAILURE };
+    enum Status {
+        SUCCESS, FAILURE
+    }
+
+    ;
 
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-    enum AuthType { BASIC, DIGEST };
+    enum AuthType {
+        BASIC, DIGEST
+    }
+
+    ;
 
     /**
      *  Defines the configurable HTTP request authentication properties.
@@ -511,8 +519,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure "when" the given status occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
-         * the closure to modify the captured response.
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -539,9 +547,30 @@ public interface HttpConfig {
         }
 
         /**
-         * FIXME: document
-         * @param status
-         * @param function
+         * Configures the execution of the provided function "when" the given status occurs in the response. The `function` will be called with an instance
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().when(Status.SUCCESS, new BiFunction<FromServer, Object, Object>() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `success(BiFunction)` or `failure(BiFunction)` methods. Only one function may be mapped to each
+         * status.
+         *
+         * @param status the response {@link Status} enum
+         * @param function the function to be executed
          */
         void when(Status status, BiFunction<FromServer, Object, ?> function);
 
@@ -572,7 +601,30 @@ public interface HttpConfig {
         }
 
         /**
-         * FIXME: document
+         * Configures the execution of the provided function "when" the given status code occurs in the response. The `function` will be called with an instance
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().when(404, new BiFunction<FromServer, Object, Object>() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `success(BiFunction)` or `failure(BiFunction)` methods. Only one function may be mapped to each
+         * status.
+         *
+         * @param code the response code
+         * @param function the function to be executed
          */
         void when(Integer code, BiFunction<FromServer, Object, ?> function);
 
@@ -603,12 +655,32 @@ public interface HttpConfig {
         }
 
         /**
-         * FIXME: document
+         * Configures the execution of the provided function "when" the given status code (as a `String`) occurs in the response. The `function` will be
+         * called with an instance of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned
+         * from the function will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().when("404", new BiFunction<FromServer, Object, Object>() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * @param code the response code as a `String`
+         * @param function the function to be executed
          */
         void when(String code, BiFunction<FromServer, Object, ?> function);
 
         /**
-         * Used to retrieve the "when" closure associated with the given status code.
+         * Used to retrieve the "when" function associated with the given status code.
          *
          * @param code the status code
          * @return the mapped closure
@@ -643,8 +715,28 @@ public interface HttpConfig {
         }
 
         /**
-         * FIXME: document
-         * @param function
+         * Configures the execution of the provided function when a success response is received (code < 400). The `function` will be called with
+         * an instance of the response as a `FromServer` instance and the body content as an `Object` (if present). The value returned from the function
+         * will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-specific configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().success(new BiFunction<FromServer, Object, Object>() {
+         *          // executed when a success response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `when(Status.SUCCESS, BiFunction)` method.
+         *
+         * @param function the closure to be executed
          */
         void success(BiFunction<FromServer, Object, ?> function);
 
@@ -676,8 +768,28 @@ public interface HttpConfig {
         }
 
         /**
-         * FIXME: document
-         * @param function
+         * Configures the execution of the provided function "when" a failure response is received (code >= 400). The `function` will be called with
+         * an instance of the response as a `FromServer` instance and the body content as an `Object` (if present). The value returned from the function
+         * will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-specific configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().failure(new BiFunction<FromServer, Object, Object>() {
+         *          // executed when a failure response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `when(Status.FAILURE, BiFunction)` method.
+         *
+         * @param function the closure to be executed
          */
         void failure(BiFunction<FromServer, Object, ?> function);
 
@@ -707,12 +819,20 @@ public interface HttpConfig {
     }
 
     /**
-     * FIXME: document
+     * Registers a context-level content-type specific object.
+     *
+     * @param contentType the content type scope of the mapping
+     * @param id the mapping key
+     * @param obj the mapping value
      */
     void context(String contentType, Object id, Object obj);
 
     /**
-     * FIXME: document
+     * Used to register a content-type-scoped object on the context in the specified content-type scopes.
+     *
+     * @param contentTypes the content-types where the mapping is scoped
+     * @param id the mapping key
+     * @param obj the mapping value
      */
     default void context(final Iterable<String> contentTypes, final Object id, final Object obj) {
         for (String contentType : contentTypes) {

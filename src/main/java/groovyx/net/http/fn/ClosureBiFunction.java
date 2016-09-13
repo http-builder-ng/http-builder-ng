@@ -20,10 +20,13 @@ import groovy.lang.Closure;
 import java.util.function.BiFunction;
 
 /**
- * FIXME: document
- * @param <IN_0>
- * @param <IN_1>
- * @param <OUT>
+ * Utility `BiFunction` implementation used to wrap a Groovy `Closure` in a Java `BiFunction` interface.
+ *
+ * The wrapped closure must accept 0, 1 or 2 arguments, and should return the specified `OUT` type.
+ *
+ * @param <IN_0> the type of the first input parameter
+ * @param <IN_1> the type of the second input parameter
+ * @param <OUT> the type of the return value
  */
 public class ClosureBiFunction<IN_0, IN_1, OUT> implements BiFunction<IN_0, IN_1, OUT> {
 
@@ -45,6 +48,7 @@ public class ClosureBiFunction<IN_0, IN_1, OUT> implements BiFunction<IN_0, IN_1
     private Object[] closureArgs(final IN_0 in_0, final IN_1 in_1) {
         final int size = closure.getMaximumNumberOfParameters();
         final Object[] args = new Object[size];
+
         if (size >= 1) {
             args[0] = in_0;
         }

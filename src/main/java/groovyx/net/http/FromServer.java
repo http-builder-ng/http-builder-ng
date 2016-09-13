@@ -482,7 +482,7 @@ public interface FromServer {
     URI getUri();
 
     /**
-     * FIXME: document
+     * Performs any client-specific response finishing operations.
      */
     void finish();
 
