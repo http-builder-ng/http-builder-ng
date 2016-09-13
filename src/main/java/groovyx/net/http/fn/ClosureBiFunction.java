@@ -27,7 +27,6 @@ public class ClosureBiFunction<IN_0, IN_1, OUT> implements BiFunction<IN_0, IN_1
         return closure.call(closureArgs(in_0, in_1));
     }
 
-    // TODO: merge this with its duplicate
     private Object[] closureArgs(final IN_0 in_0, final IN_1 in_1) {
         final int size = closure.getMaximumNumberOfParameters();
         final Object[] args = new Object[size];

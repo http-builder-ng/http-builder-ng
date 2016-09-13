@@ -1,7 +1,5 @@
 package groovyx.net.http;
 
-import groovy.lang.Closure;
-import groovyx.net.http.fn.FunctionClosure;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,18 +45,17 @@ public class JavaUsageTest {
     }
 
     @Test
+    @SuppressWarnings({"unchecked", "Convert2Lambda"})
     public void head_request() throws Exception {
-        Closure<Object> successFunction = new FunctionClosure<FromServer, Object>() {
-            @Override
-            public Object apply(final FromServer from) {
-                assertFalse(from.getHasBody());
-                return from.getHeaders();
-            }
-        };
-
         List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
-            config.getResponse().success(successFunction);
+            config.getResponse().success(new BiFunction<FromServer, Object, Object>() {
+                @Override
+                public Object apply(final FromServer from, final Object o) {
+                    assertFalse(from.getHasBody());
+                    return from.getHeaders();
+                }
+            });
         });
 
         assertEquals(3, headers.size());
@@ -68,7 +65,10 @@ public class JavaUsageTest {
 
         CompletableFuture<List> future = http.headAsync(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
-            config.getResponse().success(successFunction);
+            config.getResponse().success((from, o) -> {
+                assertFalse(from.getHasBody());
+                return from.getHeaders();
+            });
         });
 
         headers = (List<FromServer.Header>) future.get();
@@ -80,6 +80,7 @@ public class JavaUsageTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void head_request_with_raw_function() throws Exception {
         BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
             assertFalse(from.getHasBody());

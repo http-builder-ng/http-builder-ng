@@ -481,12 +481,12 @@ public class HttpConfigs {
             }
         }
 
-        public ChainedHttpConfig config(@DelegatesTo(HttpConfig.class) final Closure closure) {
-            closure.setDelegate(this);
-            closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            closure.call();
-            return this;
-        }
+//        public ChainedHttpConfig config(@DelegatesTo(HttpConfig.class) final Closure closure) {
+//            closure.setDelegate(this);
+//            closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+//            closure.call();
+//            return this;
+//        }
 
         public void context(final String contentType, final Object id, final Object obj) {
             getContextMap().put(new AbstractMap.SimpleImmutableEntry<>(contentType, id), obj);
