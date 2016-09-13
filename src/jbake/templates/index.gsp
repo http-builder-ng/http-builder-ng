@@ -18,11 +18,7 @@ natural and readable way. See the <a href="javadoc">API Docs</a> or <a href="gui
 <p>Http Builder NG artifacts are available on <a href="https://bintray.com/davidwclark/dclark/http-builder-ng">Bintay</a>, for Gradle you can add the
 following dependency to your <code>build.gradle</code> file <code>dependencies</code> closure:</p>
 
-<<<<<<< HEAD
 <pre>compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.17'</pre>
-=======
-<pre>compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.16'</pre>
->>>>>>> master
 
 <p>For Maven, add the following to your <code>pom.xml</code> file:</p>
 
