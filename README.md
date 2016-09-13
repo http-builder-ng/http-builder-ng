@@ -83,21 +83,22 @@ This task will push the site contents into the `gh-pages` branch of the project,
 
 ## Artifact Release
     
-When ready to release a new version of the project, create a Pull Request from the `development` branch to the `master` branch and accept it or have it reviewed. Once the Pull Request
-has been merged into `master`, run:
+When ready to release a new version of the project, perform the following steps starting in the `development` branch:
 
-    ./gradlew release
-    
-which will check the documented project version against the project version, publish the artifact and the documentation web site. You will need to confirm the publication of the new
-artifact on the Bintray web site. Once that is done, you can run:
+1. Ensure that the project version (in `build.gradle`) has been updated to the desired version.
+1. Run `./gradlew updateVersion -Pfrom=OLD_VERSION` to update the documented version.
+1. Create a Pull Request from `development` to `master` and accept it or have it reviewed.
 
-    ./gradlew verifyRelease 
-    
-to ensure that the artifacts and site have been published - this followup step is optional but recommended.
+Once the pull request has been merged into `master`, checkout the `master` branch and:
+
+1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site.
+1. Confirm the publication of the new artifact on the Bintray web site. 
+1. Run `./gradlew verifyRelease`  to ensure that the artifacts and site have been published (optional but recommended).
+1. A Git tag should be created for the released version.
+
+The `development` branch may now be used for the next round of development work.
 
 > NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
-
-At this point, the release is complete and you should bump the version in the `development` branch, and follow the instructions below to prepare the branch for the next release.
 
 ## Version Updates
 
