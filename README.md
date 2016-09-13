@@ -40,14 +40,14 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 Http Builder NG artifacts are available on [Bintay](https://bintray.com/davidwclark/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.15'
+    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.17'
     
 For Maven, add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng</artifactId>
-      <version>0.9.15</version>
+      <version>0.9.17</version>
       <type>pom</type>
     </dependency>
 
@@ -80,6 +80,24 @@ which will provide the site at http://localhost:8080. Once you are ready to publ
     ./gradlew publishSite
     
 This task will push the site contents into the `gh-pages` branch of the project, assuming you have permissions to push content into the repo.
+
+## Artifact Release
+    
+When ready to release a new version of the project, create a Pull Request from the `development` branch to the `master` branch and accept it or have it reviewed. Once the Pull Request
+has been merged into `master`, run:
+
+    ./gradlew release
+    
+which will check the documented project version against the project version, publish the artifact and the documentation web site. You will need to confirm the publication of the new
+artifact on the Bintray web site. Once that is done, you can run:
+
+    ./gradlew verifyRelease 
+    
+to ensure that the artifacts and site have been published - this followup step is optional but recommended.
+
+> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
+
+At this point, the release is complete and you should bump the version in the `development` branch, and follow the instructions below to prepare the branch for the next release.
 
 ## Version Updates
 

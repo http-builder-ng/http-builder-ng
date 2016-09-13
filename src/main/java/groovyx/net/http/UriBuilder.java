@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
@@ -108,7 +109,7 @@ public abstract class UriBuilder {
 
     /**
      * Sets the query string part of the `URI` from the provided map. The query string key-value pairs will be generated from the key-value pairs
-     * of the map and URL-encoded. Nested maps or other data structures are not supported.
+     * of the map and are NOT URL-encoded. Nested maps or other data structures are not supported.
      *
      * @param val the map of query string parameters
      * @return a reference to the builder
@@ -176,7 +177,7 @@ public abstract class UriBuilder {
             final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
             final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
             final Map<String, ?> queryMap = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
-            final String query = (queryMap == null || queryMap.isEmpty()) ? null : Form.encode(queryMap, StandardCharsets.UTF_8);
+            final String query = populateQueryString(queryMap);
             final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
             final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
             return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
@@ -186,6 +187,15 @@ public abstract class UriBuilder {
     }
 
     private static final Object[] EMPTY = new Object[0];
+
+    private static String populateQueryString(final Map<String,?> queryMap) {
+        if(queryMap == null || queryMap.isEmpty()) {
+            return null;
+        }
+        else {
+            return queryMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
+        }
+    }
 
     protected final void populateFrom(final URI uri) {
         try {

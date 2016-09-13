@@ -217,7 +217,7 @@ public interface FromServer {
             }
 
             public Map<String,String> parse() {
-                Map<String,String> ret = new LinkedHashMap<>();
+                Map<String,String> ret = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 final String[] ary = getValue().split(";");
                 ret.put(key, cleanQuotes(ary[0].trim()));
                 if(ary.length > 1) {
@@ -319,7 +319,9 @@ public interface FromServer {
                                        else {
                                            return cleanQuotes(ary[1].trim());
                                        }
-                                   }));
+                                   },
+                                   (oldVal,newVal) -> newVal,
+                                   () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
             }
 
             /**
@@ -358,7 +360,7 @@ public interface FromServer {
         private static final Map<String,BiFunction<String,String,? extends Header>> constructors;
     
         static {
-            final Map<String,BiFunction<String,String,? extends Header>> tmp = new LinkedHashMap<>();
+            final Map<String,BiFunction<String,String,? extends Header>> tmp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             tmp.put("Access-Control-Allow-Origin", ValueOnly::new);
             tmp.put("Accept-Patch", CombinedMap::new);
             tmp.put("Accept-Ranges", ValueOnly::new);
