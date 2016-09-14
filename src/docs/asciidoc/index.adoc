@@ -158,6 +158,64 @@ response content from the server). The displayed result will be something like:
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
 
+== HTTP Response Headers
+
+HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers enriched with the ability to parse themselves into
+more useful types, for example:
+
+[source,groovy]
+----
+headers.find { h-> h.key == 'Last-Modified' }.parse()   // ZonedDateTime
+headers.find { h-> h.key == 'Allow' }.parse()           // List<String>
+headers.find { h-> h.key == 'Refresh' }.parse()         // Map<String,String>
+----
+
+The parsing is provided using registered header implementations by header name. Currently, you cannot register your own and the supported header types are:
+
+* `Access-Control-Allow-Origin`-> ValueOnly
+* `Accept-Patch`-> CombinedMap
+* `Accept-Ranges`-> ValueOnly
+* `Age`-> SingleLong
+* `Allow`-> CsvList
+* `Alt-Svc`-> MapPairs
+* `Cache-Control`-> MapPairs
+* `Connection`-> ValueOnly
+* `Content-Disposition`-> CombinedMap
+* `Content-Encoding`-> ValueOnly
+* `Content-Language`-> ValueOnly
+* `Content-Length`-> SingleLong
+* `Content-Location`-> ValueOnly
+* `Content-MD5`-> ValueOnly
+* `Content-Range`-> ValueOnly
+* `Content-Type`-> CombinedMap
+* `Date`-> HttpDate
+* `ETag`-> ValueOnly
+* `Expires`-> HttpDate
+* `Last-Modified`-> HttpDate
+* `Link`-> CombinedMap
+* `Location`-> ValueOnly
+* `P3P`-> MapPairs
+* `Pragma`-> ValueOnly
+* `Proxy-Authenticate`-> ValueOnly
+* `Public-Key-Pins`-> MapPairs
+* `Refresh`-> CombinedMap
+* `Retry-After`-> HttpDate
+* `Server`-> ValueOnly
+* `Set-Cookie`-> MapPairs
+* `Status`-> ValueOnly
+* `Strict-Transport-Security`-> MapPairs
+* `Trailer`-> ValueOnly
+* `Transfer-Encoding`-> ValueOnly
+* `TSV`-> ValueOnly
+* `Upgrade`-> CsvList
+* `Vary`-> ValueOnly
+* `Via`-> CsvList
+* `Warning`-> ValueOnly
+* `WWW-Authenticate`-> ValueOnly
+* `X-Frame-Options`-> ValueOnly
+
+All headers not explicitly typed are simply `ValueOnly`. The definitive list is in the source code of the `groovyx.net.http.FromServer.Header` class.
+
 == Client Library Integration
 
 By default, the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on `HttpUrlConnection`; however, there is
@@ -261,6 +319,24 @@ In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Centr
 `Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up with a resulting output line something like:
 
     Groovy 2.4.7 last modified 06/07/2016 03:38
+
+Alternately, using header parsing along with the `java.time` API, you can simplify the header conversion:
+
+[source,groovy]
+----
+ZonedDateTime lastModified = configure {
+    request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
+}.head(ZonedDateTime) {
+    response.success { FromServer resp ->
+        resp.headers.find { h-> h.key == 'Last-Modified' }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
+    }
+}
+
+println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format(ofPattern('MM/dd/yyyy HH:mm'))}"
+----
+
+which yields the same results, just with a cleaner conversion of the header data.
+
 
 === Scraping Web Content (GET)
 

@@ -24,8 +24,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.BiFunction;
+
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
@@ -44,24 +50,24 @@ public interface FromServer {
      * Defines the interface to the HTTP headers contained in the response. (see also
      * https://en.wikipedia.org/wiki/List_of_HTTP_header_fields[List of HTTP Header Fields])
      */
-    public static abstract class Header<T> implements Map.Entry<String,String> {
-        
+    public static abstract class Header<T> implements Map.Entry<String, String> {
+
         final String key;
         final String value;
         private T parsed;
-        
+
         protected static String key(final String raw) {
             return raw.substring(0, raw.indexOf(':')).trim();
         }
-        
+
         protected static String cleanQuotes(final String str) {
             return str.startsWith("\"") ? str.substring(1, str.length() - 1) : str;
         }
-    
+
         protected static String value(final String raw) {
             return cleanQuotes(raw.substring(raw.indexOf(':') + 1).trim());
         }
-        
+
         protected Header(final String key, final String value) {
             this.key = key;
             this.value = value;
@@ -96,13 +102,13 @@ public interface FromServer {
 
         @Override
         public boolean equals(final Object o) {
-            if(!(o instanceof Header)) {
+            if (!(o instanceof Header)) {
                 return false;
             }
 
             Header other = (Header) o;
             return (Objects.equals(getKey(), other.getKey()) &&
-                    Objects.equals(getValue(), other.getValue()));
+                Objects.equals(getValue(), other.getValue()));
         }
 
         @Override
@@ -123,10 +129,10 @@ public interface FromServer {
          * @return the parsed header value
          */
         public T getParsed() {
-            if(parsed == null) {
+            if (parsed == null) {
                 this.parsed = parse();
             }
-            
+
             return parsed;
         }
 
@@ -169,7 +175,7 @@ public interface FromServer {
          * @return the populated `Header`
          */
         public static Header<?> keyValue(String key, String value) {
-            final BiFunction<String,String,? extends Header> func = constructors.get(key);
+            final BiFunction<String, String, ? extends Header> func = constructors.get(key);
             return func == null ? new ValueOnly(key, value) : func.apply(key, value);
         }
 
@@ -211,20 +217,20 @@ public interface FromServer {
          * provided the header hey is included in the key/value map.
          * For example: `Content-Type: text/html; charset=utf-8`
          */
-        public static class CombinedMap extends Header<Map<String,String>> {
+        public static class CombinedMap extends Header<Map<String, String>> {
             public CombinedMap(final String key, final String value) {
                 super(key, value);
             }
 
-            public Map<String,String> parse() {
-                Map<String,String> ret = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            public Map<String, String> parse() {
+                Map<String, String> ret = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 final String[] ary = getValue().split(";");
                 ret.put(key, cleanQuotes(ary[0].trim()));
-                if(ary.length > 1) {
+                if (ary.length > 1) {
                     final String[] secondary = ary[1].split("=");
                     ret.put(secondary[0].trim(), cleanQuotes(secondary[1].trim()));
                 }
-                
+
                 return unmodifiableMap(ret);
             }
 
@@ -246,7 +252,7 @@ public interface FromServer {
             public CsvList(final String key, final String value) {
                 super(key, value);
             }
-        
+
             public List<String> parse() {
                 return unmodifiableList(stream(getValue().split(",")).map(String::trim).collect(toList()));
             }
@@ -270,8 +276,8 @@ public interface FromServer {
             }
 
             private boolean isSimpleNumber() {
-                for(int i = 0; i < getValue().length(); ++i) {
-                    if(!Character.isDigit(getValue().charAt(i))) {
+                for (int i = 0; i < getValue().length(); ++i) {
+                    if (!Character.isDigit(getValue().charAt(i))) {
                         return false;
                     }
                 }
@@ -285,12 +291,21 @@ public interface FromServer {
              * @return the parsed header type
              */
             public ZonedDateTime parse() {
-                if(isSimpleNumber()) {
+                if (isSimpleNumber()) {
                     return ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(Long.parseLong(getValue()));
+                } else {
+                    return parse(RFC_1123_DATE_TIME);
                 }
-                else {
-                    return ZonedDateTime.parse(getValue(), RFC_1123_DATE_TIME);
-                }
+            }
+
+            /**
+             * Retrieves the {@link ZonedDateTime} value of the header using the provided {@link DateTimeFormatter}.
+             *
+             * @param formatter the formatter to be used
+             * @return
+             */
+            public ZonedDateTime parse(final DateTimeFormatter formatter) {
+                return ZonedDateTime.parse(getValue(), formatter);
             }
 
             public Class<?> getParsedType() {
@@ -302,26 +317,25 @@ public interface FromServer {
          * Type representing headers that have values which are parseable as key/value pairs.
          * For example: `Alt-Svc: h2="http2.example.com:443"; ma=7200`
          */
-        public static class MapPairs extends Header<Map<String,String>> {
+        public static class MapPairs extends Header<Map<String, String>> {
             public MapPairs(final String key, final String value) {
                 super(key, value);
             }
 
-            public Map<String,String> parse() {
+            public Map<String, String> parse() {
                 return stream(getValue().split(";"))
                     .map(String::trim)
                     .map((str) -> str.split("="))
                     .collect(toMap((ary) -> ary[0].trim(),
-                                   (ary) -> {
-                                       if(ary.length == 1) {
-                                           return ary[0];
-                                       }
-                                       else {
-                                           return cleanQuotes(ary[1].trim());
-                                       }
-                                   },
-                                   (oldVal,newVal) -> newVal,
-                                   () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
+                        (ary) -> {
+                            if (ary.length == 1) {
+                                return ary[0];
+                            } else {
+                                return cleanQuotes(ary[1].trim());
+                            }
+                        },
+                        (oldVal, newVal) -> newVal,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
             }
 
             /**
@@ -357,10 +371,10 @@ public interface FromServer {
             }
         }
 
-        private static final Map<String,BiFunction<String,String,? extends Header>> constructors;
-    
+        private static final Map<String, BiFunction<String, String, ? extends Header>> constructors;
+
         static {
-            final Map<String,BiFunction<String,String,? extends Header>> tmp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+            final Map<String, BiFunction<String, String, ? extends Header>> tmp = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
             tmp.put("Access-Control-Allow-Origin", ValueOnly::new);
             tmp.put("Accept-Patch", CombinedMap::new);
             tmp.put("Accept-Ranges", ValueOnly::new);
@@ -413,10 +427,9 @@ public interface FromServer {
      */
     default String getContentType() {
         final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), "Content-Type");
-        if(header == null) {
+        if (header == null) {
             return DEFAULT_CONTENT_TYPE;
-        }
-        else {
+        } else {
             return header.getParsed().get("Content-Type");
         }
     }
@@ -428,11 +441,11 @@ public interface FromServer {
      */
     default Charset getCharset() {
         final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), "Content-Type");
-        if(header == null) {
+        if (header == null) {
             return StandardCharsets.UTF_8;
         }
-        
-        if(header.getParsed().containsKey("charset")) {
+
+        if (header.getParsed().containsKey("charset")) {
             Charset.forName(header.getParsed().get("charset"));
         }
 
