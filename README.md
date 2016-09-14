@@ -1,4 +1,4 @@
-# Http Builder NG, The Easy Http Client for Groovy
+# Http Builder NG, The Easy Http Client for Groovy (and Java)
 
 ## Quick Links for the Impatient
 

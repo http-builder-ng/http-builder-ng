@@ -199,18 +199,36 @@ HttpBuilder.configure({ c -> new GoogleHttpBuilder(c); } as Function){
 
 If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
 
+== Standard Java Usage
+
+The `HttpBuilder` may also be used in standard Java 8 code with no required Groovy code.
+
+For example, extracting the HTTP headers from the result of a `HEAD` request would be something like:
+
+[source,java]
+----
+HttpBuilder http = HttpBuilder.configure(config -> {
+    config.getRequest().setUri("http://localhost:9192");
+});
+
+List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
+    config.getRequest().getUri().setPath("/foo");
+    config.getResponse().success(new BiFunction<FromServer, Object, Object>() {
+        @Override
+        public Object apply(final FromServer from, final Object o) {
+            assertFalse(from.getHasBody());
+            return from.getHeaders();
+        }
+    });
+});
+----
+
+Java 8 lambda expressions and function objects may be used interchangeably. All configuration and verb interfaces should be usable by both Groovy and Java code.
+
 == Examples
 
 This section contains some stand-alone examples of how you can use `HttpBuilder`. There are unit test versions for most of these examples. See the
 `ExamplesSpec.groovy` file for more details.
-
-=== Standard Java Usage
-
-The `HttpBuilder` is also usable with standard Java, with no Groovy constructs.
-
-> FIXME: provide example
-FIXME: also fix #23
-
 
 === Resource Last Modified (HEAD)
 
