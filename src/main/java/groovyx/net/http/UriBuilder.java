@@ -225,9 +225,14 @@ public abstract class UriBuilder {
      *
      * @param str the full URI to be used by the `UriBuilder`
      * @return a reference to the builder
+     * @throws IllegalArgumentException if there is a problem with the URI syntax
      */
-    public final UriBuilder setFull(final String str) throws URISyntaxException {
-        return setFull(new URI(str));
+    public final UriBuilder setFull(final String str) {
+        try {
+            return setFull(new URI(str));
+        } catch (URISyntaxException ex){
+            throw new IllegalArgumentException(ex.getMessage());
+        }
     }
 
     /**

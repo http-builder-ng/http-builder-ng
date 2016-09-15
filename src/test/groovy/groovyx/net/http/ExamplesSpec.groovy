@@ -20,6 +20,7 @@ import org.jsoup.nodes.Document
 import spock.lang.Requires
 import spock.lang.Specification
 
+import java.time.ZonedDateTime
 import java.util.function.Function
 
 import static groovyx.net.http.ContentTypes.JSON
@@ -27,6 +28,7 @@ import static groovyx.net.http.FromServer.Header.find
 import static groovyx.net.http.HttpBuilder.NO_OP
 import static groovyx.net.http.HttpBuilder.configure
 import static groovyx.net.http.HttpVerb.GET
+import static java.time.format.DateTimeFormatter.ofPattern
 
 /**
  * These are not really tests, but examples, therefore they should never fail and they only print out results.
@@ -47,6 +49,20 @@ class ExamplesSpec extends Specification {
 
         then:
         println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format('MM/dd/yyyy HH:mm')}"
+    }
+
+    def 'Resource Last Modified (HEAD) - java.time'() {
+        when:
+        ZonedDateTime lastModified = configure {
+            request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
+        }.head(ZonedDateTime) {
+            response.success { FromServer resp ->
+                resp.headers.find { h-> h.key == 'Last-Modified' }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
+            }
+        }
+
+        then:
+        println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format(ofPattern('MM/dd/yyyy HH:mm'))}"
     }
 
     def 'Scraping Web Content (GET)'() {

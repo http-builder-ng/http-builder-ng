@@ -20,7 +20,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a href="javadoc" target="_blank">API Docs</a></li>
-                        <li><a href="tests" target="_blank">Tests</a></li>
+                        <li><a href="tests/test" target="_blank">Tests</a></li>
                         <li><a href="jacoco/test/html" target="_blank">Coverage</a></li>
                         <li><a href="findbugs/main.html" target="_blank">FindBugs</a></li>
                     </ul>

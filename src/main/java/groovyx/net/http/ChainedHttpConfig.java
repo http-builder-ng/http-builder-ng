@@ -15,16 +15,16 @@
  */
 package groovyx.net.http;
 
-import java.util.function.Function;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-import static groovyx.net.http.Traverser.*;
+import java.nio.charset.Charset;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
-import java.util.AbstractMap;
-import java.nio.charset.Charset;
-import groovy.lang.Closure;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static groovyx.net.http.Traverser.traverse;
 
 public interface ChainedHttpConfig extends HttpConfig {
 
@@ -83,7 +83,7 @@ public interface ChainedHttpConfig extends HttpConfig {
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
 
-        default Closure<?> actualAction(final Integer code) {
+        default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
         
@@ -146,19 +146,5 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
 
         return contentType;
-    }
-
-    static Object[] closureArgs(final Closure<?> closure, final FromServer fromServer, final Object o) {
-        final int size = closure.getMaximumNumberOfParameters();
-        final Object[] args = new Object[size];
-        if(size >= 1) {
-            args[0] = fromServer;
-        }
-        
-        if(size >= 2) {
-            args[1] = o;
-        }
-        
-        return args;
     }
 }
