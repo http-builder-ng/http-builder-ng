@@ -104,6 +104,26 @@ class HttpPostSpec extends Specification {
         JAVA   | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: true, id: 100]
     }
 
+    @Unroll def '[#client] POST /foo (#contentType): encodes and decodes properly and returns content'() {
+        given:
+        def config = {
+            request.uri.path = '/foo'
+            request.body = content
+            request.contentType = contentType[0]
+        }
+
+        expect:
+        httpBuilder(client, serverRule.port).post(config) == result
+
+        and:
+        httpBuilder(client, serverRule.port).postAsync(config).get() == result
+
+        where:
+        client | content                | contentType || result
+        APACHE | [name: 'Bob', age: 42] | JSON        || [accepted: true, id: 100]
+        JAVA   | [name: 'Bob', age: 42] | JSON        || [accepted: true, id: 100]
+    }
+
     @Unroll def '[#client] POST /foo (cookie): returns content'() {
         given:
         def config = {
