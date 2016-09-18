@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http;
+package groovyx.net.http
 
-import spock.lang.*
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import spock.lang.Specification
+
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.util.function.BiConsumer
+import java.util.function.BiFunction
+
+import static groovy.lang.Closure.DELEGATE_FIRST
 
 class HttpConfigTest extends Specification {
 
@@ -28,11 +31,11 @@ class HttpConfigTest extends Specification {
         BiConsumer jsonEncoder = NativeHandlers.Encoders.&json;
         BiFunction jsonParser = NativeHandlers.Parsers.&json;
 
-        HttpConfig http = HttpConfigs.threadSafe().config {
+        HttpConfig http = chainedConfig(HttpConfigs.threadSafe()) {
             request.charset = StandardCharsets.UTF_8;
             request.contentType = "application/json";
             request.uri = 'http://www.google.com';
-            request.body = [ one: 1, two: 2 ];
+            request.body = [one: 1, two: 2];
 
             def JSON = ["application/json", "application/javascript", "text/javascript"];
             request.encoder JSON, jsonEncoder
@@ -42,7 +45,7 @@ class HttpConfigTest extends Specification {
         expect:
         http.request.encoder("application/json") == jsonEncoder;
         http.response.parser("text/javascript") == jsonParser;
-        http.request.body == [ one: 1, two: 2 ];
+        http.request.body == [one: 1, two: 2];
     }
 
     def Chaining() {
@@ -52,31 +55,34 @@ class HttpConfigTest extends Specification {
         Closure success = { res, o -> println(o); }
         Closure failure = { res -> println("failed"); }
         Closure on404 = { res -> println('why u 404?'); }
-        
+
         def theBody = { ->
             root {
                 person {
                     firstName 'Fred'
-                    lastName 'Flinstone' }; }; };
+                    lastName 'Flinstone'
+                };
+            };
+        };
         String contentType = 'application/xml';
         Charset charset = StandardCharsets.UTF_8;
         URI myURI = new URI('http://www.yahoo.com/likes/xml')
-        def XML = ["application/xml","text/xml","application/xhtml+xml","application/atom+xml"];
-        
-        def root = HttpConfigs.threadSafe().config {
+        def XML = ["application/xml", "text/xml", "application/xhtml+xml", "application/atom+xml"];
+
+        def root = chainedConfig(HttpConfigs.threadSafe()) {
             request.charset = charset
             request.encoder XML, xmlEncoder
             response.success success;
             response.failure failure;
         };
 
-        def intermediate = HttpConfigs.threadSafe(root).config {
+        def intermediate = chainedConfig(HttpConfigs.threadSafe(root)) {
             request.contentType = contentType
             request.uri = myURI
             response.parser XML, xmlParser
         };
 
-        def end = HttpConfigs.basic(intermediate).config {
+        def end = chainedConfig(HttpConfigs.basic(intermediate)) {
             request.body = theBody;
             response.when 404, on404;
         };
@@ -89,10 +95,10 @@ class HttpConfigTest extends Specification {
         end.request.actualCharset() == charset;
         end.request.uri.toURI() == myURI;
 
-        end.response.actualAction(200) == success;
-        end.response.actualAction(400) == failure;
-        end.response.actualAction(404) == on404;
-        intermediate.response.actualAction(404) == failure;
+        end.response.actualAction(200).closure == success;
+        end.response.actualAction(400).closure == failure;
+        end.response.actualAction(404).closure == on404;
+        intermediate.response.actualAction(404).closure == failure;
     }
 
     def Script() {
@@ -102,5 +108,12 @@ class HttpConfigTest extends Specification {
         expect:
         config.request.contentType == 'application/json';
         config.request.uri.toURI() == new URI('http://www.google.com');
+    }
+
+    private ChainedHttpConfig chainedConfig(ChainedHttpConfig chc, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        closure.setDelegate(chc)
+        closure.setResolveStrategy(DELEGATE_FIRST)
+        closure.call()
+        chc
     }
 }

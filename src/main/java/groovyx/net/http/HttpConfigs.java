@@ -18,7 +18,14 @@ package groovyx.net.http;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyShell;
+import groovy.time.BaseDuration;
 import groovy.transform.TypeChecked;
+import groovyx.net.http.optional.Csv;
+import groovyx.net.http.optional.Html;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,26 +35,17 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.AbstractMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import static groovyx.net.http.ChainedHttpConfig.*;
-import static groovyx.net.http.Safe.*;
+import java.util.function.Function;
 
-import groovyx.net.http.optional.*;
+import static groovyx.net.http.ChainedHttpConfig.*;
+import static groovyx.net.http.Safe.ifClassIsLoaded;
+import static groovyx.net.http.Safe.register;
 
 public class HttpConfigs {
 
@@ -138,7 +136,7 @@ public class HttpConfigs {
             setCharset(Charset.forName(val));
         }
         
-        public void setUri(final String val) throws URISyntaxException {
+        public void setUri(final String val) {
             getUri().setFull(val);
         }
 
@@ -314,9 +312,9 @@ public class HttpConfigs {
 
     public static abstract class BaseResponse implements ChainedResponse {
 
-        abstract protected Map<Integer,Closure<?>> getByCode();
-        abstract protected Closure<?> getSuccess();
-        abstract protected Closure<?> getFailure();
+        abstract protected Map<Integer,BiFunction<FromServer, Object, ?>> getByCode();
+        abstract protected BiFunction<FromServer, Object, ?> getSuccess();
+        abstract protected BiFunction<FromServer, Object, ?> getFailure();
         abstract protected Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> getParserMap();
         
         private final ChainedResponse parent;
@@ -329,24 +327,23 @@ public class HttpConfigs {
             this.parent = parent;
         }
         
-        public void when(String code, Closure<?> closure) {
+        public void when(String code, BiFunction<FromServer, Object, ?> closure) {
             when(Integer.valueOf(code), closure);
         }
         
-        public void when(Integer code, Closure<?> closure) {
+        public void when(Integer code, BiFunction<FromServer, Object, ?> closure) {
             getByCode().put(code, closure);
         }
         
-        public void when(final HttpConfig.Status status, Closure<?> closure) {
+        public void when(final HttpConfig.Status status, final BiFunction<FromServer, Object, ?> closure) {
             if(status == HttpConfig.Status.SUCCESS) {
                 success(closure);
-            }
-            else {
+            } else {
                 failure(closure);
             }
         }
 
-        public Closure<?> when(final Integer code) {
+        public BiFunction<FromServer, Object, ?> when(final Integer code) {
             if(getByCode().containsKey(code)) {
                 return getByCode().get(code);
             }
@@ -379,9 +376,10 @@ public class HttpConfigs {
     }
 
     public static class BasicResponse extends BaseResponse {
-        private final Map<Integer,Closure<?>> byCode = new LinkedHashMap<>();
-        private Closure<?> successHandler;
-        private Closure<?> failureHandler;
+
+        private final Map<Integer,BiFunction<FromServer, Object, ?>> byCode = new LinkedHashMap<>();
+        private BiFunction<FromServer, Object, ?> successHandler;
+        private BiFunction<FromServer, Object, ?> failureHandler;
         private final Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new LinkedHashMap<>();
 
         protected BasicResponse(final ChainedResponse parent) {
@@ -392,32 +390,33 @@ public class HttpConfigs {
             return parserMap;
         }
         
-        protected Map<Integer,Closure<?>> getByCode() {
+        protected Map<Integer,BiFunction<FromServer, Object, ?>> getByCode() {
             return byCode;
         }
 
-        protected Closure<?> getSuccess() {
+        protected BiFunction<FromServer, Object, ?> getSuccess() {
             return successHandler;
         }
         
-        protected Closure<?> getFailure() {
+        protected BiFunction<FromServer, Object, ?> getFailure() {
             return failureHandler;
         }
 
-        public void success(final Closure<?> val) {
+        public void success(final BiFunction<FromServer, Object, ?> val) {
             successHandler = val;
         }
 
-        public void failure(final Closure<?> val) {
+        public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
         }
     }
 
     public static class ThreadSafeResponse extends BaseResponse {
+
         private final ConcurrentMap<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new ConcurrentHashMap<>();
-        private final ConcurrentMap<Integer,Closure<?>> byCode = new ConcurrentHashMap<>();
-        private volatile Closure<?> successHandler;
-        private volatile Closure<?> failureHandler;
+        private final ConcurrentMap<Integer,BiFunction<FromServer, Object, ?>> byCode = new ConcurrentHashMap<>();
+        private volatile BiFunction<FromServer, Object, ?> successHandler;
+        private volatile BiFunction<FromServer, Object, ?> failureHandler;
 
         public ThreadSafeResponse(final ChainedResponse parent) {
             super(parent);
@@ -427,23 +426,23 @@ public class HttpConfigs {
             return parserMap;
         }
         
-        protected Map<Integer,Closure<?>> getByCode() {
+        protected Map<Integer,BiFunction<FromServer, Object, ?>> getByCode() {
             return byCode;
         }
 
-        protected Closure<?> getSuccess() {
+        protected BiFunction<FromServer, Object, ?> getSuccess() {
             return successHandler;
         }
         
-        protected Closure<?> getFailure() {
+        protected BiFunction<FromServer, Object, ?> getFailure() {
             return failureHandler;
         }
 
-        public void success(final Closure<?> val) {
+        public void success(final BiFunction<FromServer, Object, ?> val) {
             successHandler = val;
         }
 
-        public void failure(final Closure<?> val) {
+        public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
         }
     }
@@ -480,13 +479,6 @@ public class HttpConfigs {
             catch(IOException ioe) {
                 throw new RuntimeException();
             }
-        }
-
-        public ChainedHttpConfig config(@DelegatesTo(HttpConfig.class) final Closure closure) {
-            closure.setDelegate(this);
-            closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            closure.call();
-            return this;
         }
 
         public void context(final String contentType, final Object id, final Object obj) {

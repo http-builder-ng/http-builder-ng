@@ -25,7 +25,7 @@ sourceCompatibility = 8
 targetCompatibility = 8
 
 group = 'org.codehaus.groovy.modules'
-version = '0.9.17'
+version = '0.10.0'
 
 repositories {
     jcenter()
@@ -125,7 +125,7 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14.1'
+    gradleVersion = '3.0'
 }
 
 license {
@@ -152,6 +152,8 @@ asciidoctor {
         encoding: 'utf-8'
 }
 
+tasks.bintrayUpload.dependsOn build
+
 task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor', 'jbake']) << {
     logger.lifecycle 'Building documentation web site...'
 
@@ -160,19 +162,12 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
         fileset(dir: 'build/reports', includes: '**/**')
     }
 
-    // Make the jacoco .resources directory non-hidden so the gh pages plugin will find it
-    ant.move(todir:'build/jbake/jacoco/test/html/resources'){
-        fileset(dir: 'build/jbake/jacoco/test/html/.resources')
-    }
-
-    ant.replace(dir:'build/jbake/jacoco/test/html', token:'.resources/', value:'resources/')
-
     ant.copy(todir: 'build/jbake/guide') {
         fileset(dir: 'build/asciidoc', includes: '**/**')
     }
 }
 
-task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.') {
+task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.', dependsOn: ['site']) {
     buildFile = 'publish.gradle'
     tasks = ['publishGhPages']
 }
@@ -188,13 +183,77 @@ tasks.withType(FindBugs) {
     }
 }
 
-task updateVersion(group:'Documentation', description:'Updates the version in documentation based on the project version') << {
+task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version') << {
     String newVersion = project.version
     String oldVersion = project.property('from')
 
     logger.lifecycle "Updating documentation versions from ${oldVersion} to ${newVersion}..."
 
-    ant.replace(file:'README.md', token:oldVersion, value:newVersion)
-    ant.replace(dir:'src/docs/asciidoc', token:oldVersion, value:newVersion)
-    ant.replace(dir:'src/jbake/templates', token:oldVersion, value:newVersion)
+    ant.replace(file: 'README.md', token: oldVersion, value: newVersion)
+    ant.replace(dir: 'src/docs/asciidoc', token: oldVersion, value: newVersion)
+    ant.replace(dir: 'src/jbake/templates', token: oldVersion, value: newVersion)
+}
+
+task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.') << {
+    logger.lifecycle "Verifying that the documentation references version ${project.version}..."
+
+    // Not the most efficient way to do this but should be ok for now
+    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc', 'src/jbake/templates/index.gsp'].every { f ->
+        boolean ok = project.file(f).text.contains(project.version)
+
+        logger.info " - Checking: $f: $ok"
+        ok
+    }
+
+    assert documented, 'The documented project version does not match the project version: Run "./gradlew updateVersion -Pfrom=OLD_VERSION" and try again.'
+}
+
+task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.') << {
+    def repo = "https://dl.bintray.com/davidwclark/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
+    def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
+
+    logger.lifecycle "Verifying that artifacts exist at ${repo}..."
+
+    boolean published = artifacts.every { art ->
+        boolean ok = checkUrl("${repo}${art}")
+        logger.info " - Checking: ${repo}${art}: $ok"
+        ok
+    }
+
+    assert published, 'Some or all of the artifacts are not published. Run with --info for more details.'
+}
+
+task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.') << {
+    def siteUrl = 'http://localhost:8080'
+
+    logger.lifecycle "Verifying that site exists at ${siteUrl}..."
+
+    // we'll just hit the important ones
+    boolean exists = [
+        '/index.html', '/guide/html5/index.html', '/javadoc/index.html'
+    ].every { page ->
+        boolean ok = checkUrl("${siteUrl}${page}")
+        logger.info " - Checking: ${siteUrl}${page}: $ok"
+        ok
+    }
+
+    assert exists, 'Some or all of the documentation site pages are not published. Run with --info for more details.'
+}
+
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'bintrayUpload', 'publishSite']) << {
+    logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
+}
+
+task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) << {
+    logger.lifecycle 'Release has been verified.'
+}
+
+static boolean checkUrl(String url) {
+    try {
+        def conn = url.toURL().openConnection() as HttpURLConnection
+        conn.requestMethod = 'HEAD'
+        return conn.responseCode == 200
+    } catch (ex) {
+        return false
+    }
 }

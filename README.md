@@ -1,4 +1,4 @@
-# Http Builder NG, The Easy Http Client for Groovy
+# Http Builder NG, The Easy Http Client for Groovy (and Java)
 
 ## Quick Links for the Impatient
 
@@ -40,14 +40,14 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 Http Builder NG artifacts are available on [Bintay](https://bintray.com/davidwclark/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng:0.9.17'
+    compile 'org.codehaus.groovy.modules:http-builder-ng:0.10.0'
     
 For Maven, add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng</artifactId>
-      <version>0.9.17</version>
+      <version>0.10.0</version>
       <type>pom</type>
     </dependency>
 
@@ -80,6 +80,25 @@ which will provide the site at http://localhost:8080. Once you are ready to publ
     ./gradlew publishSite
     
 This task will push the site contents into the `gh-pages` branch of the project, assuming you have permissions to push content into the repo.
+
+## Artifact Release
+    
+When ready to release a new version of the project, perform the following steps starting in the `development` branch:
+
+1. Ensure that the project version (in `build.gradle`) has been updated to the desired version.
+1. Run `./gradlew updateVersion -Pfrom=OLD_VERSION` to update the documented version.
+1. Create a Pull Request from `development` to `master` and accept it or have it reviewed.
+
+Once the pull request has been merged into `master`, checkout the `master` branch and:
+
+1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site.
+1. Confirm the publication of the new artifact on the Bintray web site. 
+1. Run `./gradlew verifyRelease`  to ensure that the artifacts and site have been published (optional but recommended).
+1. A Git tag should be created for the released version.
+
+The `development` branch may now be used for the next round of development work.
+
+> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
 
 ## Version Updates
 

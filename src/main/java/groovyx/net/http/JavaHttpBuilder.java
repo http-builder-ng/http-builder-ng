@@ -15,26 +15,13 @@
  */
 package groovyx.net.http;
 
-import groovy.lang.Closure;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -57,7 +44,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final String verb;
-        
+
         public Action(final ChainedHttpConfig requestConfig, final String verb) {
             try {
                 this.requestConfig = requestConfig;
@@ -87,7 +74,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
-            
+
             final URI uri = cr.getUri().toURI();
             final List<Cookie> cookies = cr.actualCookies(new ArrayList());
             for(Cookie cookie : cookies) {
@@ -102,7 +89,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 else {
                     httpCookie.setMaxAge(3_600L);
                 }
-                
+
                 globalCookieManager.getCookieStore().add(uri, httpCookie);
             }
         }
@@ -133,20 +120,15 @@ public class JavaHttpBuilder extends HttpBuilder {
             final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());
             try {
                 final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final Closure<?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-                if(fromServer.getHasBody()) {
-                    final Object o = parser.apply(requestConfig, fromServer);
-                    return action.call(ChainedHttpConfig.closureArgs(action, fromServer, o));
-                }
-                else {
-                    return action.call(ChainedHttpConfig.closureArgs(action, fromServer, null));
-                }
+                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
+
+                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null );
             }
             finally {
                 fromServer.finish();
             }
         }
-        
+
         public Object execute() {
             try {
                 addHeaders();
@@ -156,7 +138,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                             HttpsURLConnection https = (HttpsURLConnection) connection;
                             https.setSSLSocketFactory(sslContext.getSocketFactory());
                         }
-                        
+
                         connection.connect();
                         handleToServer();
                         return handleFromServer();
@@ -168,7 +150,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
 
         protected class JavaToServer implements ToServer {
-            
+
             public void toServer(final InputStream inputStream) {
                 try {
                     transfer(inputStream, connection.getOutputStream(), true);
@@ -178,14 +160,14 @@ public class JavaHttpBuilder extends HttpBuilder {
                 }
             }
         }
-        
+
         protected class JavaFromServer implements FromServer {
 
             private InputStream is;
             private boolean hasBody;
             private List<Header<?>> headers;
             private URI uri;
-            
+
             public JavaFromServer(final URI originalUri) {
                 this.uri = originalUri;
                 //TODO: detect non success and read from error stream instead
@@ -234,11 +216,11 @@ public class JavaHttpBuilder extends HttpBuilder {
 
                 return Collections.unmodifiableList(ret);
             }
-            
+
             public InputStream getInputStream() {
                 return is;
             }
-            
+
             public int getStatusCode() {
                 try {
                     return connection.getResponseCode();
@@ -247,7 +229,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                     throw new RuntimeException(e);
                 }
             }
-            
+
             public String getMessage() {
                 try {
                     return connection.getResponseMessage();
@@ -256,11 +238,11 @@ public class JavaHttpBuilder extends HttpBuilder {
                     throw new RuntimeException(e);
                 }
             }
-            
+
             public List<Header<?>> getHeaders() {
                 return headers;
             }
-            
+
             public boolean getHasBody() {
                 return hasBody;
             }
@@ -268,7 +250,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public URI getUri() {
                 return uri;
             }
-            
+
             public void finish() {
                 //do nothing, should auto cleanup
             }
@@ -281,7 +263,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         public PasswordAuthentication getPasswordAuthentication() {
             return tlAuth.get();
         }
-        
+
         public static final <V> V with(final PasswordAuthentication pa, final Callable<V> callable) throws Exception {
             tlAuth.set(pa);
             try {
@@ -294,17 +276,17 @@ public class JavaHttpBuilder extends HttpBuilder {
     }
 
     private final static CookieManager globalCookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-    
+
     static {
         Authenticator.setDefault(new ThreadLocalAuth());
         CookieHandler.setDefault(globalCookieManager);
     }
-    
+
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
     final private HttpObjectConfig.Client clienConfig;
-    
+
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
@@ -320,23 +302,23 @@ public class JavaHttpBuilder extends HttpBuilder {
     protected Object doGet(final ChainedHttpConfig requestConfig) {
         return new Action(requestConfig, "GET").execute();
     }
-    
+
     protected Object doHead(final ChainedHttpConfig requestConfig) {
         return new Action(requestConfig, "HEAD").execute();
     }
-    
+
     protected Object doPost(final ChainedHttpConfig requestConfig) {
         return new Action(requestConfig, "POST").execute();
     }
-    
+
     protected Object doPut(final ChainedHttpConfig requestConfig) {
         return new Action(requestConfig, "PUT").execute();
     }
-    
+
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
         return new Action(requestConfig, "DELETE").execute();
     }
-    
+
     public Executor getExecutor() {
         return executor;
     }
