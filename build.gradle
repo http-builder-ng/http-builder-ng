@@ -116,6 +116,7 @@ bintray {
         pkg {
             repo = 'dclark'
             name = 'http-builder-ng'
+            userOrg = 'http-builder-ng'
             desc = 'Groovy client for making http requests'
             licenses = ['Apache-2.0']
             labels = ['groovy']
@@ -224,7 +225,7 @@ task verifyArtifacts(group: 'Verification', description: 'Verifies that the publ
 }
 
 task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.') << {
-    def siteUrl = 'http://localhost:8080'
+    def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://dwclark.github.io/http-builder-ng'
 
     logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
@@ -232,15 +233,16 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
     boolean exists = [
         '/index.html', '/guide/html5/index.html', '/javadoc/index.html'
     ].every { page ->
+        String chk = " - Checking: ${siteUrl}${page}:"
         boolean ok = checkUrl("${siteUrl}${page}")
-        logger.info " - Checking: ${siteUrl}${page}: $ok"
+        logger.info "$chk $ok"
         ok
     }
 
     assert exists, 'Some or all of the documentation site pages are not published. Run with --info for more details.'
 }
 
-task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'bintrayUpload', 'publishSite']) << {
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']) << {
     logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
 }
 
