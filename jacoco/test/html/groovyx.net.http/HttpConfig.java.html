@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../resources/report.css" type="text/css"/><link rel="shortcut icon" href="../resources/report.gif" type="image/gif"/><title>HttpConfig.java</title><link rel="stylesheet" href="../resources/prettify.css" type="text/css"/><script type="text/javascript" src="../resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpConfig.java</span></div><h1>HttpConfig.java</h1><pre class="source lang-java linenums">/**
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpConfig.java</span></div><h1>HttpConfig.java</h1><pre class="source lang-java linenums">/**
  * Copyright (C) 2016 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
@@ -16,6 +16,7 @@
 package groovyx.net.http;
 
 import groovy.lang.Closure;
+import groovyx.net.http.fn.ClosureBiFunction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,8 +36,8 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-<span class="nc" id="L38">    enum Status {</span>
-<span class="nc" id="L39">        SUCCESS, FAILURE</span>
+<span class="nc" id="L39">    enum Status {</span>
+<span class="nc" id="L40">        SUCCESS, FAILURE</span>
     }
 
     ;
@@ -44,8 +45,8 @@ public interface HttpConfig {
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-<span class="pc" id="L47">    enum AuthType {</span>
-<span class="fc" id="L48">        BASIC, DIGEST</span>
+<span class="pc" id="L48">    enum AuthType {</span>
+<span class="fc" id="L49">        BASIC, DIGEST</span>
     }
 
     ;
@@ -92,8 +93,8 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void basic(String user, String password) {
-<span class="fc" id="L95">            basic(user, password, false);</span>
-<span class="fc" id="L96">        }</span>
+<span class="fc" id="L96">            basic(user, password, false);</span>
+<span class="fc" id="L97">        }</span>
 
         /**
          * Configures the request to use BASIC authentication with the given `username` and `password`.
@@ -128,8 +129,8 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void digest(String user, String password) {
-<span class="fc" id="L131">            digest(user, password, false);</span>
-<span class="fc" id="L132">        }</span>
+<span class="fc" id="L132">            digest(user, password, false);</span>
+<span class="fc" id="L133">        }</span>
 
         /**
          * Configures the request to use DIGEST authentication with the given information.
@@ -267,8 +268,9 @@ public interface HttpConfig {
          * The `uri` is the only required configuration property.
          *
          * @param val the URI to be used for the request, as a String
+         * @throws IllegalArgumentException if there is a problem with the URI syntax
          */
-        void setUri(String val) throws URISyntaxException;
+        void setUri(String val);
 
         /**
          * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URI` in this case.
@@ -429,8 +431,8 @@ public interface HttpConfig {
          * @param value the cookie value
          */
         default void cookie(String name, String value) {
-<span class="fc" id="L432">            cookie(name, value, (Date) null);</span>
-<span class="fc" id="L433">        }</span>
+<span class="fc" id="L434">            cookie(name, value, (Date) null);</span>
+<span class="fc" id="L435">        }</span>
 
         /**
          * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
@@ -517,8 +519,8 @@ public interface HttpConfig {
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status occurs in the response. The `closure` will be called with an instance
-         * of the response as a `FromServer` instance. The value returned from the closure will be used as the result value of the request; this allows
-         * the closure to modify the captured response.
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
          *
          * [source,groovy]
          * ----
@@ -540,7 +542,37 @@ public interface HttpConfig {
          * @param status the response {@link Status} enum
          * @param closure the closure to be executed
          */
-        void when(Status status, Closure&lt;?&gt; closure);
+        default void when(Status status, Closure&lt;?&gt; closure) {
+<span class="nc" id="L546">            when(status, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="nc" id="L547">        }</span>
+
+        /**
+         * Configures the execution of the provided function &quot;when&quot; the given status occurs in the response. The `function` will be called with an instance
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -&gt; {
+         *     config.getRequest().setUri(&quot;http://localhost:10101&quot;);
+         * });
+         * http.get( config -&gt; {
+         *     config.getRequest().getUri().setPath(&quot;/foo&quot;);
+         *     config.getResponse().when(Status.SUCCESS, new BiFunction&lt;FromServer, Object, Object&gt;() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `success(BiFunction)` or `failure(BiFunction)` methods. Only one function may be mapped to each
+         * status.
+         *
+         * @param status the response {@link Status} enum
+         * @param function the function to be executed
+         */
+        void when(Status status, BiFunction&lt;FromServer, Object, ?&gt; function);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code occurs in the response. The `closure` will be called with an instance
@@ -564,7 +596,37 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(Integer code, Closure&lt;?&gt; closure);
+        default void when(Integer code, Closure&lt;?&gt; closure) {
+<span class="fc" id="L600">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L601">        }</span>
+
+        /**
+         * Configures the execution of the provided function &quot;when&quot; the given status code occurs in the response. The `function` will be called with an instance
+         * of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned from the closure will be
+         * used as the result value of the request; this allows the closure to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -&gt; {
+         *     config.getRequest().setUri(&quot;http://localhost:10101&quot;);
+         * });
+         * http.get( config -&gt; {
+         *     config.getRequest().getUri().setPath(&quot;/foo&quot;);
+         *     config.getResponse().when(404, new BiFunction&lt;FromServer, Object, Object&gt;() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `success(BiFunction)` or `failure(BiFunction)` methods. Only one function may be mapped to each
+         * status.
+         *
+         * @param code the response code
+         * @param function the function to be executed
+         */
+        void when(Integer code, BiFunction&lt;FromServer, Object, ?&gt; function);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; the given status code (as a String) occurs in the response. The `closure` will be
@@ -588,15 +650,42 @@ public interface HttpConfig {
          * @param code the response code to be caught
          * @param closure the closure to be executed
          */
-        void when(String code, Closure&lt;?&gt; closure);
+        default void when(String code, Closure&lt;?&gt; closure) {
+<span class="fc" id="L654">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L655">        }</span>
 
         /**
-         * Used to retrieve the &quot;when&quot; closure associated with the given status code.
+         * Configures the execution of the provided function &quot;when&quot; the given status code (as a `String`) occurs in the response. The `function` will be
+         * called with an instance of the response as a `FromServer` instance and the response body as an `Object` (if there is one). The value returned
+         * from the function will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-based configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -&gt; {
+         *     config.getRequest().setUri(&quot;http://localhost:10101&quot;);
+         * });
+         * http.get( config -&gt; {
+         *     config.getRequest().getUri().setPath(&quot;/foo&quot;);
+         *     config.getResponse().when(&quot;404&quot;, new BiFunction&lt;FromServer, Object, Object&gt;() {
+         *          // executed when a successful response is received
+         *     });
+         * });
+         * ----
+         *
+         * @param code the response code as a `String`
+         * @param function the function to be executed
+         */
+        void when(String code, BiFunction&lt;FromServer, Object, ?&gt; function);
+
+        /**
+         * Used to retrieve the &quot;when&quot; function associated with the given status code.
          *
          * @param code the status code
          * @return the mapped closure
          */
-        Closure&lt;?&gt; when(Integer code);
+        BiFunction&lt;FromServer, Object, ?&gt; when(Integer code);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a successful response is received (code &lt; 400). The `closure` will be called with
@@ -621,7 +710,35 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void success(Closure&lt;?&gt; closure);
+        default void success(Closure&lt;?&gt; closure) {
+<span class="fc" id="L714">            success(new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L715">        }</span>
+
+        /**
+         * Configures the execution of the provided function when a success response is received (code &lt; 400). The `function` will be called with
+         * an instance of the response as a `FromServer` instance and the body content as an `Object` (if present). The value returned from the function
+         * will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-specific configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -&gt; {
+         *     config.getRequest().setUri(&quot;http://localhost:10101&quot;);
+         * });
+         * http.get( config -&gt; {
+         *     config.getRequest().getUri().setPath(&quot;/foo&quot;);
+         *     config.getResponse().success(new BiFunction&lt;FromServer, Object, Object&gt;() {
+         *          // executed when a success response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `when(Status.SUCCESS, BiFunction)` method.
+         *
+         * @param function the closure to be executed
+         */
+        void success(BiFunction&lt;FromServer, Object, ?&gt; function);
 
         /**
          * Configures the execution of the provided closure &quot;when&quot; a failure response is received (code &gt;= 400). The `closure` will be called with
@@ -646,7 +763,35 @@ public interface HttpConfig {
          *
          * @param closure the closure to be executed
          */
-        void failure(Closure&lt;?&gt; closure);
+        default void failure(Closure&lt;?&gt; closure) {
+<span class="fc" id="L767">            failure(new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L768">        }</span>
+
+        /**
+         * Configures the execution of the provided function &quot;when&quot; a failure response is received (code &gt;= 400). The `function` will be called with
+         * an instance of the response as a `FromServer` instance and the body content as an `Object` (if present). The value returned from the function
+         * will be used as the result value of the request; this allows the function to modify the captured response.
+         *
+         * This method is generally used for Java-specific configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -&gt; {
+         *     config.getRequest().setUri(&quot;http://localhost:10101&quot;);
+         * });
+         * http.get( config -&gt; {
+         *     config.getRequest().getUri().setPath(&quot;/foo&quot;);
+         *     config.getResponse().failure(new BiFunction&lt;FromServer, Object, Object&gt;() {
+         *          // executed when a failure response is received
+         *     });
+         * });
+         * ----
+         *
+         * This method is the same as calling either the `when(Status.FAILURE, BiFunction)` method.
+         *
+         * @param function the closure to be executed
+         */
+        void failure(BiFunction&lt;FromServer, Object, ?&gt; function);
 
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
@@ -674,18 +819,26 @@ public interface HttpConfig {
     }
 
     /**
-     * FIXME: document
+     * Registers a context-level content-type specific object.
+     *
+     * @param contentType the content type scope of the mapping
+     * @param id the mapping key
+     * @param obj the mapping value
      */
     void context(String contentType, Object id, Object obj);
 
     /**
-     * FIXME: document
+     * Used to register a content-type-scoped object on the context in the specified content-type scopes.
+     *
+     * @param contentTypes the content-types where the mapping is scoped
+     * @param id the mapping key
+     * @param obj the mapping value
      */
     default void context(final Iterable&lt;String&gt; contentTypes, final Object id, final Object obj) {
-<span class="fc bfc" id="L685" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
-<span class="fc" id="L686">            context(contentType, id, obj);</span>
-<span class="fc" id="L687">        }</span>
-<span class="fc" id="L688">    }</span>
+<span class="fc bfc" id="L838" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
+<span class="fc" id="L839">            context(contentType, id, obj);</span>
+<span class="fc" id="L840">        }</span>
+<span class="fc" id="L841">    }</span>
 
     /**
      * Used to retrieve configuration information about the HTTP request.
@@ -701,4 +854,4 @@ public interface HttpConfig {
      */
     Response getResponse();
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

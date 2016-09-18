@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.9.17,</span>
+<span id="revnumber">version 0.10.0,</span>
 <span id="revdate">September 2016</span>
 </div>
 <div id="toc" class="toc2">
@@ -537,7 +537,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_encoders">Encoders</a></li>
 <li><a href="#_parsers">Parsers</a></li>
 <li><a href="#_interceptors">Interceptors</a></li>
+<li><a href="#_http_response_headers">HTTP Response Headers</a></li>
 <li><a href="#_client_library_integration">Client Library Integration</a></li>
+<li><a href="#_standard_java_usage">Standard Java Usage</a></li>
 <li><a href="#_examples">Examples</a>
 <ul class="sectlevel2">
 <li><a href="#_resource_last_modified_head">Resource Last Modified (HEAD)</a></li>
@@ -552,22 +554,10 @@ table.CodeRay td.code>pre{padding:0}
 <div class="sect1">
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Warning</div>
-</td>
-<td class="content">
-This document is a work-in-progress, and currently has a lot of gaps. We are working to fill in the holes, but feel free to suggest content by creating an issue.
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
-<p>Http Builder NG is a modern Groovy DSL for making http requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x,
-but it doesn&#8217;t make any assumptions about which version of Groovy you are using. The main goal of Http Builder NG is to allow you to make
-http requests in a natural and readable way.</p>
+<p>"HTTP Builder NG"" is a modern Groovy DSL for making HTTP requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x,
+but it doesn&#8217;t make any assumptions about which version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make
+HTTP requests in a natural and readable way.</p>
 </div>
 <div class="paragraph">
 <p>The project web site is: <a href="https://github.com/dwclark/http-builder-ng" class="bare">https://github.com/dwclark/http-builder-ng</a></p>
@@ -768,6 +758,155 @@ response content from the server). The displayed result will be something like:<
 </div>
 </div>
 <div class="sect1">
+<h2 id="_http_response_headers">HTTP Response Headers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>HTTP headers are retrieved from the response using the <code>FromServer.getHeaders()</code> method. Some common headers enriched with the ability to parse themselves into
+more useful types, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</span><span class="content">Last-Modified</span><span class="delimiter">'</span></span> }.parse()   <span class="comment">// ZonedDateTime</span>
+headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</span><span class="content">Allow</span><span class="delimiter">'</span></span> }.parse()           <span class="comment">// List&lt;String&gt;</span>
+headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</span><span class="content">Refresh</span><span class="delimiter">'</span></span> }.parse()         <span class="comment">// Map&lt;String,String&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The parsing is provided using registered header implementations by header name. Currently, you cannot register your own and the supported header types are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Access-Control-Allow-Origin</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Accept-Patch</code>&#8594; CombinedMap</p>
+</li>
+<li>
+<p><code>Accept-Ranges</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Age</code>&#8594; SingleLong</p>
+</li>
+<li>
+<p><code>Allow</code>&#8594; CsvList</p>
+</li>
+<li>
+<p><code>Alt-Svc</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Cache-Control</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Connection</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-Disposition</code>&#8594; CombinedMap</p>
+</li>
+<li>
+<p><code>Content-Encoding</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-Language</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-Length</code>&#8594; SingleLong</p>
+</li>
+<li>
+<p><code>Content-Location</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-MD5</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-Range</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Content-Type</code>&#8594; CombinedMap</p>
+</li>
+<li>
+<p><code>Date</code>&#8594; HttpDate</p>
+</li>
+<li>
+<p><code>ETag</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Expires</code>&#8594; HttpDate</p>
+</li>
+<li>
+<p><code>Last-Modified</code>&#8594; HttpDate</p>
+</li>
+<li>
+<p><code>Link</code>&#8594; CombinedMap</p>
+</li>
+<li>
+<p><code>Location</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>P3P</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Pragma</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Proxy-Authenticate</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Public-Key-Pins</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Refresh</code>&#8594; CombinedMap</p>
+</li>
+<li>
+<p><code>Retry-After</code>&#8594; HttpDate</p>
+</li>
+<li>
+<p><code>Server</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Set-Cookie</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Status</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Strict-Transport-Security</code>&#8594; MapPairs</p>
+</li>
+<li>
+<p><code>Trailer</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Transfer-Encoding</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>TSV</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Upgrade</code>&#8594; CsvList</p>
+</li>
+<li>
+<p><code>Vary</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>Via</code>&#8594; CsvList</p>
+</li>
+<li>
+<p><code>Warning</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>WWW-Authenticate</code>&#8594; ValueOnly</p>
+</li>
+<li>
+<p><code>X-Frame-Options</code>&#8594; ValueOnly</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All headers not explicitly typed are simply <code>ValueOnly</code>. The definitive list is in the source code of the <code>groovyx.net.http.FromServer.Header</code> class.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -818,6 +957,38 @@ no reason other HTTP clients could not be used, perhaps the <a href="https://git
 </div>
 </div>
 <div class="sect1">
+<h2 id="_standard_java_usage">Standard Java Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>HttpBuilder</code> may also be used in standard Java 8 code with no required Groovy code.</p>
+</div>
+<div class="paragraph">
+<p>For example, extracting the HTTP headers from the result of a <code>HEAD</code> request would be something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">HttpBuilder http = HttpBuilder.configure(config -&gt; {
+    config.getRequest().setUri(<span class="string"><span class="delimiter">&quot;</span><span class="content">http://localhost:9192</span><span class="delimiter">&quot;</span></span>);
+});
+
+<span class="predefined-type">List</span>&lt;FromServer.Header&gt; headers = (<span class="predefined-type">List</span>&lt;FromServer.Header&gt;) http.head(<span class="predefined-type">List</span>.class, config -&gt; {
+    config.getRequest().getUri().setPath(<span class="string"><span class="delimiter">&quot;</span><span class="content">/foo</span><span class="delimiter">&quot;</span></span>);
+    config.getResponse().success(<span class="keyword">new</span> BiFunction&lt;FromServer, <span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt;() {
+        <span class="annotation">@Override</span>
+        <span class="directive">public</span> <span class="predefined-type">Object</span> apply(<span class="directive">final</span> FromServer from, <span class="directive">final</span> <span class="predefined-type">Object</span> o) {
+            assertFalse(from.getHasBody());
+            <span class="keyword">return</span> from.getHeaders();
+        }
+    });
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Java 8 lambda expressions and function objects may be used interchangeably. All configuration and verb interfaces should be usable by both Groovy and Java code.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_examples">Examples</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -860,6 +1031,25 @@ println <span class="string"><span class="delimiter">&quot;</span><span class="c
 <div class="content">
 <pre>Groovy 2.4.7 last modified 06/07/2016 03:38</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Alternately, using header parsing along with the <code>java.time</code> API, you can simplify the header conversion:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">ZonedDateTime lastModified = configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
+}.head(ZonedDateTime) {
+    response.success { FromServer resp -&gt;
+        resp.headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</span><span class="content">Last-Modified</span><span class="delimiter">'</span></span> }?.parse(ofPattern(<span class="string"><span class="delimiter">'</span><span class="content">EEE, dd MMM yyyy  H:mm:ss zzz</span><span class="delimiter">'</span></span>))
+    }
+}
+
+println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy 2.4.7 (jar) was last modified on </span><span class="inline"><span class="inline-delimiter">${</span>lastModified.format(ofPattern(<span class="string"><span class="delimiter">'</span><span class="content">MM/dd/yyyy HH:mm</span><span class="delimiter">'</span></span>))<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>which yields the same results, just with a cleaner conversion of the header data.</p>
 </div>
 </div>
 <div class="sect2">
@@ -932,8 +1122,8 @@ the request. The end result is the following display:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.17<br>
-Last updated 2016-09-12 11:37:16 -05:00
+Version 0.10.0<br>
+Last updated 2016-09-18 06:19:15 -05:00
 </div>
 </div>
 </body>
