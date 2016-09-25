@@ -184,6 +184,10 @@ tasks.withType(FindBugs) {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
 task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version') << {
     String newVersion = project.version
     String oldVersion = project.property('from')

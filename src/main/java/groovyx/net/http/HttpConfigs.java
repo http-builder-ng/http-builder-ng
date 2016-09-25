@@ -196,7 +196,7 @@ public class HttpConfigs {
         private Object body;
         private final Map<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new LinkedHashMap<>();
         private BasicAuth auth = new BasicAuth();
-        private List<Cookie> cookies = new ArrayList(1);
+        private List<Cookie> cookies = new ArrayList<>(1);
         
         protected BasicRequest(ChainedRequest parent) {
             super(parent);
@@ -257,7 +257,7 @@ public class HttpConfigs {
         private volatile Object body;
         private final ConcurrentMap<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
-        private final List<Cookie> cookies = new CopyOnWriteArrayList();
+        private final List<Cookie> cookies = new CopyOnWriteArrayList<>();
 
         public ThreadSafeRequest(final ChainedRequest parent) {
             super(parent);
@@ -373,6 +373,8 @@ public class HttpConfigs {
                 parser(contentType, val);
             }
         }
+
+        public abstract void setType(Class<?> type);
     }
 
     public static class BasicResponse extends BaseResponse {
@@ -381,7 +383,8 @@ public class HttpConfigs {
         private BiFunction<FromServer, Object, ?> successHandler;
         private BiFunction<FromServer, Object, ?> failureHandler;
         private final Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new LinkedHashMap<>();
-
+        private Class<?> type = Object.class;
+        
         protected BasicResponse(final ChainedResponse parent) {
             super(parent);
         }
@@ -409,6 +412,14 @@ public class HttpConfigs {
         public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
         }
+
+        public Class<?> getType() {
+            return type;
+        }
+
+        public void setType(Class<?> val) {
+            type = val;
+        }
     }
 
     public static class ThreadSafeResponse extends BaseResponse {
@@ -417,6 +428,7 @@ public class HttpConfigs {
         private final ConcurrentMap<Integer,BiFunction<FromServer, Object, ?>> byCode = new ConcurrentHashMap<>();
         private volatile BiFunction<FromServer, Object, ?> successHandler;
         private volatile BiFunction<FromServer, Object, ?> failureHandler;
+        private volatile Class<?> type = Object.class;
 
         public ThreadSafeResponse(final ChainedResponse parent) {
             super(parent);
@@ -444,6 +456,14 @@ public class HttpConfigs {
 
         public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
+        }
+
+        public Class<?> getType() {
+            return type;
+        }
+
+        public void setType(final Class<?> val) {
+            type = val;
         }
     }
 
@@ -541,19 +561,19 @@ public class HttpConfigs {
             }
         }
 
-        public Request getRequest() {
+        public BasicRequest getRequest() {
             return request;
         }
 
-        public Response getResponse() {
+        public BasicResponse getResponse() {
             return response;
         }
 
-        public ChainedRequest getChainedRequest() {
+        public BasicRequest getChainedRequest() {
             return request;
         }
 
-        public ChainedResponse getChainedResponse() {
+        public BasicResponse getChainedResponse() {
             return response;
         }
 
@@ -601,7 +621,7 @@ public class HttpConfigs {
         return new BasicHttpConfig(parent);
     }
 
-    public static ChainedHttpConfig requestLevel(final ChainedHttpConfig parent) {
+    public static BasicHttpConfig requestLevel(final ChainedHttpConfig parent) {
         return new BasicHttpConfig(parent);
     }
 
