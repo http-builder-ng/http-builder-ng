@@ -109,9 +109,9 @@ public class NativeHandlers {
             return body;
         }
 
-        public static void checkTypes(final Object body, final Class[] allowedTypes) {
-            final Class type = body.getClass();
-            for(Class allowed : allowedTypes) {
+        public static void checkTypes(final Object body, final Class<?>[] allowedTypes) {
+            final Class<?> type = body.getClass();
+            for(Class<?> allowed : allowedTypes) {
                 if(allowed.isAssignableFrom(type)) {
                     return;
                 }

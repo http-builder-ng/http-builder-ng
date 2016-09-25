@@ -31,13 +31,11 @@ import static groovyx.net.http.NativeHandlers.Encoders.handleRawUpload;
 public class Jackson {
 
     public static final String OBJECT_MAPPER_ID = "0w4XJJnlTNK8dvISuCDTlsusPQE=";
-    public static final String RESPONSE_TYPE = "GWW35uTkrHwonPt5odeUqBdR3EU=";
 
     public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
         try {
             final ObjectMapper mapper = (ObjectMapper) config.actualContext(fromServer.getContentType(), OBJECT_MAPPER_ID);
-            final Class type = (Class) config.actualContext(fromServer.getContentType(), RESPONSE_TYPE);
-            return mapper.readValue(fromServer.getReader(), type);
+            return mapper.readValue(fromServer.getReader(), config.getChainedResponse().getType());
         }
         catch(IOException e) {
             throw new RuntimeException(e);
@@ -52,7 +50,6 @@ public class Jackson {
 
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
             final ObjectMapper mapper = (ObjectMapper) config.actualContext(request.actualContentType(), OBJECT_MAPPER_ID);
-            final Class type = (Class) config.actualContext(request.actualContentType(), RESPONSE_TYPE);
             final StringWriter writer = new StringWriter();
             mapper.writeValue(writer, request.actualBody());
             ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));
@@ -69,10 +66,5 @@ public class Jackson {
     public static void use(final HttpConfig config) {
         config.getRequest().encoder(ContentTypes.JSON, Jackson::encode);
         config.getResponse().parser(ContentTypes.JSON, Jackson::parse);
-    }
-    
-    public static void toType(final HttpConfig config, final Class type) {
-        use(config);
-        config.context(ContentTypes.JSON, RESPONSE_TYPE, type);
     }
 }

@@ -82,7 +82,8 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
-
+        Class<?> getType();
+        
         default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
@@ -105,8 +106,8 @@ public interface ChainedHttpConfig extends HttpConfig {
     Map<Map.Entry<String,Object>,Object> getContextMap();
     
     default Object actualContext(final String contentType, final Object id) {
-        final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry(contentType, id);
-        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry(ContentTypes.ANY.getAt(0), id);
+        final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry<>(contentType, id);
+        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry<>(ContentTypes.ANY.getAt(0), id);
         
         final Function<ChainedHttpConfig,Object> theValue = (config) -> {
             Object ctx = config.getContextMap().get(key);
