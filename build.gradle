@@ -6,7 +6,6 @@ buildscript {
 
     dependencies {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
-        classpath "com.stehno.gradle:site:0.0.1"
     }
 }
 
@@ -22,13 +21,12 @@ plugins {
 }
 
 apply plugin: 'org.asciidoctor.convert'
-apply plugin: "com.stehno.gradle.site"
 
 sourceCompatibility = 8
 targetCompatibility = 8
 
 group = 'org.codehaus.groovy.modules'
-version = '0.10.0'
+version = '0.10.1'
 
 repositories {
     jcenter()
@@ -171,6 +169,11 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
     }
 }
 
+task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.', dependsOn: ['site']) {
+    buildFile = 'publish.gradle'
+    tasks = ['publishGhPages']
+}
+
 tasks.withType(FindBugs) {
     ignoreFailures = true       // let's not kill the build for this
     effort = 'max'
@@ -180,6 +183,10 @@ tasks.withType(FindBugs) {
         html.enabled true
         html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
     }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
 task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version') << {
@@ -240,9 +247,9 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
     assert exists, 'Some or all of the documentation site pages are not published. Run with --info for more details.'
 }
 
-//task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSiteToGitHub']) << {
-//    logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
-//}
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']) << {
+    logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
+}
 
 task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) << {
     logger.lifecycle 'Release has been verified.'
@@ -256,15 +263,4 @@ static boolean checkUrl(String url) {
     } catch (ex) {
         return false
     }
-}
-
-/// FIXME: new stuff starts here
-
-startPreview {
-    port = 8080
-}
-
-publishSiteToGitHub {
-    repoUri = 'git@github.com:dwclark/http-builder-ng'
-    targetBranch = 'do-not-use'
 }

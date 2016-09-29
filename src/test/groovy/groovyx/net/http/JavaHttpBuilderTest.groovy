@@ -297,14 +297,13 @@ class JavaHttpBuilderTest extends Specification {
         def accept = [ 'application/json','application/javascript','text/javascript' ];
 
         expect:
-        httpBin.post {
+        httpBin.post(Map) {
             request.uri.path = '/post'
             request.uri.query = [ one: '1', two: '2' ];
             request.accept = accept;
             request.body = toSend;
             request.contentType = 'application/json';
             Jackson.mapper(delegate, objectMapper);
-            Jackson.toType(delegate, Map);
         }.with {
             (it instanceof Map &&
              headers.Accept.split(';') as List<String> == accept &&
