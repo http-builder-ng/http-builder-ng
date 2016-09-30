@@ -10,7 +10,7 @@ def startJetty() {
     def handler = new ServletContextHandler(ServletContextHandler.SESSIONS)
     handler.contextPath = '/'
     handler.resourceBase = '.'
-    handler.addServlet(DefaultServlet, '/').setInitParameter('resourceBase', './build/jbake')
+    handler.addServlet(DefaultServlet, '/').setInitParameter('resourceBase', './build/site')
 
     server.handler = handler
     server.start()
