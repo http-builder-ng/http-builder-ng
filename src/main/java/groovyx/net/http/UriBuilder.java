@@ -424,7 +424,7 @@ public abstract class UriBuilder {
             return path;
         }
 
-        private Map<String, Object> query = new ConcurrentHashMap();
+        private Map<String, Object> query = new ConcurrentHashMap<>();
 
         public UriBuilder setQuery(Map<String, ?> val) {
             query.putAll(val);

@@ -108,7 +108,7 @@ public class Csv {
         final StringWriter writer = new StringWriter();
         final CSVWriter csvWriter = ctx.makeWriter(new StringWriter());
 
-        Iterable<Object> iterable = (Iterable) body;
+        Iterable<?> iterable = (Iterable<?>) body;
         for(Object o : iterable) {
             csvWriter.writeNext((String[]) o);
         }

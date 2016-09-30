@@ -160,6 +160,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             return true;
         }
 
+        @SuppressWarnings("deprecation") //apache httpentity requires method
         public void consumeContent() throws IOException {
             inputStream.close();
         }
@@ -302,7 +303,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         //technically cookies are headers, so add them here
         final URI uri = cr.getUri().toURI();
-        List<Cookie> cookies = cr.actualCookies(new ArrayList());
+        List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
         for(Cookie cookie : cookies) {
             final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
             apacheCookie.setVersion(clientConfig.getCookieVersion());

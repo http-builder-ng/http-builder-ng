@@ -281,7 +281,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T get(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-        return type.cast(get(closure));
+        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, closure), this::doGet));
     }
 
     /**
@@ -307,7 +307,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T get(final Class<T> type, final Consumer<HttpConfig> configuration){
-        return type.cast(get(configuration));
+        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, configuration), this::doGet));
     }
 
     /**
@@ -470,7 +470,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T head(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-        return type.cast(head(closure));
+        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, closure), this::doHead));
     }
 
     /**
@@ -496,7 +496,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T head(final Class<T> type, final Consumer<HttpConfig> configuration){
-        return type.cast(head(configuration));
+        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, configuration), this::doHead));
     }
 
     /**
@@ -667,7 +667,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public <T> T post(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-        return type.cast(post(closure));
+        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, closure), this::doPost));
     }
 
     /**
@@ -693,7 +693,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T post(final Class<T> type, final Consumer<HttpConfig> configuration) {
-        return type.cast(post(configuration));
+        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, configuration), this::doPost));
     }
 
     /**
@@ -865,7 +865,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public <T> T put(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-        return type.cast(put(closure));
+        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, closure), this::doPut));
     }
 
     /**
@@ -891,7 +891,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T put(final Class<T> type, final Consumer<HttpConfig> configuration) {
-        return type.cast(put(configuration));
+        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, configuration), this::doPut));
     }
 
     /**
@@ -1061,7 +1061,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public <T> T delete(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-        return type.cast(delete(closure));
+        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, closure), this::doDelete));
     }
 
     /**
@@ -1087,7 +1087,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public <T> T delete(final Class<T> type, final Consumer<HttpConfig> configuration) {
-        return type.cast(delete(configuration));
+        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, configuration), this::doDelete));
     }
 
     /**
@@ -1232,7 +1232,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return interceptors.get(HttpVerb.GET).apply(configureRequest(closure), this::doGet);
+        return get(Object.class, closure);
     }
 
     /**
@@ -1256,7 +1256,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(final Consumer<HttpConfig> configuration){
-        return interceptors.get(HttpVerb.GET).apply(configureRequest(configuration), this::doGet);
+        return get(Object.class, configuration);
     }
 
     /**
@@ -1278,7 +1278,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content - which will be `null` unless provided by a `request.when()` closure
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(closure), this::doHead);
+        return head(Object.class, closure);
     }
 
     /**
@@ -1302,7 +1302,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object head(final Consumer<HttpConfig> configuration){
-        return interceptors.get(HttpVerb.HEAD).apply(configureRequest(configuration), this::doHead);
+        return head(Object.class, configuration);
     }
 
     /**
@@ -1326,7 +1326,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return interceptors.get(HttpVerb.POST).apply(configureRequest(closure), this::doPost);
+        return post(Object.class, closure);
     }
 
     /**
@@ -1350,7 +1350,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post(final Consumer<HttpConfig> configuration) {
-        return interceptors.get(HttpVerb.POST).apply(configureRequest(configuration), this::doPost);
+        return post(Object.class, configuration);
     }
 
     /**
@@ -1374,7 +1374,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return interceptors.get(HttpVerb.PUT).apply(configureRequest(closure), this::doPut);
+        return put(Object.class, closure);
     }
 
     /**
@@ -1398,7 +1398,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put(final Consumer<HttpConfig> configuration) {
-        return interceptors.get(HttpVerb.PUT).apply(configureRequest(configuration), this::doPut);
+        return put(Object.class, configuration);
     }
 
     /**
@@ -1420,7 +1420,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(closure), this::doDelete);
+        return delete(Object.class, closure);
     }
 
     /**
@@ -1444,7 +1444,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete(final Consumer<HttpConfig> configuration) {
-        return interceptors.get(HttpVerb.DELETE).apply(configureRequest(configuration), this::doDelete);
+        return delete(Object.class, configuration);
     }
 
     protected abstract Object doGet(final ChainedHttpConfig config);
@@ -1461,17 +1461,19 @@ public abstract class HttpBuilder implements Closeable {
 
     public abstract Executor getExecutor();
 
-    private ChainedHttpConfig configureRequest(final Closure closure) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
+    private ChainedHttpConfig configureRequest(final Class<?> type, final Closure closure) {
+        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
         closure.setDelegate(myConfig);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         closure.call();
+        myConfig.getChainedResponse().setType(type);
         return myConfig;
     }
 
-    private ChainedHttpConfig configureRequest(final Consumer<HttpConfig> configuration) {
-        final ChainedHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
+    private ChainedHttpConfig configureRequest(final Class<?> type, final Consumer<HttpConfig> configuration) {
+        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());
         configuration.accept(myConfig);
+        myConfig.getChainedResponse().setType(type);
         return myConfig;
     }
 }
