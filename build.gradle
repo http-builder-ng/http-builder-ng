@@ -9,14 +9,15 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.7'
+    id 'com.jfrog.bintray' version '1.7.1'
     id "com.github.hierynomus.license" version "0.13.1"
     id 'groovy'
     id 'maven'
     id 'maven-publish'
     id 'jacoco'
     id 'findbugs'
-    id "me.champeau.jbake" version "0.2"
+    id "com.stehno.gradle.webpreview" version "0.1.1"
+    id 'com.github.ben-manes.versions' version '0.13.0'
 }
 
 apply plugin: 'org.asciidoctor.convert'
@@ -155,16 +156,37 @@ asciidoctor {
 
 tasks.bintrayUpload.dependsOn build
 
-task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor', 'jbake']) << {
-    logger.lifecycle 'Building documentation web site...'
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor']) << {
+    logger.info 'Building documentation web site...'
 
-    ant.copy(todir: 'build/jbake') {
-        fileset(dir: 'build/docs', includes: '**/**')
-        fileset(dir: 'build/reports', includes: '**/**')
+    // copy the templates
+    copy {
+        from 'src/site'
+        into 'build/site'
+        include '**/*.html'
+        expand([ project_version:project.version ])
     }
 
-    ant.copy(todir: 'build/jbake/guide') {
-        fileset(dir: 'build/asciidoc', includes: '**/**')
+    // copy the assets
+    copy {
+        from 'src/site'
+        into 'build/site'
+        include '**/css/**'
+        include '**/fonts/**'
+        include '**/js/**'
+    }
+
+    copy {
+        from 'build/docs'
+        from 'build/reports'
+        include '**/**'
+        into 'build/site'
+    }
+
+    copy {
+        from 'build/asciidoc'
+        include '**/**'
+        into 'build/site/guide'
     }
 }
 
@@ -196,14 +218,14 @@ task updateVersion(group: 'Documentation', description: 'Updates the version in 
 
     ant.replace(file: 'README.md', token: oldVersion, value: newVersion)
     ant.replace(dir: 'src/docs/asciidoc', token: oldVersion, value: newVersion)
-    ant.replace(dir: 'src/jbake/templates', token: oldVersion, value: newVersion)
+    ant.replace(dir: 'src/site', token: oldVersion, value: newVersion)
 }
 
 task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.') << {
     logger.lifecycle "Verifying that the documentation references version ${project.version}..."
 
     // Not the most efficient way to do this but should be ok for now
-    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc', 'src/jbake/templates/index.gsp'].every { f ->
+    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc', 'src/site/index.gsp'].every { f ->
         boolean ok = project.file(f).text.contains(project.version)
 
         logger.info " - Checking: $f: $ok"
@@ -234,12 +256,9 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
     logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
     // we'll just hit the important ones
-    boolean exists = [
-        '/index.html', '/guide/html5/index.html', '/javadoc/index.html'
-    ].every { page ->
-        String chk = " - Checking: ${siteUrl}${page}:"
+    boolean exists = [ '/index.html', '/guide/html5/index.html', '/javadoc/index.html' ].every { page ->
         boolean ok = checkUrl("${siteUrl}${page}")
-        logger.info "$chk $ok"
+        logger.info " - Checking: ${siteUrl}${page}: $ok"
         ok
     }
 
@@ -252,6 +271,10 @@ task release(group: 'Development', description: 'Release a new version of the li
 
 task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) << {
     logger.lifecycle 'Release has been verified.'
+}
+
+webPreview {
+    resourceDir = file('build/site')
 }
 
 static boolean checkUrl(String url) {
