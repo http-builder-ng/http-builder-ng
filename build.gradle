@@ -225,7 +225,7 @@ task checkVersion(group: 'Verification', description: 'Verify that the project v
     logger.lifecycle "Verifying that the documentation references version ${project.version}..."
 
     // Not the most efficient way to do this but should be ok for now
-    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc', 'src/site/index.gsp'].every { f ->
+    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc'].every { f ->
         boolean ok = project.file(f).text.contains(project.version)
 
         logger.info " - Checking: $f: $ok"
@@ -236,7 +236,7 @@ task checkVersion(group: 'Verification', description: 'Verify that the project v
 }
 
 task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.') << {
-    def repo = "https://dl.bintray.com/davidwclark/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
+    def repo = "https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
     def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
 
     logger.lifecycle "Verifying that artifacts exist at ${repo}..."
