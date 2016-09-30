@@ -17,6 +17,7 @@ plugins {
     id 'maven-publish'
     id 'jacoco'
     id 'findbugs'
+    id "com.stehno.gradle.webpreview" version "0.1.0"
 }
 
 apply plugin: 'org.asciidoctor.convert'
@@ -270,6 +271,10 @@ task release(group: 'Development', description: 'Release a new version of the li
 
 task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) << {
     logger.lifecycle 'Release has been verified.'
+}
+
+webPreview {
+    resourceDir = file('build/site')
 }
 
 static boolean checkUrl(String url) {
