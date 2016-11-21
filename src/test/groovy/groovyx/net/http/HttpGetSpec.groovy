@@ -332,9 +332,6 @@ class HttpGetSpec extends Specification {
     }
 
     @Unroll @Requires(HttpBin) def '[#client] GET (DIGEST) /digest-auth'() {
-        /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
-                 then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
-         */
         given:
         def config = {
             request.uri = 'http://httpbin.org/'
@@ -344,22 +341,10 @@ class HttpGetSpec extends Specification {
 
         when:
         def httpClient = httpBuilder(client, config);
-        def result = null;
-        if(client == APACHE) {
-            result = httpClient.get {
-                request.uri.path = '/digest-auth/auth/david/clark'
-                request.auth.digest 'david', 'clark'
-                response.failure { r, o -> return 'Ignored' }
-            }
-        }
-        
-        then:
-        client == JAVA || result == 'Ignored'
-
-        when:
-        result = httpClient.get {
-            request.uri = '/digest-auth/auth/david/clark'
+        def result = httpClient.get {
+            request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
+            request.cookie('fake', 'fake_value')
         }
 
         then:
@@ -368,21 +353,10 @@ class HttpGetSpec extends Specification {
 
         when:
         httpClient = httpBuilder(client, config)
-        if(client == APACHE) {
-            result = httpClient.getAsync {
-                request.uri.path = '/digest-auth/auth/david/clark'
-                request.auth.digest 'david', 'clark'
-                response.failure { r -> 'Ignored' }
-            }.get()
-        }
-
-        then:
-        client == JAVA || result == 'Ignored'
-
-        when:
-        result = httpClient.getAsync() {
-            request.uri = '/digest-auth/auth/david/clark'
+        result = httpClient.getAsync {
+            request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
+            request.cookie('fake', 'fake_value')
         }.get()
 
         then:

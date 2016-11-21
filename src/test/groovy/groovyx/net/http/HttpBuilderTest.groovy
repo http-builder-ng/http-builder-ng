@@ -34,7 +34,7 @@ class HttpBuilderTest extends Specification {
 
     static final Function apacheBuilder = { c -> new ApacheHttpBuilder(c); } as Function;
 
-    def httpBin, google, pool;
+    def httpBin, google, pool, singleThreadHttpBin;
 
     def setup() {
         def max = 2;
@@ -51,6 +51,10 @@ class HttpBuilderTest extends Specification {
             execution.maxThreads = max
             execution.executor = pool;
         };
+
+        singleThreadHttpBin = HttpBuilder.configure(apacheBuilder) {
+            request.uri = 'http://httpbin.org/';
+        }
     }
 
     def "Basic GET"() {
@@ -190,18 +194,11 @@ class HttpBuilderTest extends Specification {
     }
 
     def "Digest Auth"() {
-        //NOTE, httpbin.org oddly requires cookies to be set during digest authentication,
-        //which of course httpclient won't do. If you let the first request fail, then the cookie will
-        //be set, which means the next request will have the cookie and will allow auth to succeed.
+        //Setting fake: fake_value is necessary to get httpbin to work correctly during authentication
         expect:
-        "Ignored" == httpBin.get {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> "Ignored" }
-        };
-
         httpBin.get {
             request.uri.path = '/digest-auth/auth/david/clark'
+            request.cookie('fake', 'fake_value')
             request.auth.digest 'david', 'clark'
         }.with {
             authenticated && user == 'david';
@@ -210,16 +207,16 @@ class HttpBuilderTest extends Specification {
 
     def "Test Set Cookies"() {
         expect:
-        httpBin.get {
+        singleThreadHttpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'foocookie', 'barcookie'
+            request.cookie('foocookie', 'barcookie')
         }.with {
             cookies.foocookie == 'barcookie';
         }
 
-        httpBin.get {
+        singleThreadHttpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'requestcookie', '12345'
+            request.cookie('requestcookie', '12345')
         }.with {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345';
         }
