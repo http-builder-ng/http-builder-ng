@@ -188,19 +188,18 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
 
-    final private CookieStore cookieStore;
     final private CloseableHttpClient client;
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
+    final private CookieStore cookieStore;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
-        this.cookieStore = new BasicCookieStore();
-        HttpClientBuilder myBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
+        HttpClientBuilder myBuilder = HttpClients.custom();
 
         if(config.getExecution().getMaxThreads() > 1) {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
@@ -208,6 +207,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
             
             myBuilder.setConnectionManager(cm);
+            cookieStore = null;
+        }
+        else {
+            cookieStore = new BasicCookieStore();
         }
         
         if(config.getExecution().getSslContext() != null) {
@@ -259,9 +262,31 @@ public class ApacheHttpBuilder extends HttpBuilder {
         basicAuth(c, auth, uri);
     }
 
+    private void cookies(final HttpClientContext c, final ChainedHttpConfig.ChainedRequest cr) {
+        //if the client was configured for single thread use, then we can safely
+        //use the class based cookie store, otherwise we need to create a per request store
+        CookieStore cookieStore = this.cookieStore == null ? new BasicCookieStore() : this.cookieStore;
+        final URI uri = cr.getUri().toURI();
+        List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
+        for(Cookie cookie : cookies) {
+            final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
+            apacheCookie.setVersion(clientConfig.getCookieVersion());
+            apacheCookie.setDomain(uri.getHost());
+            apacheCookie.setPath(uri.getPath());
+            if(cookie.getExpires() != null) {
+                apacheCookie.setExpiryDate(cookie.getExpires());
+            }
+            
+            cookieStore.addCookie(apacheCookie);
+        }
+
+        c.setCookieStore(cookieStore);
+    }
+
     private HttpClientContext context(final ChainedHttpConfig requestConfig) {
         final HttpClientContext c = HttpClientContext.create();
-        final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();
+        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+        final HttpConfig.Auth auth = cr.actualAuth();
         
         if(auth != null) {
             final URI uri = requestConfig.getRequest().getUri().toURI();
@@ -272,7 +297,8 @@ public class ApacheHttpBuilder extends HttpBuilder {
                 digestAuth(c, auth, uri);
             }
         }
-        
+
+        cookies(c, cr);
         return c;
     }
 
@@ -299,21 +325,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final String contentType = cr.actualContentType();
         if(contentType != null) {
             message.addHeader("Content-Type", contentType);
-        }
-
-        //technically cookies are headers, so add them here
-        final URI uri = cr.getUri().toURI();
-        List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-        for(Cookie cookie : cookies) {
-            final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
-            apacheCookie.setVersion(clientConfig.getCookieVersion());
-            apacheCookie.setDomain(uri.getHost());
-            apacheCookie.setPath(uri.getPath());
-            if(cookie.getExpires() != null) {
-                apacheCookie.setExpiryDate(cookie.getExpires());
-            }
-            
-            cookieStore.addCookie(apacheCookie);
         }
 
         return message;
