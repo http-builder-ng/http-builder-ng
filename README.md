@@ -38,7 +38,7 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 ## Artifacts
 
-Http Builder NG artifacts are available on [Bintay](https://bintray.com/davidwclark/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
+Http Builder NG artifacts are available on [Bintay](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
     compile 'org.codehaus.groovy.modules:http-builder-ng:0.10.2'
     
