@@ -6,6 +6,6 @@ env:
   - TERM=dumb
 before_script:
   - ./gradlew --version
-script: ./gradlew build
+script: ./gradlew build jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
