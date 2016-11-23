@@ -23,9 +23,9 @@ class MockWebServerRule extends ExternalResource {
         server.dispatcher = closure as Dispatcher
     }
 
-    void dispatcher(final String path, final MockResponse response) {
+    void dispatcher(final String method, final String path, final MockResponse response) {
         dispatcher { RecordedRequest request ->
-            if (request.path == path) {
+            if (request.method == method && request.path == path) {
                 return response
             }
             return new MockResponse().setResponseCode(404)
@@ -34,6 +34,10 @@ class MockWebServerRule extends ExternalResource {
 
     String getServerUrl() {
         "http://${server.hostName}:${server.port}"
+    }
+
+    int getServerPort() {
+        server.port
     }
 
     @Override

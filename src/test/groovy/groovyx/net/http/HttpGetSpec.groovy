@@ -27,8 +27,6 @@ import java.util.concurrent.Executors
 import static HttpClientType.APACHE
 import static HttpClientType.JAVA
 import static groovyx.net.http.MockServerHelper.*
-import static org.mockserver.model.HttpRequest.request
-import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
 
@@ -40,14 +38,16 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#client] GET /status(#status): verify when handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.path == '/status200') {
-                return new MockResponse().setResponseCode(200)
-            } else if (request.path == '/status300') {
-                return new MockResponse().setResponseCode(300)
-            } else if (request.path == '/status400') {
-                return new MockResponse().setResponseCode(400)
-            } else if (request.path == '/status500') {
-                return new MockResponse().setResponseCode(500)
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -87,14 +87,16 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#label] GET /status(#status): success/failure handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.path == '/status200') {
-                return new MockResponse().setResponseCode(200)
-            } else if (request.path == '/status300') {
-                return new MockResponse().setResponseCode(300)
-            } else if (request.path == '/status400') {
-                return new MockResponse().setResponseCode(400)
-            } else if (request.path == '/status500') {
-                return new MockResponse().setResponseCode(500)
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -140,14 +142,16 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#label] GET /status(#status): with only failure handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.path == '/status200') {
-                return new MockResponse().setResponseCode(200)
-            } else if (request.path == '/status300') {
-                return new MockResponse().setResponseCode(300)
-            } else if (request.path == '/status400') {
-                return new MockResponse().setResponseCode(400)
-            } else if (request.path == '/status500') {
-                return new MockResponse().setResponseCode(500)
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -186,7 +190,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /: returns content'() {
         setup:
-        serverRule.dispatcher('/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        serverRule.dispatcher('GET', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         expect:
         httpBuilder(label).get() == htmlContent()
@@ -200,7 +204,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /foo: returns content'() {
         given:
-        serverRule.dispatcher('/foo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        serverRule.dispatcher('GET', '/foo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         def config = {
             request.uri.path = '/foo'
@@ -218,7 +222,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /xml: returns xml'() {
         given:
-        serverRule.dispatcher('/xml', new MockResponse().setHeader('Content-Type', 'text/xml').setBody(xmlContent()))
+        serverRule.dispatcher('GET', '/xml', new MockResponse().setHeader('Content-Type', 'text/xml').setBody(xmlContent()))
 
         def config = {
             request.uri.path = '/xml'
@@ -237,7 +241,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /json: returns json'() {
         given:
-        serverRule.dispatcher('/json', new MockResponse().setHeader('Content-Type', 'text/json').setBody(jsonContent()))
+        serverRule.dispatcher('GET', '/json', new MockResponse().setHeader('Content-Type', 'text/json').setBody(jsonContent()))
 
         def config = {
             request.uri.path = '/json'
@@ -267,7 +271,7 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.path == '/foo' && request.getHeader('Cookie') == 'biscuit=wafer') {
+            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie') == 'biscuit=wafer') {
                 return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
             }
             return new MockResponse().setResponseCode(404)
@@ -290,7 +294,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
         given:
-        serverRule.dispatcher('/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_B))
+        serverRule.dispatcher('GET', '/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_B))
 
         def config = {
             request.uri.path = '/foo'
@@ -310,12 +314,14 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#label] GET (BASIC) /basic: returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+            if (request.method == 'GET') {
+                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
 
-            if (request.path == '/basic' && !request.getHeader('Authorization')) {
-                return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
-            } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
-                return new MockResponse().setHeader('Authorization', encodedCred).setHeader('Content-Type', 'text/plain').setBody(htmlContent())
+                if (request.path == '/basic' && !request.getHeader('Authorization')) {
+                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
+                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
+                    return new MockResponse().setHeader('Authorization', encodedCred).setHeader('Content-Type', 'text/plain').setBody(htmlContent())
+                }
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -337,7 +343,7 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /date: returns content of specified type'() {
         given:
-        serverRule.dispatcher('/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody('2016.08.25 14:43'))
+        serverRule.dispatcher('GET', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody('2016.08.25 14:43'))
 
         def config = {
             request.uri.path = '/date'
@@ -400,8 +406,7 @@ class HttpGetSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    private HttpBuilder httpBuilder(
-        final HttpClientType clientType, Closure config = { request.uri = serverRule.serverUrl }) {
+    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = serverRule.serverUrl }) {
         MockServerHelper.httpBuilder(clientType, config)
     }
 }

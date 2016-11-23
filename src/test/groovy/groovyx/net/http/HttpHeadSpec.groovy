@@ -15,12 +15,9 @@
  */
 package groovyx.net.http
 
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
-import org.mockserver.client.server.MockServerClient
-import org.mockserver.junit.MockServerRule
-import org.mockserver.model.HttpResponse
-import org.mockserver.model.NottableString
-import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -29,59 +26,27 @@ import java.util.concurrent.Executors
 
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
-import static groovyx.net.http.MockServerHelper.head
 import static groovyx.net.http.MockServerHelper.httpBuilder
-import static org.mockserver.model.HttpRequest.request
-import static org.mockserver.model.HttpResponse.response
 
-@Ignore
 class HttpHeadSpec extends Specification {
 
-    @Rule public MockServerRule serverRule = new MockServerRule(this)
+    @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
-    private static final Map<String, String> HEADERS_A = [alpha: '100', sometime: '03/04/2015 15:45', Accept: 'text/plain'].asImmutable()
-    private static final Map<String, String> HEADERS_B = [bravo: '200', Accept: 'text/html'].asImmutable()
-    private static final Map<String, String> HEADERS_C = [charlie: '200'].asImmutable()
-
-    private MockServerClient server
-
-    def setup() {
-        server.when(head('/')).respond(responseHeaders())
-        server.when(head('/foo').withQueryStringParameter('alpha', 'bravo')).respond(responseHeaders(HEADERS_C))
-        server.when(head('/foo').withCookie('biscuit', 'wafer')).respond(responseHeaders(HEADERS_B))
-        server.when(head('/foo')).respond(responseHeaders())
-
-        server.when(head('/date')).respond(responseHeaders(stamp: '2016.08.25 14:43'))
-
-        // Status handlers
-
-        (2..5).each { s ->
-            server.when(head("/status${s}00")).respond(response().withStatusCode(s * 100))
-        }
-
-        // BASIC auth
-
-        String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
-        server.when(head('/basic').withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
-            .respond(responseHeaders('WWW-Authenticate': 'Basic realm="Test Realm"').withStatusCode(401))
-
-        server.when(head('/basic').withHeader('Authorization', encodedCred)).respond(responseHeaders(HEADERS_A))
-    }
-
-    private static HttpResponse responseHeaders(final Map<String, Object> headers = HEADERS_A) {
-        def resp = response()
-        headers.each { k, v ->
-            resp.withHeader(k as String, v as String)
-        }
-        resp
-    }
+    private static final Map<String, String> HEADERS_A = [
+        alpha: '100', sometime: '03/04/2015 15:45', Accept: 'text/plain', Connection: 'keep-alive'
+    ].asImmutable()
+    private static final Map<String, String> HEADERS_B = [bravo: '200', Accept: 'text/html', Connection: 'keep-alive'].asImmutable()
+    private static final Map<String, String> HEADERS_C = [charlie: '200', Connection: 'keep-alive'].asImmutable()
 
     @Unroll def '[#client] HEAD /: returns no content'() {
+        setup:
+        serverRule.dispatcher('HEAD', '/', responseHeaders())
+
         expect:
-        !httpBuilder(client, serverRule.port).head()
+        !httpBuilder(client, serverRule.serverPort).head()
 
         and:
-        !httpBuilder(client, serverRule.port).headAsync().get()
+        !httpBuilder(client, serverRule.serverPort).headAsync().get()
 
         where:
         client << [APACHE, JAVA]
@@ -89,6 +54,8 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /foo: returns headers only'() {
         given:
+        serverRule.dispatcher('HEAD', '/foo', responseHeaders())
+
         def capturedHeaders = [:]
         boolean hasBody = true
 
@@ -103,7 +70,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head(config)
+        httpBuilder(client, serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -111,7 +78,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
@@ -123,6 +90,19 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD (BASIC) /basic: returns only headers'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'HEAD') {
+                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+
+                if (request.path == '/basic' && !request.getHeader('Authorization')) {
+                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
+                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
+                    return responseHeaders()
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def capturedHeaders = [:]
         boolean hasBody = true
 
@@ -138,7 +118,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head(config)
+        httpBuilder(client, serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -146,7 +126,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         and:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
@@ -194,6 +174,13 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /foo (cookie): returns headers only'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'HEAD' && request.path == '/foo' && request.getHeader('Cookie') == 'biscuit=wafer') {
+                return responseHeaders(new MockResponse(), HEADERS_B)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def capturedHeaders = [:]
         boolean hasBody = true
 
@@ -209,7 +196,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head(config)
+        httpBuilder(client, serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -217,7 +204,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
@@ -229,6 +216,8 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /foo?alpha=bravo: returns headers only'() {
         given:
+        serverRule.dispatcher('HEAD', '/foo?alpha=bravo', responseHeaders(new MockResponse(), HEADERS_C))
+
         def capturedHeaders = [:]
         boolean hasBody = true
 
@@ -244,7 +233,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head(config)
+        httpBuilder(client, serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -252,7 +241,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
@@ -264,6 +253,21 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /status#status: verify when handler'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'HEAD') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         CountedClosure counter = new CountedClosure()
 
         def config = {
@@ -272,14 +276,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head config
+        httpBuilder(client, serverRule.serverPort).head config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         counter.called
@@ -298,6 +302,21 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /status#status: verify success/failure handler'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'HEAD') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         CountedClosure successCounter = new CountedClosure()
         CountedClosure failureCounter = new CountedClosure()
 
@@ -308,7 +327,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client, serverRule.port).head config
+        httpBuilder(client, serverRule.serverPort).head config
 
         then:
         successCounter.called == success
@@ -318,7 +337,7 @@ class HttpHeadSpec extends Specification {
         failureCounter.clear()
 
         when:
-        httpBuilder(client, serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.serverPort).headAsync(config).get()
 
         then:
         successCounter.called == success
@@ -338,6 +357,8 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /date: returns content of specified type'() {
         given:
+        serverRule.dispatcher('HEAD', '/date', responseHeaders(new MockResponse(), [stamp: '2016.08.25 14:43']))
+
         def config = {
             request.uri.path = '/date'
             response.success { FromServer fromServer ->
@@ -346,14 +367,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client, serverRule.port).head(Date, config)
+        def result = httpBuilder(client, serverRule.serverPort).head(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(client, serverRule.port).headAsync(Date, config).get()
+        result = httpBuilder(client, serverRule.serverPort).headAsync(Date, config).get()
 
         then:
         result instanceof Date
@@ -368,5 +389,12 @@ class HttpHeadSpec extends Specification {
             'Content-Length': '0',
             'Connection'    : 'keep-alive'
         ]
+    }
+
+    private static MockResponse responseHeaders(final MockResponse response = new MockResponse(), Map<String, String> headers = HEADERS_A) {
+        headers.each { k, v ->
+            response.setHeader(k, v)
+        }
+        response
     }
 }

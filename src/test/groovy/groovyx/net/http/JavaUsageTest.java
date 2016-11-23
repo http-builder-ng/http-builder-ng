@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,23 +15,18 @@
  */
 package groovyx.net.http;
 
+import okhttp3.mockwebserver.MockResponse;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockserver.client.server.MockServerClient;
-import org.mockserver.junit.MockServerRule;
-import org.mockserver.model.HttpResponse;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
 /**
  * Demonstration (and test) of using {@link HttpBuilder} via standard Java.
@@ -40,30 +35,23 @@ import static org.mockserver.model.HttpResponse.response;
 public class JavaUsageTest {
 
     @Rule
-    public MockServerRule serverRule = new MockServerRule(this);
+    public MockWebServerRule serverRule = new MockWebServerRule();
 
     private static final String CONTENT = "This is CONTENT!!!";
-    private MockServerClient server;
     private HttpBuilder http;
 
     @Before
     public void before() {
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+            config.getRequest().setUri(serverRule.getServerUrl());
         });
-
-        HttpResponse contentResponse = response().withBody(CONTENT).withHeader("Content-Type", "text/plain");
-
-        server.when(request().withMethod("GET").withPath("/foo")).respond(contentResponse);
-        server.when(request().withMethod("HEAD").withPath("/foo")).respond(response().withHeader("Content-Type", "text/plain"));
-        server.when(request().withMethod("POST").withPath("/foo").withBody(CONTENT).withHeader("Content-Type", "text/plain")).respond(contentResponse);
-        server.when(request().withMethod("PUT").withPath("/foo").withBody(CONTENT).withHeader("Content-Type", "text/plain")).respond(contentResponse);
-        server.when(request().withMethod("DELETE").withPath("/foo")).respond(contentResponse);
     }
 
     @Test
     @SuppressWarnings({"unchecked", "Convert2Lambda"})
     public void head_request() throws Exception {
+        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+
         List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
             config.getResponse().success(new BiFunction<FromServer, Object, Object>() {
@@ -75,10 +63,9 @@ public class JavaUsageTest {
             });
         });
 
-        assertEquals(3, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Type: text/plain");
-        assertEquals(headers.get(1).toString(), "Content-Length: 0");
-        assertEquals(headers.get(2).toString(), "Connection: keep-alive");
+        assertEquals(2, headers.size());
+        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
 
         CompletableFuture<List> future = http.headAsync(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -90,15 +77,16 @@ public class JavaUsageTest {
 
         headers = (List<FromServer.Header>) future.get();
 
-        assertEquals(3, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Type: text/plain");
-        assertEquals(headers.get(1).toString(), "Content-Length: 0");
-        assertEquals(headers.get(2).toString(), "Connection: keep-alive");
+        assertEquals(2, headers.size());
+        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void head_request_with_raw_function() throws Exception {
+        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+
         BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
             assertFalse(from.getHasBody());
             return from.getHeaders();
@@ -109,14 +97,15 @@ public class JavaUsageTest {
             config.getResponse().success(successFunction);
         });
 
-        assertEquals(3, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Type: text/plain");
-        assertEquals(headers.get(1).toString(), "Content-Length: 0");
-        assertEquals(headers.get(2).toString(), "Connection: keep-alive");
+        assertEquals(2, headers.size());
+        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
     }
 
     @Test
     public void get_request() throws Exception {
+        serverRule.dispatcher("GET","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+
         String result = http.get(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
         });
@@ -132,6 +121,8 @@ public class JavaUsageTest {
 
     @Test
     public void post_request() throws Exception {
+        serverRule.dispatcher("POST","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+
         String result = http.post(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
             config.getRequest().setBody(CONTENT);
@@ -151,6 +142,8 @@ public class JavaUsageTest {
 
     @Test
     public void put_request() throws Exception {
+        serverRule.dispatcher("PUT","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+
         String result = http.put(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
             config.getRequest().setBody(CONTENT);
@@ -170,6 +163,8 @@ public class JavaUsageTest {
 
     @Test
     public void delete_request() throws Exception {
+        serverRule.dispatcher("DELETE","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+
         String result = http.delete(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
         });

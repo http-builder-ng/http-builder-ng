@@ -15,11 +15,9 @@
  */
 package groovyx.net.http
 
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
-import org.mockserver.client.server.MockServerClient
-import org.mockserver.junit.MockServerRule
-import org.mockserver.model.Header
-import org.mockserver.model.NottableString
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -29,13 +27,12 @@ import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
-import static groovyx.net.http.MockServerHelper.*
-import static org.mockserver.model.HttpResponse.response
+import static groovyx.net.http.MockServerHelper.htmlContent
+import static groovyx.net.http.MockServerHelper.httpBuilder
 
-@Ignore
 class HttpPostSpec extends Specification {
 
-    @Rule public MockServerRule serverRule = new MockServerRule(this)
+    @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
     private static final String DATE_STRING = '2016.08.25 14:43'
     private static final Date DATE_OBJECT = Date.parse('yyyy.MM.dd HH:mm', DATE_STRING)
@@ -44,35 +41,15 @@ class HttpPostSpec extends Specification {
     private static final String HTML_CONTENT = htmlContent('Something Different')
     private static final String JSON_CONTENT = '{ "accepted":true, "id":100 }'
 
-    private MockServerClient server
-
-    def setup() {
-        server.when(post('/')).respond(responseContent(htmlContent()))
-
-        server.when(post('/foo', BODY_STRING).withQueryStringParameter('action', 'login')).respond(responseContent(htmlContent('Authenticate')))
-        server.when(post('/foo', BODY_STRING).withCookie('userid', 'spock')).respond(responseContent(htmlContent()))
-        server.when(post('/foo', BODY_STRING)).respond(responseContent(HTML_CONTENT))
-        server.when(post('/foo', JSON_STRING, JSON[0])).respond(responseContent(JSON_CONTENT, JSON[0]))
-
-        server.when(post('/date', 'DATE-TIME: 20160825-1443', 'text/datetime')).respond(responseContent(DATE_STRING, 'text/date'))
-
-        // BASIC auth
-
-        String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
-        def authHeader = new Header('Authorization', encodedCred)
-
-        server.when(post('/basic', JSON_STRING, JSON[0]).withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
-            .respond(response().withHeader('WWW-Authenticate', 'Basic realm="Test Realm"').withStatusCode(401))
-
-        server.when(post('/basic', JSON_STRING, JSON[0]).withHeader(authHeader)).respond(responseContent(htmlContent()))
-    }
-
     @Unroll def '[#client] POST /: returns content'() {
+        setup:
+        serverRule.dispatcher('POST', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+
         expect:
-        httpBuilder(client, serverRule.port).post() == htmlContent()
+        httpBuilder(client, serverRule.serverPort).post() == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.port).postAsync().get() == htmlContent()
+        httpBuilder(client, serverRule.serverPort).postAsync().get() == htmlContent()
 
         where:
         client << [APACHE, JAVA]
@@ -80,6 +57,18 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /foo (#contentType): returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'POST' && request.path == '/foo') {
+                String requestType = request.getHeader('Content-Type')
+                if (requestType == TEXT[0]) {
+                    return new MockResponse().setHeader('Content-Type', requestType).setBody(HTML_CONTENT)
+                } else if (requestType == JSON[0]) {
+                    return new MockResponse().setHeader('Content-Type', requestType).setBody(JSON_CONTENT)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/foo'
             request.body = content
@@ -88,10 +77,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.port).post(config) == result
+        httpBuilder(client, serverRule.serverPort).post(config) == result
 
         and:
-        httpBuilder(client, serverRule.port).postAsync(config).get() == result
+        httpBuilder(client, serverRule.serverPort).postAsync(config).get() == result
 
         where:
         client | content     | contentType | parser                               || result
@@ -104,6 +93,13 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /foo (#contentType): encodes and decodes properly and returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == JSON[0]) {
+                return new MockResponse().setHeader('Content-Type', JSON[0]).setBody(JSON_CONTENT)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/foo'
             request.body = content
@@ -111,10 +107,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.port).post(config) == result
+        httpBuilder(client, serverRule.serverPort).post(config) == result
 
         and:
-        httpBuilder(client, serverRule.port).postAsync(config).get() == result
+        httpBuilder(client, serverRule.serverPort).postAsync(config).get() == result
 
         where:
         client | content                | contentType || result
@@ -127,6 +123,13 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /foo (cookie): returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie') == 'userid=spock') {
+                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/foo'
             request.body = BODY_STRING
@@ -135,10 +138,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.port).post(config) == htmlContent()
+        httpBuilder(client, serverRule.serverPort).post(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.port).postAsync(config).get() == htmlContent()
+        httpBuilder(client, serverRule.serverPort).postAsync(config).get() == htmlContent()
 
         where:
         client << [APACHE, JAVA]
@@ -146,6 +149,13 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /foo (query string): returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'POST' && request.path == '/foo?action=login' && request.getHeader('Content-Type') == TEXT[0]) {
+                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/foo'
             request.uri.query = [action: 'login']
@@ -154,10 +164,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.port).post(config) == htmlContent('Authenticate')
+        httpBuilder(client, serverRule.serverPort).post(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.port).postAsync(config).get() == htmlContent('Authenticate')
+        httpBuilder(client, serverRule.serverPort).postAsync(config).get() == htmlContent()
 
         where:
         client << [APACHE, JAVA]
@@ -165,6 +175,13 @@ class HttpPostSpec extends Specification {
 
     @Unroll def '[#client] POST /date: returns content as Date'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'POST' && request.path == '/date' && request.getHeader('Content-Type') == 'text/datetime' && request.getBody().toString() == '[text=DATE-TIME: 20160825-1443]') {
+                return new MockResponse().setHeader('Content-Type', 'text/date').setBody(DATE_STRING)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/date'
             request.body = DATE_OBJECT
@@ -178,10 +195,10 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.port).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(client, serverRule.serverPort).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(client, serverRule.port).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(client, serverRule.serverPort).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         where:
         client << [APACHE, JAVA]
@@ -190,7 +207,7 @@ class HttpPostSpec extends Specification {
     @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
     @Unroll def '[#client] POST (BASIC) /basic: returns content'() {
         expect:
-        httpBuilder(client, serverRule.port).post({
+        httpBuilder(client, serverRule.serverPort).post({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
@@ -198,7 +215,7 @@ class HttpPostSpec extends Specification {
         }) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.port).postAsync({
+        httpBuilder(client, serverRule.serverPort).postAsync({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
