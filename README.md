@@ -75,9 +75,10 @@ The project provides a unified documentation web site. You can build the documen
 
 Once it is built, you can verify the generated content by running a local server:
 
-    groovy serve.groovy
+    ./gradlew startPreview
     
-which will provide the site at http://localhost:8080. Once you are ready to publish your site, simply run the following task:
+which will start a preview server on a random port copied to your clipboard. Run `./gradlew stopPreview` to stop the server. Once you are ready to 
+publish your site, simply run the following task:
 
     ./gradlew publishSite
     
