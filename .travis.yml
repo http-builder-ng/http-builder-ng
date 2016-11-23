@@ -6,4 +6,6 @@ env:
   - TERM=dumb
 before_script:
   - ./gradlew --version
-script: ./gradlew build --stacktrace --info
+script: ./gradlew build
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
