@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpObjectConfigImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">HttpObjectConfigImpl.java</span></div><h1>HttpObjectConfigImpl.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import javax.net.ssl.SSLContext;
+import java.util.EnumMap;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static groovyx.net.http.HttpConfigs.basic;
+import static groovyx.net.http.HttpConfigs.root;
+
+<span class="fc" id="L27">public class HttpObjectConfigImpl implements HttpObjectConfig {</span>
+  
+<span class="fc" id="L29">    private final ChainedHttpConfig config = basic(root());</span>
+
+    public ChainedHttpConfig getChainedConfig() {
+<span class="fc" id="L32">        return config;</span>
+    }
+    
+<span class="fc" id="L35">    final Exec exec = new Exec();</span>
+<span class="fc" id="L36">    final ClientConfig clientConfig = new ClientConfig();</span>
+
+    public static Object nullInterceptor(final ChainedHttpConfig config, final Function&lt;ChainedHttpConfig,Object&gt; func) {
+<span class="fc" id="L39">        return func.apply(config);</span>
+    }
+
+    private static class Exec implements Execution {
+<span class="fc" id="L43">        private int maxThreads = 1;</span>
+<span class="fc" id="L44">        private Executor executor = SingleThreaded.instance;</span>
+        private SSLContext sslContext;
+        private final EnumMap&lt;HttpVerb,BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt;&gt; interceptors;
+
+<span class="fc" id="L48">        public Exec() {</span>
+<span class="fc" id="L49">            interceptors = new EnumMap&lt;&gt;(HttpVerb.class);</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            for(HttpVerb verb : HttpVerb.values()) {</span>
+<span class="fc" id="L51">                interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);</span>
+            }
+<span class="fc" id="L53">        }</span>
+        
+        public void setMaxThreads(final int val) {
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">            if(val &lt; 1) {</span>
+<span class="nc" id="L57">                throw new IllegalArgumentException(&quot;Max Threads cannot be less than 1&quot;);</span>
+            }
+            
+<span class="fc" id="L60">            this.maxThreads = val;</span>
+<span class="fc" id="L61">        }</span>
+
+        public int getMaxThreads() {
+<span class="fc" id="L64">            return maxThreads;</span>
+        }
+
+        public void setExecutor(final Executor val) {
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            if(val == null) {</span>
+<span class="nc" id="L69">                throw new NullPointerException();</span>
+            }
+            
+<span class="fc" id="L72">            this.executor = val;</span>
+<span class="fc" id="L73">        }</span>
+
+        public Executor getExecutor() {
+<span class="fc" id="L76">            return executor;</span>
+        }
+
+        public void setSslContext(final SSLContext val) {
+<span class="nc" id="L80">            this.sslContext = val;</span>
+<span class="nc" id="L81">        }</span>
+
+        public SSLContext getSslContext() {
+<span class="fc" id="L84">            return sslContext;</span>
+        }
+
+        public void interceptor(final HttpVerb verb, final BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt; func) {
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if(func == null) {</span>
+<span class="nc" id="L89">                throw new NullPointerException(&quot;func cannot be null&quot;);</span>
+            }
+            
+<span class="fc" id="L92">            interceptors.put(verb, func);</span>
+<span class="fc" id="L93">        }</span>
+
+        public void interceptor(final HttpVerb[] verbs, final BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt; func) {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            for(HttpVerb verb : verbs) {</span>
+<span class="fc" id="L97">                interceptors.put(verb, func);</span>
+            }
+<span class="fc" id="L99">        }</span>
+
+        public EnumMap&lt;HttpVerb,BiFunction&lt;ChainedHttpConfig,Function&lt;ChainedHttpConfig,Object&gt;, Object&gt;&gt; getInterceptors() {
+<span class="fc" id="L102">            return interceptors;</span>
+        }
+    }
+
+<span class="fc" id="L106">    private static class ClientConfig implements Client {</span>
+
+<span class="fc" id="L108">        private int cookieVersion = 0;</span>
+
+        @Override public void setCookieVersion(int version) {
+<span class="nc" id="L111">            this.cookieVersion = version;</span>
+<span class="nc" id="L112">        }</span>
+
+        @Override public int getCookieVersion() {
+<span class="fc" id="L115">            return cookieVersion;</span>
+        }
+    }
+
+<span class="fc" id="L119">    private static class SingleThreaded implements Executor {</span>
+        public void execute(Runnable r) {
+<span class="fc" id="L121">            r.run();</span>
+<span class="fc" id="L122">        }</span>
+
+<span class="fc" id="L124">        public static final SingleThreaded instance = new SingleThreaded();</span>
+    }
+
+    public Request getRequest() {
+<span class="fc" id="L128">        return config.getRequest();</span>
+    }
+
+    public Response getResponse() {
+<span class="fc" id="L132">        return config.getResponse();</span>
+    }
+
+    public HttpConfig getParent() {
+<span class="nc" id="L136">        return config.getParent();</span>
+    }
+
+    public Execution getExecution() {
+<span class="fc" id="L140">        return exec;</span>
+    }
+
+    @Override public Client getClient() {
+<span class="fc" id="L144">        return clientConfig;</span>
+    }
+
+    public void context(final String contentType, final Object id, final Object obj) {
+<span class="nc" id="L148">        config.context(contentType, id, obj);</span>
+<span class="nc" id="L149">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
