@@ -1,6 +1,7 @@
 # Http Builder NG, The Easy Http Client for Groovy (and Java)
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng)
+[![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 
 ## Quick Links for the Impatient
 
