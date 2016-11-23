@@ -2,8 +2,10 @@ language: java
 install: true
 jdk: oraclejdk8
 env:
+  global:
+    JAVA_OPTS=-Xmx2g
   matrix:
   - TERM=dumb
 before_script:
   - ./gradlew --version
-script: ./gradlew build --no-daemon
+script: ./gradlew build
