@@ -20,7 +20,6 @@ import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
 import org.mockserver.model.NottableString
-import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -33,7 +32,6 @@ import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
-@Ignore
 class HttpGetSpec extends Specification {
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
