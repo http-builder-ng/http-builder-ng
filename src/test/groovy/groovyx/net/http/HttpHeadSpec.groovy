@@ -20,6 +20,7 @@ import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.HttpResponse
 import org.mockserver.model.NottableString
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -33,16 +34,8 @@ import static groovyx.net.http.MockServerHelper.httpBuilder
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
+@Ignore
 class HttpHeadSpec extends Specification {
-
-    /*
-    Object head()
-    T head(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure)
-    CompletableFuture<Object> headAsync()
-    CompletableFuture<Object> headAsync(@DelegatesTo(HttpConfig.class)
-    CompletableFuture<T> headAsync(final Class<T> type, @DelegatesTo(HttpConfig.class)
-    Object head(@DelegatesTo(HttpConfig.class)
-     */
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
 
@@ -85,10 +78,10 @@ class HttpHeadSpec extends Specification {
 
     @Unroll def '[#client] HEAD /: returns no content'() {
         expect:
-        !httpBuilder(client,serverRule.port).head()
+        !httpBuilder(client, serverRule.port).head()
 
         and:
-        !httpBuilder(client,serverRule.port).headAsync().get()
+        !httpBuilder(client, serverRule.port).headAsync().get()
 
         where:
         client << [APACHE, JAVA]
@@ -110,7 +103,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head(config)
+        httpBuilder(client, serverRule.port).head(config)
 
         then:
         !hasBody
@@ -118,7 +111,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -145,7 +138,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head(config)
+        httpBuilder(client, serverRule.port).head(config)
 
         then:
         !hasBody
@@ -153,7 +146,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         and:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -174,11 +167,11 @@ class HttpHeadSpec extends Specification {
         when:
         def httpClient = httpBuilder(client, config)
         def authenticated = httpClient.head {
-                request.uri.path = '/digest-auth/auth/david/clark'
-                request.auth.digest 'david', 'clark'
-                request.cookie('fake', 'fake_value')
-                response.success { true }
-            }
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+            request.cookie('fake', 'fake_value')
+            response.success { true }
+        }
 
         then:
         authenticated
@@ -186,10 +179,10 @@ class HttpHeadSpec extends Specification {
         when:
         httpClient = httpBuilder(client, config)
         authenticated = httpClient.headAsync {
-                request.uri.path = '/digest-auth/auth/david/clark'
-                request.auth.digest 'david', 'clark'
-                request.cookie('fake', 'fake_value')
-                response.success { true }
+            request.uri.path = '/digest-auth/auth/david/clark'
+            request.auth.digest 'david', 'clark'
+            request.cookie('fake', 'fake_value')
+            response.success { true }
         }.get()
 
         then:
@@ -216,7 +209,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head(config)
+        httpBuilder(client, serverRule.port).head(config)
 
         then:
         !hasBody
@@ -224,7 +217,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -251,7 +244,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head(config)
+        httpBuilder(client, serverRule.port).head(config)
 
         then:
         !hasBody
@@ -259,7 +252,7 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         !hasBody
@@ -279,14 +272,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head config
+        httpBuilder(client, serverRule.port).head config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         counter.called
@@ -315,7 +308,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        httpBuilder(client,serverRule.port).head config
+        httpBuilder(client, serverRule.port).head config
 
         then:
         successCounter.called == success
@@ -325,7 +318,7 @@ class HttpHeadSpec extends Specification {
         failureCounter.clear()
 
         when:
-        httpBuilder(client,serverRule.port).headAsync(config).get()
+        httpBuilder(client, serverRule.port).headAsync(config).get()
 
         then:
         successCounter.called == success
@@ -353,14 +346,14 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(client,serverRule.port).head(Date, config)
+        def result = httpBuilder(client, serverRule.port).head(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(client,serverRule.port).headAsync(Date, config).get()
+        result = httpBuilder(client, serverRule.port).headAsync(Date, config).get()
 
         then:
         result instanceof Date

@@ -20,20 +20,20 @@ import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
 import org.mockserver.model.NottableString
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.Executors
-import java.util.function.Function
 
 import static HttpClientType.APACHE
 import static HttpClientType.JAVA
-import static groovyx.net.http.HttpVerb.GET
 import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpRequest.request
 import static org.mockserver.model.HttpResponse.response
 
+@Ignore
 class HttpGetSpec extends Specification {
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
@@ -151,7 +151,7 @@ class HttpGetSpec extends Specification {
     @Unroll def '[#label] GET /status(#status): with only failure handler'() {
         given:
         CountedClosure failureCounter = new CountedClosure()
-        
+
         def config = {
             request.uri.path = "/status${status}"
             response.failure failureCounter.closure

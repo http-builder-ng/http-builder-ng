@@ -33,6 +33,7 @@ import static groovyx.net.http.HttpClientType.JAVA
 import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpResponse.response
 
+@Ignore
 class HttpDeleteSpec extends Specification {
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)

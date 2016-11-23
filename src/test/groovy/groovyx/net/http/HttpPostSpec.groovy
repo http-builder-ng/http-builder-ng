@@ -29,12 +29,10 @@ import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
-import static groovyx.net.http.MockServerHelper.htmlContent
-import static groovyx.net.http.MockServerHelper.httpBuilder
-import static groovyx.net.http.MockServerHelper.post
-import static groovyx.net.http.MockServerHelper.responseContent
+import static groovyx.net.http.MockServerHelper.*
 import static org.mockserver.model.HttpResponse.response
 
+@Ignore
 class HttpPostSpec extends Specification {
 
     @Rule public MockServerRule serverRule = new MockServerRule(this)
