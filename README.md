@@ -2,7 +2,7 @@
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng)
 
-## Quick Links for the Impatient
+## Quick Links for the Impatient (NOTE, we recently transferred ownership of http-builder-ng to a separate organization to make it more "professional" and easier to collaborate. However, doing this broke our site links, making us look more "unprofessional." We hope our new collaborative super powers will allow us to fix this stuff quickly)
 
 * Site: https://dwclark.github.io/http-builder-ng/
 * Project: https://github.com/dwclark/http-builder-ng
