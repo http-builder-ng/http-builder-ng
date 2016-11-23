@@ -189,7 +189,7 @@ class HttpPostSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    @Ignore @Issue('https://github.com/dwclark/http-builder-ng/issues/10')
+    @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
     @Unroll def '[#client] POST (BASIC) /basic: returns content'() {
         expect:
         httpBuilder(client, serverRule.port).post({

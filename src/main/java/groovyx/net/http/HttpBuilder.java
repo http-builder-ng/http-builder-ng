@@ -71,7 +71,7 @@ import java.util.function.Function;
  *
  * :linkattrs:
  *
- * See the HTTP verb method docs (below) or the https://dwclark.github.io/http-builder-ng/guide/html5/[User Guide^] for more examples.
+ * See the HTTP verb method docs (below) or the https://http-builder-ng.github.io/http-builder-ng/guide/html5/[User Guide^] for more examples.
  */
 public abstract class HttpBuilder implements Closeable {
 

@@ -74,7 +74,7 @@ javadoc {
     options.doclet = 'org.asciidoctor.Asciidoclet'
     options.overview = "src/main/java/overview.adoc"
     options.addStringOption "-base-dir", "${projectDir}"
-    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/dwclark/http-builder-ng[${project.name} ${project.version}]"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
 }
 
 task sourcesJar(type: Jar) {
@@ -121,13 +121,9 @@ bintray {
             desc = 'Groovy client for making http requests'
             licenses = ['Apache-2.0']
             labels = ['groovy']
-            vcsUrl = 'https://github.com/dwclark/http-builder-ng'
+            vcsUrl = 'https://github.com/http-builder-ng/http-builder-ng'
         }
     }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
 }
 
 license {
@@ -251,7 +247,7 @@ task verifyArtifacts(group: 'Verification', description: 'Verifies that the publ
 }
 
 task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.') << {
-    def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://dwclark.github.io/http-builder-ng'
+    def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://http-builder-ng.github.io/http-builder-ng/'
 
     logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
