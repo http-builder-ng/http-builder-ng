@@ -65,7 +65,7 @@ dependencies {
 
 test {
     forkEvery = 1
-    maxParallelForks = Math.max(Runtime.runtime.availableProcessors(), 8)
+    maxParallelForks = Math.min(Runtime.runtime.availableProcessors(), 8)
 }
 
 javadoc {
