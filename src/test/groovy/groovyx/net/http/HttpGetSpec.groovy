@@ -20,6 +20,7 @@ import org.mockserver.client.server.MockServerClient
 import org.mockserver.junit.MockServerRule
 import org.mockserver.model.Header
 import org.mockserver.model.NottableString
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -106,6 +107,7 @@ class HttpGetSpec extends Specification {
         JAVA   | '500'
     }
 
+    @Ignore
     @Unroll def '[#label] GET /status(#status): success/failure handler'() {
         given:
         CountedClosure successCounter = new CountedClosure()
@@ -146,6 +148,7 @@ class HttpGetSpec extends Specification {
         JAVA   | 500    | false   | true
     }
 
+    @Ignore
     @Unroll def '[#label] GET /status(#status): with only failure handler'() {
         given:
         CountedClosure failureCounter = new CountedClosure()
@@ -180,6 +183,7 @@ class HttpGetSpec extends Specification {
         JAVA   | 500    | true
     }
 
+    @Ignore
     @Unroll def '[#label] GET /: returns content'() {
         expect:
         httpBuilder(label).get() == htmlContent()
@@ -191,6 +195,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /foo: returns content'() {
         given:
         def config = {
@@ -207,6 +212,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /xml: returns xml'() {
         given:
         def config = {
@@ -224,6 +230,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /json: returns json'() {
         given:
         def config = {
@@ -251,6 +258,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
         def config = {
@@ -268,6 +276,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
         given:
         def config = {
@@ -285,6 +294,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET (BASIC) /basic: returns content'() {
         given:
         def config = {
@@ -302,6 +312,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /date: returns content of specified type'() {
         given:
         def config = {
@@ -329,6 +340,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll @Requires(HttpBin) def '[#client] GET (DIGEST) /digest-auth'() {
         given:
         def config = {
