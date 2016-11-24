@@ -19,6 +19,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -102,11 +103,11 @@ class HttpPutSpec extends Specification {
         JAVA   | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
     }
 
-    @Ignore
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     @Unroll def '[#client] PUT /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie') == 'userid=spock') {
+            if (request.method == 'PUT' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock') ) {
                 return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
             }
             return new MockResponse().setResponseCode(404)

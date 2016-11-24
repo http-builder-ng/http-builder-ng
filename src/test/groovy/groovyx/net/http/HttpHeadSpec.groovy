@@ -19,6 +19,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -173,11 +174,11 @@ class HttpHeadSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    @Ignore
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     @Unroll def '[#client] HEAD /foo (cookie): returns headers only'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'HEAD' && request.path == '/foo' && request.getHeader('Cookie') == 'biscuit=wafer') {
+            if (request.method == 'HEAD' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
                 return responseHeaders(new MockResponse(), HEADERS_B)
             }
             return new MockResponse().setResponseCode(404)

@@ -121,11 +121,11 @@ class HttpPostSpec extends Specification {
         JAVA   | { name 'Bob'; age 42 } | JSON        || [accepted: true, id: 100]
     }
 
-    @Ignore
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     @Unroll def '[#client] POST /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie') == 'userid=spock') {
+            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock')) {
                 return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
             }
             return new MockResponse().setResponseCode(404)

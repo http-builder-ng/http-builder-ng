@@ -19,6 +19,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -269,11 +270,11 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
-    @Ignore
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie') == 'biscuit=wafer') {
+            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
                 return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
             }
             return new MockResponse().setResponseCode(404)
@@ -292,6 +293,31 @@ class HttpGetSpec extends Specification {
 
         where:
         label << [APACHE, JAVA]
+    }
+
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
+    @Unroll def '[#label] GET /foo (cookie2): returns content'() {
+        given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('coffee=black')) {
+                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
+        def config = {
+            request.uri.path = '/foo'
+            request.cookie 'coffee', 'black'
+        }
+
+        expect:
+        httpBuilder(label).get(config) == HTML_CONTENT_C
+
+        and:
+        httpBuilder(label).getAsync(config).get() == HTML_CONTENT_C
+
+        where:
+        label << [APACHE,JAVA]
     }
 
     @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
