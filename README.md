@@ -2,7 +2,7 @@
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng)
 [![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
-[![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg)](https://coveralls.io/github/http-builder-ng/http-builder-ng)
+[![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
 ## Quick Links for the Impatient
 
