@@ -15,67 +15,45 @@
  */
 package groovyx.net.http
 
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
-import org.mockserver.client.server.MockServerClient
-import org.mockserver.junit.MockServerRule
-import org.mockserver.model.Header
-import org.mockserver.model.NottableString
+import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.Executors
-import java.util.function.Function
 
 import static HttpClientType.APACHE
 import static HttpClientType.JAVA
-import static groovyx.net.http.HttpVerb.GET
 import static groovyx.net.http.MockServerHelper.*
-import static org.mockserver.model.HttpRequest.request
-import static org.mockserver.model.HttpResponse.response
 
 class HttpGetSpec extends Specification {
-
-    @Rule public MockServerRule serverRule = new MockServerRule(this)
 
     private static final String HTML_CONTENT_B = htmlContent('Testing B')
     private static final String HTML_CONTENT_C = htmlContent('Testing C')
 
-    private MockServerClient server
-
-    def setup() {
-        server.when(get('/')).respond(responseContent(htmlContent()))
-
-        server.when(get('/foo').withQueryStringParameter('alpha', 'bravo')).respond(responseContent(HTML_CONTENT_B))
-        server.when(get('/foo').withCookie('biscuit', 'wafer')).respond(responseContent(HTML_CONTENT_C))
-        server.when(get('/foo')).respond(responseContent(htmlContent()))
-
-        // parsers
-
-        server.when(get('/xml')).respond(responseContent(xmlContent(), 'text/xml'))
-        server.when(get('/json')).respond(responseContent(jsonContent(), 'text/json'))
-
-        server.when(get('/date')).respond(responseContent('2016.08.25 14:43', 'text/date'))
-
-        // Status handlers
-
-        (2..5).each { s ->
-            server.when(get("/status${s}00")).respond(response().withStatusCode(s * 100))
-        }
-
-        // BASIC auth
-
-        String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
-        def authHeader = new Header('Authorization', encodedCred)
-
-        server.when(get('/basic').withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
-            .respond(response().withHeader('WWW-Authenticate', 'Basic realm="Test Realm"').withStatusCode(401))
-
-        server.when(get('/basic').withHeader(authHeader)).respond(responseContent(htmlContent()))
-    }
+    @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
     @Unroll def '[#client] GET /status(#status): verify when handler'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         CountedClosure counter = new CountedClosure()
 
         def config = {
@@ -110,6 +88,21 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /status(#status): success/failure handler'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         CountedClosure successCounter = new CountedClosure()
         CountedClosure failureCounter = new CountedClosure()
 
@@ -150,8 +143,23 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /status(#status): with only failure handler'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET') {
+                if (request.path == '/status200') {
+                    return new MockResponse().setResponseCode(200)
+                } else if (request.path == '/status300') {
+                    return new MockResponse().setResponseCode(300)
+                } else if (request.path == '/status400') {
+                    return new MockResponse().setResponseCode(400)
+                } else if (request.path == '/status500') {
+                    return new MockResponse().setResponseCode(500)
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         CountedClosure failureCounter = new CountedClosure()
-        
+
         def config = {
             request.uri.path = "/status${status}"
             response.failure failureCounter.closure
@@ -183,6 +191,9 @@ class HttpGetSpec extends Specification {
     }
 
     @Unroll def '[#label] GET /: returns content'() {
+        setup:
+        serverRule.dispatcher('GET', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+
         expect:
         httpBuilder(label).get() == htmlContent()
 
@@ -195,6 +206,8 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /foo: returns content'() {
         given:
+        serverRule.dispatcher('GET', '/foo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+
         def config = {
             request.uri.path = '/foo'
         }
@@ -211,6 +224,8 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /xml: returns xml'() {
         given:
+        serverRule.dispatcher('GET', '/xml', new MockResponse().setHeader('Content-Type', 'text/xml').setBody(xmlContent()))
+
         def config = {
             request.uri.path = '/xml'
             response.parser 'text/xml', NativeHandlers.Parsers.&xml
@@ -228,6 +243,8 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /json: returns json'() {
         given:
+        serverRule.dispatcher('GET', '/json', new MockResponse().setHeader('Content-Type', 'text/json').setBody(jsonContent()))
+
         def config = {
             request.uri.path = '/json'
             response.parser 'text/json', NativeHandlers.Parsers.&json
@@ -253,8 +270,16 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
+                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/foo'
             request.cookie 'biscuit', 'wafer'
@@ -270,8 +295,35 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
+    @Unroll def '[#label] GET /foo (cookie2): returns content'() {
+        given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('coffee=black')) {
+                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
+        def config = {
+            request.uri.path = '/foo'
+            request.cookie 'coffee', 'black'
+        }
+
+        expect:
+        httpBuilder(label).get(config) == HTML_CONTENT_C
+
+        and:
+        httpBuilder(label).getAsync(config).get() == HTML_CONTENT_C
+
+        where:
+        label << [APACHE,JAVA]
+    }
+
     @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
         given:
+        serverRule.dispatcher('GET', '/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_B))
+
         def config = {
             request.uri.path = '/foo'
             request.uri.query = [alpha: 'bravo']
@@ -289,6 +341,19 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET (BASIC) /basic: returns content'() {
         given:
+        serverRule.dispatcher { RecordedRequest request ->
+            if (request.method == 'GET') {
+                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+
+                if (request.path == '/basic' && !request.getHeader('Authorization')) {
+                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
+                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
+                    return new MockResponse().setHeader('Authorization', encodedCred).setHeader('Content-Type', 'text/plain').setBody(htmlContent())
+                }
+            }
+            return new MockResponse().setResponseCode(404)
+        }
+
         def config = {
             request.uri.path = '/basic'
             request.auth.basic 'admin', '$3cr3t'
@@ -306,6 +371,8 @@ class HttpGetSpec extends Specification {
 
     @Unroll def '[#label] GET /date: returns content of specified type'() {
         given:
+        serverRule.dispatcher('GET', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody('2016.08.25 14:43'))
+
         def config = {
             request.uri.path = '/date'
             response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer ->
@@ -367,7 +434,7 @@ class HttpGetSpec extends Specification {
         client << [APACHE, JAVA]
     }
 
-    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = "http://localhost:${serverRule.port}" }) {
+    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = serverRule.serverUrl }) {
         MockServerHelper.httpBuilder(clientType, config)
     }
 }

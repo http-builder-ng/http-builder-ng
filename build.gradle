@@ -15,6 +15,7 @@ plugins {
     id 'maven'
     id 'maven-publish'
     id 'jacoco'
+    id 'com.github.kt3k.coveralls' version '2.7.1'
     id 'findbugs'
     id "com.stehno.gradle.webpreview" version "0.1.1"
     id 'com.github.ben-manes.versions' version '0.13.0'
@@ -56,16 +57,9 @@ dependencies {
     }
 
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-
-    testCompile('org.mock-server:mockserver-client-java:3.10.4')
-    testCompile('org.mock-server:mockserver-netty:3.10.4')
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
 
     asciidoclet 'org.asciidoctor:asciidoclet:1.+'
-}
-
-test {
-    forkEvery = 1
-    maxParallelForks = Runtime.runtime.availableProcessors()
 }
 
 javadoc {
@@ -152,37 +146,39 @@ asciidoctor {
 
 tasks.bintrayUpload.dependsOn build
 
-task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor']) << {
-    logger.info 'Building documentation web site...'
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor']){
+    doLast {
+        logger.info 'Building documentation web site...'
 
-    // copy the templates
-    copy {
-        from 'src/site'
-        into 'build/site'
-        include '**/*.html'
-        expand([ project_version:project.version ])
-    }
+        // copy the templates
+        copy {
+            from 'src/site'
+            into 'build/site'
+            include '**/*.html'
+            expand([ project_version:project.version ])
+        }
 
-    // copy the assets
-    copy {
-        from 'src/site'
-        into 'build/site'
-        include '**/css/**'
-        include '**/fonts/**'
-        include '**/js/**'
-    }
+        // copy the assets
+        copy {
+            from 'src/site'
+            into 'build/site'
+            include '**/css/**'
+            include '**/fonts/**'
+            include '**/js/**'
+        }
 
-    copy {
-        from 'build/docs'
-        from 'build/reports'
-        include '**/**'
-        into 'build/site'
-    }
+        copy {
+            from 'build/docs'
+            from 'build/reports'
+            include '**/**'
+            into 'build/site'
+        }
 
-    copy {
-        from 'build/asciidoc'
-        include '**/**'
-        into 'build/site/guide'
+        copy {
+            from 'build/asciidoc'
+            include '**/**'
+            into 'build/site/guide'
+        }
     }
 }
 
@@ -206,71 +202,90 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version') << {
-    String newVersion = project.version
-    String oldVersion = project.property('from')
+task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version'){
+    doLast {
+        String newVersion = project.version
+        String oldVersion = project.property('from')
 
-    logger.lifecycle "Updating documentation versions from ${oldVersion} to ${newVersion}..."
+        logger.lifecycle "Updating documentation versions from ${oldVersion} to ${newVersion}..."
 
-    ant.replace(file: 'README.md', token: oldVersion, value: newVersion)
-    ant.replace(dir: 'src/docs/asciidoc', token: oldVersion, value: newVersion)
-    ant.replace(dir: 'src/site', token: oldVersion, value: newVersion)
-}
-
-task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.') << {
-    logger.lifecycle "Verifying that the documentation references version ${project.version}..."
-
-    // Not the most efficient way to do this but should be ok for now
-    boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc'].every { f ->
-        boolean ok = project.file(f).text.contains(project.version)
-
-        logger.info " - Checking: $f: $ok"
-        ok
+        ant.replace(file: 'README.md', token: oldVersion, value: newVersion)
+        ant.replace(dir: 'src/docs/asciidoc', token: oldVersion, value: newVersion)
+        ant.replace(dir: 'src/site', token: oldVersion, value: newVersion)
     }
-
-    assert documented, 'The documented project version does not match the project version: Run "./gradlew updateVersion -Pfrom=OLD_VERSION" and try again.'
 }
 
-task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.') << {
-    def repo = "https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
-    def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
+task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.'){
+    doLast {
+        logger.lifecycle "Verifying that the documentation references version ${project.version}..."
 
-    logger.lifecycle "Verifying that artifacts exist at ${repo}..."
+        // Not the most efficient way to do this but should be ok for now
+        boolean documented = ['README.md', 'src/docs/asciidoc/index.adoc'].every { f ->
+            boolean ok = project.file(f).text.contains(project.version)
 
-    boolean published = artifacts.every { art ->
-        boolean ok = checkUrl("${repo}${art}")
-        logger.info " - Checking: ${repo}${art}: $ok"
-        ok
+            logger.info " - Checking: $f: $ok"
+            ok
+        }
+
+        assert documented, 'The documented project version does not match the project version: Run "./gradlew updateVersion -Pfrom=OLD_VERSION" and try again.'
     }
-
-    assert published, 'Some or all of the artifacts are not published. Run with --info for more details.'
 }
 
-task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.') << {
-    def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://http-builder-ng.github.io/http-builder-ng/'
+task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.'){
+    doLast {
+        def repo = "https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
+        def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
 
-    logger.lifecycle "Verifying that site exists at ${siteUrl}..."
+        logger.lifecycle "Verifying that artifacts exist at ${repo}..."
 
-    // we'll just hit the important ones
-    boolean exists = [ '/index.html', '/guide/html5/index.html', '/javadoc/index.html' ].every { page ->
-        boolean ok = checkUrl("${siteUrl}${page}")
-        logger.info " - Checking: ${siteUrl}${page}: $ok"
-        ok
+        boolean published = artifacts.every { art ->
+            boolean ok = checkUrl("${repo}${art}")
+            logger.info " - Checking: ${repo}${art}: $ok"
+            ok
+        }
+
+        assert published, 'Some or all of the artifacts are not published. Run with --info for more details.'
     }
-
-    assert exists, 'Some or all of the documentation site pages are not published. Run with --info for more details.'
 }
 
-task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']) << {
-    logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
+task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.'){
+    doLast {
+        def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://http-builder-ng.github.io/http-builder-ng/'
+
+        logger.lifecycle "Verifying that site exists at ${siteUrl}..."
+
+        // we'll just hit the important ones
+        boolean exists = [ '/index.html', '/guide/html5/index.html', '/javadoc/index.html' ].every { page ->
+            boolean ok = checkUrl("${siteUrl}${page}")
+            logger.info " - Checking: ${siteUrl}${page}: $ok"
+            ok
+        }
+
+        assert exists, 'Some or all of the documentation site pages are not published. Run with --info for more details.'
+    }
 }
 
-task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) << {
-    logger.lifecycle 'Release has been verified.'
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']){
+    doLast {
+        logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
+    }
+}
+
+task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']){
+    doLast {
+        logger.lifecycle 'Release has been verified.'
+    }
 }
 
 webPreview {
     resourceDir = file('build/site')
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
 }
 
 static boolean checkUrl(String url) {
