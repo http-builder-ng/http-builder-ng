@@ -18,6 +18,7 @@ package groovyx.net.http
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -101,6 +102,7 @@ class HttpPutSpec extends Specification {
         JAVA   | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
     }
 
+    @Ignore
     @Unroll def '[#client] PUT /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->

@@ -18,6 +18,7 @@ package groovyx.net.http
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.Rule
+import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -268,6 +269,7 @@ class HttpGetSpec extends Specification {
         label << [APACHE, JAVA]
     }
 
+    @Ignore
     @Unroll def '[#label] GET /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->

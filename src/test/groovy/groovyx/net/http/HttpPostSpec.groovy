@@ -121,6 +121,7 @@ class HttpPostSpec extends Specification {
         JAVA   | { name 'Bob'; age 42 } | JSON        || [accepted: true, id: 100]
     }
 
+    @Ignore
     @Unroll def '[#client] POST /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
