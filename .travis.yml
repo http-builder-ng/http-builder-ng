@@ -7,3 +7,5 @@ env:
 before_script:
   - ./gradlew --version
 script: ./gradlew build
+after_success:
+  - ./gradlew jacocoTestReport coveralls
