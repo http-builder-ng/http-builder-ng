@@ -16,11 +16,10 @@
 package groovyx.net.http
 
 import groovyx.net.http.optional.ApacheHttpBuilder
-import org.mockserver.model.HttpRequest
-import org.mockserver.model.HttpResponse
 
 import java.util.function.Function
 
+@Deprecated
 class MockServerHelper {
 
     static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
@@ -34,38 +33,6 @@ class MockServerHelper {
         httpBuilder(clientType) {
             request.uri = "http://localhost:${port}"
         }
-    }
-
-    static HttpRequest get(final String path) {
-        HttpRequest.request().withMethod('GET').withPath(path)
-    }
-
-    static HttpRequest post(final String path) {
-        HttpRequest.request().withMethod('POST').withPath(path)
-    }
-
-    static HttpRequest post(final String path, final String body, final String contentType = 'text/plain') {
-        HttpRequest.request().withMethod('POST').withPath(path).withBody(body).withHeader('Content-Type', contentType)
-    }
-
-    static HttpRequest put(final String path) {
-        HttpRequest.request().withMethod('PUT').withPath(path)
-    }
-
-    static HttpRequest put(final String path, final String body, final String contentType = 'text/plain') {
-        HttpRequest.request().withMethod('PUT').withPath(path).withBody(body).withHeader('Content-Type', contentType)
-    }
-
-    static HttpRequest delete(final String path) {
-        HttpRequest.request().withMethod('DELETE').withPath(path)
-    }
-
-    static HttpRequest head(final String path) {
-        HttpRequest.request().withMethod('HEAD').withPath(path)
-    }
-
-    static HttpResponse responseContent(final String content, final String type = 'text/plain') {
-        HttpResponse.response().withBody(content).withStatusCode(200).withHeader('Content-Type', type)
     }
 
     static String htmlContent(String text = 'Nothing special') {

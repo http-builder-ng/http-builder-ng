@@ -1,13 +1,15 @@
 # Http Builder NG, The Easy Http Client for Groovy (and Java)
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng)
+[![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
+[![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
 ## Quick Links for the Impatient
 
-* Site: https://dwclark.github.io/http-builder-ng/
-* Project: https://github.com/dwclark/http-builder-ng
-* JavaDocs: https://dwclark.github.io/http-builder-ng/javadoc/
-* User Guide: https://dwclark.github.io/http-builder-ng/guide/html5/
+* Site: https://http-builder-ng.github.io/http-builder-ng/
+* Project: https://github.com/http-builder-ng/http-builder-ng
+* JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
+* User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 
 ## Quick Overview
 
@@ -75,9 +77,10 @@ The project provides a unified documentation web site. You can build the documen
 
 Once it is built, you can verify the generated content by running a local server:
 
-    groovy serve.groovy
+    ./gradlew startPreview
     
-which will provide the site at http://localhost:8080. Once you are ready to publish your site, simply run the following task:
+which will start a preview server on a random port copied to your clipboard. Run `./gradlew stopPreview` to stop the server. Once you are ready to 
+publish your site, simply run the following task:
 
     ./gradlew publishSite
     
