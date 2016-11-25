@@ -1,0 +1,146 @@
+plugins {
+    id 'com.jfrog.bintray' version '1.7.1'
+    id "com.github.hierynomus.license" version "0.13.1"
+    id 'groovy'
+    id 'maven'
+    id 'maven-publish'
+    id 'jacoco'
+    id 'com.github.kt3k.coveralls' version '2.7.1'
+    id 'findbugs'
+    id 'com.github.ben-manes.versions' version '0.13.0'
+}
+
+apply plugin: 'org.asciidoctor.convert'
+
+sourceCompatibility = 8
+targetCompatibility = 8
+
+group = 'org.codehaus.groovy.modules'
+version = '0.10.2'
+
+repositories {
+    jcenter()
+}
+
+configurations {
+    asciidoclet
+}
+
+dependencies {
+    //required
+    compile('xml-resolver:xml-resolver:1.2')
+    compile('org.slf4j:slf4j-api:1.7.21')
+
+    //optionals
+    def optionals = ['com.opencsv:opencsv:3.8',
+                     'org.apache.httpcomponents:httpclient:4.5.2',
+                     'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+                     'oauth.signpost:signpost-core:1.2.1.1',
+                     'org.codehaus.groovy:groovy-all:2.4.6',
+                     'org.jsoup:jsoup:1.9.2',
+                     'net.sourceforge.nekohtml:nekohtml:1.9.22',
+                     'com.fasterxml.jackson.core:jackson-databind:2.8.1'];
+
+    optionals.each { opt ->
+        compileOnly(opt); testCompile(opt);
+    }
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
+
+    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
+}
+
+javadoc {
+    options.docletpath = configurations.asciidoclet.files.asType(List)
+    options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+    options.doclet = 'org.asciidoctor.Asciidoclet'
+    options.overview = "src/main/java/overview.adoc"
+    options.addStringOption "-base-dir", "${projectDir}"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
+}
+
+task sourcesJar(type: Jar) {
+    description = 'Creates sources JAR.'
+    classifier = 'sources'
+    from project.sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+}
+
+project.publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            //artifact jar
+            artifact sourcesJar
+            groupId project.group
+            version project.version
+        }
+    }
+
+    configurations.runtime.allDependencies.each {
+        println(it);
+    }
+}
+
+bintray {
+    def bintrayUser = project.hasProperty('user') ? project.property('user') : null;
+    def bintrayKey = project.hasProperty('key') ? project.property('key') : null;
+
+    if (bintrayUser && bintrayKey) {
+        user = bintrayUser
+        key = bintrayKey
+
+        publications = ['mavenJava']
+
+        pkg {
+            repo = 'dclark'
+            name = 'http-builder-ng'
+            userOrg = 'http-builder-ng'
+            desc = 'Groovy client for making http requests'
+            licenses = ['Apache-2.0']
+            labels = ['groovy']
+            vcsUrl = 'https://github.com/http-builder-ng/http-builder-ng'
+        }
+    }
+}
+
+license {
+    header rootProject.file('license_header.txt')
+
+    // Toggle ignoreFailures to false to enable license-checking that will fail the build
+    ignoreFailures true
+
+    ext.name = 'David Clark'
+    ext.year = Calendar.instance.get(Calendar.YEAR)
+
+    excludes(['**/*.txt', '**/*.dtd', '**/*.xml', '**/*.ent', '**/*.jks'])
+}
+
+tasks.bintrayUpload.dependsOn build
+
+tasks.withType(FindBugs) {
+    ignoreFailures = true       // let's not kill the build for this
+    effort = 'max'
+    reportLevel = 'low'
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
