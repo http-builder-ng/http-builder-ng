@@ -1,4 +1,4 @@
-Splitting out the clients
+# Splitting out the clients
 
 - trim down the parent build file
 
@@ -9,7 +9,6 @@ Splitting out the clients
 
 - update documentation
 - bump up the version and document the compatability issues
-- are we semantic versioned?
 
 - refactor testing to reduce duplication
     - HttpClientTestKit

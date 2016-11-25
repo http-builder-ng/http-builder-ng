@@ -9,9 +9,6 @@ buildscript {
 }
 
 plugins {
-    id 'java'
-    id 'jacoco'
-    id 'findbugs'
     id "com.stehno.gradle.webpreview" version "0.1.1"
 }
 
@@ -24,8 +21,105 @@ repositories {
     jcenter()
 }
 
-configurations {
-    asciidoclet
+subprojects {
+    apply plugin:'groovy'
+    apply plugin:'maven'
+    apply plugin:'maven-publish'
+    apply plugin:'jacoco'
+    apply plugin:'findbugs'
+
+    group = 'org.codehaus.groovy.modules'
+    version = '0.10.2'
+
+    sourceCompatibility = 8
+    targetCompatibility = 8
+
+    repositories {
+        jcenter()
+    }
+
+    configurations {
+        asciidoclet
+    }
+
+    dependencies {
+        // optionals
+        [
+            'com.opencsv:opencsv:3.8',
+            'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+            'oauth.signpost:signpost-core:1.2.1.1',
+            'org.codehaus.groovy:groovy-all:2.4.6',
+            'org.jsoup:jsoup:1.9.2',
+            'net.sourceforge.nekohtml:nekohtml:1.9.22',
+            'com.fasterxml.jackson.core:jackson-databind:2.8.1'
+        ].each { opt ->
+            compileOnly(opt)
+            testCompile(opt)
+        }
+
+        testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+        testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
+
+        asciidoclet 'org.asciidoctor:asciidoclet:1.+'
+    }
+
+    javadoc {
+        options.docletpath = configurations.asciidoclet.files.asType(List)
+        options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+        options.doclet = 'org.asciidoctor.Asciidoclet'
+        options.overview = "src/main/java/overview.adoc"
+        options.addStringOption "-base-dir", "${projectDir}"
+        options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
+    }
+
+    task sourcesJar(type: Jar) {
+        description = 'Creates sources JAR.'
+        classifier = 'sources'
+        from project.sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+    }
+
+    project.publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                //artifact jar
+                artifact sourcesJar
+                groupId project.group
+                version project.version
+            }
+        }
+
+        configurations.runtime.allDependencies.each {
+            println(it);
+        }
+    }
+
+    tasks.withType(FindBugs) {
+        ignoreFailures = true       // let's not kill the build for this
+        effort = 'max'
+        reportLevel = 'low'
+        reports {
+            xml.enabled false
+            html.enabled true
+            html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+
+    jacocoTestReport {
+        reports {
+            xml.enabled = true // coveralls plugin depends on xml format report
+            html.enabled = true
+        }
+    }
 }
 
 asciidoctor {
