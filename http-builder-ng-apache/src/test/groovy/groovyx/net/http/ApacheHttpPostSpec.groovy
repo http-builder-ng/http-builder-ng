@@ -23,13 +23,12 @@ import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static HttpContent.htmlContent
+import static ApacheClientTesting.httpBuilder
 import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
-import static groovyx.net.http.HttpClientType.APACHE
-import static groovyx.net.http.HttpClientType.JAVA
-import static HttpContent.htmlContent
 
-class HttpPostSpec extends Specification {
+class ApacheHttpPostSpec extends Specification {
 
     @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
@@ -40,21 +39,18 @@ class HttpPostSpec extends Specification {
     private static final String HTML_CONTENT = htmlContent('Something Different')
     private static final String JSON_CONTENT = '{ "accepted":true, "id":100 }'
 
-    @Unroll def '[#client] POST /: returns content'() {
+    def 'POST /: returns content'() {
         setup:
         serverRule.dispatcher('POST', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post() == htmlContent()
+        httpBuilder(serverRule.serverPort).post() == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync().get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).postAsync().get() == htmlContent()
     }
 
-    @Unroll def '[#client] POST /foo (#contentType): returns content'() {
+    @Unroll def 'POST /foo (#contentType): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'POST' && request.path == '/foo') {
@@ -76,21 +72,18 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post(config) == result
+        httpBuilder(serverRule.serverPort).post(config) == result
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync(config).get() == result
+        httpBuilder(serverRule.serverPort).postAsync(config).get() == result
 
         where:
-        client                                 | content     | contentType | parser                               || result
-        groovyx.net.http.HttpClientType.APACHE | BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-        groovyx.net.http.HttpClientType.JAVA   | BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-
-        groovyx.net.http.HttpClientType.APACHE | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: true, id: 100]
-        groovyx.net.http.HttpClientType.JAVA   | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: true, id: 100]
+        content     | contentType | parser                               || result
+        BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
+        JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: true, id: 100]
     }
 
-    @Unroll def '[#client] POST /foo (#contentType): encodes and decodes properly and returns content'() {
+    @Unroll def 'POST /foo (#contentType): encodes and decodes properly and returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == JSON[0]) {
@@ -106,22 +99,19 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post(config) == result
+        httpBuilder(serverRule.serverPort).post(config) == result
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync(config).get() == result
+        httpBuilder(serverRule.serverPort).postAsync(config).get() == result
 
         where:
-        client                                 | content                | contentType || result
-        groovyx.net.http.HttpClientType.APACHE | [name: 'Bob', age: 42] | JSON        || [accepted: true, id: 100]
-        groovyx.net.http.HttpClientType.JAVA   | [name: 'Bob', age: 42] | JSON        || [accepted: true, id: 100]
-
-        groovyx.net.http.HttpClientType.APACHE | { name 'Bob'; age 42 } | JSON        || [accepted: true, id: 100]
-        groovyx.net.http.HttpClientType.JAVA   | { name 'Bob'; age 42 } | JSON        || [accepted: true, id: 100]
+        contentType | content                || result
+        JSON        | [name: 'Bob', age: 42] || [accepted: true, id: 100]
+        JSON        | { name 'Bob'; age 42 } || [accepted: true, id: 100]
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
-    @Unroll def '[#client] POST /foo (cookie): returns content'() {
+    def 'POST /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock')) {
@@ -138,16 +128,13 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).post(config) == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync(config).get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).postAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] POST /foo (query string): returns content'() {
+    def 'POST /foo (query string): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'POST' && request.path == '/foo?action=login' && request.getHeader('Content-Type') == TEXT[0]) {
@@ -164,16 +151,13 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).post(config) == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync(config).get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).postAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] POST /date: returns content as Date'() {
+    def 'POST /date: returns content as Date'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'POST' && request.path == '/date' && request.getHeader('Content-Type') == 'text/datetime' && request.getBody().toString() == '[text=DATE-TIME: 20160825-1443]') {
@@ -195,19 +179,16 @@ class HttpPostSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(serverRule.serverPort).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 
     @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
-    @Unroll def '[#client] POST (BASIC) /basic: returns content'() {
+    def '[#client] POST (BASIC) /basic: returns content'() {
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).post({
+        httpBuilder(serverRule.serverPort).post({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
@@ -215,15 +196,12 @@ class HttpPostSpec extends Specification {
         }) == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).postAsync({
+        httpBuilder(serverRule.serverPort).postAsync({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
             request.auth.basic 'admin', '$3cr3t'
         }).get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
     // FIXME: is/should DIGEST be supported for POST request? - seems to not work at all in this impl

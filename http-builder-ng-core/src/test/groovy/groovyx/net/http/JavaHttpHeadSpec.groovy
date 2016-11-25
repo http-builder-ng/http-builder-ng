@@ -25,10 +25,9 @@ import spock.lang.Unroll
 
 import java.util.concurrent.Executors
 
-import static groovyx.net.http.HttpClientType.APACHE
-import static groovyx.net.http.HttpClientType.JAVA
+import static groovyx.net.http.JavaClientTesting.httpBuilder
 
-class HttpHeadSpec extends Specification {
+class JavaHttpHeadSpec extends Specification {
 
     @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
@@ -38,21 +37,18 @@ class HttpHeadSpec extends Specification {
     private static final Map<String, String> HEADERS_B = [bravo: '200', Accept: 'text/html', Connection: 'keep-alive'].asImmutable()
     private static final Map<String, String> HEADERS_C = [charlie: '200', Connection: 'keep-alive'].asImmutable()
 
-    @Unroll def '[#client] HEAD /: returns no content'() {
+    def 'HEAD /: returns no content'() {
         setup:
         serverRule.dispatcher('HEAD', '/', responseHeaders())
 
         expect:
-        !HttpContent.httpBuilder(client, serverRule.serverPort).head()
+        !httpBuilder(serverRule.serverPort).head()
 
         and:
-        !HttpContent.httpBuilder(client, serverRule.serverPort).headAsync().get()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        !httpBuilder(serverRule.serverPort).headAsync().get()
     }
 
-    @Unroll def '[#client] HEAD /foo: returns headers only'() {
+    def 'HEAD /foo: returns headers only'() {
         given:
         serverRule.dispatcher('HEAD', '/foo', responseHeaders())
 
@@ -70,7 +66,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head(config)
+        httpBuilder(serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -78,17 +74,14 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
         applyDefaultHeaders(HEADERS_A) == capturedHeaders
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
-    @Unroll def '[#client] HEAD (BASIC) /basic: returns only headers'() {
+    def 'HEAD (BASIC) /basic: returns only headers'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'HEAD') {
@@ -118,7 +111,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head(config)
+        httpBuilder(serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -126,17 +119,14 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
         applyDefaultHeaders(HEADERS_A) == capturedHeaders
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
-    @Unroll @Requires(HttpBin) def '[#client] HEAD (DIGEST) /digest-auth'() {
+    @Requires(HttpBin) def 'HEAD (DIGEST) /digest-auth'() {
         given:
         def config = {
             request.uri = 'http://httpbin.org/'
@@ -145,7 +135,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def httpClient = HttpContent.httpBuilder(client, config)
+        def httpClient = httpBuilder(config)
         def authenticated = httpClient.head {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -157,7 +147,7 @@ class HttpHeadSpec extends Specification {
         authenticated
 
         when:
-        httpClient = HttpContent.httpBuilder(client, config)
+        httpClient = httpBuilder(config)
         authenticated = httpClient.headAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -167,13 +157,10 @@ class HttpHeadSpec extends Specification {
 
         then:
         authenticated
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
-    @Unroll def '[#client] HEAD /foo (cookie): returns headers only'() {
+    def 'HEAD /foo (cookie): returns headers only'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'HEAD' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
@@ -197,7 +184,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head(config)
+        httpBuilder(serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -205,17 +192,14 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
         applyDefaultHeaders(HEADERS_B) == capturedHeaders
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
-    @Unroll def '[#client] HEAD /foo?alpha=bravo: returns headers only'() {
+    def 'HEAD /foo?alpha=bravo: returns headers only'() {
         given:
         serverRule.dispatcher('HEAD', '/foo?alpha=bravo', responseHeaders(new MockResponse(), HEADERS_C))
 
@@ -234,7 +218,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head(config)
+        httpBuilder(serverRule.serverPort).head(config)
 
         then:
         !hasBody
@@ -242,17 +226,14 @@ class HttpHeadSpec extends Specification {
         capturedHeaders.clear()
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         !hasBody
         applyDefaultHeaders(HEADERS_C) == capturedHeaders
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
-    @Unroll def '[#client] HEAD /status#status: verify when handler'() {
+    @Unroll def 'HEAD /status#status: verify when handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'HEAD') {
@@ -277,31 +258,23 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head config
+        httpBuilder(serverRule.serverPort).head config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         counter.called
 
         where:
-        client                                 | status
-        groovyx.net.http.HttpClientType.APACHE | '200'
-        groovyx.net.http.HttpClientType.APACHE | '300'
-        groovyx.net.http.HttpClientType.APACHE | '400'
-        groovyx.net.http.HttpClientType.APACHE | '500'
-        groovyx.net.http.HttpClientType.JAVA   | '200'
-        groovyx.net.http.HttpClientType.JAVA   | '300'
-        groovyx.net.http.HttpClientType.JAVA   | '400'
-        groovyx.net.http.HttpClientType.JAVA   | '500'
+        status << ['200', '300', '400', '500']
     }
 
-    @Unroll def '[#client] HEAD /status#status: verify success/failure handler'() {
+    @Unroll def 'HEAD /status#status: verify success/failure handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'HEAD') {
@@ -328,7 +301,7 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).head config
+        httpBuilder(serverRule.serverPort).head config
 
         then:
         successCounter.called == success
@@ -338,25 +311,21 @@ class HttpHeadSpec extends Specification {
         failureCounter.clear()
 
         when:
-        HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(config).get()
+        httpBuilder(serverRule.serverPort).headAsync(config).get()
 
         then:
         successCounter.called == success
         failureCounter.called == failure
 
         where:
-        client                                 | status | success | failure
-        groovyx.net.http.HttpClientType.APACHE | 200    | true    | false
-        groovyx.net.http.HttpClientType.APACHE | 300    | true    | false
-        groovyx.net.http.HttpClientType.APACHE | 400    | false   | true
-        groovyx.net.http.HttpClientType.APACHE | 500    | false   | true
-        groovyx.net.http.HttpClientType.JAVA   | 200    | true    | false
-        groovyx.net.http.HttpClientType.JAVA   | 300    | true    | false
-        groovyx.net.http.HttpClientType.JAVA   | 400    | false   | true
-        groovyx.net.http.HttpClientType.JAVA   | 500    | false   | true
+        status | success | failure
+        200    | true    | false
+        300    | true    | false
+        400    | false   | true
+        500    | false   | true
     }
 
-    @Unroll def '[#client] HEAD /date: returns content of specified type'() {
+    def 'HEAD /date: returns content of specified type'() {
         given:
         serverRule.dispatcher('HEAD', '/date', responseHeaders(new MockResponse(), [stamp: '2016.08.25 14:43']))
 
@@ -368,21 +337,18 @@ class HttpHeadSpec extends Specification {
         }
 
         when:
-        def result = HttpContent.httpBuilder(client, serverRule.serverPort).head(Date, config)
+        def result = httpBuilder(serverRule.serverPort).head(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = HttpContent.httpBuilder(client, serverRule.serverPort).headAsync(Date, config).get()
+        result = httpBuilder(serverRule.serverPort).headAsync(Date, config).get()
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
     }
 
     private static Map<String, String> applyDefaultHeaders(final Map<String, String> headers) {

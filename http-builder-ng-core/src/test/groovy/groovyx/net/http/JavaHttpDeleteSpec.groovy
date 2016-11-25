@@ -21,37 +21,31 @@ import org.junit.Rule
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import java.util.concurrent.Executors
 
-import static groovyx.net.http.ContentTypes.TEXT
-import static groovyx.net.http.HttpClientType.APACHE
-import static groovyx.net.http.HttpClientType.JAVA
 import static HttpContent.htmlContent
-import static HttpContent.httpBuilder
+import static groovyx.net.http.ContentTypes.TEXT
+import static groovyx.net.http.JavaClientTesting.httpBuilder
 
-class HttpDeleteSpec extends Specification {
+class JavaHttpDeleteSpec extends Specification {
 
     @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
     private static final String DATE_STRING = '2016.08.25 14:43'
 
-    @Unroll def '[#client] DELETE /: returns content'() {
+    def 'DELETE /: returns content'() {
         setup:
         serverRule.dispatcher('DELETE', '/', responseContent())
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete() == htmlContent()
+        httpBuilder(serverRule.serverPort).delete() == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync().get() == htmlContent()
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync().get() == htmlContent()
     }
 
-    @Unroll def '[#client] DELETE /foo: returns content'() {
+    def 'DELETE /foo: returns content'() {
         given:
         serverRule.dispatcher('DELETE', '/foo', responseContent())
 
@@ -60,16 +54,13 @@ class HttpDeleteSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync(config).get() == htmlContent()
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] DELETE /foo (cookie): returns content'() {
+    def 'DELETE /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'DELETE' && request.path == '/foo' && request.getHeader('Cookie') == 'userid=spock') {
@@ -84,16 +75,13 @@ class HttpDeleteSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync(config).get() == htmlContent()
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] DELETE /foo (query string): returns content'() {
+    def 'DELETE /foo (query string): returns content'() {
         given:
         serverRule.dispatcher('DELETE', '/foo?action=login', responseContent())
 
@@ -104,16 +92,13 @@ class HttpDeleteSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync(config).get() == htmlContent()
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] DELETE /date: returns content as Date'() {
+    def 'DELETE /date: returns content as Date'() {
         given:
         serverRule.dispatcher('DELETE', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody(DATE_STRING))
 
@@ -125,16 +110,13 @@ class HttpDeleteSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(serverRule.serverPort).delete(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 
-    @Unroll def '[#client] DELETE (BASIC) /basic: returns only headers'() {
+    def 'DELETE (BASIC) /basic: returns only headers'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'DELETE') {
@@ -155,18 +137,15 @@ class HttpDeleteSpec extends Specification {
         }
 
         expect:
-        httpBuilder(client, serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
 
         and:
-        httpBuilder(client, serverRule.serverPort).deleteAsync(config).get() == htmlContent()
-
-        where:
-        client << [APACHE, JAVA]
+        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
     }
 
-    @Unroll @Requires(HttpBin)
+    @Requires(HttpBin)
     @Ignore('Results in Method Not Allowed exception - should Delete support DIGEST?')
-    def '[#client] DELETE (DIGEST) /digest-auth'() {
+    def 'DELETE (DIGEST) /digest-auth'() {
         /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
                  then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
          */
@@ -178,7 +157,7 @@ class HttpDeleteSpec extends Specification {
         }
 
         when:
-        def httpClient = httpBuilder(client, config)
+        def httpClient = httpBuilder(config)
         def result = httpClient.delete {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -199,7 +178,7 @@ class HttpDeleteSpec extends Specification {
         authenticated
 
         when:
-        httpClient = httpBuilder(client, config)
+        httpClient = httpBuilder(config)
         result = httpClient.deleteAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -218,9 +197,6 @@ class HttpDeleteSpec extends Specification {
 
         then:
         authenticated
-
-        where:
-        client << [APACHE, JAVA]
     }
 
     private static MockResponse responseContent(final String body = htmlContent()) {

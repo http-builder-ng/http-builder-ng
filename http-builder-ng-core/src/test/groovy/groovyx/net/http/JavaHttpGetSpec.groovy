@@ -25,18 +25,14 @@ import spock.lang.Unroll
 
 import java.util.concurrent.Executors
 
-import static HttpClientType.APACHE
-import static HttpClientType.JAVA
-import static HttpContent.*
+import static groovyx.net.http.HttpContent.*
+import static groovyx.net.http.JavaClientTesting.httpBuilder
 
-class HttpGetSpec extends Specification {
-
-    private static final String HTML_CONTENT_B = htmlContent('Testing B')
-    private static final String HTML_CONTENT_C = htmlContent('Testing C')
+class JavaHttpGetSpec extends Specification {
 
     @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
-    @Unroll def '[#client] GET /status(#status): verify when handler'() {
+    @Unroll def 'GET /status(#status): verify when handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET') {
@@ -61,31 +57,23 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        httpBuilder(client).get config
+        httpBuilder(serverRule.serverUrl).get config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(client).getAsync(config).get()
+        httpBuilder(serverRule.serverUrl).getAsync(config).get()
 
         then:
         counter.called
 
         where:
-        client | status
-        APACHE | '200'
-        APACHE | '300'
-        APACHE | '400'
-        APACHE | '500'
-        JAVA   | '200'
-        JAVA   | '300'
-        JAVA   | '400'
-        JAVA   | '500'
+        status << ['200', '300', '400', '500']
     }
 
-    @Unroll def '[#label] GET /status(#status): success/failure handler'() {
+    @Unroll def 'GET /status(#status): success/failure handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET') {
@@ -112,7 +100,7 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        httpBuilder(label).get config
+        httpBuilder(serverRule.serverUrl).get config
 
         then:
         successCounter.called == success
@@ -122,25 +110,21 @@ class HttpGetSpec extends Specification {
         failureCounter.clear()
 
         when:
-        httpBuilder(label).getAsync(config).get()
+        httpBuilder(serverRule.serverUrl).getAsync(config).get()
 
         then:
         successCounter.called == success
         failureCounter.called == failure
 
         where:
-        label  | status | success | failure
-        APACHE | 200    | true    | false
-        APACHE | 300    | true    | false
-        APACHE | 400    | false   | true
-        APACHE | 500    | false   | true
-        JAVA   | 200    | true    | false
-        JAVA   | 300    | true    | false
-        JAVA   | 400    | false   | true
-        JAVA   | 500    | false   | true
+        status | success | failure
+        200    | true    | false
+        300    | true    | false
+        400    | false   | true
+        500    | false   | true
     }
 
-    @Unroll def '[#label] GET /status(#status): with only failure handler'() {
+    @Unroll def 'GET /status(#status): with only failure handler'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET') {
@@ -165,45 +149,38 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        httpBuilder(label).get config
+        httpBuilder(serverRule.serverUrl).get config
 
         then:
         failureCounter.called == failure
         failureCounter.clear()
 
         when:
-        httpBuilder(label).getAsync(config).get()
+        httpBuilder(serverRule.serverUrl).getAsync(config).get()
 
         then:
         failureCounter.called == failure
 
         where:
-        label  | status | failure
-        APACHE | 200    | false
-        APACHE | 300    | false
-        APACHE | 400    | true
-        APACHE | 500    | true
-        JAVA   | 200    | false
-        JAVA   | 300    | false
-        JAVA   | 400    | true
-        JAVA   | 500    | true
+        status | failure
+        200    | false
+        300    | false
+        400    | true
+        500    | true
     }
 
-    @Unroll def '[#label] GET /: returns content'() {
+    def 'GET /: returns content'() {
         setup:
         serverRule.dispatcher('GET', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         expect:
-        httpBuilder(label).get() == htmlContent()
+        httpBuilder(serverRule.serverUrl).get() == htmlContent()
 
         and:
-        httpBuilder(label).getAsync().get() == htmlContent()
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync().get() == htmlContent()
     }
 
-    @Unroll def '[#label] GET /foo: returns content'() {
+    def 'GET /foo: returns content'() {
         given:
         serverRule.dispatcher('GET', '/foo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
@@ -212,16 +189,13 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config) == htmlContent()
+        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(label).getAsync(config).get() == htmlContent()
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#label] GET /xml: returns xml'() {
+    def 'GET /xml: returns xml'() {
         given:
         serverRule.dispatcher('GET', '/xml', new MockResponse().setHeader('Content-Type', 'text/xml').setBody(xmlContent()))
 
@@ -231,16 +205,13 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config).child.text.text() == 'Nothing special'
+        httpBuilder(serverRule.serverUrl).get(config).child.text.text() == 'Nothing special'
 
         and:
-        httpBuilder(label).getAsync(config).get().child.text.text() == 'Nothing special'
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get().child.text.text() == 'Nothing special'
     }
 
-    @Unroll def '[#label] GET /json: returns json'() {
+    def 'GET /json: returns json'() {
         given:
         serverRule.dispatcher('GET', '/json', new MockResponse().setHeader('Content-Type', 'text/json').setBody(jsonContent()))
 
@@ -250,7 +221,7 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(label).get(config)
+        def result = httpBuilder(serverRule.serverUrl).get(config)
 
         then:
         result.items[0].text == 'Nothing special'
@@ -258,23 +229,20 @@ class HttpGetSpec extends Specification {
         result.items[0].score == 123
 
         when:
-        result = httpBuilder(label).getAsync(config).get()
+        result = httpBuilder(serverRule.serverUrl).getAsync(config).get()
 
         then:
         result.items[0].text == 'Nothing special'
         result.items[0].name == 'alpha'
         result.items[0].score == 123
-
-        where:
-        label << [APACHE, JAVA]
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
-    @Unroll def '[#label] GET /foo (cookie): returns content'() {
+    def 'GET /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
-                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
+                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent())
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -285,21 +253,18 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config) == HTML_CONTENT_C
+        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(label).getAsync(config).get() == HTML_CONTENT_C
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
-    @Unroll def '[#label] GET /foo (cookie2): returns content'() {
+    def 'GET /foo (cookie2): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('coffee=black')) {
-                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_C)
+                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent())
             }
             return new MockResponse().setResponseCode(404)
         }
@@ -310,18 +275,15 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config) == HTML_CONTENT_C
+        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(label).getAsync(config).get() == HTML_CONTENT_C
-
-        where:
-        label << [APACHE,JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#label] GET /foo?alpha=bravo: returns content'() {
+    def 'GET /foo?alpha=bravo: returns content'() {
         given:
-        serverRule.dispatcher('GET', '/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(HTML_CONTENT_B))
+        serverRule.dispatcher('GET', '/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         def config = {
             request.uri.path = '/foo'
@@ -329,16 +291,13 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config) == HTML_CONTENT_B
+        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(label).getAsync(config).get() == HTML_CONTENT_B
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#label] GET (BASIC) /basic: returns content'() {
+    def 'GET (BASIC) /basic: returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'GET') {
@@ -359,16 +318,13 @@ class HttpGetSpec extends Specification {
         }
 
         expect:
-        httpBuilder(label).get(config) == htmlContent()
+        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(label).getAsync(config).get() == htmlContent()
-
-        where:
-        label << [APACHE, JAVA]
+        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#label] GET /date: returns content of specified type'() {
+    def 'GET /date: returns content of specified type'() {
         given:
         serverRule.dispatcher('GET', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody('2016.08.25 14:43'))
 
@@ -380,24 +336,21 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def result = httpBuilder(label).get(Date, config)
+        def result = httpBuilder(serverRule.serverUrl).get(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(label).getAsync(Date, config).get()
+        result = httpBuilder(serverRule.serverUrl).getAsync(Date, config).get()
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
-
-        where:
-        label << [APACHE, JAVA]
     }
 
-    @Unroll @Requires(HttpBin) def '[#client] GET (DIGEST) /digest-auth'() {
+    @Requires(HttpBin) def 'GET (DIGEST) /digest-auth'() {
         given:
         def config = {
             request.uri = 'http://httpbin.org/'
@@ -406,7 +359,7 @@ class HttpGetSpec extends Specification {
         }
 
         when:
-        def httpClient = httpBuilder(client, config);
+        def httpClient = httpBuilder(config)
         def result = httpClient.get {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -418,7 +371,7 @@ class HttpGetSpec extends Specification {
         result.user == 'david'
 
         when:
-        httpClient = httpBuilder(client, config)
+        httpClient = httpBuilder(config)
         result = httpClient.getAsync {
             request.uri.path = '/digest-auth/auth/david/clark'
             request.auth.digest 'david', 'clark'
@@ -428,12 +381,5 @@ class HttpGetSpec extends Specification {
         then:
         result.authenticated
         result.user == 'david'
-
-        where:
-        client << [APACHE, JAVA]
-    }
-
-    private HttpBuilder httpBuilder(final HttpClientType clientType, Closure config = { request.uri = serverRule.serverUrl }) {
-        HttpContent.httpBuilder(clientType, config)
     }
 }

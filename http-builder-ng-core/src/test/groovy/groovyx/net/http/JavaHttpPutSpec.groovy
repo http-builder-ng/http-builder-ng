@@ -22,13 +22,12 @@ import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import static HttpContent.htmlContent
 import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
-import static groovyx.net.http.HttpClientType.APACHE
-import static groovyx.net.http.HttpClientType.JAVA
-import static HttpContent.htmlContent
+import static groovyx.net.http.JavaClientTesting.httpBuilder
 
-class HttpPutSpec extends Specification {
+class JavaHttpPutSpec extends Specification {
 
     @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
@@ -38,34 +37,18 @@ class HttpPutSpec extends Specification {
     private static final String JSON_STRING = '{ "name":"Chuck", "age":56 }'
     private static final String JSON_CONTENT = '{ "accepted":false, "id":123 }'
 
-    //        server.when(put('/date', BODY_STRING)).respond(responseContent(DATE_STRING, 'text/date'))
-    //
-    //        // BASIC auth
-    //
-    //        String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
-    //        def authHeader = new Header('Authorization', encodedCred)
-    //
-    //        server.when(put('/basic', JSON_STRING, JSON[0]).withHeader(NottableString.not('Authorization'), NottableString.not(encodedCred)))
-    //            .respond(response().withHeader('WWW-Authenticate', 'Basic realm="Test Realm"').withStatusCode(401))
-    //
-    //        server.when(put('/basic', JSON_STRING, JSON[0]).withHeader(authHeader)).respond(responseContent(htmlContent()))
-    //    }
-
-    @Unroll def '[#client] PUT /: returns content'() {
+    def 'PUT /: returns content'() {
         setup:
-        serverRule.dispatcher('PUT','/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        serverRule.dispatcher('PUT', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).put() == htmlContent()
+        httpBuilder(serverRule.serverPort).put() == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).putAsync().get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).putAsync().get() == htmlContent()
     }
 
-    @Unroll def '[#client] PUT /foo (#contentType): returns content'() {
+    @Unroll def 'PUT /foo (#contentType): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'PUT' && request.path == '/foo') {
@@ -87,25 +70,22 @@ class HttpPutSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).put(config) == result
+        httpBuilder(serverRule.serverPort).put(config) == result
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).putAsync(config).get() == result
+        httpBuilder(serverRule.serverPort).putAsync(config).get() == result
 
         where:
-        client                                 | content     | contentType | parser                               || result
-        groovyx.net.http.HttpClientType.APACHE | BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-        groovyx.net.http.HttpClientType.JAVA   | BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-
-        groovyx.net.http.HttpClientType.APACHE | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
-        groovyx.net.http.HttpClientType.JAVA   | JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
+        content     | contentType | parser                               || result
+        BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
+        JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
-    @Unroll def '[#client] PUT /foo (cookie): returns content'() {
+    def 'PUT /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock') ) {
+            if (request.method == 'PUT' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock')) {
                 return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
             }
             return new MockResponse().setResponseCode(404)
@@ -119,16 +99,13 @@ class HttpPutSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).put(config) == htmlContent()
+        httpBuilder(serverRule.serverPort).put(config) == htmlContent()
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).putAsync(config).get() == htmlContent()
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).putAsync(config).get() == htmlContent()
     }
 
-    @Unroll def '[#client] PUT /foo (query string): returns content'() {
+    def 'PUT /foo (query string): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'PUT' && request.path == '/foo?action=login' && request.getHeader('Content-Type') == TEXT[0]) {
@@ -145,16 +122,13 @@ class HttpPutSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).put(config) == htmlContent('Authenticate')
+        httpBuilder(serverRule.serverPort).put(config) == htmlContent('Authenticate')
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).putAsync(config).get() == htmlContent('Authenticate')
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).putAsync(config).get() == htmlContent('Authenticate')
     }
 
-    @Unroll def '[#client] PUT /date: returns content as Date'() {
+    def 'PUT /date: returns content as Date'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
             if (request.method == 'PUT' && request.path == '/date' && request.getHeader('Content-Type') == 'text/plain' && request.getBody().toString() == '[text=Something Interesting]') {
@@ -173,13 +147,10 @@ class HttpPutSpec extends Specification {
         }
 
         expect:
-        HttpContent.httpBuilder(client, serverRule.serverPort).put(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(serverRule.serverPort).put(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        HttpContent.httpBuilder(client, serverRule.serverPort).putAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
-
-        where:
-        client << [groovyx.net.http.HttpClientType.APACHE, groovyx.net.http.HttpClientType.JAVA]
+        httpBuilder(serverRule.serverPort).putAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 
     // FIXME: need to test BASIC and DIGEST requests

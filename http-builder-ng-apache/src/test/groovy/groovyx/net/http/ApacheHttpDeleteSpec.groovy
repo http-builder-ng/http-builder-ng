@@ -21,11 +21,10 @@ import org.junit.Rule
 import spock.lang.Ignore
 import spock.lang.Requires
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import java.util.concurrent.Executors
 
-import static groovyx.net.http.ApacheTesting.httpBuilder
+import static ApacheClientTesting.httpBuilder
 import static groovyx.net.http.ContentTypes.TEXT
 import static groovyx.net.http.HttpContent.htmlContent
 

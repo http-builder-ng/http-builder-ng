@@ -29,7 +29,7 @@ import static groovyx.net.http.optional.Csv.toCsv
 import static groovyx.net.http.optional.Download.toTempFile
 
 @Requires(HttpBin)
-class JavaHttpBuilderTest extends Specification {
+class JavaHttpBuilderSpec extends Specification {
 
     static final Function javaBuilder = { c -> new JavaHttpBuilder(c); } as Function;
 

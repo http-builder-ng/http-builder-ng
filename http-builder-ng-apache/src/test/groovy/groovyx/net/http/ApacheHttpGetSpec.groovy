@@ -25,7 +25,7 @@ import spock.lang.Unroll
 
 import java.util.concurrent.Executors
 
-import static groovyx.net.http.ApacheTesting.httpBuilder
+import static ApacheClientTesting.httpBuilder
 import static groovyx.net.http.HttpContent.*
 
 class ApacheHttpGetSpec extends Specification {
