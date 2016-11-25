@@ -10,8 +10,6 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.13.0'
 }
 
-apply plugin: 'org.asciidoctor.convert'
-
 sourceCompatibility = 8
 targetCompatibility = 8
 
@@ -24,6 +22,7 @@ repositories {
 
 configurations {
     asciidoclet
+    testcode
 }
 
 dependencies {
@@ -44,6 +43,8 @@ dependencies {
     optionals.each { opt ->
         compileOnly(opt); testCompile(opt);
     }
+
+    testcode sourceSets.test.output
 
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'

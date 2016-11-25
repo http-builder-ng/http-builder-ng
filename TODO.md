@@ -11,4 +11,6 @@ Splitting out the clients
 - bump up the version and document the compatability issues
 - are we semantic versioned?
 
+- refactor testing to reduce duplication
+    - HttpClientTestKit
 (increase test coverage)

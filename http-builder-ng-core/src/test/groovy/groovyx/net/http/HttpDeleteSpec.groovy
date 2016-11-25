@@ -28,8 +28,8 @@ import java.util.concurrent.Executors
 import static groovyx.net.http.ContentTypes.TEXT
 import static groovyx.net.http.HttpClientType.APACHE
 import static groovyx.net.http.HttpClientType.JAVA
-import static groovyx.net.http.MockServerHelper.htmlContent
-import static groovyx.net.http.MockServerHelper.httpBuilder
+import static HttpContent.htmlContent
+import static HttpContent.httpBuilder
 
 class HttpDeleteSpec extends Specification {
 

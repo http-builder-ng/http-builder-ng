@@ -15,25 +15,7 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.optional.ApacheHttpBuilder
-
-import java.util.function.Function
-
-@Deprecated
-class MockServerHelper {
-
-    static final Function apacheClientFactory = { c -> new ApacheHttpBuilder(c); } as Function
-    static final Function javaClientFactory = { c -> new JavaHttpBuilder(c); } as Function
-
-    static HttpBuilder httpBuilder(final HttpClientType clientType, Closure config) {
-        HttpBuilder.configure(clientType == HttpClientType.APACHE ? apacheClientFactory : javaClientFactory, config)
-    }
-
-    static HttpBuilder httpBuilder(final HttpClientType clientType, int port) {
-        httpBuilder(clientType) {
-            request.uri = "http://localhost:${port}"
-        }
-    }
+class HttpContent {
 
     static String htmlContent(String text = 'Nothing special') {
         "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String
