@@ -13,9 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http
+package groovyx.net.http.tk
 
-class HttpContent {
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.MockWebServerRule
+import org.junit.Rule
+import spock.lang.Specification
+
+import java.util.function.Function
+
+/**
+ * FIXME: document
+ */
+abstract class TestKit extends Specification {
+
+    @Rule MockWebServerRule serverRule = new MockWebServerRule()
+
+    Function clientFactory
+
+    protected HttpBuilder httpBuilder(Closure config) {
+        HttpBuilder.configure(clientFactory, config)
+    }
+
+    protected HttpBuilder httpBuilder(String uri) {
+        httpBuilder {
+            request.uri = uri
+        }
+    }
+
+    protected HttpBuilder httpBuilder(int port) {
+        httpBuilder {
+            request.uri = "http://localhost:${port}"
+        }
+    }
 
     static String htmlContent(String text = 'Nothing special') {
         "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String
