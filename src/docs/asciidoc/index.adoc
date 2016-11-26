@@ -1,28 +1,26 @@
 = Http Builder NG Users Guide
 David Clark & Christopher J. Stehno
-v0.10.2, September 2016
+v0.11.0, November 2016
 :toc: left
 :toclevels: 3
 
+WARNING: As of version 0.11.0 the underlying Apache client implementation has been broken out into a separate sub-project dependent on the core library. The `ApacheHttpBuilder` package name and file location were changed and you will need to update your code to address this change.
+
 == Introduction
 
-"HTTP Builder NG"" is a modern Groovy DSL for making HTTP requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x,
-but it doesn't make any assumptions about which version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make
-HTTP requests in a natural and readable way.
-
-The project web site is: https://http-builder-ng.github.io/http-builder-ng/
-
-Issue tracking is handled via GitHub: https://github.com/http-builder-ng/http-builder-ng/issues
+The https://http-builder-ng.github.io/http-builder-ng/[HTTP Builder NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
+Groovy and Java. It requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
+version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make HTTP requests in a natural and readable way.
 
 == History
 
 Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
 https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years.
 
-The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement was to make
-HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern typesafe DSL while preserving
-backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that Http Builder NG is basically a complete re-write
-and re-architecture.
+The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
+was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
+typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HTTP
+Builder NG is basically a complete re-write and re-architecture.
 
 == License
 
@@ -43,9 +41,37 @@ FIXME: come up with overview and maybe some diagrams
 
 == Configuration
 
-The specific configuration options are discussed in the JavaDocs for the `https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpBuilder.html[HttpBuilder]`,
-`https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpConfig.html[HttpConfig]` and
-`https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpObjectConfig.html[HttpObjectConfig]` interfaces.
+The specific configuration options are discussed in the JavaDocs for the `https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpBuilder.html[HttpBuilder]`,
+`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpConfig.html[HttpConfig]` and
+`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpObjectConfig.html[HttpObjectConfig]` interfaces.
+
+There are two underlying client implementations, the default "core" implementation based on the core Java `HttpURLConnection` class, and an implementation
+ based on the Apache HttpComponents client. The "core" implementation comes with the "core" library, and the Apache implementation comes with the "apache"
+ library, which depends on the "core" library.
+
+The selection of a client implementation is specified using a factory function when configuring your `HttpBuilder` instance. For the default `HttpURLConnection`
+-based implementation use the `configure` methods without a factory `Function` or specify the desired client function, for example:
+
+[source,groovy]
+----
+HttpBuilder.configure()
+----
+
+or
+
+[source,groovy]
+----
+HttpBuilder.configure({ c -> new JavaHttpBuilder(c) })
+----
+
+For the Apache-based builder, you would use the `ApacheHttpBuilder` in the factory, as:
+
+[source,groovy]
+----
+HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
+----
+
+Assuming, of course, that you have configured the `http-builder-ng-apache` dependency in your project.
 
 === Authentication
 
@@ -216,8 +242,8 @@ All headers not explicitly typed are simply `ValueOnly`. The definitive list is 
 
 == Client Library Integration
 
-By default, the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on `HttpUrlConnection`; however, there is
-no reason other HTTP clients could not be used, perhaps the https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
+Currently the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on `HttpURLConnection`;
+however, there is no reason other HTTP clients could not be used, perhaps the https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
 
 A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract methods for the handling the HTTP verbs:
 
@@ -253,13 +279,15 @@ HttpBuilder.configure({ c -> new GoogleHttpBuilder(c); } as Function){
 }
 ----
 
+The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients to have code and dependency
+isolation from other implementations and minimizes unused dependencies in projects using the library.
+
 If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
 
 == Standard Java Usage
 
-The `HttpBuilder` may also be used in standard Java 8 code with no required Groovy code.
-
-For example, extracting the HTTP headers from the result of a `HEAD` request would be something like:
+The `HttpBuilder` may also be used in standard Java 8 code with no required Groovy code. For example, extracting the HTTP headers from the result of a
+`HEAD` request would be something like:
 
 [source,java]
 ----
@@ -334,7 +362,6 @@ println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format(ofPattern
 ----
 
 which yields the same results, just with a cleaner conversion of the header data.
-
 
 === Scraping Web Content (GET)
 
