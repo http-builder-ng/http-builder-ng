@@ -45,10 +45,15 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="javadoc" target="_blank">API Docs</a></li>
-                            <li><a href="tests/test" target="_blank">Tests</a></li>
-                            <li><a href="jacoco/test/html" target="_blank">Coverage</a></li>
-                            <li><a href="findbugs/main.html" target="_blank">FindBugs</a></li>
+                            <li><a href="core/javadoc" target="_blank">Core API Docs</a></li>
+                            <li><a href="core/tests/test" target="_blank">Core Tests</a></li>
+                            <li><a href="core/jacoco/test/html" target="_blank">Core Coverage</a></li>
+                            <li><a href="core/findbugs/main.html" target="_blank">Core FindBugs</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="apache/javadoc" target="_blank">Apache API Docs</a></li>
+                            <li><a href="apache/tests/test" target="_blank">Apache Tests</a></li>
+                            <li><a href="apache/jacoco/test/html" target="_blank">Apache Coverage</a></li>
+                            <li><a href="apache/findbugs/main.html" target="_blank">Apache FindBugs</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -66,22 +71,50 @@
 
 <p>Http Builder NG is a modern Groovy DSL for making http requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x, but it
     doesn't make any assumptions about which version of Groovy you are using. The main goal of Http Builder NG is to allow you to make http requests in a
-    natural and readable way. See the <a href="javadoc">API Docs</a> or <a href="guide/html5" target="_blank">User Guide</a> for more details.</p>
+    natural and readable way. See the <a href="guide/html5" target="_blank">User Guide</a> for more details.</p>
+
+<p>There are two client implementations available:</p>
+
+<ul>
+    <li>The default "core" implementation based on the core Java `HttpURLConnection' class - you get this implementation by default using the "-core" library.</li>
+    <li>The Apache HttpComponents implementation - provided in the "-apache" library, which depends on the core library.</li>
+</ul>
 
 <h2>Artifacts</h2>
 
-<p>Http Builder NG artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a>, for Gradle you can add the
-    following dependency to your <code>build.gradle</code> file <code>dependencies</code> closure:</p>
+<blockquote class="text-warning" style="font-size: 15px !important;">
+    Warning: As of version 0.11 the project has been split up to allow for cleaner separation of various client implementations. The Apache-based client
+    implementation was moved into a different package and a different project. If you use the Apache-based builder, you will need to modify your code to
+    account for these changes.
+</blockquote>
 
-<pre>compile 'org.codehaus.groovy.modules:http-builder-ng:0.10.2'</pre>
+<p>Http Builder NG artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a>, for Gradle you can add one of the the following
+    dependencies to your <code>build.gradle</code> file <code>dependencies</code> closure:</p>
 
-<p>For Maven, add the following to your <code>pom.xml</code> file:</p>
+<pre>compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.0'</pre>
+
+<p>or</p>
+
+<pre>compile 'org.codehaus.groovy.modules:http-builder-ng-apache:0.11.0'</pre>
+
+<p>For Maven, add one of the following to your <code>pom.xml</code> file:</p>
 
 <pre>
 &lt;dependency&gt;
     &lt;groupId&gt;org.codehaus.groovy.modules&lt;/groupId&gt;
-    &lt;artifactId&gt;http-builder-ng&lt;/artifactId&gt;
-    &lt;version&gt;0.10.2&lt;/version&gt;
+    &lt;artifactId&gt;http-builder-ng-core&lt;/artifactId&gt;
+    &lt;version&gt;0.11.0&lt;/version&gt;
+    &lt;type&gt;pom&lt;/type&gt;
+&lt;/dependency&gt;
+</pre>
+
+<p>or</p>
+
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;org.codehaus.groovy.modules&lt;/groupId&gt;
+    &lt;artifactId&gt;http-builder-ng-apache&lt;/artifactId&gt;
+    &lt;version&gt;0.11.0&lt;/version&gt;
     &lt;type&gt;pom&lt;/type&gt;
 &lt;/dependency&gt;
 </pre>

@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+                    .tablerow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .tablerow1 {
+                    background: white;
+                    }
+
+                    .detailrow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .detailrow1 {
+                    background: white;
+                    }
+
+                    .tableheader {
+                    background: #b9b9fe;
+                    font-size: larger;
+                    }
+                </style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project:
+                    </p>
+<h2>Metrics</h2>
+<p>2208 lines of code analyzed,
+            in 69 classes,
+            in 3 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right">3</td>
+<td align="right">1.36</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">5</td>
+<td align="right">2.26</td>
+</tr>
+<tr class="tablerow1">
+<td>Low Priority Warnings</td>
+<td align="right">4</td>
+<td align="right">1.81</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>12</b>
+</td>
+<td align="right">
+<b>5.43</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_EXPERIMENTAL">Experimental Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">2</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</td>
+<td align="right">3</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">4</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>12</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+                    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#OS_OPEN_STREAM">Method may fail to close stream</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer) may fail to close stream<br/>
+<br/>
+<br/>In file NativeHandlers.java,
+                        
+                                line 369<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 369]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_EXPERIMENTAL">Experimental Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#OBL_UNSATISFIED_OBLIGATION">Method may fail to clean up stream or resource</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer) may fail to clean up java.io.InputStream<br/>
+<br/>
+<br/>In file NativeHandlers.java,
+                        
+                                line 142<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 142] is not discharged<br/>Path continues at NativeHandlers.java:[line 143]<br/>Remaining obligations: {InputStream x 1}</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.FromServer.getReader(): new java.io.InputStreamReader(InputStream)<br/>
+<br/>
+<br/>In file FromServer.java,
+                        
+                                line 509<br/>In class groovyx.net.http.FromServer<br/>In method groovyx.net.http.FromServer.getReader()<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At FromServer.java:[line 509]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String): new java.io.InputStreamReader(InputStream)<br/>
+<br/>
+<br/>In file HttpConfigs.java,
+                        
+                                line 495<br/>In class groovyx.net.http.HttpConfigs$BaseHttpConfig<br/>In method groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String)<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At HttpConfigs.java:[line 495]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>groovyx.net.http.NativeHandlers$Parsers.catalogResolver isn't final but should be<br/>
+<br/>
+<br/>In file NativeHandlers.java,
+                        
+                                line 315<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 315]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>groovyx.net.http.Cookie.getExpires() may expose internal representation by returning Cookie.expires<br/>
+<br/>
+<br/>In file Cookie.java,
+                        
+                                line 48<br/>In class groovyx.net.http.Cookie<br/>In method groovyx.net.http.Cookie.getExpires()<br/>Field groovyx.net.http.Cookie.expires<br/>At Cookie.java:[line 48]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>new groovyx.net.http.Cookie(String, String, Date) may expose internal representation by storing an externally mutable object into Cookie.expires<br/>
+<br/>
+<br/>In file Cookie.java,
+                        
+                                line 36<br/>In class groovyx.net.http.Cookie<br/>In method new groovyx.net.http.Cookie(String, String, Date)<br/>Field groovyx.net.http.Cookie.expires<br/>Local variable named expires<br/>At Cookie.java:[line 36]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#URF_UNREAD_FIELD">Unread field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unread field: groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive<br/>
+<br/>
+<br/>In file HttpConfigs.java,
+                        
+                                line 94<br/>In class groovyx.net.http.HttpConfigs$ThreadSafeAuth<br/>Field groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive<br/>At HttpConfigs.java:[line 94]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#URF_UNREAD_FIELD">Unread field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Unread field: groovyx.net.http.CharSequenceInputStream.charset<br/>
+<br/>
+<br/>In file CharSequenceInputStream.java,
+                        
+                                line 36<br/>In class groovyx.net.http.CharSequenceInputStream<br/>Field groovyx.net.http.CharSequenceInputStream.charset<br/>At CharSequenceInputStream.java:[line 36]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#URF_UNREAD_FIELD">Unread field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Unread field: groovyx.net.http.JavaHttpBuilder$Action.verb<br/>
+<br/>
+<br/>In file JavaHttpBuilder.java,
+                        
+                                line 53<br/>In class groovyx.net.http.JavaHttpBuilder$Action<br/>Field groovyx.net.http.JavaHttpBuilder$Action.verb<br/>At JavaHttpBuilder.java:[line 53]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#URF_UNREAD_FIELD">Unread field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Unread field: groovyx.net.http.ReaderInputStream.charset<br/>
+<br/>
+<br/>In file ReaderInputStream.java,
+                        
+                                line 39<br/>In class groovyx.net.http.ReaderInputStream<br/>Field groovyx.net.http.ReaderInputStream.charset<br/>At ReaderInputStream.java:[line 39]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#XFB_XML_FACTORY_BYPASS">Method directly allocates a specific implementation of xml interfaces</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.optional.Html.neckoParse(ChainedHttpConfig, FromServer) directly allocates a specific implementation of xml interfaces<br/>
+<br/>
+<br/>In file Html.java,
+                        
+                                line 41<br/>In class groovyx.net.http.optional.Html<br/>In method groovyx.net.http.optional.Html.neckoParse(ChainedHttpConfig, FromServer)<br/>At Html.java:[line 41]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</h2>
+
+  <p> Returning a reference to a mutable object value stored in one of the object's fields
+  exposes the internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Returning a new copy of the object is better approach in many situations.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</h2>
+
+  <p> This code stores a reference to an externally mutable object into the
+  internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Storing a copy of the object is better approach in many situations.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</h2>
+
+   <p>
+This static field public but not final, and
+could be changed by malicious code or
+        by accident from another package.
+        The field could be made final to avoid
+        this vulnerability.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="OBL_UNSATISFIED_OBLIGATION">Method may fail to clean up stream or resource</a>
+</h2>
+          
+          <p>
+          This method may fail to clean up (close, dispose of) a stream,
+          database object, or other
+          resource requiring an explicit cleanup operation.
+          </p>
+
+          <p>
+          In general, if a method opens a stream or other resource,
+          the method should use a try/finally block to ensure that
+          the stream or resource is cleaned up before the method
+          returns.
+          </p>
+
+          <p>
+          This bug pattern is essentially the same as the
+          OS_OPEN_STREAM and ODR_OPEN_DATABASE_RESOURCE
+          bug patterns, but is based on a different
+          (and hopefully better) static analysis technique.
+          We are interested is getting feedback about the
+          usefulness of this bug pattern.
+          To send feedback, either:
+          </p>
+          <ul>
+            <li>send email to findbugs@cs.umd.edu</li>
+            <li>file a bug report: <a href="http://findbugs.sourceforge.net/reportingBugs.html">http://findbugs.sourceforge.net/reportingBugs.html</a></li>
+          </ul>
+
+          <p>
+          In particular,
+          the false-positive suppression heuristics for this
+          bug pattern have not been extensively tuned, so
+          reports about false positives are helpful to us.
+          </p>
+
+          <p>
+          See Weimer and Necula, <i>Finding and Preventing Run-Time Error Handling Mistakes</i>, for
+          a description of the analysis technique.
+          </p>
+          
+      
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="OS_OPEN_STREAM">Method may fail to close stream</a>
+</h2>
+
+<p> The method creates an IO stream object, does not assign it to any
+fields, pass it to other methods that might close it,
+or return it, and does not appear to close
+the stream on all paths out of the method.&nbsp; This may result in
+a file descriptor leak.&nbsp; It is generally a good
+idea to use a <code>finally</code> block to ensure that streams are
+closed.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="URF_UNREAD_FIELD">Unread field</a>
+</h2>
+
+  <p> This field is never read.&nbsp; Consider removing it from the class.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="XFB_XML_FACTORY_BYPASS">Method directly allocates a specific implementation of xml interfaces</a>
+</h2>
+      
+      <p>
+      This method allocates a specific implementation of an xml interface. It is preferable to use
+      the supplied factory classes to create these objects so that the implementation can be
+      changed at runtime. See
+      </p>
+      <ul>
+         <li>javax.xml.parsers.DocumentBuilderFactory</li>
+         <li>javax.xml.parsers.SAXParserFactory</li>
+         <li>javax.xml.transform.TransformerFactory</li>
+         <li>org.w3c.dom.Document.create<i>XXXX</i></li>
+      </ul>
+      <p>for details.</p>
+      
+    
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>

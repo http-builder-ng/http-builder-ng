@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Form.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-core</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">Form.java</span></div><h1>Form.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.net.URLDecoder;
+import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.util.Collections;
+import java.nio.charset.Charset;
+
+<span class="nc" id="L32">public class Form {</span>
+
+<span class="fc" id="L34">    private static class Buffers {</span>
+<span class="fc" id="L35">        final StringBuilder builder = new StringBuilder(1024);</span>
+<span class="fc" id="L36">        final char[] buffer = new char[1024];</span>
+
+        public void clear() {
+<span class="fc" id="L39">            builder.setLength(0);</span>
+<span class="fc" id="L40">        }</span>
+    }
+
+<span class="fc" id="L43">    private static ThreadLocal&lt;Buffers&gt; tlBuffers = new ThreadLocal&lt;Buffers&gt;() {</span>
+            @Override protected Buffers initialValue() {
+<span class="fc" id="L45">                return new Buffers();</span>
+            }
+        };
+
+    private static void toBuffers(final InputStream is, final Charset charset) throws IOException {
+<span class="fc" id="L50">        tlBuffers.get().clear();</span>
+<span class="fc" id="L51">        final Reader reader = new InputStreamReader(is, charset);</span>
+<span class="fc" id="L52">        final StringBuilder builder = tlBuffers.get().builder;</span>
+<span class="fc" id="L53">        final char[] buffer = tlBuffers.get().buffer;</span>
+        
+<span class="fc" id="L55">        int total = 0;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        while((total = reader.read(buffer, 0, 1024)) != -1) {</span>
+<span class="fc" id="L57">            builder.append(buffer, 0, total);</span>
+        }
+<span class="fc" id="L59">    }</span>
+    
+    public static Map&lt;String,List&lt;String&gt;&gt; decode(final InputStream is, final Charset charset) {
+        try {
+<span class="fc" id="L63">            toBuffers(is, charset);</span>
+<span class="fc" id="L64">            return decode(tlBuffers.get().builder, charset);</span>
+        }
+<span class="nc" id="L66">        catch(IOException e) {</span>
+<span class="nc" id="L67">            throw new RuntimeException(&quot;Error in decoding form&quot;, e);</span>
+        }
+    }
+
+    public static Map&lt;String,List&lt;String&gt;&gt; decode(final StringBuilder builder, final Charset charset) throws IOException {
+<span class="fc" id="L72">        final Map&lt;String,List&lt;String&gt;&gt; ret = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L73">        int lower = 0;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        while(lower &lt; builder.length()) {</span>
+<span class="fc" id="L75">            int eqAt = builder.indexOf(&quot;=&quot;, lower);</span>
+<span class="fc" id="L76">            int ampAt = builder.indexOf(&quot;&amp;&quot;, eqAt);</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            if(ampAt == -1) {</span>
+<span class="fc" id="L78">                ampAt = builder.length();</span>
+            }
+            
+<span class="fc" id="L81">            final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());</span>
+<span class="fc" id="L82">            final String value = URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());</span>
+<span class="fc" id="L83">            List&lt;String&gt; values = ret.get(key);</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if(values == null) {</span>
+<span class="fc" id="L85">                values = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L86">                ret.put(key, values);</span>
+            }
+            
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if(ampAt - eqAt &gt; 1) {</span>
+<span class="fc" id="L90">                values.add(value);</span>
+            }
+            
+<span class="fc" id="L93">            lower = ampAt + 1;</span>
+<span class="fc" id="L94">        }</span>
+        
+<span class="fc" id="L96">        return ret;</span>
+    }
+
+    public static List&lt;?&gt; checkValue(final Object v) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if(v instanceof List) {</span>
+<span class="fc" id="L101">            List list = (List) v;</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if(list.size() &gt; 0) {</span>
+<span class="fc" id="L103">                return list;</span>
+            }
+            else {
+<span class="fc" id="L106">                return Collections.singletonList(&quot;&quot;);</span>
+            }
+        }
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        else if(v != null) {</span>
+<span class="fc" id="L110">            return Collections.singletonList(v);</span>
+        }
+        else {
+<span class="fc" id="L113">            return Collections.singletonList(&quot;&quot;);</span>
+        }
+    }
+    
+    public static String encode(final Map&lt;?,?&gt; map, final Charset charset) {
+        try {
+<span class="fc" id="L119">            tlBuffers.get().clear();</span>
+<span class="fc" id="L120">            final StringBuilder builder = tlBuffers.get().builder;</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            for(Map.Entry&lt;?,?&gt; entry : map.entrySet()) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">                for(Object value : checkValue(entry.getValue())) {</span>
+<span class="fc" id="L123">                    builder.append(URLEncoder.encode(entry.getKey().toString(), charset.toString())).append(&quot;=&quot;);</span>
+<span class="fc" id="L124">                    builder.append(URLEncoder.encode(value.toString(), charset.toString())).append(&quot;&amp;&quot;);</span>
+<span class="fc" id="L125">                }</span>
+<span class="fc" id="L126">            }</span>
+            
+<span class="fc" id="L128">            return builder.substring(0, builder.length() -1);</span>
+        }
+<span class="nc" id="L130">        catch(UnsupportedEncodingException e) {</span>
+<span class="nc" id="L131">            throw new RuntimeException(&quot;Error in encoding form&quot;, e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

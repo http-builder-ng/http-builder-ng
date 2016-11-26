@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+                    .tablerow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .tablerow1 {
+                    background: white;
+                    }
+
+                    .detailrow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .detailrow1 {
+                    background: white;
+                    }
+
+                    .tableheader {
+                    background: #b9b9fe;
+                    font-size: larger;
+                    }
+                </style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project:
+                    </p>
+<h2>Metrics</h2>
+<p>199 lines of code analyzed,
+            in 4 classes,
+            in 1 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right"/>
+<td align="right">NaN</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">2</td>
+<td align="right">10.05</td>
+</tr>
+<tr class="tablerow1">
+<td>Low Priority Warnings</td>
+<td align="right">2</td>
+<td align="right">10.05</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>4</b>
+</td>
+<td align="right">
+<b>20.10</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">3</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>4</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+                    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#SIC_INNER_SHOULD_BE_STATIC">Should be a static inner class</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Should groovyx.net.http.ApacheHttpBuilder$ApacheFromServer be a _static_ inner class?<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                lines 66
+                                to 115<br/>In class groovyx.net.http.ApacheHttpBuilder$ApacheFromServer<br/>At ApacheHttpBuilder.java:[lines 66-115]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#SIC_INNER_SHOULD_BE_STATIC">Should be a static inner class</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Should groovyx.net.http.ApacheHttpBuilder$ApacheToServer be a _static_ inner class?<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                lines 123
+                                to 166<br/>In class groovyx.net.http.ApacheHttpBuilder$ApacheToServer<br/>At ApacheHttpBuilder.java:[lines 123-166]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Private method groovyx.net.http.ApacheHttpBuilder.port(URI) is never called<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                lines 243
+                                to 251<br/>In class groovyx.net.http.ApacheHttpBuilder<br/>In method groovyx.net.http.ApacheHttpBuilder.port(URI)<br/>At ApacheHttpBuilder.java:[lines 243-251]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">Field not initialized in constructor but dereferenced without null check</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>ApacheHttpBuilder$ApacheToServer.inputStream not initialized in constructor and dereferenced in groovyx.net.http.ApacheHttpBuilder$ApacheToServer.consumeContent()<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                line 165<br/>In class groovyx.net.http.ApacheHttpBuilder$ApacheToServer<br/>Field groovyx.net.http.ApacheHttpBuilder$ApacheToServer.inputStream<br/>In method groovyx.net.http.ApacheHttpBuilder$ApacheToServer.consumeContent()<br/>At ApacheHttpBuilder.java:[line 165]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="SIC_INNER_SHOULD_BE_STATIC">Should be a static inner class</a>
+</h2>
+
+  <p> This class is an inner class, but does not use its embedded reference
+  to the object which created it.&nbsp; This reference makes the instances
+  of the class larger, and may keep the reference to the creator object
+  alive longer than necessary.&nbsp; If possible, the class should be
+   made static.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</h2>
+
+<p> This private method is never called. Although it is
+possible that the method will be invoked through reflection,
+it is more likely that the method is never used, and should be
+removed.
+</p>
+
+
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">Field not initialized in constructor but dereferenced without null check</a>
+</h2>
+
+  <p> This field is never initialized within any constructor, and is therefore could be null after
+the object is constructed. Elsewhere, it is loaded and dereferenced without a null check.
+This could be a either an error or a questionable design, since
+it means a null pointer exception will be generated if that field is dereferenced
+before being initialized.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Csv.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-core</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http.optional</a> &gt; <span class="el_source">Csv.java</span></div><h1>Csv.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http.optional;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import groovyx.net.http.ChainedHttpConfig;
+import groovyx.net.http.FromServer;
+import groovyx.net.http.HttpConfig;
+import groovyx.net.http.ToServer;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
+import static groovyx.net.http.NativeHandlers.Encoders.*;
+
+<span class="nc" id="L35">public class Csv {</span>
+
+<span class="fc" id="L37">    public static final Supplier&lt;BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; encoderSupplier = () -&gt; Csv::encode;</span>
+<span class="fc" id="L38">    public static final Supplier&lt;BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt;&gt; parserSupplier = () -&gt; Csv::parse;</span>
+    
+    public static class Context {
+
+        public static final String ID = &quot;3DOJ0FPjyD4GwLmpMjrCYnNJK60=&quot;;
+<span class="fc" id="L43">        public static final Context DEFAULT_CSV = new Context(',');</span>
+<span class="fc" id="L44">        public static final Context DEFAULT_TSV = new Context('\t');</span>
+        
+        private final Character separator;
+        private final Character quoteChar;
+
+        public Context(final Character separator) {
+<span class="fc" id="L50">            this(separator, null);</span>
+<span class="fc" id="L51">        }</span>
+        
+<span class="fc" id="L53">        public Context(final Character separator, final Character quoteChar) {</span>
+<span class="fc" id="L54">            this.separator = separator;</span>
+<span class="fc" id="L55">            this.quoteChar = quoteChar;</span>
+<span class="fc" id="L56">        }</span>
+
+        public char getSeparator() {
+<span class="nc" id="L59">            return separator;</span>
+        }
+
+        public boolean hasQuoteChar() {
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">            return quoteChar != null;</span>
+        }
+        
+        public char getQuoteChar() {
+<span class="nc" id="L67">            return quoteChar;</span>
+        }
+
+        private CSVReader makeReader(final Reader reader) {
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            if(hasQuoteChar()) {</span>
+<span class="nc" id="L72">                return new CSVReader(reader, separator, quoteChar);</span>
+            }
+            else {
+<span class="fc" id="L75">                return new CSVReader(reader, separator);</span>
+            }
+        }
+
+        private CSVWriter makeWriter(final Writer writer) {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if(hasQuoteChar()) {</span>
+<span class="nc" id="L81">                return new CSVWriter(writer, separator, quoteChar);</span>
+            }
+            else {
+<span class="nc" id="L84">                return new CSVWriter(writer, separator);</span>
+            }
+        }
+    }
+
+    public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
+        try {
+<span class="fc" id="L91">            final Csv.Context ctx = (Csv.Context) config.actualContext(fromServer.getContentType(), Csv.Context.ID);</span>
+<span class="fc" id="L92">            return ctx.makeReader(fromServer.getReader()).readAll();</span>
+        }
+<span class="nc" id="L94">        catch(IOException e) {</span>
+<span class="nc" id="L95">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    public static void encode(final ChainedHttpConfig config, final ToServer ts) {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if(handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L101">            return;</span>
+        }
+
+<span class="nc" id="L104">        final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc" id="L105">        final Csv.Context ctx = (Csv.Context) config.actualContext(request.actualContentType(), Csv.Context.ID);</span>
+<span class="nc" id="L106">        final Object body = checkNull(request.actualBody());</span>
+<span class="nc" id="L107">        checkTypes(body, new Class[] { Iterable.class });</span>
+<span class="nc" id="L108">        final StringWriter writer = new StringWriter();</span>
+<span class="nc" id="L109">        final CSVWriter csvWriter = ctx.makeWriter(new StringWriter());</span>
+
+<span class="nc" id="L111">        Iterable&lt;?&gt; iterable = (Iterable&lt;?&gt;) body;</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        for(Object o : iterable) {</span>
+<span class="nc" id="L113">            csvWriter.writeNext((String[]) o);</span>
+<span class="nc" id="L114">        }</span>
+        
+<span class="nc" id="L116">        ts.toServer(stringToStream(writer.toString(), request.actualCharset()));</span>
+<span class="nc" id="L117">    }</span>
+
+    public static void toCsv(final HttpConfig delegate, final String contentType,
+                             final Character separator, final Character quote) {
+<span class="fc" id="L121">        delegate.context(contentType, Context.ID, new Context(separator, quote));</span>
+<span class="fc" id="L122">        delegate.getRequest().encoder(contentType, Csv::encode);</span>
+<span class="fc" id="L123">        delegate.getResponse().parser(contentType, Csv::parse);</span>
+<span class="fc" id="L124">    }</span>
+    
+    public static void toCsv(final HttpConfig delegate, final char separator) {
+<span class="nc" id="L127">        toCsv(delegate, &quot;text/csv&quot;, separator, null);</span>
+<span class="nc" id="L128">    }</span>
+
+    public static void toCsv(final HttpConfig delegate, final char separator, final char quote) {
+<span class="nc" id="L131">        toCsv(delegate, &quot;text/csv&quot;, separator, quote);</span>
+<span class="nc" id="L132">    }</span>
+
+    public static void toTsv(final HttpConfig delegate, final char quote) {
+<span class="nc" id="L135">        toCsv(delegate, &quot;text/tab-separated-values&quot;, '\t', quote);</span>
+<span class="nc" id="L136">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

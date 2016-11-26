@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.10.2,</span>
-<span id="revdate">September 2016</span>
+<span id="revnumber">version 0.11.0,</span>
+<span id="revdate">November 2016</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -551,19 +551,29 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+As of version 0.11.0 the underlying Apache client implementation has been broken out into a separate sub-project dependent on the core library. The <code>ApacheHttpBuilder</code> package name and file location were changed and you will need to update your code to address this change.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 <div class="sect1">
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>"HTTP Builder NG"" is a modern Groovy DSL for making HTTP requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x,
-but it doesn&#8217;t make any assumptions about which version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make
-HTTP requests in a natural and readable way.</p>
-</div>
-<div class="paragraph">
-<p>The project web site is: <a href="https://http-builder-ng.github.io/http-builder-ng/" class="bare">https://http-builder-ng.github.io/http-builder-ng/</a></p>
-</div>
-<div class="paragraph">
-<p>Issue tracking is handled via GitHub: <a href="https://github.com/http-builder-ng/http-builder-ng/issues" class="bare">https://github.com/http-builder-ng/http-builder-ng/issues</a></p>
+<p>The <a href="https://http-builder-ng.github.io/http-builder-ng/">HTTP Builder NG</a> project is a modern Groovy DSL for making HTTP requests. It is usable with both
+Groovy and Java. It requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn&#8217;t make any assumptions about which
+version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make HTTP requests in a natural and readable way.</p>
 </div>
 </div>
 </div>
@@ -575,10 +585,10 @@ HTTP requests in a natural and readable way.</p>
 <a href="https://github.com/jgritman/httpbuilder">Jason Gritman</a> who maintained it for several years.</p>
 </div>
 <div class="paragraph">
-<p>The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement was to make
-HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern typesafe DSL while preserving
-backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that Http Builder NG is basically a complete re-write
-and re-architecture.</p>
+<p>The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
+was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
+typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HTTP
+Builder NG is basically a complete re-write and re-architecture.</p>
 </div>
 </div>
 </div>
@@ -612,9 +622,42 @@ Unless required by applicable law or agreed to in writing, software distributed 
 <h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The specific configuration options are discussed in the JavaDocs for the <code><a href="https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpBuilder.html">HttpBuilder</a></code>,
-<code><a href="https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpConfig.html">HttpConfig</a></code> and
-<code><a href="https://http-builder-ng.github.io/http-builder-ng/javadoc/groovyx/net/http/HttpObjectConfig.html">HttpObjectConfig</a></code> interfaces.</p>
+<p>The specific configuration options are discussed in the JavaDocs for the <code><a href="https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpBuilder.html">HttpBuilder</a></code>,
+<code><a href="https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpConfig.html">HttpConfig</a></code> and
+<code><a href="https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpObjectConfig.html">HttpObjectConfig</a></code> interfaces.</p>
+</div>
+<div class="paragraph">
+<p>There are two underlying client implementations, the default "core" implementation based on the core Java <code>HttpURLConnection</code> class, and an implementation
+ based on the Apache HttpComponents client. The "core" implementation comes with the "core" library, and the Apache implementation comes with the "apache"
+ library, which depends on the "core" library.</p>
+</div>
+<div class="paragraph">
+<p>The selection of a client implementation is specified using a factory function when configuring your <code>HttpBuilder</code> instance. For the default <code>HttpURLConnection</code>
+-based implementation use the <code>configure</code> methods without a factory <code>Function</code> or specify the desired client function, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure({ c -&gt; <span class="keyword">new</span> JavaHttpBuilder(c) })</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For the Apache-based builder, you would use the <code>ApacheHttpBuilder</code> in the factory, as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure({ c -&gt; <span class="keyword">new</span> ApacheHttpBuilder(c) })</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Assuming, of course, that you have configured the <code>http-builder-ng-apache</code> dependency in your project.</p>
 </div>
 <div class="sect2">
 <h3 id="_authentication">Authentication</h3>
@@ -910,8 +953,8 @@ headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</s
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>By default, the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on <code>HttpUrlConnection</code>; however, there is
-no reason other HTTP clients could not be used, perhaps the <a href="https://github.com/google/google-http-java-client">Google HTTP Java Client</a> if needed.</p>
+<p>Currently the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on <code>HttpURLConnection</code>;
+however, there is no reason other HTTP clients could not be used, perhaps the <a href="https://github.com/google/google-http-java-client">Google HTTP Java Client</a> if needed.</p>
 </div>
 <div class="paragraph">
 <p>A client implementation is an extension of the abstract <code>HttpBuilder</code> class, which must implement a handful of abstract methods for the handling the HTTP verbs:</p>
@@ -952,6 +995,10 @@ no reason other HTTP clients could not be used, perhaps the <a href="https://git
 </div>
 </div>
 <div class="paragraph">
+<p>The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients to have code and dependency
+isolation from other implementations and minimizes unused dependencies in projects using the library.</p>
+</div>
+<div class="paragraph">
 <p>If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.</p>
 </div>
 </div>
@@ -960,10 +1007,8 @@ no reason other HTTP clients could not be used, perhaps the <a href="https://git
 <h2 id="_standard_java_usage">Standard Java Usage</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <code>HttpBuilder</code> may also be used in standard Java 8 code with no required Groovy code.</p>
-</div>
-<div class="paragraph">
-<p>For example, extracting the HTTP headers from the result of a <code>HEAD</code> request would be something like:</p>
+<p>The <code>HttpBuilder</code> may also be used in standard Java 8 code with no required Groovy code. For example, extracting the HTTP headers from the result of a
+<code>HEAD</code> request would be something like:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1122,8 +1167,8 @@ the request. The end result is the following display:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.10.2<br>
-Last updated 2016-11-23 05:14:23 -06:00
+Version 0.11.0<br>
+Last updated 2016-11-26 08:16:43 -06:00
 </div>
 </div>
 </body>
