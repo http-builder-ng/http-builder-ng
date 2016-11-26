@@ -1,15 +1,10 @@
 # Splitting out the clients
 
-- trim down the parent build file
 
-- ensure project build and publish
-- ensure site builds and publishes
 - ensure travis works
 - ensure coveralls works
+- ensure project publish
 
-- update documentation
-- bump up the version and document the compatability issues
+- update verifyArtifacts
+- ensure release works
 
-- refactor testing to reduce duplication
-    - HttpClientTestKit
-(increase test coverage)

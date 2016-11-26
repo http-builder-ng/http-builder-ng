@@ -15,7 +15,7 @@ plugins {
 apply plugin: 'org.asciidoctor.convert'
 
 group = 'org.codehaus.groovy.modules'
-version = '0.10.2'
+version = '0.11.0'
 
 repositories {
     jcenter()
@@ -25,11 +25,9 @@ subprojects {
     apply plugin:'groovy'
     apply plugin:'maven'
     apply plugin:'maven-publish'
-    apply plugin:'jacoco'
-    apply plugin:'findbugs'
 
-    group = 'org.codehaus.groovy.modules'
-    version = '0.10.2'
+    group = project.parent.group
+    version = project.parent.version
 
     sourceCompatibility = 8
     targetCompatibility = 8
@@ -99,26 +97,8 @@ subprojects {
         }
     }
 
-    tasks.withType(FindBugs) {
-        ignoreFailures = true       // let's not kill the build for this
-        effort = 'max'
-        reportLevel = 'low'
-        reports {
-            xml.enabled false
-            html.enabled true
-            html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
-        }
-    }
-
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    }
-
-    jacocoTestReport {
-        reports {
-            xml.enabled = true // coveralls plugin depends on xml format report
-            html.enabled = true
-        }
     }
 }
 
@@ -134,7 +114,13 @@ asciidoctor {
         encoding: 'utf-8'
 }
 
-task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor']){
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: [
+    'build','http-builder-ng-core:build', 'http-builder-ng-apache:build',
+    'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc',
+    'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport',
+    'http-builder-ng-core:findbugsMain','http-builder-ng-apache:findbugsMain',
+    'asciidoctor'
+]){
     doLast {
         logger.info 'Building documentation web site...'
 
@@ -156,16 +142,25 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
         }
 
         copy {
-            from 'build/docs'
-            from 'build/reports'
-            include '**/**'
-            into 'build/site'
-        }
-
-        copy {
             from 'build/asciidoc'
             include '**/**'
             into 'build/site/guide'
+        }
+
+        // core
+        copy {
+            from 'http-builder-ng-core/build/docs'
+            from 'http-builder-ng-core/build/reports'
+            include '**/**'
+            into 'build/site/core'
+        }
+
+        // apache
+        copy {
+            from 'http-builder-ng-apache/build/docs'
+            from 'http-builder-ng-apache/build/reports'
+            include '**/**'
+            into 'build/site/apache'
         }
     }
 }
@@ -228,7 +223,7 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
         logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
         // we'll just hit the important ones
-        boolean exists = [ '/index.html', '/guide/html5/index.html', '/javadoc/index.html' ].every { page ->
+        boolean exists = [ '/index.html', '/guide/html5/index.html', '/core/javadoc/index.html' ].every { page ->
             boolean ok = checkUrl("${siteUrl}${page}")
             logger.info " - Checking: ${siteUrl}${page}: $ok"
             ok
@@ -238,7 +233,13 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
     }
 }
 
-task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']){
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: [
+    'checkVersion',
+    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apche:clean',
+    'build', 'http-builder-ng-core:build', 'http-builder-ng-apche:build',
+    'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload',
+    'publishSite'
+]){
     doLast {
         logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
     }
