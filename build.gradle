@@ -201,14 +201,22 @@ task checkVersion(group: 'Verification', description: 'Verify that the project v
 
 task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.'){
     doLast {
-        def repo = "https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
-        def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
+        def base = 'https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules' ///${project.version}/"
+        def artifacts = [
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-$project.version-sources.jar",
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-${project.version}.jar",
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-${project.version}.pom",
 
-        logger.lifecycle "Verifying that artifacts exist at ${repo}..."
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-$project.version-sources.jar",
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.jar",
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.pom"
+        ]
+
+        logger.lifecycle "Verifying that artifacts exist at $base..."
 
         boolean published = artifacts.every { art ->
-            boolean ok = checkUrl("${repo}${art}")
-            logger.info " - Checking: ${repo}${art}: $ok"
+            boolean ok = checkUrl(art)
+            logger.info " - Checking: $art: ${ok ? 'ok' : 'missing'}"
             ok
         }
 
@@ -235,8 +243,8 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
 
 task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: [
     'checkVersion',
-    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apche:clean',
-    'build', 'http-builder-ng-core:build', 'http-builder-ng-apche:build',
+    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apache:clean',
+    'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build',
     'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload',
     'publishSite'
 ]){
