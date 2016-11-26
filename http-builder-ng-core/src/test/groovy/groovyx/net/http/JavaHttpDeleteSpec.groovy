@@ -63,7 +63,7 @@ class JavaHttpDeleteSpec extends Specification {
     def 'DELETE /foo (cookie): returns content'() {
         given:
         serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'DELETE' && request.path == '/foo' && request.getHeader('Cookie') == 'userid=spock') {
+            if (request.method == 'DELETE' && request.path == '/foo' && request.getHeader('Cookie').contains('userid=spock') ) {
                 return responseContent()
             }
             return new MockResponse().setResponseCode(404)
