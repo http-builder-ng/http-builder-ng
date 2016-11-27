@@ -9,127 +9,97 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.7.1'
-    id "com.github.hierynomus.license" version "0.13.1"
-    id 'groovy'
-    id 'maven'
-    id 'maven-publish'
-    id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.7.1'
-    id 'findbugs'
     id "com.stehno.gradle.webpreview" version "0.1.1"
-    id 'com.github.ben-manes.versions' version '0.13.0'
 }
 
 apply plugin: 'org.asciidoctor.convert'
 
-sourceCompatibility = 8
-targetCompatibility = 8
-
 group = 'org.codehaus.groovy.modules'
-version = '0.10.2'
+version = '0.11.0'
 
 repositories {
     jcenter()
 }
 
-configurations {
-    asciidoclet
-}
+subprojects {
+    apply plugin:'groovy'
+    apply plugin:'maven'
+    apply plugin:'maven-publish'
 
-dependencies {
-    //required
-    compile('xml-resolver:xml-resolver:1.2')
-    compile('org.slf4j:slf4j-api:1.7.21')
+    group = project.parent.group
+    version = project.parent.version
 
-    //optionals
-    def optionals = ['com.opencsv:opencsv:3.8',
-                     'org.apache.httpcomponents:httpclient:4.5.2',
-                     'oauth.signpost:signpost-commonshttp4:1.2.1.1',
-                     'oauth.signpost:signpost-core:1.2.1.1',
-                     'org.codehaus.groovy:groovy-all:2.4.6',
-                     'org.jsoup:jsoup:1.9.2',
-                     'net.sourceforge.nekohtml:nekohtml:1.9.22',
-                     'com.fasterxml.jackson.core:jackson-databind:2.8.1'];
+    sourceCompatibility = 8
+    targetCompatibility = 8
 
-    optionals.each { opt ->
-        compileOnly(opt); testCompile(opt);
+    repositories {
+        jcenter()
     }
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
+    configurations {
+        asciidoclet
+    }
 
-    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
-}
+    dependencies {
+        // optionals
+        [
+            'com.opencsv:opencsv:3.8',
+            'oauth.signpost:signpost-commonshttp4:1.2.1.1',
+            'oauth.signpost:signpost-core:1.2.1.1',
+            'org.codehaus.groovy:groovy-all:2.4.6',
+            'org.jsoup:jsoup:1.9.2',
+            'net.sourceforge.nekohtml:nekohtml:1.9.22',
+            'com.fasterxml.jackson.core:jackson-databind:2.8.1'
+        ].each { opt ->
+            compileOnly(opt)
+            testCompile(opt)
+        }
 
-javadoc {
-    options.docletpath = configurations.asciidoclet.files.asType(List)
-    options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
-    options.doclet = 'org.asciidoctor.Asciidoclet'
-    options.overview = "src/main/java/overview.adoc"
-    options.addStringOption "-base-dir", "${projectDir}"
-    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
-}
+        testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+        testCompile 'com.squareup.okhttp3:mockwebserver:3.4.2'
 
-task sourcesJar(type: Jar) {
-    description = 'Creates sources JAR.'
-    classifier = 'sources'
-    from project.sourceSets.main.allSource
-}
+        asciidoclet 'org.asciidoctor:asciidoclet:1.+'
+    }
 
-artifacts {
-    archives jar
-    archives sourcesJar
-}
+    javadoc {
+        options.docletpath = configurations.asciidoclet.files.asType(List)
+        options.links("http://docs.oracle.com/javase/8/docs/api/", "http://docs.groovy-lang.org/latest/html/gapi/");
+        options.doclet = 'org.asciidoctor.Asciidoclet'
+        options.overview = "src/main/java/overview.adoc"
+        options.addStringOption "-base-dir", "${projectDir}"
+        options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
+    }
 
-project.publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            //artifact jar
-            artifact sourcesJar
-            groupId project.group
-            version project.version
+    task sourcesJar(type: Jar) {
+        description = 'Creates sources JAR.'
+        classifier = 'sources'
+        from project.sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+    }
+
+    project.publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                //artifact jar
+                artifact sourcesJar
+                groupId project.group
+                version project.version
+            }
+        }
+
+        configurations.runtime.allDependencies.each {
+            println(it);
         }
     }
 
-    configurations.runtime.allDependencies.each {
-        println(it);
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
-}
-
-bintray {
-    def bintrayUser = project.hasProperty('user') ? project.property('user') : null;
-    def bintrayKey = project.hasProperty('key') ? project.property('key') : null;
-
-    if (bintrayUser && bintrayKey) {
-        user = bintrayUser
-        key = bintrayKey
-
-        publications = ['mavenJava']
-
-        pkg {
-            repo = 'dclark'
-            name = 'http-builder-ng'
-            userOrg = 'http-builder-ng'
-            desc = 'Groovy client for making http requests'
-            licenses = ['Apache-2.0']
-            labels = ['groovy']
-            vcsUrl = 'https://github.com/http-builder-ng/http-builder-ng'
-        }
-    }
-}
-
-license {
-    header rootProject.file('license_header.txt')
-
-    // Toggle ignoreFailures to false to enable license-checking that will fail the build
-    ignoreFailures true
-
-    ext.name = 'David Clark'
-    ext.year = Calendar.instance.get(Calendar.YEAR)
-
-    excludes(['**/*.txt', '**/*.dtd', '**/*.xml', '**/*.ent', '**/*.jks'])
 }
 
 asciidoctor {
@@ -144,9 +114,13 @@ asciidoctor {
         encoding: 'utf-8'
 }
 
-tasks.bintrayUpload.dependsOn build
-
-task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: ['build', 'javadoc', 'jacocoTestReport', 'findbugsMain', 'asciidoctor']){
+task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: [
+    'build','http-builder-ng-core:build', 'http-builder-ng-apache:build',
+    'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc',
+    'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport',
+    'http-builder-ng-core:findbugsMain','http-builder-ng-apache:findbugsMain',
+    'asciidoctor'
+]){
     doLast {
         logger.info 'Building documentation web site...'
 
@@ -168,16 +142,25 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
         }
 
         copy {
-            from 'build/docs'
-            from 'build/reports'
-            include '**/**'
-            into 'build/site'
-        }
-
-        copy {
             from 'build/asciidoc'
             include '**/**'
             into 'build/site/guide'
+        }
+
+        // core
+        copy {
+            from 'http-builder-ng-core/build/docs'
+            from 'http-builder-ng-core/build/reports'
+            include '**/**'
+            into 'build/site/core'
+        }
+
+        // apache
+        copy {
+            from 'http-builder-ng-apache/build/docs'
+            from 'http-builder-ng-apache/build/reports'
+            include '**/**'
+            into 'build/site/apache'
         }
     }
 }
@@ -185,21 +168,6 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
 task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes the documentation web site.', dependsOn: ['site']) {
     buildFile = 'publish.gradle'
     tasks = ['publishGhPages']
-}
-
-tasks.withType(FindBugs) {
-    ignoreFailures = true       // let's not kill the build for this
-    effort = 'max'
-    reportLevel = 'low'
-    reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet resources.text.fromFile('config/findbugs-styles.xsl')
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
 task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version'){
@@ -233,14 +201,22 @@ task checkVersion(group: 'Verification', description: 'Verify that the project v
 
 task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.'){
     doLast {
-        def repo = "https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules/http-builder-ng/${project.version}/"
-        def artifacts = ['-sources.jar', '.jar', '.pom'].collect { "http-builder-ng-${project.version}${it}" }
+        def base = 'https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules' ///${project.version}/"
+        def artifacts = [
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-$project.version-sources.jar",
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-${project.version}.jar",
+            "$base/http-builder-ng-core/$project.version/http-builder-ng-core-${project.version}.pom",
 
-        logger.lifecycle "Verifying that artifacts exist at ${repo}..."
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-$project.version-sources.jar",
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.jar",
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.pom"
+        ]
+
+        logger.lifecycle "Verifying that artifacts exist at $base..."
 
         boolean published = artifacts.every { art ->
-            boolean ok = checkUrl("${repo}${art}")
-            logger.info " - Checking: ${repo}${art}: $ok"
+            boolean ok = checkUrl(art)
+            logger.info " - Checking: $art: ${ok ? 'ok' : 'missing'}"
             ok
         }
 
@@ -255,7 +231,7 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
         logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
         // we'll just hit the important ones
-        boolean exists = [ '/index.html', '/guide/html5/index.html', '/javadoc/index.html' ].every { page ->
+        boolean exists = [ '/index.html', '/guide/html5/index.html', '/core/javadoc/index.html' ].every { page ->
             boolean ok = checkUrl("${siteUrl}${page}")
             logger.info " - Checking: ${siteUrl}${page}: $ok"
             ok
@@ -265,7 +241,13 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
     }
 }
 
-task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: ['checkVersion', 'clean', 'build', 'bintrayUpload', 'publishSite']){
+task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: [
+    'checkVersion',
+    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apache:clean',
+    'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build',
+    'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload',
+    'publishSite'
+]){
     doLast {
         logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
     }
@@ -279,13 +261,6 @@ task verifyRelease(group: 'Verification', description: 'Verifies that the releas
 
 webPreview {
     resourceDir = file('build/site')
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true // coveralls plugin depends on xml format report
-        html.enabled = true
-    }
 }
 
 static boolean checkUrl(String url) {
