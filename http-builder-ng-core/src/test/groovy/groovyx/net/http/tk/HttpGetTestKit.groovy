@@ -25,7 +25,7 @@ import spock.lang.Unroll
 import java.util.concurrent.Executors
 
 /**
- * FIXME: document
+ * Test kit for testing the HTTP GET method with different clients.
  */
 abstract class HttpGetTestKit extends TestKit {
 

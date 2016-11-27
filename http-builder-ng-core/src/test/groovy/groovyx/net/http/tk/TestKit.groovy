@@ -23,7 +23,7 @@ import spock.lang.Specification
 import java.util.function.Function
 
 /**
- * FIXME: document
+ * Base functionality for a shared test kit allowing the same tests to be executed using different client implementations.
  */
 abstract class TestKit extends Specification {
 

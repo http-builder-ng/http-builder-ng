@@ -29,7 +29,7 @@ import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.TEXT
 
 /**
- * FIXME: document
+ * Test kit for testing the HTTP POST method with different clients.
  */
 abstract class HttpPostTestKit extends TestKit {
 

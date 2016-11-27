@@ -28,7 +28,7 @@ import java.util.concurrent.Executors
 import static groovyx.net.http.ContentTypes.TEXT
 
 /**
- * FIXME: document
+ * Test kit for testing the HTTP DELETE method with different clients.
  */
 abstract class HttpDeleteTestKit extends TestKit {
 

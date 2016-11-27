@@ -27,7 +27,7 @@ import spock.lang.Unroll
 import java.util.concurrent.Executors
 
 /**
- * FIXME: document
+ * Test kit for testing the HTTP HEAD method with different clients.
  */
 abstract class HttpHeadTestKit extends TestKit {
 
