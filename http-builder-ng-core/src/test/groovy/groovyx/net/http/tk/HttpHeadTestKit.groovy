@@ -29,7 +29,7 @@ import java.util.concurrent.Executors
 /**
  * Test kit for testing the HTTP HEAD method with different clients.
  */
-abstract class HttpHeadTestKit extends TestKit {
+abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
     private static final Map<String, String> HEADERS_A = [
         alpha: '100', sometime: '03/04/2015 15:45', Accept: 'text/plain', Connection: 'keep-alive'

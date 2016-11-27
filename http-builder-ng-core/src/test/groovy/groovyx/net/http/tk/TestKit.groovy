@@ -16,8 +16,6 @@
 package groovyx.net.http.tk
 
 import groovyx.net.http.HttpBuilder
-import groovyx.net.http.MockWebServerRule
-import org.junit.Rule
 import spock.lang.Specification
 
 import java.util.function.Function
@@ -26,8 +24,6 @@ import java.util.function.Function
  * Base functionality for a shared test kit allowing the same tests to be executed using different client implementations.
  */
 abstract class TestKit extends Specification {
-
-    @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
     Function clientFactory
 
@@ -45,27 +41,5 @@ abstract class TestKit extends Specification {
         httpBuilder {
             request.uri = "http://localhost:${port}"
         }
-    }
-
-    static String htmlContent(String text = 'Nothing special') {
-        "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String
-    }
-
-    static String xmlContent(String text = 'Nothing special') {
-        "<?xml version=\"1.0\"?><root><child><elt name='foo' /><text>$text</text></child></root>" as String
-    }
-
-    static String jsonContent(String text = 'Nothing special') {
-        """
-            {
-                "items":[
-                    {
-                        "name":"alpha",
-                        "score":123,
-                        "text": "${text}"
-                    }
-                ]
-            }
-        """.stripIndent()
     }
 }

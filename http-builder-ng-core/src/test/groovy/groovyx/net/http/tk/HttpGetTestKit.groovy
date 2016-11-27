@@ -27,7 +27,7 @@ import java.util.concurrent.Executors
 /**
  * Test kit for testing the HTTP GET method with different clients.
  */
-abstract class HttpGetTestKit extends TestKit {
+abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll def 'GET /status(#status): verify when handler'() {
         given:

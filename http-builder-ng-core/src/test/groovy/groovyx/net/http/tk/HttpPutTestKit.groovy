@@ -29,7 +29,7 @@ import static groovyx.net.http.ContentTypes.TEXT
 /**
  * Test kit for testing the HTTP PUT method with different clients.
  */
-abstract class HttpPutTestKit extends TestKit {
+abstract class HttpPutTestKit extends HttpMethodTestKit {
 
     private static final String DATE_STRING = '2016.08.25 14:43'
     private static final String BODY_STRING = 'Something Interesting'

@@ -31,7 +31,7 @@ import static groovyx.net.http.ContentTypes.TEXT
 /**
  * Test kit for testing the HTTP POST method with different clients.
  */
-abstract class HttpPostTestKit extends TestKit {
+abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     private static final String DATE_STRING = '2016.08.25 14:43'
     private static final Date DATE_OBJECT = Date.parse('yyyy.MM.dd HH:mm', DATE_STRING)

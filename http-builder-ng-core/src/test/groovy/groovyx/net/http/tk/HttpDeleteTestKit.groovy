@@ -30,7 +30,7 @@ import static groovyx.net.http.ContentTypes.TEXT
 /**
  * Test kit for testing the HTTP DELETE method with different clients.
  */
-abstract class HttpDeleteTestKit extends TestKit {
+abstract class HttpDeleteTestKit extends HttpMethodTestKit {
 
     private static final String DATE_STRING = '2016.08.25 14:43'
 
