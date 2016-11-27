@@ -143,62 +143,6 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
         httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
     }
 
-    @Requires(HttpBin)
-    @Ignore('Results in Method Not Allowed exception - should Delete support DIGEST?')
-    def 'DELETE (DIGEST) /digest-auth'() {
-        /* NOTE: httpbin.org oddly requires cookies to be set during digest authentication, which of course HttpClient won't do. If you let the first request fail,
-                 then the cookie will be set, which means the next request will have the cookie and will allow auth to succeed.
-         */
-        given:
-        def config = {
-            request.uri = 'http://httpbin.org/'
-            execution.maxThreads = 2
-            execution.executor = Executors.newFixedThreadPool(2)
-        }
-
-        when:
-        def httpClient = httpBuilder(config)
-        def result = httpClient.delete {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
-        }
-
-        then:
-        result == 'Ignored'
-
-        when:
-        boolean authenticated = httpClient.delete {
-            request.uri = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.success { true }
-        }
-
-        then:
-        authenticated
-
-        when:
-        httpClient = httpBuilder(config)
-        result = httpClient.deleteAsync {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.failure { r -> 'Ignored' }
-        }.get()
-
-        then:
-        result == 'Ignored'
-
-        when:
-        authenticated = httpClient.deleteAsync() {
-            request.uri = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            response.success { true }
-        }.get()
-
-        then:
-        authenticated
-    }
-
     protected static MockResponse responseContent(final String body = htmlContent()) {
         new MockResponse().setHeader('Content-Type', 'text/plain').setBody(body)
     }

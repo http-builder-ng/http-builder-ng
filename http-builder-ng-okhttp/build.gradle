@@ -1,0 +1,67 @@
+plugins {
+    id 'com.jfrog.bintray' version '1.7.1'
+    id "com.github.hierynomus.license" version "0.13.1"
+    id 'com.github.kt3k.coveralls' version '2.7.1'
+    id 'com.github.ben-manes.versions' version '0.13.0'
+    id 'findbugs'
+    id 'jacoco'
+}
+
+dependencies {
+    compile project(':http-builder-ng-core')
+
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+
+    testCompile project(path: ':http-builder-ng-core', configuration: 'testcode')
+}
+
+tasks.bintrayUpload.dependsOn build
+
+tasks.withType(FindBugs) {
+    ignoreFailures = true       // let's not kill the build for this
+    effort = 'max'
+    reportLevel = 'low'
+    reports {
+        xml.enabled false
+        html.enabled true
+        html.stylesheet resources.text.fromFile('../config/findbugs-styles.xsl')
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
+
+license {
+    header rootProject.file('config/license_header.txt')
+
+    // Toggle ignoreFailures to false to enable license-checking that will fail the build
+    ignoreFailures true
+
+    ext.name = 'David Clark'
+    ext.year = Calendar.instance.get(Calendar.YEAR)
+
+    excludes(['**/*.txt', '**/*.dtd', '**/*.xml', '**/*.ent', '**/*.jks'])
+}
+
+bintray {
+    if (project.hasProperty('user') && project.hasProperty('key')) {
+        user = project.property('user')
+        key = project.property('key')
+
+        publications = ['mavenJava']
+
+        pkg {
+            repo = 'dclark'
+            name = 'http-builder-ng-okhttp'
+            userOrg = 'http-builder-ng'
+            desc = 'Groovy client for making http requests'
+            licenses = ['Apache-2.0']
+            labels = ['groovy']
+            vcsUrl = 'https://github.com/http-builder-ng/http-builder-ng'
+        }
+    }
+}

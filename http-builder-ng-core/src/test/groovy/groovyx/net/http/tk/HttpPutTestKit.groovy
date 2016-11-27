@@ -152,6 +152,4 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         and:
         httpBuilder(serverRule.serverPort).putAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
-
-    // FIXME: need to test BASIC and DIGEST requests
 }

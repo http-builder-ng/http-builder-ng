@@ -15,7 +15,6 @@
  */
 package groovyx.net.http;
 
-import groovyx.net.http.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -53,7 +52,7 @@ import java.util.function.BiFunction;
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);
 
     private class ApacheFromServer implements FromServer {
         
@@ -362,7 +361,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        final HttpDelete del = addHeaders(cr, new HttpDelete(cr.getUri().toURI()));
-        return exec(del, requestConfig);
+        return exec(addHeaders(cr, new HttpDelete(cr.getUri().toURI())), requestConfig);
     }
 }
