@@ -204,6 +204,4 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
             request.auth.basic 'admin', '$3cr3t'
         }).get() == htmlContent()
     }
-
-    // FIXME: is/should DIGEST be supported for POST request? - seems to not work at all in this impl
 }

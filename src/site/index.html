@@ -54,6 +54,11 @@
                             <li><a href="apache/tests/test" target="_blank">Apache Tests</a></li>
                             <li><a href="apache/jacoco/test/html" target="_blank">Apache Coverage</a></li>
                             <li><a href="apache/findbugs/main.html" target="_blank">Apache FindBugs</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="okhttp/javadoc" target="_blank">OkHttp API Docs</a></li>
+                            <li><a href="okhttp/tests/test" target="_blank">OkHttp Tests</a></li>
+                            <li><a href="okhttp/jacoco/test/html" target="_blank">OkHttp Coverage</a></li>
+                            <li><a href="okhttp/findbugs/main.html" target="_blank">OkHttp FindBugs</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -73,13 +78,6 @@
     doesn't make any assumptions about which version of Groovy you are using. The main goal of Http Builder NG is to allow you to make http requests in a
     natural and readable way. See the <a href="guide/html5" target="_blank">User Guide</a> for more details.</p>
 
-<p>There are two client implementations available:</p>
-
-<ul>
-    <li>The default "core" implementation based on the core Java `HttpURLConnection' class - you get this implementation by default using the "-core" library.</li>
-    <li>The Apache HttpComponents implementation - provided in the "-apache" library, which depends on the core library.</li>
-</ul>
-
 <h2>Artifacts</h2>
 
 <blockquote class="text-warning" style="font-size: 15px !important;">
@@ -88,36 +86,42 @@
     account for these changes.
 </blockquote>
 
-<p>Http Builder NG artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a>, for Gradle you can add one of the the following
-    dependencies to your <code>build.gradle</code> file <code>dependencies</code> closure:</p>
+<p>The following client implementations are avaialble:</p>
 
-<pre>compile 'org.codehaus.groovy.modules:http-builder-ng-core:${project_version}'</pre>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><strong>core</strong></td>
+        <td>The default implementation based on the core Java `HttpURLConnection' class. This library also includes all the common library components used by other client implementations.</td>
+    </tr>
+    <tr>
+        <td><strong>apache</strong></td>
+        <td>Client implementation based on the <a href="http://hc.apache.org/httpcomponents-client-ga/">Apache HttpComponents</a> client.</td>
+    </tr>
+    <tr>
+        <td><strong>okhttp</strong></td>
+        <td>Client implementation based on the <a href="http://square.github.io/okhttp/">OkHttp</a> client library. Note that this implementation does not support request/response compression.</td>
+    </tr>
+</table>
 
-<p>or</p>
+<p>The library artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a>. For Gradle:
 
-<pre>compile 'org.codehaus.groovy.modules:http-builder-ng-apache:${project_version}'</pre>
+<pre>compile 'org.codehaus.groovy.modules:http-builder-ng-[library-name]:${project_version}'</pre>
 
-<p>For Maven, add one of the following to your <code>pom.xml</code> file:</p>
+<p>For Maven:</p>
 
 <pre>
 &lt;dependency&gt;
     &lt;groupId&gt;org.codehaus.groovy.modules&lt;/groupId&gt;
-    &lt;artifactId&gt;http-builder-ng-core&lt;/artifactId&gt;
+    &lt;artifactId&gt;http-builder-ng-[library-name]&lt;/artifactId&gt;
     &lt;version&gt;${project_version}&lt;/version&gt;
     &lt;type&gt;pom&lt;/type&gt;
 &lt;/dependency&gt;
 </pre>
 
-<p>or</p>
-
-<pre>
-&lt;dependency&gt;
-    &lt;groupId&gt;org.codehaus.groovy.modules&lt;/groupId&gt;
-    &lt;artifactId&gt;http-builder-ng-apache&lt;/artifactId&gt;
-    &lt;version&gt;${project_version}&lt;/version&gt;
-    &lt;type&gt;pom&lt;/type&gt;
-&lt;/dependency&gt;
-</pre>
 
     </div>
     <div id="push"></div>

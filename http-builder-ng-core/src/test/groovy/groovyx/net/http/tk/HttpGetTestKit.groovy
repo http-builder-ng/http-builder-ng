@@ -18,6 +18,8 @@ package groovyx.net.http.tk
 import groovyx.net.http.*
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
+import spock.lang.Ignore
+import spock.lang.IgnoreRest
 import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Unroll
@@ -345,38 +347,5 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
-    }
-
-    @Requires(HttpBin) def 'GET (DIGEST) /digest-auth'() {
-        given:
-        def config = {
-            request.uri = 'http://httpbin.org/'
-            execution.maxThreads = 2
-            execution.executor = Executors.newFixedThreadPool(2)
-        }
-
-        when:
-        def httpClient = httpBuilder(config)
-        def result = httpClient.get {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            request.cookie('fake', 'fake_value')
-        }
-
-        then:
-        result.authenticated
-        result.user == 'david'
-
-        when:
-        httpClient = httpBuilder(config)
-        result = httpClient.getAsync {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            request.cookie('fake', 'fake_value')
-        }.get()
-
-        then:
-        result.authenticated
-        result.user == 'david'
     }
 }

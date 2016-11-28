@@ -22,10 +22,14 @@ import java.util.function.Function
 
 /**
  * Base functionality for a shared test kit allowing the same tests to be executed using different client implementations.
+ *
+ * Options may be provided via the `options` property as name/value mappings. These options will be used by various tests
+ * to manage the testing of features for clients which may not support certain tested features.
  */
 abstract class TestKit extends Specification {
 
     Function clientFactory
+    Map<Object,Object> options = [:]
 
     protected HttpBuilder httpBuilder(Closure config) {
         HttpBuilder.configure(clientFactory, config)
@@ -41,5 +45,13 @@ abstract class TestKit extends Specification {
         httpBuilder {
             request.uri = "http://localhost:${port}"
         }
+    }
+
+    protected void option(final Object key, final boolean value){
+        options[key] = value
+    }
+
+    protected boolean enabled(final Object key){
+        options[key]
     }
 }

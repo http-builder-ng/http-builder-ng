@@ -45,11 +45,11 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add one of the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.0'
+    compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.1'
     
 for the core library, or 
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng-apache:0.11.0'
+    compile 'org.codehaus.groovy.modules:http-builder-ng-apache:0.11.1'
     
 for the Apache implementation.
     
@@ -58,7 +58,7 @@ For Maven, add one of the following to your `pom.xml` file:
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng-core</artifactId>
-      <version>0.11.0</version>
+      <version>0.11.1</version>
       <type>pom</type>
     </dependency>
 
@@ -67,7 +67,7 @@ or
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng-apache</artifactId>
-      <version>0.11.0</version>
+      <version>0.11.1</version>
       <type>pom</type>
     </dependency>
 

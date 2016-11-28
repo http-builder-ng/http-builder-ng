@@ -126,39 +126,6 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         applyDefaultHeaders(HEADERS_A) == capturedHeaders
     }
 
-    @Requires(HttpBin) def 'HEAD (DIGEST) /digest-auth'() {
-        given:
-        def config = {
-            request.uri = 'http://httpbin.org/'
-            execution.maxThreads = 2
-            execution.executor = Executors.newFixedThreadPool(2)
-        }
-
-        when:
-        def httpClient = httpBuilder(config)
-        def authenticated = httpClient.head {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            request.cookie('fake', 'fake_value')
-            response.success { true }
-        }
-
-        then:
-        authenticated
-
-        when:
-        httpClient = httpBuilder(config)
-        authenticated = httpClient.headAsync {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.auth.digest 'david', 'clark'
-            request.cookie('fake', 'fake_value')
-            response.success { true }
-        }.get()
-
-        then:
-        authenticated
-    }
-
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'HEAD /foo (cookie): returns headers only'() {
         given:
