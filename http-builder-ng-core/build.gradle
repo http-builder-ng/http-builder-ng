@@ -3,8 +3,6 @@ plugins {
     id "com.github.hierynomus.license" version "0.13.1"
     id 'com.github.kt3k.coveralls' version '2.7.1'
     id 'com.github.ben-manes.versions' version '0.13.0'
-    id 'findbugs'
-    id 'jacoco'
 }
 
 configurations {
@@ -19,24 +17,6 @@ dependencies {
 }
 
 tasks.bintrayUpload.dependsOn build
-
-tasks.withType(FindBugs) {
-    ignoreFailures = true       // let's not kill the build for this
-    effort = 'max'
-    reportLevel = 'low'
-    reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet resources.text.fromFile('../config/findbugs-styles.xsl')
-    }
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true // coveralls plugin depends on xml format report
-        html.enabled = true
-    }
-}
 
 license {
     header rootProject.file('config/license_header.txt')
