@@ -24,10 +24,10 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
@@ -117,16 +117,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
 
         private Object handleFromServer() {
-            final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());
-            try {
-                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-
-                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null );
-            }
-            finally {
-                fromServer.finish();
-            }
+            return HANDLER.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));
         }
 
         public Object execute() {

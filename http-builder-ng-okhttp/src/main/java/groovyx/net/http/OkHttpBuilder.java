@@ -18,11 +18,6 @@ package groovyx.net.http;
 import okhttp3.Cookie;
 import okhttp3.*;
 import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.GzipSink;
-import okio.Okio;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,10 +29,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static okhttp3.internal.http.HttpDate.MAX_DATE;
@@ -219,18 +214,8 @@ public class OkHttpBuilder extends HttpBuilder {
         }
     }
 
-    @SuppressWarnings("Duplicates") // TODO: see if this can be resolved
     private static Object handleResponse(final ChainedHttpConfig chainedConfig, final Response response) {
-        final OkHttpFromServer fromServer = new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response);
-        try {
-            final BiFunction<ChainedHttpConfig, FromServer, Object> parser = chainedConfig.findParser(fromServer.getContentType());
-            final BiFunction<FromServer, Object, ?> action = chainedConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-
-            return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(chainedConfig, fromServer) : null);
-
-        } finally {
-            fromServer.finish();
-        }
+        return HANDLER.apply(chainedConfig, new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
     }
 
     private static class OkHttpFromServer implements FromServer {

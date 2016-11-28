@@ -1476,4 +1476,22 @@ public abstract class HttpBuilder implements Closeable {
         myConfig.getChainedResponse().setType(type);
         return myConfig;
     }
+
+    protected static class ResponseHandlerFunction implements BiFunction<ChainedHttpConfig, FromServer, Object> {
+
+        static final ResponseHandlerFunction HANDLER = new ResponseHandlerFunction();
+
+        @Override
+        public Object apply(ChainedHttpConfig requestConfig, FromServer fromServer) {
+            try {
+                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
+                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
+
+                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);
+
+            } finally {
+                fromServer.finish();
+            }
+        }
+    }
 }

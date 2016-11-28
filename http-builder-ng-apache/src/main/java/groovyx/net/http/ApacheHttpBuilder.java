@@ -41,7 +41,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
+
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -174,16 +175,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public Object handleResponse(final HttpResponse response) {
-            final ApacheFromServer fromServer = new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response);
-            try {
-                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-
-                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);
-            }
-            finally {
-                fromServer.finish();
-            }
+            return HANDLER.apply(requestConfig, new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response));
         }
     }
 
