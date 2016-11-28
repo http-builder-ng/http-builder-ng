@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +15,12 @@
  */
 package groovyx.net.http;
 
-import groovyx.net.http.optional.Html;
 import okhttp3.Cookie;
 import okhttp3.*;
 import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.GzipSink;
+import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +50,6 @@ import static okhttp3.internal.http.HttpDate.MAX_DATE;
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
  */
 public class OkHttpBuilder extends HttpBuilder {
-
-    private static final Logger log = LoggerFactory.getLogger(OkHttpBuilder.class);
 
     private final ChainedHttpConfig config;
     private final Executor executor;
@@ -266,8 +266,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public boolean getHasBody() {
-            // TODO: is this the best way to do this?
-            return response.body().contentLength() != 0;
+            try {
+                return !response.body().source().exhausted();
+            } catch (IOException e) {
+                return false;
+            }
         }
 
         @Override

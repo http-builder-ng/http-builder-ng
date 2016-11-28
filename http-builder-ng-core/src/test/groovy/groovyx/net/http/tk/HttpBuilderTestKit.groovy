@@ -17,11 +17,7 @@ package groovyx.net.http.tk
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.json.JsonSlurper
-import groovyx.net.http.ContentTypes
-import groovyx.net.http.FromServer
-import groovyx.net.http.HttpBuilder
-import groovyx.net.http.HttpVerb
-import groovyx.net.http.NativeHandlers
+import groovyx.net.http.*
 import groovyx.net.http.optional.Jackson
 import org.jsoup.nodes.Document
 
@@ -36,6 +32,7 @@ import static groovyx.net.http.optional.Download.toTempFile
  */
 abstract class HttpBuilderTestKit extends TestKit {
 
+    protected static final Object COMPRESSION_OPTION = new Object()
     protected static final int MAX_THREADS = 2
 
     protected HttpBuilder httpBin, google
@@ -178,8 +175,12 @@ abstract class HttpBuilderTestKit extends TestKit {
 
     def "Gzip and Deflate"() {
         expect:
-        httpBin.get { request.uri.path = '/gzip' }.gzipped
-        httpBin.get { request.uri.path = '/deflate' }.deflated
+        if (enabled(COMPRESSION_OPTION)) {
+            httpBin.get { request.uri.path = '/gzip' }.gzipped
+            httpBin.get { request.uri.path = '/deflate' }.deflated
+        } else {
+            true
+        }
     }
 
     def "Basic Auth"() {
@@ -189,18 +190,6 @@ abstract class HttpBuilderTestKit extends TestKit {
             request.auth.basic 'barney', 'rubble'
         }.with {
             authenticated && user == 'barney'
-        }
-    }
-
-    def "Digest Auth"() {
-        //Setting fake: fake_value is necessary to get httpbin to work correctly during authentication
-        expect:
-        httpBin.get {
-            request.uri.path = '/digest-auth/auth/david/clark'
-            request.cookie('fake', 'fake_value')
-            request.auth.digest 'david', 'clark'
-        }.with {
-            authenticated && user == 'david'
         }
     }
 
