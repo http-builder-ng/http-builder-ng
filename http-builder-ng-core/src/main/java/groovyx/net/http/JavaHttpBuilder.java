@@ -27,7 +27,7 @@ import java.util.concurrent.Executor;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
-import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
@@ -43,14 +43,12 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
-        private final String verb;
 
         public Action(final ChainedHttpConfig requestConfig, final String verb) {
             try {
                 this.requestConfig = requestConfig;
                 final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
                 this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
-                this.verb = verb;
                 this.connection.setRequestMethod(verb);
 
                 if(cr.actualBody() != null) {
@@ -117,7 +115,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
 
         private Object handleFromServer() {
-            return HANDLER.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));
+            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));
         }
 
         public Object execute() {

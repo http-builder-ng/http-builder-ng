@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -55,7 +55,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);
 
-    private class ApacheFromServer implements FromServer {
+    private static class ApacheFromServer implements FromServer {
         
         private final HttpResponse response;
         private final HttpEntity entity;
@@ -115,7 +115,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
 
-    public class ApacheToServer implements ToServer, HttpEntity {
+    public static class ApacheToServer implements ToServer, HttpEntity {
 
         private final String contentType;
         private InputStream inputStream;
@@ -166,7 +166,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
     
-    private class Handler implements ResponseHandler<Object> {
+    private static class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
         
@@ -175,7 +175,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public Object handleResponse(final HttpResponse response) {
-            return HANDLER.apply(requestConfig, new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response));
+            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response));
         }
     }
 
@@ -228,18 +228,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
                 log.warn("Error in closing http client", ioe);
             }
         }
-    }
-
-    private int port(final URI uri) {
-        if(uri.getPort() != -1) {
-            return uri.getPort();
-        }
-
-        if(uri.getScheme().startsWith("https")) {
-            return 443;
-        }
-
-        return 80;
     }
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {

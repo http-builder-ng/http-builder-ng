@@ -1479,7 +1479,7 @@ public abstract class HttpBuilder implements Closeable {
 
     protected static class ResponseHandlerFunction implements BiFunction<ChainedHttpConfig, FromServer, Object> {
 
-        static final ResponseHandlerFunction HANDLER = new ResponseHandlerFunction();
+        static final ResponseHandlerFunction HANDLER_FUNCTION = new ResponseHandlerFunction();
 
         @Override
         public Object apply(ChainedHttpConfig requestConfig, FromServer fromServer) {

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,14 +32,14 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
-import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static okhttp3.internal.http.HttpDate.MAX_DATE;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -75,33 +75,21 @@ public class OkHttpBuilder extends HttpBuilder {
 
         applyHeaders(requestBuilder, cr);
         applyCookies(client, cr);
-        applyAuth(chainedConfig, requestBuilder);
+        applyAuth(requestBuilder, chainedConfig);
 
-        final Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(chainedConfig, response);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        return execute(requestBuilder, chainedConfig);
     }
 
-    @Override // TODO: this is basically the same as doGet - try to remove duplication
+    @Override
     protected Object doHead(final ChainedHttpConfig chainedConfig) {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
         final Request.Builder requestBuilder = new Request.Builder().head().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
         applyCookies(client, cr);
-        applyAuth(chainedConfig, requestBuilder);
+        applyAuth(requestBuilder, chainedConfig);
 
-        final Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(chainedConfig, response);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        return execute(requestBuilder, chainedConfig);
     }
 
     @Override
@@ -109,78 +97,55 @@ public class OkHttpBuilder extends HttpBuilder {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
         final Request.Builder requestBuilder = new Request.Builder();
 
-        RequestBody body = RequestBody.create(MediaType.parse("text/html"), "");
-        if (cr.actualBody() != null) {
-            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig.findContentType());
-            chainedConfig.findEncoder().accept(chainedConfig, toServer);
-
-            body = toServer;
-        }
-
-        requestBuilder.post(body).url(HttpUrl.get(cr.getUri().toURI()));
+        requestBuilder.post(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
         applyCookies(client, cr);
-        applyAuth(chainedConfig, requestBuilder);
+        applyAuth(requestBuilder, chainedConfig);
 
-        final Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(chainedConfig, response);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        return execute(requestBuilder, chainedConfig);
     }
 
-    @Override // TODO: very similar to POST - see if duplication can be reduced
+    @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
         final Request.Builder requestBuilder = new Request.Builder();
 
-        RequestBody body = RequestBody.create(MediaType.parse("text/html"), "");
-        if (cr.actualBody() != null) {
-            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig.findContentType());
-            chainedConfig.findEncoder().accept(chainedConfig, toServer);
-
-            body = toServer;
-        }
-
-        requestBuilder.put(body).url(HttpUrl.get(cr.getUri().toURI()));
+        requestBuilder.put(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
         applyCookies(client, cr);
-        applyAuth(chainedConfig, requestBuilder);
+        applyAuth(requestBuilder, chainedConfig);
 
-        final Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(chainedConfig, response);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        return execute(requestBuilder, chainedConfig);
     }
 
-    @Override // TODO: this is basically the same as doGet - try to remove duplication
+    @Override
     protected Object doDelete(final ChainedHttpConfig chainedConfig) {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
         final Request.Builder requestBuilder = new Request.Builder().delete().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
         applyCookies(client, cr);
-        applyAuth(chainedConfig, requestBuilder);
+        applyAuth(requestBuilder, chainedConfig);
 
-        final Request request = requestBuilder.build();
-
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(chainedConfig, response);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        return execute(requestBuilder, chainedConfig);
     }
 
     @Override
     public void close() throws IOException {
         // does nothing
+    }
+
+    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig, ChainedHttpConfig.ChainedRequest cr) {
+        RequestBody body = RequestBody.create(MediaType.parse("text/html"), "");
+        if (cr.actualBody() != null) {
+            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig.findContentType());
+            chainedConfig.findEncoder().accept(chainedConfig, toServer);
+
+            body = toServer;
+        }
+        return body;
     }
 
     private static void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
@@ -207,15 +172,22 @@ public class OkHttpBuilder extends HttpBuilder {
         client.cookieJar().saveFromResponse(HttpUrl.get(uri), okCookies);
     }
 
-    private static void applyAuth(final ChainedHttpConfig chainedConfig, final Request.Builder requestBuilder) {
+    private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
         final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();
         if (auth != null) {
             requestBuilder.addHeader("Authorization", Credentials.basic(auth.getUser(), auth.getPassword()));
         }
     }
 
-    private static Object handleResponse(final ChainedHttpConfig chainedConfig, final Response response) {
-        return HANDLER.apply(chainedConfig, new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
+    private Object execute(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
+        try (Response response = client.newCall(requestBuilder.build()).execute()) {
+            return HANDLER_FUNCTION.apply(
+                chainedConfig,
+                new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response)
+            );
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     private static class OkHttpFromServer implements FromServer {
@@ -290,7 +262,6 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public void writeTo(final BufferedSink sink) throws IOException {
-            // TODO: better way to do this
             try {
                 int b = inputStream.read();
                 while (b != -1) {

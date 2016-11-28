@@ -15,7 +15,7 @@ plugins {
 apply plugin: 'org.asciidoctor.convert'
 
 group = 'org.codehaus.groovy.modules'
-version = '0.11.0'
+version = '0.11.1'
 
 repositories {
     jcenter()
@@ -115,10 +115,10 @@ asciidoctor {
 }
 
 task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: [
-    'build','http-builder-ng-core:build', 'http-builder-ng-apache:build',
-    'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc',
-    'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport',
-    'http-builder-ng-core:findbugsMain','http-builder-ng-apache:findbugsMain',
+    'build','http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
+    'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc', 'http-builder-ng-okhttp:javadoc',
+    'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport', 'http-builder-ng-okhttp:jacocoTestReport',
+    'http-builder-ng-core:findbugsMain', 'http-builder-ng-apache:findbugsMain', 'http-builder-ng-okhttp:findbugsMain',
     'asciidoctor'
 ]){
     doLast {
@@ -161,6 +161,14 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
             from 'http-builder-ng-apache/build/reports'
             include '**/**'
             into 'build/site/apache'
+        }
+
+        // okhttp
+        copy {
+            from 'http-builder-ng-okhttp/build/docs'
+            from 'http-builder-ng-okhttp/build/reports'
+            include '**/**'
+            into 'build/site/okhttp'
         }
     }
 }
@@ -209,7 +217,11 @@ task verifyArtifacts(group: 'Verification', description: 'Verifies that the publ
 
             "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-$project.version-sources.jar",
             "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.jar",
-            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.pom"
+            "$base/http-builder-ng-apache/$project.version/http-builder-ng-apache-${project.version}.pom",
+
+            "$base/http-builder-ng-okhttp/$project.version/http-builder-ng-okhttp-$project.version-sources.jar",
+            "$base/http-builder-ng-okhttp/$project.version/http-builder-ng-okhttp-${project.version}.jar",
+            "$base/http-builder-ng-okhttp/$project.version/http-builder-ng-okhttp-${project.version}.pom"
         ]
 
         logger.lifecycle "Verifying that artifacts exist at $base..."
@@ -243,9 +255,9 @@ task verifySite(group: 'Verification', description: 'Verifies that the documenta
 
 task release(group: 'Development', description: 'Release a new version of the library.', dependsOn: [
     'checkVersion',
-    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apache:clean',
-    'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build',
-    'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload',
+    'clean', 'http-builder-ng-core:clean', 'http-builder-ng-apache:clean', 'http-builder-ng-okhttp:clean',
+    'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
+    'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload', 'http-builder-ng-okhttp:bintrayUpload',
     'publishSite'
 ]){
     doLast {
