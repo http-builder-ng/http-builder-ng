@@ -1,6 +1,7 @@
 # Http Builder NG, The Easy Http Client for Groovy (and Java)
 
-[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng)
+[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-core "Core Library")
+[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-apache "Apache Library")
 [![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 [![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
@@ -42,6 +43,8 @@ httpBin.post {
 Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
 ## Artifacts
+
+> Warning: currently, the JCenter repo does not contain the 0.11.0 artifacts - the request to add them has been submitted. As a workaround, you should be able to add a maven-style repository to your Gradle build pointing to: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` which should allow the dependencies to be resolved until then.
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
