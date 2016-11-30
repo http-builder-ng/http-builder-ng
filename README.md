@@ -56,7 +56,6 @@ For Maven, add the following to your `pom.xml` file:
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng-core</artifactId>
       <version>0.11.0</version>
-      <type>pom</type>
     </dependency>
 
 The coordinates shown are for the "core" library, if you want to use the Apache client implementation, replace "core" with "apache" in the artifact coordinates shown above.
