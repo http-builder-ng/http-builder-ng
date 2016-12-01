@@ -44,8 +44,6 @@ Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG 
 
 ## Artifacts
 
-> Warning: currently, the JCenter repo does not contain the 0.11.0 artifacts - the request to add them has been submitted. As a workaround, you should be able to add a maven-style repository to your Gradle build pointing to: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` which should allow the dependencies to be resolved until then.
-
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
     compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.0'
