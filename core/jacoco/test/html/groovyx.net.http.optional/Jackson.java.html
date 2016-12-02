@@ -16,56 +16,124 @@
 package groovyx.net.http.optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import groovyx.net.http.ChainedHttpConfig;
-import groovyx.net.http.CharSequenceInputStream;
-import groovyx.net.http.ContentTypes;
-import groovyx.net.http.FromServer;
-import groovyx.net.http.HttpConfig;
-import groovyx.net.http.ToServer;
+import groovyx.net.http.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
 
 import static groovyx.net.http.NativeHandlers.Encoders.handleRawUpload;
 
-<span class="nc" id="L31">public class Jackson {</span>
+/**
+ * Helper class for handling JSON content using the https://github.com/FasterXML/jackson[Jackson] JSON library.
+ */
+<span class="nc" id="L29">public class Jackson {</span>
 
-    public static final String OBJECT_MAPPER_ID = &quot;0w4XJJnlTNK8dvISuCDTlsusPQE=&quot;;
+    static final String OBJECT_MAPPER_ID = &quot;0w4XJJnlTNK8dvISuCDTlsusPQE=&quot;;
 
+    /**
+     * Used to parse the server response content using the Jackson JSON parser.
+     *
+     * @param config the configuration
+     * @param fromServer the server content accessor
+     * @return the parsed object
+     */
+    @SuppressWarnings(&quot;WeakerAccess&quot;)
     public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
         try {
-<span class="nc" id="L37">            final ObjectMapper mapper = (ObjectMapper) config.actualContext(fromServer.getContentType(), OBJECT_MAPPER_ID);</span>
-<span class="nc" id="L38">            return mapper.readValue(fromServer.getReader(), config.getChainedResponse().getType());</span>
-        }
-<span class="nc" id="L40">        catch(IOException e) {</span>
-<span class="nc" id="L41">            throw new RuntimeException(e);</span>
+<span class="fc" id="L43">            final ObjectMapper mapper = (ObjectMapper) config.actualContext(fromServer.getContentType(), OBJECT_MAPPER_ID);</span>
+<span class="fc" id="L44">            return mapper.readValue(fromServer.getReader(), config.getChainedResponse().getType());</span>
+<span class="nc" id="L45">        } catch (IOException e) {</span>
+<span class="nc" id="L46">            throw new RuntimeException(e);</span>
         }
     }
 
+    /**
+     * Used to encode the request content using the Jackson JSON encoder.
+     *
+     * @param config the configuration
+     * @param ts the server request content accessor
+     */
+    @SuppressWarnings(&quot;WeakerAccess&quot;)
     public static void encode(final ChainedHttpConfig config, final ToServer ts) {
         try {
-<span class="nc bnc" id="L47" title="All 2 branches missed.">            if(handleRawUpload(config, ts)) {</span>
-<span class="nc" id="L48">                return;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L60">                return;</span>
             }
 
-<span class="nc" id="L51">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
-<span class="nc" id="L52">            final ObjectMapper mapper = (ObjectMapper) config.actualContext(request.actualContentType(), OBJECT_MAPPER_ID);</span>
-<span class="nc" id="L53">            final StringWriter writer = new StringWriter();</span>
-<span class="nc" id="L54">            mapper.writeValue(writer, request.actualBody());</span>
-<span class="nc" id="L55">            ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));</span>
-        }
-<span class="nc" id="L57">        catch(IOException e) {</span>
-<span class="nc" id="L58">            throw new RuntimeException(e);</span>
-<span class="nc" id="L59">        }</span>
-<span class="nc" id="L60">    }</span>
+<span class="nc" id="L63">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc" id="L64">            final ObjectMapper mapper = (ObjectMapper) config.actualContext(request.actualContentType(), OBJECT_MAPPER_ID);</span>
+<span class="nc" id="L65">            final StringWriter writer = new StringWriter();</span>
+<span class="nc" id="L66">            mapper.writeValue(writer, request.actualBody());</span>
+<span class="nc" id="L67">            ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));</span>
+<span class="nc" id="L68">        } catch (IOException e) {</span>
+<span class="nc" id="L69">            throw new RuntimeException(e);</span>
+<span class="nc" id="L70">        }</span>
+<span class="nc" id="L71">    }</span>
 
+    /**
+     * Used to configure the provided Jackson `ObjectMapper` in the configuration context for the default JSON content type.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = &quot;${serverRule.serverUrl}/jackson&quot;
+     *     request.contentType = JSON[0]
+     *     Jackson.mapper(delegate, objectMapper)
+     * }
+     * ----
+     *
+     * @param config the configuration
+     * @param mapper the `ObjectMapper` to be used.
+     */
     public static void mapper(final HttpConfig config, final ObjectMapper mapper) {
-<span class="fc" id="L63">        config.context(ContentTypes.JSON, OBJECT_MAPPER_ID, mapper);</span>
-<span class="fc" id="L64">    }</span>
+<span class="fc" id="L89">        mapper(config, mapper, ContentTypes.JSON);</span>
+<span class="fc" id="L90">    }</span>
 
+    /**
+     * Used to configure the provided Jackson `ObjectMapper` in the configuration context for the specified content type.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = &quot;${serverRule.serverUrl}/jackson&quot;
+     *     request.contentType = OTHER_TYPE
+     *     Jackson.mapper(delegate, objectMapper, [OTHER_TYPE])
+     * }
+     * ----
+     *
+     * @param config the configuration
+     * @param mapper the `ObjectMapper` to be used.
+     * @param contentTypes the content types to be configured with the mapper
+     */
+    public static void mapper(final HttpConfig config, final ObjectMapper mapper, final Iterable&lt;String&gt; contentTypes) {
+<span class="fc" id="L109">        config.context(contentTypes, OBJECT_MAPPER_ID, mapper);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Configures the client to use the Jackson encoder/decoder for JSON handling, with the default JSON content type.
+     *
+     * @param config the configuration
+     */
     public static void use(final HttpConfig config) {
-<span class="nc" id="L67">        config.getRequest().encoder(ContentTypes.JSON, Jackson::encode);</span>
-<span class="nc" id="L68">        config.getResponse().parser(ContentTypes.JSON, Jackson::parse);</span>
-<span class="nc" id="L69">    }</span>
+<span class="fc" id="L118">        use(config, ContentTypes.JSON);</span>
+<span class="fc" id="L119">    }</span>
+
+    /**
+     * Configures the client to use the Jackson encoder/decoder for JSON handling, with the specified JSON content type.
+     *
+     * [source,groovy]
+     * ----
+     * def result = http.get {
+     *     Jackson.use(delegate)
+     * }
+     * ----
+     *
+     * @param config the configuration
+     * @param contentTypes the content types to be configured
+     */
+    public static void use(final HttpConfig config, final Iterable&lt;String&gt; contentTypes) {
+<span class="fc" id="L135">        config.getRequest().encoder(contentTypes, Jackson::encode);</span>
+<span class="fc" id="L136">        config.getResponse().parser(contentTypes, Jackson::parse);</span>
+<span class="fc" id="L137">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

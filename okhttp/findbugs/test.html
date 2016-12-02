@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+                    .tablerow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .tablerow1 {
+                    background: white;
+                    }
+
+                    .detailrow0 {
+                    background: #EEEEEE;
+                    }
+
+                    .detailrow1 {
+                    background: white;
+                    }
+
+                    .tableheader {
+                    background: #b9b9fe;
+                    font-size: larger;
+                    }
+                </style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project:
+                    </p>
+<h2>Metrics</h2>
+<p>245 lines of code analyzed,
+            in 10 classes,
+            in 1 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right"/>
+<td align="right">NaN</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">2</td>
+<td align="right">8.16</td>
+</tr>
+<tr class="tablerow1">
+<td>Low Priority Warnings</td>
+<td align="right">12</td>
+<td align="right">48.98</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>14</b>
+</td>
+<td align="right">
+<b>57.14</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</td>
+<td align="right">4</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</td>
+<td align="right">9</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>14</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+                    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#SE_NO_SERIALVERSIONID">Class is Serializable, but doesn't define serialVersionUID</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpBuilderSpec$_setup_closure1 is Serializable; consider declaring a serialVersionUID<br/>
+<br/>
+<br/>In file OkHttpBuilderSpec.groovy,
+                        
+                                line 25<br/>In class groovyx.net.http.OkHttpBuilderSpec$_setup_closure1<br/>At OkHttpBuilderSpec.groovy:[line 25]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#SE_NO_SERIALVERSIONID">Class is Serializable, but doesn't define serialVersionUID</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1 is Serializable; consider declaring a serialVersionUID<br/>
+<br/>
+<br/>In file UsesOkClient.groovy,
+                        
+                                line 26<br/>In class groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1<br/>At UsesOkClient.groovy:[line 26]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#SE_TRANSIENT_FIELD_NOT_RESTORED">Transient field that isn't set by deserialization. </a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>The field groovyx.net.http.OkHttpBuilderSpec$_setup_closure1.__$stMC is transient but isn't set by deserialization<br/>
+<br/>
+<br/>In file OkHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpBuilderSpec$_setup_closure1<br/>Field groovyx.net.http.OkHttpBuilderSpec$_setup_closure1.__$stMC<br/>In OkHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#SE_TRANSIENT_FIELD_NOT_RESTORED">Transient field that isn't set by deserialization. </a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>The field groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1.__$stMC is transient but isn't set by deserialization<br/>
+<br/>
+<br/>In file UsesOkClient.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1<br/>Field groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1.__$stMC<br/>In UsesOkClient.groovy</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpBuilderSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpBuilderSpec<br/>Field groovyx.net.http.OkHttpBuilderSpec.__$stMC<br/>In OkHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpBuilderSpec$_setup_closure1.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpBuilderSpec$_setup_closure1<br/>Field groovyx.net.http.OkHttpBuilderSpec$_setup_closure1.__$stMC<br/>In OkHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpDeleteSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpDeleteSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpDeleteSpec<br/>Field groovyx.net.http.OkHttpDeleteSpec.__$stMC<br/>In OkHttpDeleteSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpGetSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpGetSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpGetSpec<br/>Field groovyx.net.http.OkHttpGetSpec.__$stMC<br/>In OkHttpGetSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpHeadSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpHeadSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpHeadSpec<br/>Field groovyx.net.http.OkHttpHeadSpec.__$stMC<br/>In OkHttpHeadSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpPostSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpPostSpec<br/>Field groovyx.net.http.OkHttpPostSpec.__$stMC<br/>In OkHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.OkHttpPutSpec.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file OkHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.OkHttpPutSpec<br/>Field groovyx.net.http.OkHttpPutSpec.__$stMC<br/>In OkHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.UsesOkClient$Trait$Helper.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file UsesOkClient.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.UsesOkClient$Trait$Helper<br/>Field groovyx.net.http.UsesOkClient$Trait$Helper.__$stMC<br/>In UsesOkClient.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1.__$stMC isn't final but should be<br/>
+<br/>
+<br/>In file UsesOkClient.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1<br/>Field groovyx.net.http.UsesOkClient$Trait$Helper$_setup_closure1.__$stMC<br/>In UsesOkClient.groovy</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Private method groovyx.net.http.OkHttpBuilderSpec.setup() is never called<br/>
+<br/>
+<br/>In file OkHttpBuilderSpec.groovy,
+                        
+                                lines 25
+                                to 29<br/>In class groovyx.net.http.OkHttpBuilderSpec<br/>In method groovyx.net.http.OkHttpBuilderSpec.setup()<br/>At OkHttpBuilderSpec.groovy:[lines 25-29]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
+</h2>
+
+   <p>
+This static field public but not final, and
+could be changed by malicious code or
+        by accident from another package.
+        The field could be made final to avoid
+        this vulnerability.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="SE_TRANSIENT_FIELD_NOT_RESTORED">Transient field that isn't set by deserialization. </a>
+</h2>
+
+  <p> This class contains a field that is updated at multiple places in the class, thus it seems to be part of the state of the class. However, since the field is marked as transient and not set in readObject or readResolve, it will contain the default value in any
+deserialized instance of the class.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="SE_NO_SERIALVERSIONID">Class is Serializable, but doesn't define serialVersionUID</a>
+</h2>
+
+  <p> This class implements the <code>Serializable</code> interface, but does
+  not define a <code>serialVersionUID</code> field.&nbsp;
+  A change as simple as adding a reference to a .class object
+    will add synthetic fields to the class,
+   which will unfortunately change the implicit
+   serialVersionUID (e.g., adding a reference to <code>String.class</code>
+   will generate a static field <code>class$java$lang$String</code>).
+   Also, different source code to bytecode compilers may use different
+   naming conventions for synthetic variables generated for
+   references to class objects or inner classes.
+   To ensure interoperability of Serializable across versions,
+   consider adding an explicit serialVersionUID.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</h2>
+
+<p> This private method is never called. Although it is
+possible that the method will be invoked through reflection,
+it is more likely that the method is never used, and should be
+removed.
+</p>
+
+
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>

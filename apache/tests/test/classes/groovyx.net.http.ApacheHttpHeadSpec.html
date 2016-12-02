@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">15</div>
+<div class="counter">14</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.454s</div>
+<div class="counter">0.134s</div>
 <p>duration</p>
 </div>
 </td>
@@ -83,13 +83,8 @@
 <td class="success">passed</td>
 </tr>
 <tr>
-<td class="success">HEAD (DIGEST) /digest-auth</td>
-<td>0.326s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
 <td class="success">HEAD /: returns no content</td>
-<td>0.008s</td>
+<td>0.013s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -109,22 +104,22 @@
 </tr>
 <tr>
 <td class="success">HEAD /foo?alpha=bravo: returns headers only</td>
-<td>0.012s</td>
+<td>0.010s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">HEAD /status200: verify success/failure handler</td>
-<td>0.009s</td>
-<td class="success">passed</td>
-</tr>
-<tr>
-<td class="success">HEAD /status200: verify when handler</td>
 <td>0.008s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
+<td class="success">HEAD /status200: verify when handler</td>
+<td>0.010s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
 <td class="success">HEAD /status300: verify success/failure handler</td>
-<td>0.005s</td>
+<td>0.006s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -149,7 +144,7 @@
 </tr>
 <tr>
 <td class="success">HEAD /status500: verify when handler</td>
-<td>0.005s</td>
+<td>0.006s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -157,126 +152,122 @@
 <div id="tab1" class="tab">
 <h2>Standard error</h2>
 <span class="code">
-<pre>Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[55081] starting to accept connections
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[55081] received request: HEAD / HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[55081] received request: HEAD / HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[55081] done accepting connections: Socket closed
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[44287] starting to accept connections
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[44287] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[44287] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[44287] done accepting connections: Socket closed
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[39095] starting to accept connections
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[39095] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 401 Client Error
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[39095] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[39095] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 401 Client Error
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[39095] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[39095] done accepting connections: Socket closed
-Nov 26, 2016 8:18:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[33509] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[33509] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[57849] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[57849] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[57849] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[57849] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[59033] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[59033] received request: HEAD /foo?alpha=bravo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[59033] received request: HEAD /foo?alpha=bravo HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[59033] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[56297] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[56297] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[56297] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[56297] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[51955] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[51955] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[51955] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[51955] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[44703] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[44703] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[44703] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[44703] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[47777] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47777] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47777] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[47777] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[53217] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[53217] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[53217] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[53217] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[53079] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[53079] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[53079] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[53079] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[47125] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47125] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47125] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[47125] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[47123] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47123] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[47123] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[47123] done accepting connections: Socket closed
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 execute
-INFO: MockWebServer[46809] starting to accept connections
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[46809] received request: HEAD /date HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
-INFO: MockWebServer[46809] received request: HEAD /date HTTP/1.1 and responded: HTTP/1.1 200 OK
-Nov 26, 2016 8:18:19 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
-INFO: MockWebServer[46809] done accepting connections: Socket closed
+<pre>Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[41235] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[41235] received request: HEAD / HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[41235] received request: HEAD / HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[41235] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[42831] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[42831] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[42831] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[42831] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[58331] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[58331] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 401 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[58331] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[58331] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 401 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[58331] received request: HEAD /basic HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[58331] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[57697] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[57697] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[57697] received request: HEAD /foo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[57697] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[56179] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[56179] received request: HEAD /foo?alpha=bravo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[56179] received request: HEAD /foo?alpha=bravo HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[56179] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[51009] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[51009] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[51009] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[51009] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[55645] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55645] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55645] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[55645] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[55369] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55369] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55369] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[55369] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[43649] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[43649] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[43649] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[43649] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[34525] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[34525] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[34525] received request: HEAD /status200 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[34525] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[36277] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[36277] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[36277] received request: HEAD /status300 HTTP/1.1 and responded: HTTP/1.1 300 Redirection
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[36277] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[55521] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55521] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[55521] received request: HEAD /status400 HTTP/1.1 and responded: HTTP/1.1 400 Client Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[55521] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[49277] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[49277] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[49277] received request: HEAD /status500 HTTP/1.1 and responded: HTTP/1.1 500 Server Error
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[49277] done accepting connections: Socket closed
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[33391] starting to accept connections
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[33391] received request: HEAD /date HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$4 processOneRequest
+INFO: MockWebServer[33391] received request: HEAD /date HTTP/1.1 and responded: HTTP/1.1 200 OK
+Nov 28, 2016 10:49:18 AM okhttp3.mockwebserver.MockWebServer$3 acceptConnections
+INFO: MockWebServer[33391] done accepting connections: Socket closed
 </pre>
 </span>
 </div>
@@ -288,7 +279,7 @@ INFO: MockWebServer[46809] done accepting connections: Socket closed
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 3.2</a> at Nov 26, 2016 8:18:19 AM</p>
+<a href="http://www.gradle.org">Gradle 3.2</a> at Nov 28, 2016 10:49:19 AM</p>
 </div>
 </div>
 </body>

@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.11.0,</span>
+<span id="revnumber">version 0.11.1,</span>
 <span id="revdate">November 2016</span>
 </div>
 <div id="toc" class="toc2">
@@ -523,7 +523,6 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_introduction">Introduction</a></li>
 <li><a href="#_history">History</a></li>
 <li><a href="#_license">License</a></li>
-<li><a href="#_architecture">Architecture</a></li>
 <li><a href="#_configuration">Configuration</a>
 <ul class="sectlevel2">
 <li><a href="#_authentication">Authentication</a>
@@ -611,14 +610,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 </div>
 <div class="sect1">
-<h2 id="_architecture">Architecture</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>FIXME: come up with overview and maybe some diagrams</p>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_configuration">Configuration</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -627,9 +618,9 @@ Unless required by applicable law or agreed to in writing, software distributed 
 <code><a href="https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpObjectConfig.html">HttpObjectConfig</a></code> interfaces.</p>
 </div>
 <div class="paragraph">
-<p>There are two underlying client implementations, the default "core" implementation based on the core Java <code>HttpURLConnection</code> class, and an implementation
- based on the Apache HttpComponents client. The "core" implementation comes with the "core" library, and the Apache implementation comes with the "apache"
- library, which depends on the "core" library.</p>
+<p>There are three underlying client implementations, the default "core" implementation based on the core Java <code>HttpURLConnection</code> class, an implementation
+ based on the <a href="http://hc.apache.org/httpcomponents-client-ga/">Apache HttpComponents</a> client, and an implementation based on the <a href="http://square.github.io/okhttp/">OkHttp</a>
+ client library.</p>
 </div>
 <div class="paragraph">
 <p>The selection of a client implementation is specified using a factory function when configuring your <code>HttpBuilder</code> instance. For the default <code>HttpURLConnection</code>
@@ -696,6 +687,18 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 <div class="paragraph">
 <p>There is nothing more to do on the client side.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Currently there are some support issues with DIGEST and it&#8217;s support may be removed altogether.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -953,8 +956,9 @@ headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</s
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Currently the HTTP Builder NG library has two HTTP client implementations, one based on the Apache Http Components and the other based on <code>HttpURLConnection</code>;
-however, there is no reason other HTTP clients could not be used, perhaps the <a href="https://github.com/google/google-http-java-client">Google HTTP Java Client</a> if needed.</p>
+<p>Currently the HTTP Builder NG library has three HTTP client implementations, one based on the <code>HttpURLConnection</code> class, another based on the Apache Http
+Components and the third based on OkHttp; however, there is no reason other HTTP clients could not be used, perhaps the
+<a href="https://github.com/google/google-http-java-client">Google HTTP Java Client</a> if needed.</p>
 </div>
 <div class="paragraph">
 <p>A client implementation is an extension of the abstract <code>HttpBuilder</code> class, which must implement a handful of abstract methods for the handling the HTTP verbs:</p>
@@ -1167,8 +1171,8 @@ the request. The end result is the following display:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.11.0<br>
-Last updated 2016-11-26 08:16:43 -06:00
+Version 0.11.1<br>
+Last updated 2016-12-02 05:04:30 -06:00
 </div>
 </div>
 </body>

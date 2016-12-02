@@ -44,12 +44,12 @@ import static java.util.Collections.unmodifiableList;
 <span class="fc" id="L44">    }</span>
 
     public static ContentTypes fromValue(final String value) {
-<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (ContentTypes type : ContentTypes.values()) {</span>
-<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (type.values.contains(value)) {</span>
-<span class="nc" id="L49">                return type;</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (ContentTypes type : ContentTypes.values()) {</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (type.values.contains(value)) {</span>
+<span class="fc" id="L49">                return type;</span>
             }
         }
-<span class="nc" id="L52">        return null;</span>
+<span class="fc" id="L52">        return null;</span>
     }
 
     public String getAt(final int index){
@@ -61,8 +61,8 @@ import static java.util.Collections.unmodifiableList;
     }
 
     @Override public void forEach(Consumer&lt;? super String&gt; action) {
-<span class="nc" id="L64">        values.forEach(action);</span>
-<span class="nc" id="L65">    }</span>
+<span class="fc" id="L64">        values.forEach(action);</span>
+<span class="fc" id="L65">    }</span>
 
     @Override public Spliterator&lt;String&gt; spliterator() {
 <span class="nc" id="L68">        return values.spliterator();</span>

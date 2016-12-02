@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OkHttpBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-okhttp</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">OkHttpBuilder.java</span></div><h1>OkHttpBuilder.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import okhttp3.Cookie;
+import okhttp3.*;
+import okio.BufferedSink;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.function.Function;
+
+import static groovyx.net.http.FromServer.Header.keyValue;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static okhttp3.internal.http.HttpDate.MAX_DATE;
+
+/**
+ * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via the
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
+ * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ */
+public class OkHttpBuilder extends HttpBuilder {
+
+    private final ChainedHttpConfig config;
+    private final Executor executor;
+    private final OkHttpClient client;
+
+    protected OkHttpBuilder(final HttpObjectConfig config) {
+<span class="fc" id="L54">        super(config);</span>
+
+<span class="fc" id="L56">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L57">        this.executor = config.getExecution().getExecutor();</span>
+<span class="fc" id="L58">        this.client = new OkHttpClient.Builder().cookieJar(new NonPersistingCookieJar()).build();</span>
+<span class="fc" id="L59">    }</span>
+
+    @Override
+    protected ChainedHttpConfig getObjectConfig() {
+<span class="fc" id="L63">        return config;</span>
+    }
+
+    @Override
+    public Executor getExecutor() {
+<span class="fc" id="L68">        return executor;</span>
+    }
+
+    @Override
+    protected Object doGet(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L73">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L74">        final Request.Builder requestBuilder = new Request.Builder().get().url(HttpUrl.get(cr.getUri().toURI()));</span>
+
+<span class="fc" id="L76">        applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L77">        applyCookies(client, cr);</span>
+<span class="fc" id="L78">        applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L80">        return execute(requestBuilder, chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doHead(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L85">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L86">        final Request.Builder requestBuilder = new Request.Builder().head().url(HttpUrl.get(cr.getUri().toURI()));</span>
+
+<span class="fc" id="L88">        applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L89">        applyCookies(client, cr);</span>
+<span class="fc" id="L90">        applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L92">        return execute(requestBuilder, chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doPost(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L97">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L98">        final Request.Builder requestBuilder = new Request.Builder();</span>
+
+<span class="fc" id="L100">        requestBuilder.post(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));</span>
+
+<span class="fc" id="L102">        applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L103">        applyCookies(client, cr);</span>
+<span class="fc" id="L104">        applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L106">        return execute(requestBuilder, chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doPut(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L111">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L112">        final Request.Builder requestBuilder = new Request.Builder();</span>
+
+<span class="fc" id="L114">        requestBuilder.put(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));</span>
+
+<span class="fc" id="L116">        applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L117">        applyCookies(client, cr);</span>
+<span class="fc" id="L118">        applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L120">        return execute(requestBuilder, chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doDelete(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L125">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L126">        final Request.Builder requestBuilder = new Request.Builder().delete().url(HttpUrl.get(cr.getUri().toURI()));</span>
+
+<span class="fc" id="L128">        applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L129">        applyCookies(client, cr);</span>
+<span class="fc" id="L130">        applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L132">        return execute(requestBuilder, chainedConfig);</span>
+    }
+
+    @Override
+    public void close() throws IOException {
+        // does nothing
+<span class="nc" id="L138">    }</span>
+
+    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig, ChainedHttpConfig.ChainedRequest cr) {
+<span class="fc" id="L141">        RequestBody body = RequestBody.create(MediaType.parse(&quot;text/html&quot;), &quot;&quot;);</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (cr.actualBody() != null) {</span>
+<span class="fc" id="L143">            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig.findContentType());</span>
+<span class="fc" id="L144">            chainedConfig.findEncoder().accept(chainedConfig, toServer);</span>
+
+<span class="fc" id="L146">            body = toServer;</span>
+        }
+<span class="fc" id="L148">        return body;</span>
+    }
+
+    private static void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L153">            requestBuilder.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L154">        }</span>
+
+<span class="fc" id="L156">        final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (contentType != null) {</span>
+<span class="fc" id="L158">            requestBuilder.addHeader(&quot;Content-Type&quot;, contentType);</span>
+        }
+<span class="fc" id="L160">    }</span>
+
+    private static void applyCookies(final OkHttpClient client, final ChainedHttpConfig.ChainedRequest cr) {
+<span class="fc" id="L163">        final URI uri = cr.getUri().toURI();</span>
+<span class="fc" id="L164">        final List&lt;Cookie&gt; okCookies = cr.actualCookies(new ArrayList&lt;&gt;()).stream().map(cookie -&gt; new Cookie.Builder()</span>
+<span class="fc" id="L165">            .name(cookie.getName())</span>
+<span class="fc" id="L166">            .value(cookie.getValue())</span>
+<span class="fc" id="L167">            .domain(uri.getHost())</span>
+<span class="fc" id="L168">            .path(uri.getPath())</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">            .expiresAt(cookie.getExpires() != null ? cookie.getExpires().toInstant().toEpochMilli() : MAX_DATE)</span>
+<span class="fc" id="L170">            .build()).collect(toList());</span>
+
+<span class="fc" id="L172">        client.cookieJar().saveFromResponse(HttpUrl.get(uri), okCookies);</span>
+<span class="fc" id="L173">    }</span>
+
+    private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L176">        final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (auth != null) {</span>
+<span class="fc" id="L178">            requestBuilder.addHeader(&quot;Authorization&quot;, Credentials.basic(auth.getUser(), auth.getPassword()));</span>
+        }
+<span class="fc" id="L180">    }</span>
+
+    private Object execute(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
+<span class="pc" id="L183">        try (Response response = client.newCall(requestBuilder.build()).execute()) {</span>
+<span class="fc" id="L184">            return HANDLER_FUNCTION.apply(</span>
+                chainedConfig,
+<span class="fc" id="L186">                new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response)</span>
+            );
+<span class="pc bpc" id="L188" title="6 of 8 branches missed.">        } catch (IOException ioe) {</span>
+<span class="nc" id="L189">            throw new RuntimeException(ioe);</span>
+        }
+    }
+
+    private static class OkHttpFromServer implements FromServer {
+
+        private final URI uri;
+        private final Response response;
+
+<span class="fc" id="L198">        private OkHttpFromServer(final URI uri, final Response response) {</span>
+<span class="fc" id="L199">            this.uri = uri;</span>
+<span class="fc" id="L200">            this.response = response;</span>
+<span class="fc" id="L201">        }</span>
+
+        @Override
+        public InputStream getInputStream() {
+<span class="fc" id="L205">            return response.body().byteStream();</span>
+        }
+
+        @Override
+        public int getStatusCode() {
+<span class="fc" id="L210">            return response.code();</span>
+        }
+
+        @Override
+        public String getMessage() {
+<span class="nc" id="L215">            return response.message();</span>
+        }
+
+        @Override
+        public List&lt;Header&lt;?&gt;&gt; getHeaders() {
+<span class="fc" id="L220">            final Headers headers = response.headers();</span>
+<span class="fc" id="L221">            return headers.names().stream().map((Function&lt;String, Header&lt;?&gt;&gt;) name -&gt; keyValue(name, headers.get(name))).collect(toList());</span>
+        }
+
+        @Override
+        public boolean getHasBody() {
+            try {
+<span class="fc bfc" id="L227" title="All 2 branches covered.">                return !response.body().source().exhausted();</span>
+<span class="nc" id="L228">            } catch (IOException e) {</span>
+<span class="nc" id="L229">                return false;</span>
+            }
+        }
+
+        @Override
+        public URI getUri() {
+<span class="fc" id="L235">            return uri;</span>
+        }
+
+        @Override
+        public void finish() {
+<span class="fc" id="L240">            response.close();</span>
+<span class="fc" id="L241">        }</span>
+    }
+
+    private static class OkHttpToServer extends RequestBody implements ToServer {
+
+        private final String contentType;
+        private InputStream inputStream;
+
+<span class="fc" id="L249">        private OkHttpToServer(final String contentType) {</span>
+<span class="fc" id="L250">            this.contentType = contentType;</span>
+<span class="fc" id="L251">        }</span>
+
+        @Override
+        public void toServer(final InputStream inputStream) {
+<span class="fc" id="L255">            this.inputStream = inputStream;</span>
+<span class="fc" id="L256">        }</span>
+
+        @Override
+        public MediaType contentType() {
+<span class="fc" id="L260">            return MediaType.parse(contentType);</span>
+        }
+
+        @Override
+        public void writeTo(final BufferedSink sink) throws IOException {
+            try {
+<span class="fc" id="L266">                int b = inputStream.read();</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">                while (b != -1) {</span>
+<span class="fc" id="L268">                    sink.writeByte(b);</span>
+<span class="fc" id="L269">                    b = inputStream.read();</span>
+                }
+            } finally {
+<span class="pc" id="L272">                inputStream.close();</span>
+<span class="fc" id="L273">            }</span>
+<span class="fc" id="L274">        }</span>
+    }
+
+    /**
+     * Implementation of the OkHttp `CookieJar` interface providing in-memory cookie persistence only. The library default has no cookies at all, so
+     * this at least addresses the issue; however, there is an issue in the HttpBuilder NG project to address cookie support in general.
+     */
+<span class="fc" id="L281">    private static class NonPersistingCookieJar implements CookieJar {</span>
+
+<span class="fc" id="L283">        private final ConcurrentMap&lt;HttpUrl, List&lt;Cookie&gt;&gt; pantry = new ConcurrentHashMap&lt;&gt;();</span>
+
+        @Override
+        public void saveFromResponse(final HttpUrl url, final List&lt;Cookie&gt; cookies) {
+<span class="fc" id="L287">            pantry.put(url, cookies);</span>
+<span class="fc" id="L288">        }</span>
+
+        @Override
+        public List&lt;Cookie&gt; loadForRequest(final HttpUrl url) {
+<span class="fc" id="L292">            return pantry.getOrDefault(url, emptyList());</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

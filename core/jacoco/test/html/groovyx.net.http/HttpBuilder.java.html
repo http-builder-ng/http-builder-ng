@@ -1476,5 +1476,23 @@ public abstract class HttpBuilder implements Closeable {
 <span class="nc" id="L1476">        myConfig.getChainedResponse().setType(type);</span>
 <span class="nc" id="L1477">        return myConfig;</span>
     }
+
+<span class="fc" id="L1480">    protected static class ResponseHandlerFunction implements BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; {</span>
+
+<span class="fc" id="L1482">        static final ResponseHandlerFunction HANDLER_FUNCTION = new ResponseHandlerFunction();</span>
+
+        @Override
+        public Object apply(ChainedHttpConfig requestConfig, FromServer fromServer) {
+            try {
+<span class="fc" id="L1487">                final BiFunction&lt;ChainedHttpConfig,FromServer,Object&gt; parser = requestConfig.findParser(fromServer.getContentType());</span>
+<span class="fc" id="L1488">                final BiFunction&lt;FromServer, Object, ?&gt; action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());</span>
+
+<span class="fc bfc" id="L1490" title="All 2 branches covered.">                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);</span>
+
+            } finally {
+<span class="pc" id="L1493">                fromServer.finish();</span>
+            }
+        }
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
