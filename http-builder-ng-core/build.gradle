@@ -5,6 +5,11 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.13.0'
 }
 
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
 configurations {
     testcode
 }
@@ -14,6 +19,7 @@ dependencies {
     compile('org.slf4j:slf4j-api:1.7.21')
 
     testcode sourceSets.test.output
+    testCompile 'com.stehno.ersatz:ersatz:0.0.1'
 }
 
 tasks.bintrayUpload.dependsOn build
