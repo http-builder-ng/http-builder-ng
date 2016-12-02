@@ -9,7 +9,8 @@
 
 * Site: https://http-builder-ng.github.io/http-builder-ng/
 * Project: https://github.com/http-builder-ng/http-builder-ng
-* JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
+* JavaDocs (core): https://http-builder-ng.github.io/http-builder-ng/core/javadoc/
+* JavaDocs (apache): https://http-builder-ng.github.io/http-builder-ng/apache/javadoc/
 * User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 
 ## Quick Overview
@@ -39,37 +40,26 @@ httpBin.post {
 
 ```
 
-Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
+Hopefully that gives you a general idea of how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
 ## Artifacts
 
-Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add one of the following dependency to your `build.gradle` file `dependencies` closure:
+> Warning: The "okhttp" implementation is new and therefore may not be immediately available on Bintray. If you find it unavailable, you can add a direct reference to the Bintray private repo: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` as a temporary work-around. It should be fully published within a day or two.
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.1'
-    
-for the core library, or 
+Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng-apache:0.11.1'
+    compile 'org.codehaus.groovy.modules:http-builder-ng-CLIENT:0.11.1'
     
-for the Apache implementation.
-    
-For Maven, add one of the following to your `pom.xml` file:
+or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
-      <artifactId>http-builder-ng-core</artifactId>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
       <version>0.11.1</version>
       <type>pom</type>
     </dependency>
-
-or
-
-    <dependency>
-      <groupId>org.codehaus.groovy.modules</groupId>
-      <artifactId>http-builder-ng-apache</artifactId>
-      <version>0.11.1</version>
-      <type>pom</type>
-    </dependency>
+    
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
 
 ## Build Instructions
 
