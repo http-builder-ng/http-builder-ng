@@ -42,8 +42,6 @@ import java.util.stream.Collectors;
 
 public class NativeHandlers {
 
-    private static final Logger log = LoggerFactory.getLogger(NativeHandlers.class);
-
     /**
      * Default success handler, just returns the passed data, which is the data
      * returned by the invoked parser.

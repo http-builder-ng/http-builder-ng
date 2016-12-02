@@ -17,6 +17,6 @@ package groovyx.net.http
 
 import groovyx.net.http.tk.HttpDeleteTestKit
 
-class ApacheHttpDeleteSpec extends HttpDeleteTestKit implements UsesApacheClient {
+class OkHttpDeleteSpec extends HttpDeleteTestKit implements UsesOkClient {
 
 }

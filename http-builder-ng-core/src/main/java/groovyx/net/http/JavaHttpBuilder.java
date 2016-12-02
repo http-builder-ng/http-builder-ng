@@ -24,10 +24,10 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
@@ -43,14 +43,12 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
-        private final String verb;
 
         public Action(final ChainedHttpConfig requestConfig, final String verb) {
             try {
                 this.requestConfig = requestConfig;
                 final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
                 this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
-                this.verb = verb;
                 this.connection.setRequestMethod(verb);
 
                 if(cr.actualBody() != null) {
@@ -117,16 +115,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
 
         private Object handleFromServer() {
-            final JavaFromServer fromServer = new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI());
-            try {
-                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-
-                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null );
-            }
-            finally {
-                fromServer.finish();
-            }
+            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));
         }
 
         public Object execute() {

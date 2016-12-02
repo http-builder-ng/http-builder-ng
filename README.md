@@ -40,23 +40,26 @@ httpBin.post {
 
 ```
 
-Hopefully that gives you a flavor or how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
+Hopefully that gives you a general idea of how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
 ## Artifacts
 
+> Warning: The "okhttp" implementation is new and therefore may not be immediately available on Bintray. If you find it unavailable, you can add a direct reference to the Bintray private repo: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` as a temporary work-around. It should be fully published within a day or two.
+
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'org.codehaus.groovy.modules:http-builder-ng-core:0.11.0'
+    compile 'org.codehaus.groovy.modules:http-builder-ng-CLIENT:0.11.1'
     
-For Maven, add the following to your `pom.xml` file:
+or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>org.codehaus.groovy.modules</groupId>
-      <artifactId>http-builder-ng-core</artifactId>
-      <version>0.11.0</version>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
+      <version>0.11.1</version>
+      <type>pom</type>
     </dependency>
-
-The coordinates shown are for the "core" library, if you want to use the Apache client implementation, replace "core" with "apache" in the artifact coordinates shown above.
+    
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
 
 ## Build Instructions
 

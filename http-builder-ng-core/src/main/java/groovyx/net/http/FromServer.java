@@ -505,7 +505,6 @@ public interface FromServer {
      * @return a {@link Reader} for the response body content (may be empty)
      */
     default Reader getReader() {
-        // TODO: verify what this does when there is no body content
         return new BufferedReader(new InputStreamReader(getInputStream()));
     }
 }

@@ -13,9 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http
+package groovyx.net.http.tk
 
-class HttpContent {
+import groovyx.net.http.MockWebServerRule
+import org.junit.Rule
+
+/**
+ * Base test kit for testing HTTP method handling by different client implementations.
+ */
+abstract class HttpMethodTestKit extends TestKit {
+
+    @Rule MockWebServerRule serverRule = new MockWebServerRule()
 
     static String htmlContent(String text = 'Nothing special') {
         "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String

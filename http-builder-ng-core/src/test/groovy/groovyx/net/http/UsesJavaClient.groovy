@@ -17,23 +17,12 @@ package groovyx.net.http
 
 import java.util.function.Function
 
-class JavaClientTesting {
+/**
+ * Denotes testing with the Java default client library.
+ */
+trait UsesJavaClient {
 
-    static final Function clientFactory = { c -> new JavaHttpBuilder(c) } as Function
-
-    static HttpBuilder httpBuilder(Closure config) {
-        HttpBuilder.configure(clientFactory, config)
-    }
-
-    static HttpBuilder httpBuilder(String uri) {
-        httpBuilder {
-            request.uri = uri
-        }
-    }
-
-    static HttpBuilder httpBuilder(int port) {
-        httpBuilder {
-            request.uri = "http://localhost:${port}"
-        }
+    def setup() {
+        clientFactory = { c -> new JavaHttpBuilder(c) } as Function
     }
 }

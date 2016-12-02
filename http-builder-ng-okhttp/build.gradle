@@ -8,7 +8,7 @@ plugins {
 dependencies {
     compile project(':http-builder-ng-core')
 
-    compile 'org.apache.httpcomponents:httpclient:4.5.2'
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
 
     testCompile project(path: ':http-builder-ng-core', configuration: 'testcode')
 }
@@ -36,7 +36,7 @@ bintray {
 
         pkg {
             repo = 'dclark'
-            name = 'http-builder-ng-apache'
+            name = 'http-builder-ng-okhttp'
             userOrg = 'http-builder-ng'
             desc = 'Groovy client for making http requests'
             licenses = ['Apache-2.0']

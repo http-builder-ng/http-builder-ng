@@ -27,12 +27,12 @@ A couple general rules. If you add or modify code:
 * Provide Spock unit tests for it (don't decrease the code coverage).
 * Add or update relevant documentation (User Guide, JavaDocs, Readme, etc). 
 
-Generally, our upcoming release is done from the `development` branch which we create branches from for individual tasks - the `master` branch is for the current production code. With that in mind:
+As far as branches go, we will generally have a `development` branch off of `master` which will be the branching off point for small development tasks which will be released together. With that in mind:
 
-* If you have a bug fix, it's a bit of a toss up, you could merge into `development` or `master` based on the scope of the change.
-* If you have a feature, you should work off of the `development` branch.
+* If you have a bug fix, it's a bit of a toss up, you could merge into `development` or `master` based on the scope of the change and severity of the issue. When in doubt, merge into `development` and we will redirect as needed.
+* If you have a feature, you should work off of the `development` branch and then merge into it when you are ready to submit.
 
-We are pretty flexible, just think about what you are doing and everything will be ok.
+We are pretty flexible and there are always exceptions, just think about what you are doing and everything will be ok.
 
 ## Having problems using HttpBuilder?
 

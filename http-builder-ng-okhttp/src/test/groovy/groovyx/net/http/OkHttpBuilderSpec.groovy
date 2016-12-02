@@ -15,8 +15,17 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.tk.HttpDeleteTestKit
+import groovyx.net.http.tk.HttpBuilderTestKit
 
-class ApacheHttpDeleteSpec extends HttpDeleteTestKit implements UsesApacheClient {
+import java.util.function.Function
 
+class OkHttpBuilderSpec extends HttpBuilderTestKit {
+
+    def setup() {
+        clientFactory = { c -> new OkHttpBuilder(c) } as Function
+
+        option COMPRESSION_OPTION, false
+
+        init()
+    }
 }

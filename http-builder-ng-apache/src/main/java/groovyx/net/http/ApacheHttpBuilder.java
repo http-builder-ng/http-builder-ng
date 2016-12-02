@@ -15,7 +15,6 @@
  */
 package groovyx.net.http;
 
-import groovyx.net.http.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -42,7 +41,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.function.BiFunction;
+
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -53,9 +53,9 @@ import java.util.function.BiFunction;
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpBuilder.class);
+    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);
 
-    private class ApacheFromServer implements FromServer {
+    private static class ApacheFromServer implements FromServer {
         
         private final HttpResponse response;
         private final HttpEntity entity;
@@ -115,7 +115,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
 
-    public class ApacheToServer implements ToServer, HttpEntity {
+    public static class ApacheToServer implements ToServer, HttpEntity {
 
         private final String contentType;
         private InputStream inputStream;
@@ -166,7 +166,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
     
-    private class Handler implements ResponseHandler<Object> {
+    private static class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
         
@@ -175,16 +175,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public Object handleResponse(final HttpResponse response) {
-            final ApacheFromServer fromServer = new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response);
-            try {
-                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
-                final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
-
-                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);
-            }
-            finally {
-                fromServer.finish();
-            }
+            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response));
         }
     }
 
@@ -237,18 +228,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
                 log.warn("Error in closing http client", ioe);
             }
         }
-    }
-
-    private int port(final URI uri) {
-        if(uri.getPort() != -1) {
-            return uri.getPort();
-        }
-
-        if(uri.getScheme().startsWith("https")) {
-            return 443;
-        }
-
-        return 80;
     }
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
@@ -362,7 +341,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        final HttpDelete del = addHeaders(cr, new HttpDelete(cr.getUri().toURI()));
-        return exec(del, requestConfig);
+        return exec(addHeaders(cr, new HttpDelete(cr.getUri().toURI())), requestConfig);
     }
 }
