@@ -19,13 +19,17 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.HttpCookie;
 import java.net.URI;
+import java.net.CookieStore;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -371,6 +375,20 @@ public interface FromServer {
             }
         }
 
+        public static class HttpCookies extends Header<List<HttpCookie>> {
+            public HttpCookies(final String key, final String value) {
+                super(key, value);
+            }
+
+            public List<HttpCookie> parse() {
+                return HttpCookie.parse(key + ": " + value);
+            }
+
+            public Class<?> getParsedType() {
+                return List.class;
+            }
+        }
+
         private static final Map<String, BiFunction<String, String, ? extends Header>> constructors;
 
         static {
@@ -404,7 +422,8 @@ public interface FromServer {
             tmp.put("Refresh", CombinedMap::new);
             tmp.put("Retry-After", HttpDate::new);
             tmp.put("Server", ValueOnly::new);
-            tmp.put("Set-Cookie", MapPairs::new);
+            tmp.put("Set-Cookie", HttpCookies::new);
+            tmp.put("Set-Cookie2", HttpCookies::new);
             tmp.put("Status", ValueOnly::new);
             tmp.put("Strict-Transport-Security", MapPairs::new);
             tmp.put("Trailer", ValueOnly::new);
@@ -450,6 +469,27 @@ public interface FromServer {
         }
 
         return StandardCharsets.UTF_8;
+    }
+
+    default List<HttpCookie> getCookies() {
+        final List<HttpCookie> cookies = new ArrayList<>();
+        for(Header<?> header : getHeaders()) {
+            if(header.getKey().equalsIgnoreCase("Set-Cookie") ||
+               header.getKey().equalsIgnoreCase("Set-Cookie2")) {
+                final List<?> found = (List<?>) header.getParsed();
+                for(Object o : found) {
+                    cookies.add((HttpCookie) o);
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(cookies);
+    }
+
+    default void addCookieStore(final CookieStore cookieStore) {
+        for(HttpCookie cookie : getCookies()) {
+            cookieStore.add(getUri(), cookie);
+        }
     }
 
     /**
