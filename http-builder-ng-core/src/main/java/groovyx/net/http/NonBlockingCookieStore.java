@@ -4,6 +4,7 @@ import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import java.time.Instant;
 
 class NonBlockingCookieStore implements CookieStore {
 
@@ -46,7 +46,7 @@ class NonBlockingCookieStore implements CookieStore {
                 .map(entry -> entry.getKey().domain)
                 .distinct()
                 .map(NonBlockingCookieStore::makeURI)
-                .filter(uri -> uri != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     }
 
@@ -103,7 +103,7 @@ class NonBlockingCookieStore implements CookieStore {
             final Key rhs = (Key) o;
             return (name.equals(rhs.name) &&
                     domain.equals(rhs.domain) &&
-                    Objects.equals(name, rhs.name));
+                    Objects.equals(path, rhs.path));
         }
 
         @Override
@@ -112,7 +112,7 @@ class NonBlockingCookieStore implements CookieStore {
         }
     }
 
-    private ConcurrentMap<Key,HttpCookie> all = new ConcurrentHashMap<>(100, 0.75f, 2);
+    protected ConcurrentMap<Key,HttpCookie> all = new ConcurrentHashMap<>(100, 0.75f, 2);
 
     private static URI makeURI(final String domain) {
         try {

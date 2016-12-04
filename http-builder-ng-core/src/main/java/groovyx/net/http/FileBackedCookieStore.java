@@ -9,13 +9,20 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 class FileBackedCookieStore extends NonBlockingCookieStore {
 
+    private static final ConcurrentMap<File,File> inUse = new ConcurrentHashMap<>(5, 0.75f, 1);
+    
     private static final int NUM_LOCKS = 16;
     private static final String SUFFIX = ".properties";
     
@@ -24,6 +31,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     private final Executor executor;
     
     public FileBackedCookieStore(final File directory, final Executor executor) {
+        ensureUniqueControl(directory);
         this.directory = directory;
         this.locks = new Object[NUM_LOCKS];
         for(int i = 0; i < NUM_LOCKS; ++i) {
@@ -32,6 +40,27 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
 
         this.executor = executor;
         readAll();
+    }
+
+    private static void ensureUniqueControl(final File directory) {
+        if(null != inUse.putIfAbsent(directory, directory)) {
+            throw new ConcurrentModificationException(directory + " is already being used by another " +
+                                                      "cookie store in this process");
+        }
+    }
+    
+    private void withLock(final Key key, final Runnable runner) {
+        Object lock = locks[Math.abs(key.hashCode() % NUM_LOCKS)];
+        synchronized(lock) {
+            runner.run();
+        }
+    }
+
+    private void deleteFile(final Key key) {
+        final File file = new File(directory, fileName(key));
+        if(file.exists()) {
+            file.delete();
+        }
     }
 
     @Override
@@ -46,23 +75,19 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     @Override
     public boolean remove(final URI uri, final HttpCookie cookie) {
         final Key key = new Key(uri, cookie);
-        final File file = new File(directory, fileName(key));
-        if(file.exists()) {
-            file.delete();
-        }
-        
+        executor.execute(() -> withLock(key, () -> deleteFile(key)));
         return remove(key);
     }
 
     @Override
     public boolean removeAll() {
-        for(File file : directory.listFiles()) {
-            if(file.getName().endsWith(SUFFIX)) {
-                file.delete();
-            }
+        final boolean ret = all.size() > 0;
+        for(Map.Entry<Key,HttpCookie> entry : all.entrySet()) {
+            remove(entry.getKey());
+            executor.execute(() -> withLock(entry.getKey(), () -> deleteFile(entry.getKey())));
         }
-        
-        return super.removeAll();
+
+        return ret;
     }
 
     private static String clean(final String str) {
@@ -87,38 +112,53 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     }
 
     private void store(final Key key, final HttpCookie cookie) {
-        executor.execute(() -> {
-                Object lock = locks[Math.abs(key.hashCode() % NUM_LOCKS)];
-                synchronized(lock) {
-                    File file = new File(directory, fileName(key));
-                    
-                    try(FileWriter fw = new FileWriter(file)) {
-                        toProperties(key, cookie).store(fw, "");
+        final Runnable runner = () -> {
+            File file = new File(directory, fileName(key));
+            
+            try(FileWriter fw = new FileWriter(file)) {
+                toProperties(key, cookie).store(fw, "");
+            }
+            catch(IOException ioe) {
+                throw new RuntimeException(ioe);
+            } };
+        
+        executor.execute(() -> withLock(key, runner));
+    }
+
+    //since readAll happens in the constructor and there is a guarantee that
+    //each cookie store controls its own directory, we do not need to synchronize
+    private void readAll() {
+        final List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for(File file : directory.listFiles()) {
+            
+            final Runnable loadFile = () -> {
+                if(file.getName().endsWith(SUFFIX)) {
+                    try(FileReader reader = new FileReader(file)) {
+                        Properties props = new Properties();
+                        props.load(reader);
+                        Map.Entry<Key,HttpCookie> entry = fromProperties(props);
+                        if(entry != null) {
+                            add(entry.getKey(), entry.getValue());
+                        }
+                        else {
+                            file.delete();
+                        }
                     }
                     catch(IOException ioe) {
                         throw new RuntimeException(ioe);
                     }
-                }
-            });
-    }
+                } };
 
-    private void readAll() {
-        for(File file : directory.listFiles()) {
-            if(file.getName().endsWith(SUFFIX)) {
-                try(FileReader reader = new FileReader(file)) {
-                    Properties props = new Properties();
-                    props.load(reader);
-                    Map.Entry<Key,HttpCookie> entry = fromProperties(props);
-                    if(entry != null) {
-                        add(entry.getKey(), entry.getValue());
-                    }
-                    else {
-                        file.delete();
-                    }
-                }
-                catch(IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
+            futures.add(CompletableFuture.runAsync(loadFile, executor));
+        }
+
+        for(CompletableFuture<Void> future : futures) {
+            try {
+                future.get();
+            }
+            catch(InterruptedException | ExecutionException e) {
+                //just swallow it, we can't do anything about it
+                //since we aren't going to be able to load the cookie
             }
         }
     }
