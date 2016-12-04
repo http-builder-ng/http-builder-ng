@@ -77,7 +77,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
             for(Cookie cookie : cookies) {
                 final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-                httpCookie.setVersion(clienConfig.getCookieVersion());
+                httpCookie.setVersion(clientConfig.getCookieVersion());
                 httpCookie.setDomain(uri.getHost());
                 httpCookie.setPath(uri.getPath());
                 if(cookie.getExpires() != null) {
@@ -274,14 +274,14 @@ public class JavaHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
-    final private HttpObjectConfig.Client clienConfig;
+    final private HttpObjectConfig.Client clientConfig;
 
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.sslContext = config.getExecution().getSslContext();
-        this.clienConfig = config.getClient();
+        this.clientConfig = config.getClient();
     }
 
     protected ChainedHttpConfig getObjectConfig() {
