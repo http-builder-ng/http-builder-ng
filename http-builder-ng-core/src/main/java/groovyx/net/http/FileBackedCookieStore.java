@@ -1,4 +1,4 @@
-package groovyx.http.net;
+package groovyx.net.http;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +29,8 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     private final File directory;
     private final Object[] locks;
     private final Executor executor;
+
+    private volatile boolean live = true;
     
     public FileBackedCookieStore(final File directory, final Executor executor) {
         ensureUniqueControl(directory);
@@ -65,6 +67,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
 
     @Override
     public void add(final URI uri, final HttpCookie cookie) {
+        assertLive();
         final Key key = new Key(uri, cookie);
         add(key, cookie);
         if(cookie.getMaxAge() != -1L) {
@@ -74,20 +77,26 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
 
     @Override
     public boolean remove(final URI uri, final HttpCookie cookie) {
+        assertLive();
         final Key key = new Key(uri, cookie);
-        executor.execute(() -> withLock(key, () -> deleteFile(key)));
         return remove(key);
     }
 
     @Override
     public boolean removeAll() {
+        assertLive();
         final boolean ret = all.size() > 0;
         for(Map.Entry<Key,HttpCookie> entry : all.entrySet()) {
             remove(entry.getKey());
-            executor.execute(() -> withLock(entry.getKey(), () -> deleteFile(entry.getKey())));
         }
 
         return ret;
+    }
+
+    @Override
+    public boolean remove(final Key key) {
+        executor.execute(() -> withLock(key, () -> deleteFile(key)));
+        return super.remove(key);
     }
 
     private static String clean(final String str) {
@@ -203,6 +212,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         final String value = props.getProperty("value");
         final String domain = props.getProperty("domain");
         final HttpCookie cookie = new HttpCookie(name, value);
+        cookie.setDomain(domain);
         cookie.setDiscard(Boolean.valueOf(props.getProperty("discard")));
         cookie.setSecure(Boolean.valueOf(props.getProperty("secure")));
         cookie.setVersion(Integer.valueOf(props.getProperty("version")));
@@ -221,5 +231,17 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         if(null != portlist) cookie.setPortlist(portlist);
 
         return new AbstractMap.SimpleImmutableEntry<>(new Key(name, domain, path, now), cookie);
+    }
+
+    public void shutdown() {
+        //not necessary to call, but can be useful
+        live = false;
+        inUse.remove(directory);
+    }
+
+    public void assertLive() {
+        if(!live) {
+            throw new IllegalStateException("You have already called shutdown on this object");
+        }
     }
 }

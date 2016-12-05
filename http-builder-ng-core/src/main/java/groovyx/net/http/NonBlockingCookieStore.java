@@ -1,4 +1,4 @@
-package groovyx.http.net;
+package groovyx.net.http;
 
 import java.net.CookieStore;
 import java.net.HttpCookie;
@@ -73,7 +73,7 @@ class NonBlockingCookieStore implements CookieStore {
         
         public Key(final URI uri, final HttpCookie cookie) {
             this.name = forStorage(cookie.getName());
-            if(uri == null && (cookie.getDomain() == null || cookie.getDomain().equals(""))) {
+            if(uri != null && (cookie.getDomain() == null || cookie.getDomain().equals(""))) {
                 this.domain = forStorage(uri.getHost());
                 this.path = null;
             }
@@ -125,7 +125,7 @@ class NonBlockingCookieStore implements CookieStore {
 
     public boolean entryValid(final Map.Entry<Key,HttpCookie> entry) {
         if(entry.getValue().hasExpired()) {
-            all.remove(entry.getKey());
+            remove(entry.getKey());
             return false;
         }
         else {
@@ -179,17 +179,18 @@ class NonBlockingCookieStore implements CookieStore {
 
     private boolean matches(final Map.Entry<Key,HttpCookie> entry, final URI uri) {
         final HttpCookie cookie = entry.getValue();
-        final boolean secure = "https".equalsIgnoreCase(uri.getScheme());
-        if(secure && !cookie.getSecure()) {
+        final boolean secureLink = "https".equalsIgnoreCase(uri.getScheme());
+        if(!secureLink && cookie.getSecure()) {
             return false;
         }
         
         final String host = uri.getHost();
+        final String domain = cookie.getDomain() == null ? entry.getKey().domain : cookie.getDomain();
         if(cookie.getVersion() == 0) {
-            return netscapeDomainMatches(cookie.getDomain(), uri.getHost());
+            return netscapeDomainMatches(domain, host);
         }
         else {
-            return HttpCookie.domainMatches(cookie.getDomain(), uri.getHost());
+            return HttpCookie.domainMatches(domain, host);
         }
     }
 
