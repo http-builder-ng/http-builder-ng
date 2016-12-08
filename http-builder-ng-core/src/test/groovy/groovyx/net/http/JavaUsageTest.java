@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,10 +15,10 @@
  */
 package groovyx.net.http;
 
-import okhttp3.mockwebserver.MockResponse;
+import com.stehno.ersatz.ErsatzServer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
@@ -34,23 +34,23 @@ import static org.junit.Assert.assertFalse;
 @Ignore
 public class JavaUsageTest {
 
-    @Rule
-    public MockWebServerRule serverRule = new MockWebServerRule();
-
     private static final String CONTENT = "This is CONTENT!!!";
+    private ErsatzServer ersatzServer;
     private HttpBuilder http;
 
     @Before
     public void before() {
+        ersatzServer = new ErsatzServer();
+
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(serverRule.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getServerUrl());
         });
     }
 
     @Test
     @SuppressWarnings({"unchecked", "Convert2Lambda"})
     public void head_request() throws Exception {
-        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+        ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
 
         List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -85,7 +85,7 @@ public class JavaUsageTest {
     @Test
     @SuppressWarnings("unchecked")
     public void head_request_with_raw_function() throws Exception {
-        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+        ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
 
         BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
             assertFalse(from.getHasBody());
@@ -104,7 +104,7 @@ public class JavaUsageTest {
 
     @Test
     public void get_request() throws Exception {
-        serverRule.dispatcher("GET","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.get("/foo").responds().content(CONTENT, "text/plain")).start();
 
         String result = http.get(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -121,7 +121,7 @@ public class JavaUsageTest {
 
     @Test
     public void post_request() throws Exception {
-        serverRule.dispatcher("POST","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.post("/foo").body(CONTENT, "text/plain").responds().content(CONTENT, "text/plain")).start();
 
         String result = http.post(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -142,7 +142,7 @@ public class JavaUsageTest {
 
     @Test
     public void put_request() throws Exception {
-        serverRule.dispatcher("PUT","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.put("/foo").body(CONTENT, "text/plain").responds().content(CONTENT, "text/plain")).start();
 
         String result = http.put(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -163,7 +163,7 @@ public class JavaUsageTest {
 
     @Test
     public void delete_request() throws Exception {
-        serverRule.dispatcher("DELETE","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.delete("/foo").responds().content(CONTENT, "text/plain")).start();
 
         String result = http.delete(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -176,5 +176,10 @@ public class JavaUsageTest {
         });
 
         assertEquals(future.get(), CONTENT);
+    }
+
+    @After
+    public void after() {
+        ersatzServer.stop();
     }
 }
