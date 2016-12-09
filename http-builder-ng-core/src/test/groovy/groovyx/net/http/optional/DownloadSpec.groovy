@@ -15,36 +15,33 @@
  */
 package groovyx.net.http.optional
 
-import groovyx.net.http.HttpBuilder
-import groovyx.net.http.MockWebServerRule
-import okhttp3.mockwebserver.MockResponse
+import com.stehno.ersatz.ErsatzServer
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
+import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import static groovyx.net.http.ContentTypes.TEXT
+import static groovyx.net.http.HttpBuilder.configure
 import static groovyx.net.http.optional.Download.*
 
 class DownloadSpec extends Specification {
 
-    @Rule MockWebServerRule serverRule = new MockWebServerRule()
     @Rule TemporaryFolder folder = new TemporaryFolder()
 
+    @AutoCleanup('stop') private final ErsatzServer ersatzServer = new ErsatzServer()
     private static final String CONTENT = "This is some file content."
-    private HttpBuilder http
-
-    def setup() {
-        http = HttpBuilder.configure {
-            request.uri = "${serverRule.serverUrl}/download"
-        }
-    }
 
     def 'toTempFile'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, 'text/plain')
+        }.start()
 
         when:
-        File file = http.get { toTempFile(delegate) }
+        File file = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toTempFile(delegate) }
 
         then:
         file.exists()
@@ -53,10 +50,14 @@ class DownloadSpec extends Specification {
 
     def 'toTempFile with contentType'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, TEXT[0])
+        }.start()
 
         when:
-        File file = http.get { toTempFile(delegate, TEXT[0]) }
+        File file = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toTempFile(delegate, TEXT[0]) }
 
         then:
         file.exists()
@@ -65,12 +66,16 @@ class DownloadSpec extends Specification {
 
     def 'toFile'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, TEXT[0])
+        }.start()
 
         File saved = folder.newFile()
 
         when:
-        File file = http.get { toFile(delegate, saved) }
+        File file = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toFile(delegate, saved) }
 
         then:
         file.exists()
@@ -80,12 +85,16 @@ class DownloadSpec extends Specification {
 
     def 'toFile with contentType'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, TEXT[0])
+        }.start()
 
         File saved = folder.newFile()
 
         when:
-        File file = http.get { toFile(delegate, TEXT[0], saved) }
+        File file = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toFile(delegate, TEXT[0], saved) }
 
         then:
         file.exists()
@@ -95,10 +104,14 @@ class DownloadSpec extends Specification {
 
     def 'toStream'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, TEXT[0])
+        }.start()
 
         when:
-        ByteArrayOutputStream stream = http.get { toStream(delegate, new ByteArrayOutputStream()) }
+        ByteArrayOutputStream stream = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toStream(delegate, new ByteArrayOutputStream()) }
 
         then:
         stream.toByteArray() == CONTENT.bytes
@@ -106,10 +119,14 @@ class DownloadSpec extends Specification {
 
     def 'toStream with contentType'() {
         given:
-        serverRule.dispatcher('GET', '/download', new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(CONTENT))
+        ersatzServer.expectations {
+            get('/download').responds().content(CONTENT, TEXT[0])
+        }.start()
 
         when:
-        ByteArrayOutputStream stream = http.get { toStream(delegate, TEXT[0], new ByteArrayOutputStream()) }
+        ByteArrayOutputStream stream = configure {
+            request.uri = "${ersatzServer.serverUrl}/download"
+        }.get { toStream(delegate, TEXT[0], new ByteArrayOutputStream()) }
 
         then:
         stream.toByteArray() == CONTENT.bytes

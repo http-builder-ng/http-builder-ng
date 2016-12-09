@@ -15,16 +15,11 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.feat.BasicAuthFeature
 import groovyx.net.http.CountedClosure
 import groovyx.net.http.FromServer
-import groovyx.net.http.HttpBin
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.RecordedRequest
 import spock.lang.Issue
-import spock.lang.Requires
 import spock.lang.Unroll
-
-import java.util.concurrent.Executors
 
 /**
  * Test kit for testing the HTTP HEAD method with different clients.
@@ -39,18 +34,25 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
     def 'HEAD /: returns no content'() {
         setup:
-        serverRule.dispatcher('HEAD', '/', responseHeaders())
+        ersatzServer.expectations {
+            head('/').responds().headers(HEADERS_A)
+        }.start()
 
         expect:
-        !httpBuilder(serverRule.serverPort).head()
+        !httpBuilder(ersatzServer.port).head()
 
         and:
-        !httpBuilder(serverRule.serverPort).headAsync().get()
+        !httpBuilder(ersatzServer.port).headAsync().get()
+
+        and:
+        ersatzServer.verify()
     }
 
     def 'HEAD /foo: returns headers only'() {
         given:
-        serverRule.dispatcher('HEAD', '/foo', responseHeaders())
+        ersatzServer.expectations {
+            head('/foo').responds().headers(HEADERS_A)
+        }.start()
 
         def capturedHeaders = [:]
         boolean hasBody = true
@@ -66,35 +68,31 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head(config)
+        httpBuilder(ersatzServer.port).head(config)
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_A) == capturedHeaders
+        assertHeaders HEADERS_A, capturedHeaders
         capturedHeaders.clear()
 
         when:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_A) == capturedHeaders
+        assertHeaders HEADERS_A, capturedHeaders
+
+        and:
+        ersatzServer.verify()
     }
 
     def 'HEAD (BASIC) /basic: returns only headers'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'HEAD') {
-                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+        ersatzServer.addFeature new BasicAuthFeature()
 
-                if (request.path == '/basic' && !request.getHeader('Authorization')) {
-                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
-                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
-                    return responseHeaders()
-                }
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            head('/basic').responds().headers(HEADERS_A)
+        }.start()
 
         def capturedHeaders = [:]
         boolean hasBody = true
@@ -111,30 +109,27 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head(config)
+        httpBuilder(ersatzServer.port).head(config)
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_A) == capturedHeaders
+        assertHeaders HEADERS_A, capturedHeaders
         capturedHeaders.clear()
 
         and:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_A) == capturedHeaders
+        assertHeaders HEADERS_A, capturedHeaders
     }
 
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'HEAD /foo (cookie): returns headers only'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'HEAD' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
-                return responseHeaders(new MockResponse(), HEADERS_B)
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            head('/foo').cookie('biscuit', 'wafer').responds().headers(HEADERS_B)
+        }.start()
 
         def capturedHeaders = [:]
         boolean hasBody = true
@@ -151,24 +146,29 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head(config)
+        httpBuilder(ersatzServer.port).head(config)
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_B) == capturedHeaders
+        assertHeaders HEADERS_B, capturedHeaders
         capturedHeaders.clear()
 
         when:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_B) == capturedHeaders
+        assertHeaders HEADERS_B, capturedHeaders
+
+        and:
+        ersatzServer.verify()
     }
 
     def 'HEAD /foo?alpha=bravo: returns headers only'() {
         given:
-        serverRule.dispatcher('HEAD', '/foo?alpha=bravo', responseHeaders(new MockResponse(), HEADERS_C))
+        ersatzServer.expectations {
+            head('/foo').query('alpha', 'bravo').responds().headers(HEADERS_C)
+        }.start()
 
         def capturedHeaders = [:]
         boolean hasBody = true
@@ -185,37 +185,31 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head(config)
+        httpBuilder(ersatzServer.port).head(config)
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_C) == capturedHeaders
+        assertHeaders HEADERS_C, capturedHeaders
         capturedHeaders.clear()
 
         when:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         !hasBody
-        applyDefaultHeaders(HEADERS_C) == capturedHeaders
+        assertHeaders HEADERS_C, capturedHeaders
+
+        and:
+        ersatzServer.verify()
     }
 
     @Unroll def 'HEAD /status#status: verify when handler'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'HEAD') {
-                if (request.path == '/status200') {
-                    return new MockResponse().setResponseCode(200)
-                } else if (request.path == '/status300') {
-                    return new MockResponse().setResponseCode(300)
-                } else if (request.path == '/status400') {
-                    return new MockResponse().setResponseCode(400)
-                } else if (request.path == '/status500') {
-                    return new MockResponse().setResponseCode(500)
-                }
+        ersatzServer.expectations {
+            [200, 300, 400, 500].each { s ->
+                head("/status$s").responds().code(s)
             }
-            return new MockResponse().setResponseCode(404)
-        }
+        }.start()
 
         CountedClosure counter = new CountedClosure()
 
@@ -225,14 +219,14 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head config
+        httpBuilder(ersatzServer.port).head config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         counter.called
@@ -243,20 +237,11 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
     @Unroll def 'HEAD /status#status: verify success/failure handler'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'HEAD') {
-                if (request.path == '/status200') {
-                    return new MockResponse().setResponseCode(200)
-                } else if (request.path == '/status300') {
-                    return new MockResponse().setResponseCode(300)
-                } else if (request.path == '/status400') {
-                    return new MockResponse().setResponseCode(400)
-                } else if (request.path == '/status500') {
-                    return new MockResponse().setResponseCode(500)
-                }
+        ersatzServer.expectations {
+            [200, 300, 400, 500].each { s ->
+                head("/status$s").responds().code(s)
             }
-            return new MockResponse().setResponseCode(404)
-        }
+        }.start()
 
         CountedClosure successCounter = new CountedClosure()
         CountedClosure failureCounter = new CountedClosure()
@@ -268,7 +253,7 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        httpBuilder(serverRule.serverPort).head config
+        httpBuilder(ersatzServer.port).head config
 
         then:
         successCounter.called == success
@@ -278,7 +263,7 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         failureCounter.clear()
 
         when:
-        httpBuilder(serverRule.serverPort).headAsync(config).get()
+        httpBuilder(ersatzServer.port).headAsync(config).get()
 
         then:
         successCounter.called == success
@@ -294,7 +279,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
     def 'HEAD /date: returns content of specified type'() {
         given:
-        serverRule.dispatcher('HEAD', '/date', responseHeaders(new MockResponse(), [stamp: '2016.08.25 14:43']))
+        ersatzServer.expectations {
+            head('/date').responds().header('stamp', '2016.08.25 14:43')
+        }.start()
 
         def config = {
             request.uri.path = '/date'
@@ -304,31 +291,23 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         }
 
         when:
-        def result = httpBuilder(serverRule.serverPort).head(Date, config)
+        def result = httpBuilder(ersatzServer.port).head(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(serverRule.serverPort).headAsync(Date, config).get()
+        result = httpBuilder(ersatzServer.port).headAsync(Date, config).get()
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
     }
 
-    protected static Map<String, String> applyDefaultHeaders(final Map<String, String> headers) {
-        headers + [
-            'Content-Length': '0',
-            'Connection'    : 'keep-alive'
-        ]
-    }
-
-    protected static MockResponse responseHeaders(final MockResponse response = new MockResponse(), Map<String, String> headers = HEADERS_A) {
-        headers.each { k, v ->
-            response.setHeader(k, v)
+    private static void assertHeaders(Map expected, Map captured) {
+        expected.each { k, v ->
+            assert captured[k] == v
         }
-        response
     }
 }

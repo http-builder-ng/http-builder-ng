@@ -15,12 +15,12 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.feat.BasicAuthFeature
+import groovy.json.JsonSlurper
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
 import groovyx.net.http.NativeHandlers
 import groovyx.net.http.ToServer
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.RecordedRequest
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Unroll
@@ -42,56 +42,56 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     def 'POST /: returns content'() {
         setup:
-        serverRule.dispatcher('POST', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        ersatzServer.expectations {
+            post('/').responds().content(htmlContent(), 'text/plain')
+        }.start()
 
         expect:
-        httpBuilder(serverRule.serverPort).post() == htmlContent()
+        httpBuilder(ersatzServer.port).post() == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync().get() == htmlContent()
+        httpBuilder(ersatzServer.port).postAsync().get() == htmlContent()
     }
 
     @Unroll def 'POST /foo (#contentType): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/foo') {
-                String requestType = request.getHeader('Content-Type')
-                if (requestType == TEXT[0]) {
-                    return new MockResponse().setHeader('Content-Type', requestType).setBody(HTML_CONTENT)
-                } else if (requestType == JSON[0]) {
-                    return new MockResponse().setHeader('Content-Type', requestType).setBody(JSON_CONTENT)
+        ersatzServer.expectations {
+            post('/foo').body(BODY_STRING, TEXT[0]).responds().content(HTML_CONTENT, TEXT[0])
+
+            post('/foo') {
+                body([age: 42, name: 'Bob'], JSON[0])
+                converter(JSON[0] as String, { b -> new JsonSlurper().parse(b) })
+                responder {
+                    content('{"name":"Bob","age":42}', JSON[0])
+                    //                    content(JSON_STRING, JSON[0]) // TODO: bug in ersatz?
                 }
             }
-            return new MockResponse().setResponseCode(404)
-        }
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
-            request.body = content
+            request.body = requestContent
             request.contentType = contentType[0]
             response.parser contentType, parser
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).post(config) == result
+        httpBuilder(ersatzServer.port).post(config) == result
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync(config).get() == result
+        httpBuilder(ersatzServer.port).postAsync(config).get() == result
 
         where:
-        content     | contentType | parser                               || result
-        BODY_STRING | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-        JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: true, id: 100]
+        requestContent | contentType | parser                               || result
+        BODY_STRING    | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
+        JSON_STRING    | JSON        | NativeHandlers.Parsers.&json         || [age: 42, name: 'Bob']
     }
 
     @Unroll def 'POST /foo (#contentType): encodes and decodes properly and returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == JSON[0]) {
-                return new MockResponse().setHeader('Content-Type', JSON[0]).setBody(JSON_CONTENT)
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            post('/foo').body([name: 'Bob', age: 42], JSON[0]).responds().content(JSON_CONTENT, JSON[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -100,10 +100,10 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).post(config) == result
+        httpBuilder(ersatzServer.port).post(config) == result
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync(config).get() == result
+        httpBuilder(ersatzServer.port).postAsync(config).get() == result
 
         where:
         contentType | content                || result
@@ -114,12 +114,9 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'POST /foo (cookie): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock')) {
-                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            post('/foo').body(BODY_STRING, TEXT[0]).cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -129,20 +126,17 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).post(config) == htmlContent()
+        httpBuilder(ersatzServer.port).post(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).postAsync(config).get() == htmlContent()
     }
 
     def 'POST /foo (query string): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/foo?action=login' && request.getHeader('Content-Type') == TEXT[0]) {
-                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            post('/foo').body(BODY_STRING, TEXT[0]).query('action', 'login').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -152,20 +146,17 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).post(config) == htmlContent()
+        httpBuilder(ersatzServer.port).post(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).postAsync(config).get() == htmlContent()
     }
 
     def 'POST /date: returns content as Date'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'POST' && request.path == '/date' && request.getHeader('Content-Type') == 'text/datetime' && request.getBody().toString() == '[text=DATE-TIME: 20160825-1443]') {
-                return new MockResponse().setHeader('Content-Type', 'text/date').setBody(DATE_STRING)
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            post('/date').body('DATE-TIME: 20160825-1443', 'text/datetime').responds().content(DATE_STRING, 'text/date')
+        }.start()
 
         def config = {
             request.uri.path = '/date'
@@ -180,16 +171,23 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 
     @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
     def '[#client] POST (BASIC) /basic: returns content'() {
+        setup:
+        ersatzServer.addFeature new BasicAuthFeature()
+
+        ersatzServer.expectations {
+            post('/basic').body([name: 'Bob', age: 42], JSON[0]).responds().content(htmlContent(), 'text/plain')
+        }.start()
+
         expect:
-        httpBuilder(serverRule.serverPort).post({
+        httpBuilder(ersatzServer.port).post({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
@@ -197,7 +195,7 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         }) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).postAsync({
+        httpBuilder(ersatzServer.port).postAsync({
             request.uri.path = '/basic'
             request.body = JSON_STRING
             request.contentType = JSON[0]
