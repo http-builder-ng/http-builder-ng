@@ -2,7 +2,7 @@
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-core "Core Library")
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-apache "Apache Library")
-[![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
+[![Travis Build Status](https://travis-ci.org/http-builder-ng/http-builder-ng.svg?branch=master)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 [![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
 ## Quick Links for the Impatient
