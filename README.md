@@ -2,7 +2,7 @@
 
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-core "Core Library")
 [![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/http-builder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/http-builder-ng-apache "Apache Library")
-[![Travis Build Status](http://img.shields.io/travis/http-builder-ng/http-builder-ng.svg)](https://travis-ci.org/http-builder-ng/http-builder-ng)
+[![Travis Build Status](https://travis-ci.org/http-builder-ng/http-builder-ng.svg?branch=master)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 [![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
 ## Quick Links for the Impatient
@@ -43,8 +43,6 @@ httpBin.post {
 Hopefully that gives you a general idea of how Http Builder NG works. Http Builder NG is designed to be compatible with Groovy code annotated with [@TypeChecked](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/TypeChecked.html) and [@CompileStatic](http://docs.groovy-lang.org/latest/html/gapi/groovy/transform/CompileStatic.html). It also makes use of the [@DelegatesTo](http://docs.groovy-lang.org/latest/html/gapi/groovy/lang/DelegatesTo.html) to provide better IDE support when writing code using Http Builder NG.
 
 ## Artifacts
-
-> Warning: The "okhttp" implementation is new and therefore may not be immediately available on Bintray. If you find it unavailable, you can add a direct reference to the Bintray private repo: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` as a temporary work-around. It should be fully published within a day or two.
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
