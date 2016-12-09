@@ -20,12 +20,16 @@ import groovy.lang.DelegatesTo;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.EnumMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.net.CookiePolicy;
 
 /**
  * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
@@ -237,9 +241,19 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
+    private final CookieManager cookieManager;
 
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
+        final File folder = objectConfig.getClient().getCookieFolder();
+        CookieStore cookieStore = (folder == null ?
+                                   new NonBlockingCookieStore() :
+                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
+        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+    }
+
+    protected CookieManager getCookieManager() {
+        return cookieManager;
     }
 
     /**
