@@ -44,8 +44,6 @@ Hopefully that gives you a general idea of how Http Builder NG works. Http Build
 
 ## Artifacts
 
-> Warning: The "okhttp" implementation is new and therefore may not be immediately available on Bintray. If you find it unavailable, you can add a direct reference to the Bintray private repo: `maven { url 'https://dl.bintray.com/http-builder-ng/dclark/' }` as a temporary work-around. It should be fully published within a day or two.
-
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
     compile 'org.codehaus.groovy.modules:http-builder-ng-CLIENT:0.11.1'
