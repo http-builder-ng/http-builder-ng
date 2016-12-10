@@ -15,6 +15,8 @@
  */
 package groovyx.net.http;
 
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import okhttp3.Cookie;
 import okhttp3.*;
 import okio.BufferedSink;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
@@ -40,12 +43,12 @@ import static okhttp3.internal.http.HttpDate.MAX_DATE;
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
  *
- * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
+ * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class OkHttpBuilder extends HttpBuilder {
 
+    private static final Function<HttpObjectConfig, ? extends HttpBuilder> okFactory = OkHttpBuilder::new;
     private final ChainedHttpConfig config;
     private final Executor executor;
     private final OkHttpClient client;
@@ -57,6 +60,62 @@ public class OkHttpBuilder extends HttpBuilder {
         this.executor = config.getExecution().getExecutor();
         this.client = new OkHttpClient.Builder().cookieJar(new NonPersistingCookieJar()).build();
     }
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
+     *
+     * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
+     * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * ----
+     *
+     * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        return configure(okFactory, closure);
+    }
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
+     *     public void accept(HttpObjectConfig config) {
+     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     }
+     * });
+     * ----
+     *
+     * Or, using lambda expressions:
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * });
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
+        return configure(okFactory, configuration);
+    }
+
 
     @Override
     protected ChainedHttpConfig getObjectConfig() {
