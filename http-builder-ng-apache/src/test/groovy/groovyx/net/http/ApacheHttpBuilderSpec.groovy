@@ -53,4 +53,14 @@ class ApacheHttpBuilderSpec extends HttpBuilderTestKit {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
         }
     }
+
+    def 'overridden configuration'() {
+        when:
+        HttpBuilder http = ApacheHttpBuilder.configure {
+            request.uri = 'http://localhost:12345'
+        }
+
+        then:
+        http instanceof ApacheHttpBuilder
+    }
 }

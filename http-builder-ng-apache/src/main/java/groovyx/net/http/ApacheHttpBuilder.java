@@ -15,6 +15,8 @@
  */
 package groovyx.net.http;
 
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -41,28 +43,85 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
  *
- * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
+ * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
+    private static final Function<HttpObjectConfig, ? extends HttpBuilder> apacheFactory = ApacheHttpBuilder::new;
     private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);
 
+    /**
+     * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
+     *
+     * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
+     * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * ----
+     *
+     * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        return configure(apacheFactory, closure);
+    }
+
+    /**
+     * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration function.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
+     *     public void accept(HttpObjectConfig config) {
+     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     }
+     * });
+     * ----
+     *
+     * Or, using lambda expressions:
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * });
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
+        return configure(apacheFactory, configuration);
+    }
+
     private static class ApacheFromServer implements FromServer {
-        
+
         private final HttpResponse response;
         private final HttpEntity entity;
         private final List<Header<?>> headers;
         private final InputStream inputStream;
         private final URI uri;
-    
+
         public ApacheFromServer(final URI originalUri, final HttpResponse response) {
             this.uri = originalUri;
             this.response = response;
@@ -79,7 +138,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             else {
                 this.inputStream = null;
             }
-        
+
             this.headers = new ArrayList<>(response.getAllHeaders().length);
             for(org.apache.http.Header header : response.getAllHeaders()) {
                 headers.add(Header.keyValue(header.getName(), header.getValue()));
@@ -127,7 +186,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         public void toServer(final InputStream inputStream) {
             this.inputStream = inputStream;
         }
-    
+
         public boolean isRepeatable() {
             return false;
         }
@@ -143,7 +202,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         public org.apache.http.Header getContentType() {
             return new BasicHeader("Content-Type", contentType);
         }
-        
+
         public org.apache.http.Header getContentEncoding() {
             return null;
         }
@@ -165,11 +224,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
             inputStream.close();
         }
     }
-    
+
     private static class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
-        
+
         public Handler(final ChainedHttpConfig config) {
             this.requestConfig = config;
         }
@@ -196,14 +255,14 @@ public class ApacheHttpBuilder extends HttpBuilder {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
             cm.setMaxTotal(config.getExecution().getMaxThreads());
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
-            
+
             myBuilder.setConnectionManager(cm);
             cookieStore = null;
         }
         else {
             cookieStore = new BasicCookieStore();
         }
-        
+
         if(config.getExecution().getSslContext() != null) {
             myBuilder.setSSLContext(config.getExecution().getSslContext());
         }
@@ -214,7 +273,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
-    
+
     public Executor getExecutor() {
         return executor;
     }
@@ -255,7 +314,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             if(cookie.getExpires() != null) {
                 apacheCookie.setExpiryDate(cookie.getExpires());
             }
-            
+
             cookieStore.addCookie(apacheCookie);
         }
 
@@ -266,7 +325,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final HttpClientContext c = HttpClientContext.create();
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpConfig.Auth auth = cr.actualAuth();
-        
+
         if(auth != null) {
             final URI uri = requestConfig.getRequest().getUri().toURI();
             if(auth.getAuthType() == HttpConfig.AuthType.BASIC) {
@@ -325,7 +384,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         if(cr.actualBody() != null) {
             post.setEntity(entity(requestConfig));
         }
-        
+
         return exec(post, requestConfig);
     }
 
@@ -335,7 +394,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         if(cr.actualBody() != null) {
             put.setEntity(entity(requestConfig));
         }
-        
+
         return exec(put, requestConfig);
     }
 

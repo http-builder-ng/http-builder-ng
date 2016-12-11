@@ -28,4 +28,14 @@ class OkHttpBuilderSpec extends HttpBuilderTestKit {
 
         init()
     }
+
+    def 'overridden configuration'() {
+        when:
+        HttpBuilder http = OkHttpBuilder.configure {
+            request.uri = 'http://localhost:12345'
+        }
+
+        then:
+        http instanceof OkHttpBuilder
+    }
 }
