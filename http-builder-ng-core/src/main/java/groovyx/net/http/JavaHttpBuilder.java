@@ -72,23 +72,8 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
-
-            final URI uri = cr.getUri().toURI();
-            final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-            for(Cookie cookie : cookies) {
-                final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-                httpCookie.setVersion(clientConfig.getCookieVersion());
-                httpCookie.setDomain(uri.getHost());
-                httpCookie.setPath(uri.getPath());
-                if(cookie.getExpires() != null) {
-                    final long diff = cookie.getExpires().getTime() - System.currentTimeMillis();
-                    httpCookie.setMaxAge(diff / 1_000L);
-                }
-                else {
-                    httpCookie.setMaxAge(3_600L);
-                }
-
-                globalCookieManager.getCookieStore().add(uri, httpCookie);
+            for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+                connection.addRequestProperty(e.getKey(), e.getValue());
             }
         }
 
@@ -162,6 +147,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 //TODO: detect non success and read from error stream instead
                 try {
                     headers = populateHeaders();
+                    addCookieStore(uri, headers);
                     BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
                     bis.mark(0);
                     hasBody = bis.read() != -1;

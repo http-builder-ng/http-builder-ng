@@ -472,24 +472,7 @@ public interface FromServer {
     }
 
     default List<HttpCookie> getCookies() {
-        final List<HttpCookie> cookies = new ArrayList<>();
-        for(Header<?> header : getHeaders()) {
-            if(header.getKey().equalsIgnoreCase("Set-Cookie") ||
-               header.getKey().equalsIgnoreCase("Set-Cookie2")) {
-                final List<?> found = (List<?>) header.getParsed();
-                for(Object o : found) {
-                    cookies.add((HttpCookie) o);
-                }
-            }
-        }
-
-        return Collections.unmodifiableList(cookies);
-    }
-
-    default void addCookieStore(final CookieStore cookieStore) {
-        for(HttpCookie cookie : getCookies()) {
-            cookieStore.add(getUri(), cookie);
-        }
+        return HttpBuilder.cookies(getHeaders());
     }
 
     /**

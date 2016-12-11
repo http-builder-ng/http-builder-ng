@@ -21,7 +21,13 @@ import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -30,6 +36,8 @@ import java.util.function.Function;
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
 
 /**
  * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
@@ -254,6 +262,52 @@ public abstract class HttpBuilder implements Closeable {
 
     protected CookieManager getCookieManager() {
         return cookieManager;
+    }
+
+    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
+        final URI uri = cr.getUri().toURI();
+        final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
+        for(Cookie cookie : cookies) {
+            final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+            httpCookie.setVersion(clientConfig.getCookieVersion());
+            httpCookie.setDomain(uri.getHost());
+            cookieManager.getCookieStore().add(uri, httpCookie);
+        }
+
+        Map<String,String> tmp = new HashMap<>();
+
+        try {
+            for(Map.Entry<String,List<String>> e : cookieManager.get(uri, Collections.emptyMap()).entrySet()) {
+                tmp.put(e.getKey(), String.join("; ", e.getValue()));
+            }
+        }
+        catch(IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+
+        return tmp;
+    }
+
+    public static List<HttpCookie> cookies(final List<FromServer.Header<?>> headers) {
+        final List<HttpCookie> cookies = new ArrayList<>();
+        for(FromServer.Header<?> header : headers) {
+            if(header.getKey().equalsIgnoreCase("Set-Cookie") ||
+               header.getKey().equalsIgnoreCase("Set-Cookie2")) {
+                final List<?> found = (List<?>) header.getParsed();
+                for(Object o : found) {
+                    cookies.add((HttpCookie) o);
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(cookies);
+
+    }
+
+    protected void addCookieStore(final URI uri, final List<FromServer.Header<?>> headers) {
+        for(HttpCookie cookie : cookies(headers)) {
+            cookieManager.getCookieStore().add(uri, cookie);
+        }
     }
 
     /**
