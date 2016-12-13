@@ -302,10 +302,14 @@ public class OkHttpBuilder extends HttpBuilder {
 
     private static class OkHttpToServer extends RequestBody implements ToServer {
 
-        private final String contentType;
+        private String contentType;
         private InputStream inputStream;
 
         private OkHttpToServer(final String contentType) {
+            this.contentType = contentType;
+        }
+
+        public void setContentType(final String contentType){
             this.contentType = contentType;
         }
 

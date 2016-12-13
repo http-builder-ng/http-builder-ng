@@ -29,4 +29,8 @@ public interface ToServer {
      * @param inputStream the request input stream to be translated.
      */
     void toServer(InputStream inputStream);
+
+    default void setContentType(String contentType){
+        // FIXME: implement in all
+    }
 }

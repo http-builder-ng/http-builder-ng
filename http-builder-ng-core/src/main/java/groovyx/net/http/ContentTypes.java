@@ -35,7 +35,8 @@ public enum ContentTypes implements Iterable<String> {
     XML("application/xml", "text/xml", "application/xhtml+xml", "application/atom+xml"),
     HTML("text/html"),
     URLENC("application/x-www-form-urlencoded"),
-    BINARY("application/octet-stream");
+    BINARY("application/octet-stream"),
+    MULTIPART_FORMDATA("multipart/form-data");
 
     private final List<String> values;
 
