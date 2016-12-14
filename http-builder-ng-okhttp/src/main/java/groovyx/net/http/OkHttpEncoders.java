@@ -32,8 +32,7 @@ public class OkHttpEncoders {
 
     // TODO: there is duplicate code in the multipart encoders - refactor to reduce duplication during parser/encoder work.
 
-    // FIXME: document (form and upload)
-    // FIXME: testing
+    // FIXME: testing the encoders (check coverage)
     // FIXME: go through TODO/FIXME tags
 
     /**

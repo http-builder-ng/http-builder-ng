@@ -20,7 +20,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 
 import static org.apache.http.entity.ContentType.parse;

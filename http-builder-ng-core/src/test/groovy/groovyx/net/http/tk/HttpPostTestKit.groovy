@@ -64,7 +64,6 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
                 converter(JSON[0] as String, { b -> new JsonSlurper().parse(b) })
                 responder {
                     content('{"name":"Bob","age":42}', JSON[0])
-                    //                    content(JSON_STRING, JSON[0]) // TODO: bug in ersatz?
                 }
             }
         }.start()

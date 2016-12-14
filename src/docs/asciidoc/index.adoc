@@ -1,6 +1,6 @@
 = Http Builder NG Users Guide
 David Clark & Christopher J. Stehno
-v0.11.1, November 2016
+v0.11.1, December 2016
 :toc: left
 :toclevels: 3
 
@@ -426,3 +426,62 @@ The additional `.json` property call on the parsed data is to extract the JSON d
 the request. The end result is the following display:
 
     Your score for item (ASDFASEACV235) was (90786).
+
+=== Sending Form Data (POST)
+
+Posting HTML form data is a common `POST` operation, and it is supported by `HttpBuilder` with a custom encoder, such as:
+
+[source,groovy]
+----
+HttpBuilder.configure {
+    request.uri = 'http://example.com'
+}.post {
+    request.uri.path = '/some/form'
+    request.body = [id: '234545', label: 'something interesting']
+    request.contentType = 'application/x-www-form-urlencoded'
+    request.encoder 'application/x-www-form-urlencoded', NativeHandlers.Encoders.&form
+}
+----
+
+which would `POST` the specified body data map as urlencoded data to the server. The key here is the use of the `NativeHandlers.Encoders.&form`
+encoder, which converts the provided map data into the encoded message before sending it to the server.
+
+=== Sending Multipart Data (POST)
+
+`HttpBuilder` supports multipart request content such as file uploads, but only with the Apache or OkHttp client implementations, not the core Java
+implementation. File uploads may be configured as (using the `OkHttpBuilder` implementation):
+
+[source,groovy]
+----
+File someFile = // ...
+
+OkHttpBuilder.configure {
+    request.uri = 'http://example.com'
+}.post {
+    request.uri.path = '/upload'
+    request.contentType = 'multipart/form-data'
+    request.body = multipart {
+        field 'name', 'This is my file'
+        file 'file', 'myfile.txt', 'text/plain', someFile
+    }
+    request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
+}
+----
+
+which would `POST` the content of the file, `someFile` along with the specified `name` field to the server as a `multipart/form-data` request. The
+important parts of the example are the `multipart` DSL extension, which is provided by the `MultipartContent` class and aids in creating the upload
+content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
+Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
+
+== Appendix A: Feature Support
+
+The goal is to support all features across all client implementations; however, due to the nature of the client implemeatations, this is not always
+possible. The table below contains general feature support information per client implementation.
+
+.Table Feature Support Matrix
+|===
+|Client |BASIC  |DIGEST |Multipart
+|Java   |Y      |?      |N
+|Apache |Y      |?      |Y
+|OkHttp |Y      |?      |Y
+|===
