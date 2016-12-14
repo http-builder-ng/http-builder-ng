@@ -30,11 +30,6 @@ import static okhttp3.RequestBody.create;
  */
 public class OkHttpEncoders {
 
-    // TODO: there is duplicate code in the multipart encoders - refactor to reduce duplication during parser/encoder work.
-
-    // FIXME: testing the encoders (check coverage)
-    // FIXME: go through TODO/FIXME tags
-
     /**
      * Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class.
      *

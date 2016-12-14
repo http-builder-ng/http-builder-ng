@@ -29,8 +29,6 @@ import static org.apache.http.entity.ContentType.parse;
  */
 public class ApacheEncoders {
 
-    // TODO: there is duplicate code in the multipart encoders - refactor to reduce duplication during parser/encoder work.
-
     /**
      *  Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class.
      *
