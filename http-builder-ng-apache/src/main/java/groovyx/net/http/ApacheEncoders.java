@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package groovyx.net.http;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -11,10 +26,18 @@ import java.nio.file.Path;
 import static org.apache.http.entity.ContentType.parse;
 
 /**
- * FIXME: document
+ * Request content encoders specific to the Apache client implementation.
  */
 public class ApacheEncoders {
 
+    // TODO: there is duplicate code in the multipart encoders - refactor to reduce duplication during parser/encoder work.
+
+    /**
+     *  Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class.
+     *
+     * @param config the chained configuration object
+     * @param ts the server adapter
+     */
     public static void multipart(final ChainedHttpConfig config, final ToServer ts) {
         try {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
@@ -28,8 +51,6 @@ public class ApacheEncoders {
             if (!contentType.equals(ContentTypes.MULTIPART_FORMDATA.getAt(0))) {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
-
-            // FIXME: the stuff above is shared - reduce duplication
 
             final String boundary = RandomStringUtils.randomAlphanumeric(10);
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setBoundary(boundary);
@@ -48,9 +69,6 @@ public class ApacheEncoders {
 
                     } else if (mpe.getContent() instanceof Path) {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), ((Path) mpe.getContent()).toFile(), partContentType, mpe.getFileName());
-
-                    } else if (mpe.getContent() instanceof InputStream) {
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), (InputStream) mpe.getContent(), partContentType, mpe.getFileName());
 
                     } else if (mpe.getContent() instanceof byte[]) {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), (byte[]) mpe.getContent(), partContentType, mpe.getFileName());

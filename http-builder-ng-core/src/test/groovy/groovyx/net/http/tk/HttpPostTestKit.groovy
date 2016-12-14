@@ -15,7 +15,6 @@
  */
 package groovyx.net.http.tk
 
-import com.stehno.ersatz.MultipartContentMatcher
 import com.stehno.ersatz.feat.BasicAuthFeature
 import groovy.json.JsonSlurper
 import groovyx.net.http.ChainedHttpConfig
@@ -29,7 +28,6 @@ import spock.lang.Unroll
 import static com.stehno.ersatz.ContentType.APPLICATION_URLENCODED
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.ContentTypes.*
-import static groovyx.net.http.MultipartContent.multipart
 
 /**
  * Test kit for testing the HTTP POST method with different clients.

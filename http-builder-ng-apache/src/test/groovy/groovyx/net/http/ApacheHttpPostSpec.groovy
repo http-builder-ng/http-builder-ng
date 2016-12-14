@@ -24,15 +24,14 @@ import static groovyx.net.http.MultipartContent.multipart
 
 class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
 
-    // FIXME: move to TK
+    // TODO: move this into TK during parser/encoder refactoring
     def 'POST /upload (multipart)'() {
         setup:
         ersatzServer.expectations {
             post('/upload') {
                 condition MultipartContentMatcher.multipart {
-                    // FIXME: needs to suport filename and contentType
-                    field(0, fieldName: 'alpha', string: 'some data')
-                    field(1, fieldName: 'bravo', string: 'This is bravo content')
+                    field 0, 'alpha', 'some data'
+                    file 1, 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }
                 responds().content('ok', TEXT_PLAIN)
             }
