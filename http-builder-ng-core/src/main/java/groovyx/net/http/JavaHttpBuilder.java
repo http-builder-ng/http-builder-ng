@@ -148,6 +148,12 @@ public class JavaHttpBuilder extends HttpBuilder {
                     throw new RuntimeException(e);
                 }
             }
+
+            @Override
+            public void toServer(final InputStream inputStream, final String contentType) {
+                // does not support contentType override
+                toServer(inputStream);
+            }
         }
 
         protected class JavaFromServer implements FromServer {

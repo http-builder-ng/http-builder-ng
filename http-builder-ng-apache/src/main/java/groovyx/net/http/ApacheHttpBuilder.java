@@ -47,6 +47,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -176,7 +177,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     public static class ApacheToServer implements ToServer, HttpEntity {
 
-        private final String contentType;
+        private String contentType;
         private InputStream inputStream;
 
         public ApacheToServer(final String contentType) {
@@ -185,6 +186,12 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         public void toServer(final InputStream inputStream) {
             this.inputStream = inputStream;
+        }
+
+        @Override
+        public void toServer(final InputStream inputStream, final String contentType) {
+            this.contentType = contentType;
+            toServer(inputStream);
         }
 
         public boolean isRepeatable() {
@@ -212,7 +219,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public void writeTo(final OutputStream outputStream) {
-            NativeHandlers.Parsers.transfer(inputStream, outputStream, false);
+            transfer(inputStream, outputStream, false);
         }
 
         public boolean isStreaming() {
@@ -382,7 +389,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPost post = addHeaders(cr, new HttpPost(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
-            post.setEntity(entity(requestConfig));
+            final HttpEntity entity = entity(requestConfig);
+            post.setEntity(entity);
+            post.setHeader(entity.getContentType());
         }
 
         return exec(post, requestConfig);
@@ -392,7 +401,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
-            put.setEntity(entity(requestConfig));
+            final HttpEntity entity = entity(requestConfig);
+            put.setEntity(entity);
+            put.setHeader(entity.getContentType());
         }
 
         return exec(put, requestConfig);

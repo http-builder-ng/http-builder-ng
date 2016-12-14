@@ -15,8 +15,43 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.MultipartContentMatcher
 import groovyx.net.http.tk.HttpPostTestKit
+
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
+import static groovyx.net.http.MultipartContent.multipart
 
 class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
 
+    // FIXME: move to TK
+    def 'POST /upload (multipart)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/upload') {
+                condition MultipartContentMatcher.multipart {
+                    // FIXME: needs to suport filename and contentType
+                    field(0, fieldName: 'alpha', string: 'some data')
+                    field(1, fieldName: 'bravo', string: 'This is bravo content')
+                }
+                responds().content('ok', TEXT_PLAIN)
+            }
+        }.start()
+
+        def config = {
+            request.uri.path = '/upload'
+            request.contentType = MULTIPART_FORMDATA[0]
+            request.body = multipart {
+                field 'alpha', 'some data'
+                file 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
+            }
+            request.encoder(MULTIPART_FORMDATA, ApacheEncoders.&multipart)
+        }
+
+        expect:
+        httpBuilder(ersatzServer.port).post(config) == 'ok'
+
+        and:
+        httpBuilder(ersatzServer.port).postAsync(config).get() == 'ok'
+    }
 }

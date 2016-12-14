@@ -30,8 +30,6 @@ public class OkHttpEncoders {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 
-//            final Charset charset = request.actualCharset();
-
             final MultipartBody.Builder builder = new MultipartBody.Builder();
 
             for (final MultipartContent.MultipartEntry mpe : ((MultipartContent) body).entries()) {
@@ -65,8 +63,7 @@ public class OkHttpEncoders {
             MultipartBody multipartBody = builder.build();
             multipartBody.writeTo(buffer);
 
-            ts.setContentType("multipart/mixed; boundary=" + multipartBody.boundary());
-            ts.toServer(buffer.inputStream());
+            ts.toServer(buffer.inputStream(), "multipart/mixed; boundary=" + multipartBody.boundary());
 
         } catch (IOException e) {
             e.printStackTrace();
