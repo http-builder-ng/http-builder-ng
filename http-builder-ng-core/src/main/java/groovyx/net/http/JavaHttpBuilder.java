@@ -259,11 +259,9 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
     }
 
-    private final static CookieManager globalCookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 
     static {
         Authenticator.setDefault(new ThreadLocalAuth());
-        CookieHandler.setDefault(globalCookieManager);
     }
 
     final private ChainedHttpConfig config;
