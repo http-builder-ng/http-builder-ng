@@ -20,15 +20,27 @@ class NonBlockingCookieStore implements CookieStore {
 
     //public cookie store api
     public void add(final URI uri, final HttpCookie cookie) {
-        add(new Key(uri, cookie), cookie);
+        if(cookie.getMaxAge() == 0) {
+            return;
+        }
+
+        if(cookie.getDomain() != null) {
+            add(new DomainKey(cookie), cookie);
+        }
+        
+        if(uri != null) {
+            add(new UriKey(uri, cookie), cookie);
+        }
     }
 
     public List<HttpCookie> get(final URI uri) {
-        return (all.entrySet()
-                .stream()
-                .filter(entry -> entryValid(entry) && matches(entry, uri))
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList()));
+        List<HttpCookie> ret = (all.entrySet()
+                                .stream()
+                                .filter(entry -> entryValid(entry) && matches(entry, uri))
+                                .map(Map.Entry::getValue)
+                                .distinct()
+                                .collect(Collectors.toList()));
+        return ret;
     }
 
     public List<HttpCookie> getCookies() {
@@ -42,16 +54,26 @@ class NonBlockingCookieStore implements CookieStore {
     public List<URI> getURIs() {
         return (all.entrySet()
                 .stream()
+                .filter(entry -> entry.getKey() instanceof UriKey)
                 .filter(this::entryValid)
-                .map(entry -> entry.getKey().domain)
+                .map(entry -> ((UriKey) entry.getKey()).getURI())
                 .distinct()
-                .map(NonBlockingCookieStore::makeURI)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
     }
 
     public boolean remove(final URI uri, final HttpCookie cookie) {
-        return remove(new Key(uri, cookie));
+        boolean domainRemoved = false;
+        boolean uriRemoved = false;
+        
+        if(cookie.getDomain() != null) {
+            domainRemoved = remove(new DomainKey(cookie));
+        }
+
+        if(uri != null) {
+            uriRemoved = remove(new UriKey(uri, cookie));
+        }
+
+        return domainRemoved || uriRemoved;
     }
 
     public boolean removeAll() {
@@ -60,55 +82,130 @@ class NonBlockingCookieStore implements CookieStore {
         return initialSize > 0;
     }
 
-    protected static class Key {
+    protected abstract static class Key {
         final String name;
-        final String domain;
-        final String path;
-        final int hash;
         final Instant createdAt;
 
-        private static String forStorage(final String str) {
-            return str == null ? str : str.toLowerCase();
+        public Key(final String name) {
+            this.name = name;
+            this.createdAt = Instant.now();
+        }
+
+        abstract public String getKeyType();
+
+        public static boolean specified(final String val) {
+            return (val != null && !"".equals(val.trim()));
         }
         
-        public Key(final URI uri, final HttpCookie cookie) {
-            this.name = forStorage(cookie.getName());
-            if(uri != null && (cookie.getDomain() == null || cookie.getDomain().equals(""))) {
-                this.domain = forStorage(uri.getHost());
-                this.path = null;
+        static Key make(final URI uri, final HttpCookie cookie) {
+            if(!specified(cookie.getDomain())) {
+                return new UriKey(uri, cookie);
             }
             else {
-                this.domain = forStorage(cookie.getDomain());
-                this.path = forStorage(cookie.getPath());
+                return new DomainKey(cookie);
             }
-            
-            this.createdAt = Instant.now();
-            this.hash = Objects.hash(name, domain, path);
         }
 
-        public Key(final String name, final String domain, final String path, Instant createdAt) {
-            this.name = name;
-            this.domain = domain;
-            this.path = path;
-            this.createdAt = createdAt;
-            this.hash = Objects.hash(name, domain, path);
+        public static String forStorage(final String str) {
+            return str == null ? str : str.toLowerCase();
         }
+    }
+
+    protected static class UriKey extends Key {
+        public static final String TYPE = "uri";
         
-        @Override
-        public boolean equals(final Object o) {
-            if(!(o instanceof Key)) {
-                return false;
-            }
+        final String host;
 
-            final Key rhs = (Key) o;
-            return (name.equals(rhs.name) &&
-                    domain.equals(rhs.domain) &&
-                    Objects.equals(path, rhs.path));
+        public UriKey(final URI uri, final HttpCookie cookie) {
+            super(cookie.getName());
+            this.host = forStorage(uri.getHost());
+        }
+
+        public static boolean uriKey(final String type) {
+            return TYPE.equals(type);
+        }
+
+        public String getKeyType() {
+            return TYPE;
+        }
+
+        public URI getURI() {
+            try {
+                return new URI("http", host, null, null);
+            }
+            catch(URISyntaxException e) {
+                //it's safe to ignore this, host already came from a valid
+                //uri, so constructing a new one from the host is always valid
+                return null;
+            }
         }
 
         @Override
         public int hashCode() {
-            return hash;
+            return 37 * name.hashCode() + host.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if(!(o instanceof UriKey)) {
+                return false;
+            }
+
+            final UriKey rhs = (UriKey) o;
+            return host.equals(rhs.host) && name.equals(rhs.host);
+        }
+    }
+
+    protected static class DomainKey extends Key {
+        public static final String TYPE = "domain";
+        
+        final String domain;
+        final String path;
+                
+        public DomainKey(final HttpCookie cookie) {
+            super(cookie.getName());
+            this.domain = cookie.getDomain();
+            this.path = cookie.getPath();
+        }
+
+        public static boolean domainKey(final String type) {
+            return TYPE.equals(type);
+        }
+        
+        public String getKeyType() {
+            return TYPE;
+        }
+
+        private boolean pathEquals(final DomainKey rhs) {
+            if(path == null && rhs.path == null) {
+                return true;
+            }
+            else if(path == null && rhs.path != null) {
+                return false;
+            }
+            else if(path != null && rhs.path == null) {
+                return false;
+            }
+            else {
+                return path.equalsIgnoreCase(rhs.path);
+            }
+        }
+        
+        @Override
+        public boolean equals(final Object o) {
+            if(!(o instanceof DomainKey)) {
+                return false;
+            }
+            
+            final DomainKey rhs = (DomainKey) o;
+            return (name.equalsIgnoreCase(rhs.name) &&
+                    domain.equalsIgnoreCase(rhs.domain) &&
+                    pathEquals(rhs));
+        }
+
+        @Override
+        public int hashCode() {
+            return 37 * (37 * name.hashCode() + domain.hashCode()) + (path == null ? 0 : path.hashCode());
         }
     }
 
@@ -185,12 +282,17 @@ class NonBlockingCookieStore implements CookieStore {
         }
         
         final String host = uri.getHost();
-        final String domain = cookie.getDomain() == null ? entry.getKey().domain : cookie.getDomain();
-        if(cookie.getVersion() == 0) {
-            return netscapeDomainMatches(domain, host);
+        if(entry.getKey() instanceof UriKey) {
+            return ((UriKey) entry.getKey()).host.equalsIgnoreCase(host);
         }
         else {
-            return HttpCookie.domainMatches(domain, host);
+            final String domain = cookie.getDomain();
+            if(cookie.getVersion() == 0) {
+                return netscapeDomainMatches(domain, host);
+            }
+            else {
+                return HttpCookie.domainMatches(domain, host);
+            }
         }
     }
 

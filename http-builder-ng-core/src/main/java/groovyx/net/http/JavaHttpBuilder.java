@@ -175,17 +175,26 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return is;
             }
 
+            private String clean(final String str) {
+                if(str == null) {
+                    return null;
+                }
+
+                final String tmp = str.trim();
+                return "".equals(tmp) ? null : tmp;
+            }
+            
             private List<Header<?>> populateHeaders() {
                 final List<Header<?>> ret = new ArrayList<>();
                 for(int i = 0; i < Integer.MAX_VALUE; ++i) {
-                    final String key = connection.getHeaderFieldKey(i);
-                    final String value = connection.getHeaderField(i);
+                    final String key = clean(connection.getHeaderFieldKey(i));
+                    final String value = clean(connection.getHeaderField(i));
                     if(key == null && value == null) {
                         break;
                     }
 
                     if(key != null && value != null) {
-                        ret.add(Header.keyValue(key, value));
+                        ret.add(Header.keyValue(key.trim(), value.trim()));
                     }
                 }
 

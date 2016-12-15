@@ -39,6 +39,10 @@ import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
 
+import static java.util.Collections.singletonMap;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
+
 /**
  * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
  * executed.
@@ -249,20 +253,23 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
-        final URI uri = cr.getUri().toURI();
-        final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-        for(Cookie cookie : cookies) {
-            final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-            httpCookie.setVersion(clientConfig.getCookieVersion());
-            httpCookie.setDomain(uri.getHost());
-            cookieManager.getCookieStore().add(uri, httpCookie);
-        }
-
         Map<String,String> tmp = new HashMap<>();
 
         try {
-            for(Map.Entry<String,List<String>> e : cookieManager.get(uri, Collections.emptyMap()).entrySet()) {
-                tmp.put(e.getKey(), String.join("; ", e.getValue()));
+            final URI uri = cr.getUri().toURI();
+            final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
+            for(Cookie cookie : cookies) {
+                final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
+                httpCookie.setPath("/");
+                final String keyName = clientConfig.getCookieVersion() == 0 ? "Set-Cookie" : "Set-Cookie2";
+                final Map<String,List<String>> toPut = singletonMap(keyName, singletonList(httpCookie.toString()));
+                cookieManager.put(uri, toPut);
+            }
+
+            for(Map.Entry<String,List<String>> e : cookieManager.get(uri, emptyMap()).entrySet()) {
+                if(e.getValue() != null && !e.getValue().isEmpty()) {
+                    tmp.put(e.getKey(), String.join("; ", e.getValue()));
+                }
             }
         }
         catch(IOException ioe) {

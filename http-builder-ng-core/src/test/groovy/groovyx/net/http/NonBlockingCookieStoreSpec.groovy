@@ -69,11 +69,14 @@ class NonBlockingCookieStoreSpec extends Specification {
         setup:
         [ yahoo, google ].each { uri ->
             randomCookies(10, { domain = uri.host;}).each { cookie ->
-                defaultStore.add((URI) null, cookie);
-                fileBacked.add((URI) null, cookie);
-                nonBlocking.add((URI) null, cookie); }; };
+                defaultStore.add(uri, cookie);
+                fileBacked.add(uri, cookie);
+                nonBlocking.add(uri, cookie); }; };
         
         expect:
+        println(defaultStore.get(yahoo).sort(CMP));
+        println(nonBlocking.get(yahoo).sort(CMP));
+        
         defaultStore.get(yahoo).sort(CMP) == nonBlocking.get(yahoo).sort(CMP);
         defaultStore.get(yahoo).sort(CMP) == fileBacked.get(yahoo).sort(CMP);
         
@@ -172,8 +175,8 @@ class NonBlockingCookieStoreSpec extends Specification {
         //implementation is fine for now.
         setup:
         [ yahoo, google ].each { uri ->
-            randomCookies(10, { domain = uri.host;}).each { cookie ->
-                nonBlocking.add((URI) null, cookie); }; };
+            randomCookies(10, { -> }).each { cookie ->
+                nonBlocking.add(uri, cookie); }; };
 
         expect:
         nonBlocking.URIs.size() == 2;

@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     @Override
     public void add(final URI uri, final HttpCookie cookie) {
         assertLive();
-        final Key key = new Key(uri, cookie);
+        final Key key = Key.make(uri, cookie);
         add(key, cookie);
         if(cookie.getMaxAge() != -1L) {
             store(key, cookie);
@@ -78,8 +79,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     @Override
     public boolean remove(final URI uri, final HttpCookie cookie) {
         assertLive();
-        final Key key = new Key(uri, cookie);
-        return remove(key);
+        return remove(Key.make(uri, cookie));
     }
 
     @Override
@@ -117,7 +117,14 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     }
     
     private static String fileName(final Key key) {
-        return clean(key.domain) + clean(key.path) + clean(key.name) + SUFFIX;
+        if(key instanceof UriKey) {
+            final UriKey uriKey = (UriKey) key;
+            return clean(uriKey.host) + clean(uriKey.name) + SUFFIX;
+        }
+        else {
+            final DomainKey domainKey = (DomainKey) key;
+            return clean(domainKey.domain) + clean(domainKey.path) + clean(domainKey.name) + SUFFIX;
+        }
     }
 
     private void store(final Key key, final HttpCookie cookie) {
@@ -178,14 +185,26 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         }
     }
 
-    private Properties toProperties(final Key key, final HttpCookie cookie) {
+    private Properties keyProperties(final Key key) {
         final Properties props = new Properties();
+        props.setProperty("keyType", key.getKeyType());
+        if(key instanceof UriKey) {
+            props.setProperty("uri", String.format("http://%s", ((UriKey) key).getURI().toString()));
+        }
 
+        return props;
+    }
+
+    private Properties toProperties(final Key key, final HttpCookie cookie) {
+        final Properties props = keyProperties(key);
+        
         final Instant expires = key.createdAt.plusSeconds(cookie.getMaxAge());
         props.setProperty("expires", expires.toString());
         props.setProperty("name", cookie.getName());
         props.setProperty("value", cookie.getValue());
-        props.setProperty("domain", cookie.getDomain() != null ? cookie.getDomain() : key.domain);
+        if(cookie.getDomain() != null) {
+            props.setProperty("domain", cookie.getDomain());
+        }
 
         props.setProperty("discard", Boolean.toString(cookie.getDiscard()));
         props.setProperty("secure", Boolean.toString(cookie.getSecure()));
@@ -200,6 +219,22 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         return props;
     }
 
+    private Map.Entry<Key,HttpCookie> fromProperties(final Properties props, final HttpCookie cookie) {
+        final String keyType = props.getProperty("keyType");
+        if(UriKey.uriKey(keyType)) {
+            try {
+                return new AbstractMap.SimpleImmutableEntry<>(new UriKey(new URI(props.getProperty("uri")), cookie), cookie);
+            }
+            catch(URISyntaxException e) {
+                //can ignore since the source should have come from a valid uri
+                return null;
+            }
+        }
+        else {
+            return new AbstractMap.SimpleImmutableEntry<>(new DomainKey(cookie), cookie);
+        }
+    }
+
     private Map.Entry<Key,HttpCookie> fromProperties(final Properties props) {
         final Instant now = Instant.now();
         final Instant expires = Instant.parse(props.getProperty("expires"));
@@ -210,14 +245,16 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         final long maxAge = (expires.toEpochMilli() - now.toEpochMilli()) / 1_000L;
         final String name = props.getProperty("name");
         final String value = props.getProperty("value");
-        final String domain = props.getProperty("domain");
+        
         final HttpCookie cookie = new HttpCookie(name, value);
-        cookie.setDomain(domain);
         cookie.setDiscard(Boolean.valueOf(props.getProperty("discard")));
         cookie.setSecure(Boolean.valueOf(props.getProperty("secure")));
         cookie.setVersion(Integer.valueOf(props.getProperty("version")));
         cookie.setHttpOnly(Boolean.valueOf(props.getProperty("httpOnly")));
 
+        final String domain = props.getProperty("domain", null);
+        if(null != domain) cookie.setDomain(domain);
+        
         final String comment = props.getProperty("comment", null);
         if(null != comment) cookie.setComment(comment);
         
@@ -230,7 +267,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         final String portlist = props.getProperty("portlist", null);
         if(null != portlist) cookie.setPortlist(portlist);
 
-        return new AbstractMap.SimpleImmutableEntry<>(new Key(name, domain, path, now), cookie);
+        return fromProperties(props, cookie);
     }
 
     public void shutdown() {

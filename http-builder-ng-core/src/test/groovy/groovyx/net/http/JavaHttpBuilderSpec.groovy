@@ -34,14 +34,14 @@ class JavaHttpBuilderSpec extends HttpBuilderTestKit {
         expect:
         httpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'foocookie', 'barcookie'
+            request.cookie('foocookie', 'barcookie')
         }.with {
             cookies.foocookie == 'barcookie'
         }
 
         httpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'requestcookie', '12345'
+            request.cookie('requestcookie', '12345')
         }.with {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
         }
