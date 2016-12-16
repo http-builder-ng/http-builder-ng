@@ -19,16 +19,18 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okio.Buffer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+import static groovyx.net.http.util.IoUtils.streamToBytes;
 import static okhttp3.MediaType.parse;
 import static okhttp3.RequestBody.create;
 
 /**
  * Request content encoders specific to the Apache client implementation.
+ *
+ * See the {@link MultipartContent} class documentation for more configuration details.
  */
 public class OkHttpEncoders {
 
@@ -67,7 +69,7 @@ public class OkHttpEncoders {
                         requestBody = create(parse(mpe.getContentType()), ((Path) mpe.getContent()).toFile());
 
                     } else if (mpe.getContent() instanceof InputStream) {
-                        requestBody = create(parse(mpe.getContentType()), transfer((InputStream) mpe.getContent()));
+                        requestBody = create(parse(mpe.getContentType()), streamToBytes((InputStream) mpe.getContent()));
 
                     } else if (mpe.getContent() instanceof byte[]) {
                         requestBody = create(parse(mpe.getContentType()), (byte[]) mpe.getContent());
@@ -88,22 +90,6 @@ public class OkHttpEncoders {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    private static byte[] transfer(final InputStream istream) throws IOException {
-        try (ByteArrayOutputStream ostream = new ByteArrayOutputStream()) {
-            final byte[] bytes = new byte[2_048];
-
-            int read;
-            while ((read = istream.read(bytes)) != -1) {
-                ostream.write(bytes, 0, read);
-            }
-
-            return ostream.toByteArray();
-
-        } finally {
-            istream.close();
         }
     }
 }

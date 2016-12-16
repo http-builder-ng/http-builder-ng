@@ -23,10 +23,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
+import static groovyx.net.http.util.IoUtils.streamToBytes;
 import static org.apache.http.entity.ContentType.parse;
 
 /**
  * Request content encoders specific to the Apache client implementation.
+ *
+ * See the {@link MultipartContent} class documentation for more configuration details.
  */
 public class ApacheEncoders {
 
@@ -69,7 +72,8 @@ public class ApacheEncoders {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), ((Path) mpe.getContent()).toFile(), partContentType, mpe.getFileName());
 
                     } else if (mpe.getContent() instanceof InputStream) {
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), (InputStream) mpe.getContent(), partContentType, mpe.getFileName());
+                        // seems that client needs to know content-length (needs more investigation)
+                        entityBuilder.addBinaryBody(mpe.getFieldName(), streamToBytes((InputStream) mpe.getContent()), partContentType, mpe.getFileName());
 
                     } else if (mpe.getContent() instanceof byte[]) {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), (byte[]) mpe.getContent(), partContentType, mpe.getFileName());

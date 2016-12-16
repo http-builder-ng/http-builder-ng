@@ -111,7 +111,7 @@ public class MultipartContent {
     }
 
     /**
-     * Adds a file part with the specified properties.
+     * Adds a file part with the specified properties. The {@link InputStream} content will be read and transferred to the outgoing request body.
      *
      * @param fieldName the field name
      * @param fileName the file name
