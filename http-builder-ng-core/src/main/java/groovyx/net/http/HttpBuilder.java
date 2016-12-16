@@ -257,12 +257,9 @@ public abstract class HttpBuilder implements Closeable {
 
         try {
             final URI uri = cr.getUri().toURI();
-            final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-            for(Cookie cookie : cookies) {
-                final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-                httpCookie.setPath("/");
+            for(HttpCookie cookie : cr.actualCookies(new ArrayList<>())) {
                 final String keyName = clientConfig.getCookieVersion() == 0 ? "Set-Cookie" : "Set-Cookie2";
-                final Map<String,List<String>> toPut = singletonMap(keyName, singletonList(httpCookie.toString()));
+                final Map<String,List<String>> toPut = singletonMap(keyName, singletonList(cookie.toString()));
                 cookieManager.put(uri, toPut);
             }
 
