@@ -74,7 +74,6 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'PUT /foo (cookie): returns content'() {
         given:
         ersatzServer.expectations {

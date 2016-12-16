@@ -124,7 +124,6 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
         assertHeaders HEADERS_A, capturedHeaders
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'HEAD /foo (cookie): returns headers only'() {
         given:
         ersatzServer.expectations {
