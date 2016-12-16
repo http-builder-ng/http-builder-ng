@@ -111,7 +111,6 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         JSON        | { name 'Bob'; age 42 } || [accepted: true, id: 100]
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'POST /foo (cookie): returns content'() {
         given:
         ersatzServer.expectations {

@@ -36,7 +36,6 @@ class ApacheHttpBuilderSpec extends HttpBuilderTestKit {
         }
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def "Test Set Cookies"() {
         expect:
         singleThreadHttpBin.get {
