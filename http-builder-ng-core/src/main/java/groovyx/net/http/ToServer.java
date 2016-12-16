@@ -24,9 +24,18 @@ import java.io.InputStream;
 public interface ToServer {
 
     /**
-     * Translates the request content appropriately for the underlying client implementation.
+     * Translates the request content appropriately for the underlying client implementation. The contentType will be determined by the request.
      *
      * @param inputStream the request input stream to be translated.
      */
     void toServer(InputStream inputStream);
+
+    /**
+     * Translates the request content appropriately for the underlying client implementation. The provided contentType will override any specified in
+     * the request.
+     *
+     * @param inputStream the request input stream to be translated.
+     * @param contentType the overriding content type.
+     */
+    void toServer(InputStream inputStream, String contentType);
 }

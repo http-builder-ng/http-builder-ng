@@ -25,8 +25,9 @@ import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Unroll
 
-import static groovyx.net.http.ContentTypes.JSON
-import static groovyx.net.http.ContentTypes.TEXT
+import static com.stehno.ersatz.ContentType.APPLICATION_URLENCODED
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static groovyx.net.http.ContentTypes.*
 
 /**
  * Test kit for testing the HTTP POST method with different clients.
@@ -63,7 +64,6 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
                 converter(JSON[0] as String, { b -> new JsonSlurper().parse(b) })
                 responder {
                     content('{"name":"Bob","age":42}', JSON[0])
-                    //                    content(JSON_STRING, JSON[0]) // TODO: bug in ersatz?
                 }
             }
         }.start()
@@ -85,6 +85,26 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         requestContent | contentType | parser                               || result
         BODY_STRING    | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
         JSON_STRING    | JSON        | NativeHandlers.Parsers.&json         || [age: 42, name: 'Bob']
+    }
+
+    def 'POST /form (url-encoded)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/form').body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).responds().content('ok', TEXT_PLAIN)
+        }.start()
+
+        def config = {
+            request.uri.path = '/form'
+            request.body = [username: 'bobvila', password: 'oldhouse']
+            request.contentType = URLENC[0]
+            request.encoder(URLENC, NativeHandlers.Encoders.&form)
+        }
+
+        expect:
+        httpBuilder(ersatzServer.port).post(config) == 'ok'
+
+        and:
+        httpBuilder(ersatzServer.port).postAsync(config).get() == 'ok'
     }
 
     @Unroll def 'POST /foo (#contentType): encodes and decodes properly and returns content'() {

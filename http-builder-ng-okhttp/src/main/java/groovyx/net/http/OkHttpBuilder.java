@@ -296,7 +296,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
     private static class OkHttpToServer extends RequestBody implements ToServer {
 
-        private final String contentType;
+        private String contentType;
         private InputStream inputStream;
 
         private OkHttpToServer(final String contentType) {
@@ -306,6 +306,12 @@ public class OkHttpBuilder extends HttpBuilder {
         @Override
         public void toServer(final InputStream inputStream) {
             this.inputStream = inputStream;
+        }
+
+        @Override
+        public void toServer(final InputStream inputStream, final String contentType) {
+            this.contentType = contentType;
+            toServer(inputStream);
         }
 
         @Override
