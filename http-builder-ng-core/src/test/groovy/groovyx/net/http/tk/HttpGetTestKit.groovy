@@ -222,7 +222,6 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         result.items[0].score == 123
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'GET /foo (cookie): returns content'() {
         given:
         ersatzServer.expectations {
@@ -241,7 +240,6 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'GET /foo (cookie2): returns content'() {
         given:
         ersatzServer.expectations {

@@ -16,6 +16,7 @@
 package groovyx.net.http;
 
 import java.nio.charset.Charset;
+import java.net.HttpCookie;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     interface ChainedRequest extends Request {
         ChainedRequest getParent();
-        List<Cookie> getCookies();
+        List<HttpCookie> getCookies();
         Object getBody();
         String getContentType();
         Map<String,BiConsumer<ChainedHttpConfig,ToServer>> getEncoderMap();
@@ -73,8 +74,8 @@ public interface ChainedHttpConfig extends HttpConfig {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getAuth(), choose);
         }
 
-        default List<Cookie> actualCookies(final List<Cookie> list) {
-            Predicate<List<Cookie>> addAll = (cookies) -> { list.addAll(cookies); return false; };
+        default List<HttpCookie> actualCookies(final List<HttpCookie> list) {
+            Predicate<List<HttpCookie>> addAll = (cookies) -> { list.addAll(cookies); return false; };
             traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCookies(), addAll);
             return list;
         }

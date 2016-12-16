@@ -72,23 +72,8 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
-
-            final URI uri = cr.getUri().toURI();
-            final List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-            for(Cookie cookie : cookies) {
-                final HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-                httpCookie.setVersion(clienConfig.getCookieVersion());
-                httpCookie.setDomain(uri.getHost());
-                httpCookie.setPath(uri.getPath());
-                if(cookie.getExpires() != null) {
-                    final long diff = cookie.getExpires().getTime() - System.currentTimeMillis();
-                    httpCookie.setMaxAge(diff / 1_000L);
-                }
-                else {
-                    httpCookie.setMaxAge(3_600L);
-                }
-
-                globalCookieManager.getCookieStore().add(uri, httpCookie);
+            for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+                connection.addRequestProperty(e.getKey(), e.getValue());
             }
         }
 
@@ -168,6 +153,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 //TODO: detect non success and read from error stream instead
                 try {
                     headers = populateHeaders();
+                    addCookieStore(uri, headers);
                     BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
                     bis.mark(0);
                     hasBody = bis.read() != -1;
@@ -195,17 +181,26 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return is;
             }
 
+            private String clean(final String str) {
+                if(str == null) {
+                    return null;
+                }
+
+                final String tmp = str.trim();
+                return "".equals(tmp) ? null : tmp;
+            }
+            
             private List<Header<?>> populateHeaders() {
                 final List<Header<?>> ret = new ArrayList<>();
                 for(int i = 0; i < Integer.MAX_VALUE; ++i) {
-                    final String key = connection.getHeaderFieldKey(i);
-                    final String value = connection.getHeaderField(i);
+                    final String key = clean(connection.getHeaderFieldKey(i));
+                    final String value = clean(connection.getHeaderField(i));
                     if(key == null && value == null) {
                         break;
                     }
 
                     if(key != null && value != null) {
-                        ret.add(Header.keyValue(key, value));
+                        ret.add(Header.keyValue(key.trim(), value.trim()));
                     }
                 }
 
@@ -270,24 +265,22 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
     }
 
-    private final static CookieManager globalCookieManager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
 
     static {
         Authenticator.setDefault(new ThreadLocalAuth());
-        CookieHandler.setDefault(globalCookieManager);
     }
 
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
-    final private HttpObjectConfig.Client clienConfig;
+    final private HttpObjectConfig.Client clientConfig;
 
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.sslContext = config.getExecution().getSslContext();
-        this.clienConfig = config.getClient();
+        this.clientConfig = config.getClient();
     }
 
     protected ChainedHttpConfig getObjectConfig() {
