@@ -20,12 +20,28 @@ import groovy.lang.DelegatesTo;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
+
+import static java.util.Collections.singletonMap;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
 
 /**
  * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
@@ -221,9 +237,65 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
+    private final CookieManager cookieManager;
 
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
+        final File folder = objectConfig.getClient().getCookieFolder();
+        CookieStore cookieStore = (folder == null ?
+                                   new NonBlockingCookieStore() :
+                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
+        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+    }
+
+    protected CookieManager getCookieManager() {
+        return cookieManager;
+    }
+
+    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
+        Map<String,String> tmp = new HashMap<>();
+
+        try {
+            final URI uri = cr.getUri().toURI();
+            for(HttpCookie cookie : cr.actualCookies(new ArrayList<>())) {
+                final String keyName = clientConfig.getCookieVersion() == 0 ? "Set-Cookie" : "Set-Cookie2";
+                final Map<String,List<String>> toPut = singletonMap(keyName, singletonList(cookie.toString()));
+                cookieManager.put(uri, toPut);
+            }
+
+            for(Map.Entry<String,List<String>> e : cookieManager.get(uri, emptyMap()).entrySet()) {
+                if(e.getValue() != null && !e.getValue().isEmpty()) {
+                    tmp.put(e.getKey(), String.join("; ", e.getValue()));
+                }
+            }
+        }
+        catch(IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+
+        return tmp;
+    }
+
+    public static List<HttpCookie> cookies(final List<FromServer.Header<?>> headers) {
+        final List<HttpCookie> cookies = new ArrayList<>();
+        for(FromServer.Header<?> header : headers) {
+            if(header.getKey().equalsIgnoreCase("Set-Cookie") ||
+               header.getKey().equalsIgnoreCase("Set-Cookie2")) {
+                final List<?> found = (List<?>) header.getParsed();
+                for(Object o : found) {
+                    cookies.add((HttpCookie) o);
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(cookies);
+
+    }
+
+    protected void addCookieStore(final URI uri, final List<FromServer.Header<?>> headers) {
+        for(HttpCookie cookie : cookies(headers)) {
+            cookieManager.getCookieStore().add(uri, cookie);
+        }
     }
 
     /**

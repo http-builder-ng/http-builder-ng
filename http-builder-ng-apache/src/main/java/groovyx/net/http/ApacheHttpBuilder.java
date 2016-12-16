@@ -21,14 +21,12 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -114,7 +112,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return configure(apacheFactory, configuration);
     }
 
-    private static class ApacheFromServer implements FromServer {
+    private class ApacheFromServer implements FromServer {
 
         private final HttpResponse response;
         private final HttpEntity entity;
@@ -140,6 +138,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
 
             this.headers = new ArrayList<>(response.getAllHeaders().length);
+            addCookieStore(uri, headers);
             for(org.apache.http.Header header : response.getAllHeaders()) {
                 headers.add(Header.keyValue(header.getName(), header.getValue()));
             }
@@ -225,7 +224,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
     }
 
-    private static class Handler implements ResponseHandler<Object> {
+    private class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
 
@@ -242,7 +241,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
-    final private CookieStore cookieStore;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
@@ -257,10 +255,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
 
             myBuilder.setConnectionManager(cm);
-            cookieStore = null;
-        }
-        else {
-            cookieStore = new BasicCookieStore();
         }
 
         if(config.getExecution().getSslContext() != null) {
@@ -300,27 +294,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
         basicAuth(c, auth, uri);
     }
 
-    private void cookies(final HttpClientContext c, final ChainedHttpConfig.ChainedRequest cr) {
-        //if the client was configured for single thread use, then we can safely
-        //use the class based cookie store, otherwise we need to create a per request store
-        CookieStore cookieStore = this.cookieStore == null ? new BasicCookieStore() : this.cookieStore;
-        final URI uri = cr.getUri().toURI();
-        List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-        for(Cookie cookie : cookies) {
-            final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
-            apacheCookie.setVersion(clientConfig.getCookieVersion());
-            apacheCookie.setDomain(uri.getHost());
-            apacheCookie.setPath(uri.getPath());
-            if(cookie.getExpires() != null) {
-                apacheCookie.setExpiryDate(cookie.getExpires());
-            }
-
-            cookieStore.addCookie(apacheCookie);
-        }
-
-        c.setCookieStore(cookieStore);
-    }
-
     private HttpClientContext context(final ChainedHttpConfig requestConfig) {
         final HttpClientContext c = HttpClientContext.create();
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
@@ -336,7 +309,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
         }
 
-        cookies(c, cr);
         return c;
     }
 
@@ -363,6 +335,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final String contentType = cr.actualContentType();
         if(contentType != null) {
             message.addHeader("Content-Type", contentType);
+        }
+
+        for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+            message.addHeader(e.getKey(), e.getValue());
         }
 
         return message;

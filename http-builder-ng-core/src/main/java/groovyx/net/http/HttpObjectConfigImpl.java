@@ -15,6 +15,7 @@
  */
 package groovyx.net.http;
 
+import java.io.File;
 import javax.net.ssl.SSLContext;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
@@ -106,6 +107,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
     private static class ClientConfig implements Client {
 
         private int cookieVersion = 0;
+        private File cookieFolder;
 
         @Override public void setCookieVersion(int version) {
             this.cookieVersion = version;
@@ -113,6 +115,14 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
         @Override public int getCookieVersion() {
             return cookieVersion;
+        }
+
+        @Override public File getCookieFolder() {
+            return cookieFolder;
+        }
+
+        @Override public void setCookieFolder(final File val) {
+            this.cookieFolder = val;
         }
     }
 

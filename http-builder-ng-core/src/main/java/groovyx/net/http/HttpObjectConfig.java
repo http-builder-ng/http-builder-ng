@@ -20,6 +20,7 @@ import javax.net.ssl.SSLContext;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.EnumMap;
+import java.io.File;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -134,6 +135,22 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return the Cookie version supported
          */
         int getCookieVersion();
+
+        /**
+         * Specifies the location for storing cookies that will persist after your application terminates. If no folder is
+         * specified an in memory cookie store and no cookies will be persisted after your application terminates. If cookies
+         * are found here then the cookies will be loaded prior to sending any requests to remote servers.
+         *
+         * @param folder the folder used to store the cookies.
+         */
+        void setCookieFolder(File folder);
+
+        /**
+         * Retrieves the location for storing persistent cookies
+         *
+         * @return the folder containing persistent cookies, null if using an in memory store
+         */
+        File getCookieFolder();
     }
 
     ChainedHttpConfig getChainedConfig();

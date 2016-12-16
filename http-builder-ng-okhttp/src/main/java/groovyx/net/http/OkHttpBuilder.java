@@ -17,7 +17,6 @@ package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import okhttp3.Cookie;
 import okhttp3.*;
 import okio.BufferedSink;
 
@@ -50,6 +49,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
     private static final Function<HttpObjectConfig, ? extends HttpBuilder> okFactory = OkHttpBuilder::new;
     private final ChainedHttpConfig config;
+    private final HttpObjectConfig.Client clientConfig;
     private final Executor executor;
     private final OkHttpClient client;
 
@@ -57,8 +57,9 @@ public class OkHttpBuilder extends HttpBuilder {
         super(config);
 
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
+        this.clientConfig = config.getClient();
         this.executor = config.getExecution().getExecutor();
-        this.client = new OkHttpClient.Builder().cookieJar(new NonPersistingCookieJar()).build();
+        this.client = new OkHttpClient.Builder().build();
     }
 
     /**
@@ -133,7 +134,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().get().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -145,7 +145,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().head().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -159,7 +158,6 @@ public class OkHttpBuilder extends HttpBuilder {
         requestBuilder.post(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -173,7 +171,6 @@ public class OkHttpBuilder extends HttpBuilder {
         requestBuilder.put(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -185,7 +182,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().delete().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -207,28 +203,19 @@ public class OkHttpBuilder extends HttpBuilder {
         return body;
     }
 
-    private static void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
-        for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
+        for(Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
 
         final String contentType = cr.actualContentType();
-        if (contentType != null) {
+        if(contentType != null) {
             requestBuilder.addHeader("Content-Type", contentType);
         }
-    }
 
-    private static void applyCookies(final OkHttpClient client, final ChainedHttpConfig.ChainedRequest cr) {
-        final URI uri = cr.getUri().toURI();
-        final List<Cookie> okCookies = cr.actualCookies(new ArrayList<>()).stream().map(cookie -> new Cookie.Builder()
-            .name(cookie.getName())
-            .value(cookie.getValue())
-            .domain(uri.getHost())
-            .path(uri.getPath())
-            .expiresAt(cookie.getExpires() != null ? cookie.getExpires().toInstant().toEpochMilli() : MAX_DATE)
-            .build()).collect(toList());
-
-        client.cookieJar().saveFromResponse(HttpUrl.get(uri), okCookies);
+        for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+            requestBuilder.addHeader(e.getKey(), e.getValue());
+        }
     }
 
     private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
@@ -249,14 +236,22 @@ public class OkHttpBuilder extends HttpBuilder {
         }
     }
 
-    private static class OkHttpFromServer implements FromServer {
+    private class OkHttpFromServer implements FromServer {
 
         private final URI uri;
         private final Response response;
+        private List<Header<?>> headers;
 
         private OkHttpFromServer(final URI uri, final Response response) {
             this.uri = uri;
             this.response = response;
+            this.headers = populateHeaders();
+            addCookieStore(uri, headers);
+        }
+
+        private List<Header<?>> populateHeaders() {
+            final Headers headers = response.headers();
+            return headers.names().stream().map((Function<String, Header<?>>) name -> keyValue(name, headers.get(name))).collect(toList());
         }
 
         @Override
@@ -276,8 +271,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public List<Header<?>> getHeaders() {
-            final Headers headers = response.headers();
-            return headers.names().stream().map((Function<String, Header<?>>) name -> keyValue(name, headers.get(name))).collect(toList());
+            return headers;
         }
 
         @Override
@@ -330,25 +324,6 @@ public class OkHttpBuilder extends HttpBuilder {
             } finally {
                 inputStream.close();
             }
-        }
-    }
-
-    /**
-     * Implementation of the OkHttp `CookieJar` interface providing in-memory cookie persistence only. The library default has no cookies at all, so
-     * this at least addresses the issue; however, there is an issue in the HttpBuilder NG project to address cookie support in general.
-     */
-    private static class NonPersistingCookieJar implements CookieJar {
-
-        private final ConcurrentMap<HttpUrl, List<Cookie>> pantry = new ConcurrentHashMap<>();
-
-        @Override
-        public void saveFromResponse(final HttpUrl url, final List<Cookie> cookies) {
-            pantry.put(url, cookies);
-        }
-
-        @Override
-        public List<Cookie> loadForRequest(final HttpUrl url) {
-            return pantry.getOrDefault(url, emptyList());
         }
     }
 }
