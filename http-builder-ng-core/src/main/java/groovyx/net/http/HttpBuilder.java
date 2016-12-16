@@ -20,12 +20,28 @@ import groovy.lang.DelegatesTo;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.net.CookiePolicy;
+import java.net.HttpCookie;
+import java.net.URI;
+
+import static java.util.Collections.singletonMap;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
 
 /**
  * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
@@ -75,32 +91,16 @@ import java.util.function.Function;
  */
 public abstract class HttpBuilder implements Closeable {
 
-    private static volatile Function<HttpObjectConfig, ? extends HttpBuilder> factory = JavaHttpBuilder::new;
+    private static final Function<HttpObjectConfig, ? extends HttpBuilder> factory = JavaHttpBuilder::new;
 
-    /**
-     * Used to retrieve the default client factory.
-     *
-     * @return the default client factory function
-     */
-    public static Function<HttpObjectConfig, ? extends HttpBuilder> getDefaultFactory() {
-        return factory;
-    }
+    @SuppressWarnings("unused")
+    static void noOp() {}
 
-    /**
-     * Used to specify the default client factory.
-     *
-     * @param val the default client factory as a ({@link Function}
-     */
-    public static void setDefaultFactory(final Function<HttpObjectConfig, ? extends HttpBuilder> val) {
-        factory = val;
-    }
-
-    static void noOp() { }
     static Closure NO_OP = new MethodClosure(HttpBuilder.class, "noOp");
 
     /**
      * Creates an `HttpBuilder` with the default configuration using the provided factory function ({@link JavaHttpBuilder} or
-     * {@link groovyx.net.http.optional.ApacheHttpBuilder}).
+     * one of the other HTTP client implementation functions.
      *
      * [source,groovy]
      * ----
@@ -109,7 +109,7 @@ public abstract class HttpBuilder implements Closeable {
      *
      * When configuring the `HttpBuilder` with this method, the verb configurations are required to specify the `request.uri` property.
      *
-     * @param factory the `HttpObjectConfig` factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.optional.ApacheHttpBuilder})
+     * @param factory the `HttpObjectConfig` factory function ({@link JavaHttpBuilder} or one of the other HTTP client implementation functions
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function<HttpObjectConfig, ? extends HttpBuilder> factory) {
@@ -117,7 +117,7 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
-     * Creates an `HttpBuilder` using the `defaultFactory` instance configured with the provided configuration closure.
+     * Creates an `HttpBuilder` using the `JavaHttpBuilder` factory instance configured with the provided configuration closure.
      *
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
@@ -166,7 +166,7 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
-     * Creates an `HttpBuilder` using the `defaultFactory` instance configured with the provided configuration function.
+     * Creates an `HttpBuilder` using the `JavaHttpBuilder` factory instance configured with the provided configuration function.
      *
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
@@ -237,9 +237,65 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
+    private final CookieManager cookieManager;
 
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
+        final File folder = objectConfig.getClient().getCookieFolder();
+        CookieStore cookieStore = (folder == null ?
+                                   new NonBlockingCookieStore() :
+                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
+        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+    }
+
+    protected CookieManager getCookieManager() {
+        return cookieManager;
+    }
+
+    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
+        Map<String,String> tmp = new HashMap<>();
+
+        try {
+            final URI uri = cr.getUri().toURI();
+            for(HttpCookie cookie : cr.actualCookies(new ArrayList<>())) {
+                final String keyName = clientConfig.getCookieVersion() == 0 ? "Set-Cookie" : "Set-Cookie2";
+                final Map<String,List<String>> toPut = singletonMap(keyName, singletonList(cookie.toString()));
+                cookieManager.put(uri, toPut);
+            }
+
+            for(Map.Entry<String,List<String>> e : cookieManager.get(uri, emptyMap()).entrySet()) {
+                if(e.getValue() != null && !e.getValue().isEmpty()) {
+                    tmp.put(e.getKey(), String.join("; ", e.getValue()));
+                }
+            }
+        }
+        catch(IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+
+        return tmp;
+    }
+
+    public static List<HttpCookie> cookies(final List<FromServer.Header<?>> headers) {
+        final List<HttpCookie> cookies = new ArrayList<>();
+        for(FromServer.Header<?> header : headers) {
+            if(header.getKey().equalsIgnoreCase("Set-Cookie") ||
+               header.getKey().equalsIgnoreCase("Set-Cookie2")) {
+                final List<?> found = (List<?>) header.getParsed();
+                for(Object o : found) {
+                    cookies.add((HttpCookie) o);
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(cookies);
+
+    }
+
+    protected void addCookieStore(final URI uri, final List<FromServer.Header<?>> headers) {
+        for(HttpCookie cookie : cookies(headers)) {
+            cookieManager.getCookieStore().add(uri, cookie);
+        }
     }
 
     /**
@@ -306,7 +362,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration function (delegated to {@link HttpConfig})
      * @return the resulting content cast to the specified type
      */
-    public <T> T get(final Class<T> type, final Consumer<HttpConfig> configuration){
+    public <T> T get(final Class<T> type, final Consumer<HttpConfig> configuration) {
         return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, configuration), this::doGet));
     }
 
@@ -375,7 +431,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
-    public CompletableFuture<Object> getAsync(final Consumer<HttpConfig> configuration){
+    public CompletableFuture<Object> getAsync(final Consumer<HttpConfig> configuration) {
         return CompletableFuture.supplyAsync(() -> get(configuration), getExecutor());
     }
 
@@ -424,7 +480,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration function (delegated to {@link HttpConfig})
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
-    public <T> CompletableFuture<T> getAsync(final Class<T> type, final Consumer<HttpConfig> configuration){
+    public <T> CompletableFuture<T> getAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
         return CompletableFuture.supplyAsync(() -> get(type, configuration), getExecutor());
     }
 
@@ -495,7 +551,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration function (delegated to {@link HttpConfig})
      * @return the resulting content cast to the specified type
      */
-    public <T> T head(final Class<T> type, final Consumer<HttpConfig> configuration){
+    public <T> T head(final Class<T> type, final Consumer<HttpConfig> configuration) {
         return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, configuration), this::doHead));
     }
 
@@ -566,7 +622,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
-    public CompletableFuture<Object> headAsync(final Consumer<HttpConfig> configuration){
+    public CompletableFuture<Object> headAsync(final Consumer<HttpConfig> configuration) {
         return CompletableFuture.supplyAsync(() -> head(configuration), getExecutor());
     }
 
@@ -1255,7 +1311,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content
      */
-    public Object get(final Consumer<HttpConfig> configuration){
+    public Object get(final Consumer<HttpConfig> configuration) {
         return get(Object.class, configuration);
     }
 
@@ -1301,7 +1357,7 @@ public abstract class HttpBuilder implements Closeable {
      * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
      * @return the resulting content
      */
-    public Object head(final Consumer<HttpConfig> configuration){
+    public Object head(final Consumer<HttpConfig> configuration) {
         return head(Object.class, configuration);
     }
 
@@ -1484,7 +1540,7 @@ public abstract class HttpBuilder implements Closeable {
         @Override
         public Object apply(ChainedHttpConfig requestConfig, FromServer fromServer) {
             try {
-                final BiFunction<ChainedHttpConfig,FromServer,Object> parser = requestConfig.findParser(fromServer.getContentType());
+                final BiFunction<ChainedHttpConfig, FromServer, Object> parser = requestConfig.findParser(fromServer.getContentType());
                 final BiFunction<FromServer, Object, ?> action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());
 
                 return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);

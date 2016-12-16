@@ -15,15 +15,9 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.feat.BasicAuthFeature
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
-import groovyx.net.http.HttpBin
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.RecordedRequest
-import spock.lang.Ignore
-import spock.lang.Requires
-
-import java.util.concurrent.Executors
 
 import static groovyx.net.http.ContentTypes.TEXT
 
@@ -36,38 +30,39 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
 
     def 'DELETE /: returns content'() {
         setup:
-        serverRule.dispatcher('DELETE', '/', responseContent())
+        ersatzServer.expectations {
+            delete('/').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         expect:
-        httpBuilder(serverRule.serverPort).delete() == htmlContent()
+        httpBuilder(ersatzServer.port).delete() == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync().get() == htmlContent()
+        httpBuilder(ersatzServer.port).deleteAsync().get() == htmlContent()
     }
 
     def 'DELETE /foo: returns content'() {
         given:
-        serverRule.dispatcher('DELETE', '/foo', responseContent())
+        ersatzServer.expectations {
+            delete('/foo').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(ersatzServer.port).delete(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).deleteAsync(config).get() == htmlContent()
     }
 
     def 'DELETE /foo (cookie): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'DELETE' && request.path == '/foo' && request.getHeader('Cookie').contains('userid=spock')) {
-                return responseContent()
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            delete('/foo').cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -75,15 +70,17 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(ersatzServer.port).delete(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).deleteAsync(config).get() == htmlContent()
     }
 
     def 'DELETE /foo (query string): returns content'() {
         given:
-        serverRule.dispatcher('DELETE', '/foo?action=login', responseContent())
+        ersatzServer.expectations {
+            delete('/foo').query('action', 'login').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -92,15 +89,17 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(ersatzServer.port).delete(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).deleteAsync(config).get() == htmlContent()
     }
 
     def 'DELETE /date: returns content as Date'() {
         given:
-        serverRule.dispatcher('DELETE', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody(DATE_STRING))
+        ersatzServer.expectations {
+            delete('/date').responds().content(DATE_STRING, 'text/date')
+        }.start()
 
         def config = {
             request.uri.path = '/date'
@@ -110,26 +109,19 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).delete(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).delete(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).deleteAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 
-    def 'DELETE (BASIC) /basic: returns only headers'() {
+    def 'DELETE (BASIC) /basic: returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'DELETE') {
-                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+        ersatzServer.addFeature new BasicAuthFeature()
 
-                if (request.path == '/basic' && !request.getHeader('Authorization')) {
-                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
-                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
-                    return new MockResponse().setHeader('Authorization', encodedCred).setHeader('Content-Type', 'text/plain').setBody(htmlContent())
-                }
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            delete('/basic').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/basic'
@@ -137,13 +129,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).delete(config) == htmlContent()
+        httpBuilder(ersatzServer.port).delete(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).deleteAsync(config).get() == htmlContent()
-    }
-
-    protected static MockResponse responseContent(final String body = htmlContent()) {
-        new MockResponse().setHeader('Content-Type', 'text/plain').setBody(body)
+        httpBuilder(ersatzServer.port).deleteAsync(config).get() == htmlContent()
     }
 }

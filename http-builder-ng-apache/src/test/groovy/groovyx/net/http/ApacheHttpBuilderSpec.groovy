@@ -36,7 +36,6 @@ class ApacheHttpBuilderSpec extends HttpBuilderTestKit {
         }
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def "Test Set Cookies"() {
         expect:
         singleThreadHttpBin.get {
@@ -52,5 +51,15 @@ class ApacheHttpBuilderSpec extends HttpBuilderTestKit {
         }.with {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
         }
+    }
+
+    def 'overridden configuration'() {
+        when:
+        HttpBuilder http = ApacheHttpBuilder.configure {
+            request.uri = 'http://localhost:12345'
+        }
+
+        then:
+        http instanceof ApacheHttpBuilder
     }
 }

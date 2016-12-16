@@ -29,10 +29,12 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -178,13 +180,23 @@ public class HttpConfigs {
             }
         }
 
+        public void cookie(final String name, final String value, final Instant instant) {
+            final HttpCookie cookie = new HttpCookie(name, value);
+            cookie.setPath("/");
+            final Instant now = Instant.now();
+            if(instant != null && now.isBefore(instant)) {
+                cookie.setMaxAge(instant.getEpochSecond() - now.getEpochSecond());
+            }
+            
+            getCookies().add(cookie);
+        }
+        
         public void cookie(final String name, final String value, final Date date) {
-            getCookies().add(new Cookie(name, value, date));
+            cookie(name, value, date == null ? (Instant) null : date.toInstant());
         }
 
         public void cookie(final String name, final String value, final LocalDateTime dateTime){
-            Date date = new Date(dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            getCookies().add(new Cookie(name, value, date));
+            cookie(name, value, dateTime == null ? (Instant) null : dateTime.atZone(ZoneId.systemDefault()).toInstant());
         }
     }
 
@@ -196,7 +208,7 @@ public class HttpConfigs {
         private Object body;
         private final Map<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new LinkedHashMap<>();
         private BasicAuth auth = new BasicAuth();
-        private List<Cookie> cookies = new ArrayList<>(1);
+        private List<HttpCookie> cookies = new ArrayList<>(1);
         
         protected BasicRequest(ChainedRequest parent) {
             super(parent);
@@ -207,7 +219,7 @@ public class HttpConfigs {
             return encoderMap;
         }
 
-        public List<Cookie> getCookies() {
+        public List<HttpCookie> getCookies() {
             return cookies;
         }
         
@@ -257,7 +269,7 @@ public class HttpConfigs {
         private volatile Object body;
         private final ConcurrentMap<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
-        private final List<Cookie> cookies = new CopyOnWriteArrayList<>();
+        private final List<HttpCookie> cookies = new CopyOnWriteArrayList<>();
 
         public ThreadSafeRequest(final ChainedRequest parent) {
             super(parent);
@@ -265,7 +277,7 @@ public class HttpConfigs {
             this.uriBuilder = (parent == null) ? UriBuilder.threadSafe(null) : UriBuilder.threadSafe(parent.getUri());
         }
 
-        public List<Cookie> getCookies() {
+        public List<HttpCookie> getCookies() {
             return cookies;
         }
         

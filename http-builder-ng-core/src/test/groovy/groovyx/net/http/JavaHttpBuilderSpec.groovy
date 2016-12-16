@@ -29,21 +29,30 @@ class JavaHttpBuilderSpec extends HttpBuilderTestKit {
         init()
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def "Test Set Cookies"() {
         expect:
         httpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'foocookie', 'barcookie'
+            request.cookie('foocookie', 'barcookie')
         }.with {
             cookies.foocookie == 'barcookie'
         }
 
         httpBin.get {
             request.uri.path = '/cookies'
-            request.cookie 'requestcookie', '12345'
+            request.cookie('requestcookie', '12345')
         }.with {
             cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
         }
+    }
+
+    def 'overridden configuration'() {
+        when:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            request.uri = 'http://localhost:12345'
+        }
+
+        then:
+        http instanceof JavaHttpBuilder
     }
 }

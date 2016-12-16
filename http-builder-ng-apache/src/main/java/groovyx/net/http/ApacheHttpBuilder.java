@@ -15,18 +15,18 @@
  */
 package groovyx.net.http;
 
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -41,28 +41,85 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
  *
- * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
+ * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
+    private static final Function<HttpObjectConfig, ? extends HttpBuilder> apacheFactory = ApacheHttpBuilder::new;
     private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);
 
-    private static class ApacheFromServer implements FromServer {
-        
+    /**
+     * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
+     *
+     * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
+     * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * ----
+     *
+     * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        return configure(apacheFactory, closure);
+    }
+
+    /**
+     * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration function.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
+     *     public void accept(HttpObjectConfig config) {
+     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     }
+     * });
+     * ----
+     *
+     * Or, using lambda expressions:
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * });
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
+        return configure(apacheFactory, configuration);
+    }
+
+    private class ApacheFromServer implements FromServer {
+
         private final HttpResponse response;
         private final HttpEntity entity;
         private final List<Header<?>> headers;
         private final InputStream inputStream;
         private final URI uri;
-    
+
         public ApacheFromServer(final URI originalUri, final HttpResponse response) {
             this.uri = originalUri;
             this.response = response;
@@ -79,8 +136,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
             else {
                 this.inputStream = null;
             }
-        
+
             this.headers = new ArrayList<>(response.getAllHeaders().length);
+            addCookieStore(uri, headers);
             for(org.apache.http.Header header : response.getAllHeaders()) {
                 headers.add(Header.keyValue(header.getName(), header.getValue()));
             }
@@ -127,7 +185,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         public void toServer(final InputStream inputStream) {
             this.inputStream = inputStream;
         }
-    
+
         public boolean isRepeatable() {
             return false;
         }
@@ -143,7 +201,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         public org.apache.http.Header getContentType() {
             return new BasicHeader("Content-Type", contentType);
         }
-        
+
         public org.apache.http.Header getContentEncoding() {
             return null;
         }
@@ -165,11 +223,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
             inputStream.close();
         }
     }
-    
-    private static class Handler implements ResponseHandler<Object> {
+
+    private class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
-        
+
         public Handler(final ChainedHttpConfig config) {
             this.requestConfig = config;
         }
@@ -183,7 +241,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
-    final private CookieStore cookieStore;
 
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
@@ -196,14 +253,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
             cm.setMaxTotal(config.getExecution().getMaxThreads());
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
-            
+
             myBuilder.setConnectionManager(cm);
-            cookieStore = null;
         }
-        else {
-            cookieStore = new BasicCookieStore();
-        }
-        
+
         if(config.getExecution().getSslContext() != null) {
             myBuilder.setSSLContext(config.getExecution().getSslContext());
         }
@@ -214,7 +267,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
-    
+
     public Executor getExecutor() {
         return executor;
     }
@@ -241,32 +294,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
         basicAuth(c, auth, uri);
     }
 
-    private void cookies(final HttpClientContext c, final ChainedHttpConfig.ChainedRequest cr) {
-        //if the client was configured for single thread use, then we can safely
-        //use the class based cookie store, otherwise we need to create a per request store
-        CookieStore cookieStore = this.cookieStore == null ? new BasicCookieStore() : this.cookieStore;
-        final URI uri = cr.getUri().toURI();
-        List<Cookie> cookies = cr.actualCookies(new ArrayList<>());
-        for(Cookie cookie : cookies) {
-            final BasicClientCookie apacheCookie = new BasicClientCookie(cookie.getName(), cookie.getValue());
-            apacheCookie.setVersion(clientConfig.getCookieVersion());
-            apacheCookie.setDomain(uri.getHost());
-            apacheCookie.setPath(uri.getPath());
-            if(cookie.getExpires() != null) {
-                apacheCookie.setExpiryDate(cookie.getExpires());
-            }
-            
-            cookieStore.addCookie(apacheCookie);
-        }
-
-        c.setCookieStore(cookieStore);
-    }
-
     private HttpClientContext context(final ChainedHttpConfig requestConfig) {
         final HttpClientContext c = HttpClientContext.create();
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpConfig.Auth auth = cr.actualAuth();
-        
+
         if(auth != null) {
             final URI uri = requestConfig.getRequest().getUri().toURI();
             if(auth.getAuthType() == HttpConfig.AuthType.BASIC) {
@@ -277,7 +309,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
         }
 
-        cookies(c, cr);
         return c;
     }
 
@@ -306,6 +337,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
             message.addHeader("Content-Type", contentType);
         }
 
+        for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+            message.addHeader(e.getKey(), e.getValue());
+        }
+
         return message;
     }
 
@@ -325,7 +360,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         if(cr.actualBody() != null) {
             post.setEntity(entity(requestConfig));
         }
-        
+
         return exec(post, requestConfig);
     }
 
@@ -335,7 +370,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         if(cr.actualBody() != null) {
             put.setEntity(entity(requestConfig));
         }
-        
+
         return exec(put, requestConfig);
     }
 

@@ -15,7 +15,8 @@
  */
 package groovyx.net.http;
 
-import okhttp3.Cookie;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import okhttp3.*;
 import okio.BufferedSink;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
@@ -40,13 +42,14 @@ import static okhttp3.internal.http.HttpDate.MAX_DATE;
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
  *
- * Generally, this class should not be used directly, the preferred method of instantiation is via the
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
- * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
+ * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
+ * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class OkHttpBuilder extends HttpBuilder {
 
+    private static final Function<HttpObjectConfig, ? extends HttpBuilder> okFactory = OkHttpBuilder::new;
     private final ChainedHttpConfig config;
+    private final HttpObjectConfig.Client clientConfig;
     private final Executor executor;
     private final OkHttpClient client;
 
@@ -54,9 +57,66 @@ public class OkHttpBuilder extends HttpBuilder {
         super(config);
 
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
+        this.clientConfig = config.getClient();
         this.executor = config.getExecution().getExecutor();
-        this.client = new OkHttpClient.Builder().cookieJar(new NonPersistingCookieJar()).build();
+        this.client = new OkHttpClient.Builder().build();
     }
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
+     *
+     * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
+     * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * ----
+     *
+     * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        return configure(okFactory, closure);
+    }
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
+     *     public void accept(HttpObjectConfig config) {
+     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     }
+     * });
+     * ----
+     *
+     * Or, using lambda expressions:
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * });
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
+        return configure(okFactory, configuration);
+    }
+
 
     @Override
     protected ChainedHttpConfig getObjectConfig() {
@@ -74,7 +134,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().get().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -86,7 +145,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().head().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -100,7 +158,6 @@ public class OkHttpBuilder extends HttpBuilder {
         requestBuilder.post(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -114,7 +171,6 @@ public class OkHttpBuilder extends HttpBuilder {
         requestBuilder.put(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -126,7 +182,6 @@ public class OkHttpBuilder extends HttpBuilder {
         final Request.Builder requestBuilder = new Request.Builder().delete().url(HttpUrl.get(cr.getUri().toURI()));
 
         applyHeaders(requestBuilder, cr);
-        applyCookies(client, cr);
         applyAuth(requestBuilder, chainedConfig);
 
         return execute(requestBuilder, chainedConfig);
@@ -148,28 +203,19 @@ public class OkHttpBuilder extends HttpBuilder {
         return body;
     }
 
-    private static void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
-        for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
+        for(Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
 
         final String contentType = cr.actualContentType();
-        if (contentType != null) {
+        if(contentType != null) {
             requestBuilder.addHeader("Content-Type", contentType);
         }
-    }
 
-    private static void applyCookies(final OkHttpClient client, final ChainedHttpConfig.ChainedRequest cr) {
-        final URI uri = cr.getUri().toURI();
-        final List<Cookie> okCookies = cr.actualCookies(new ArrayList<>()).stream().map(cookie -> new Cookie.Builder()
-            .name(cookie.getName())
-            .value(cookie.getValue())
-            .domain(uri.getHost())
-            .path(uri.getPath())
-            .expiresAt(cookie.getExpires() != null ? cookie.getExpires().toInstant().toEpochMilli() : MAX_DATE)
-            .build()).collect(toList());
-
-        client.cookieJar().saveFromResponse(HttpUrl.get(uri), okCookies);
+        for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+            requestBuilder.addHeader(e.getKey(), e.getValue());
+        }
     }
 
     private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
@@ -190,14 +236,22 @@ public class OkHttpBuilder extends HttpBuilder {
         }
     }
 
-    private static class OkHttpFromServer implements FromServer {
+    private class OkHttpFromServer implements FromServer {
 
         private final URI uri;
         private final Response response;
+        private List<Header<?>> headers;
 
         private OkHttpFromServer(final URI uri, final Response response) {
             this.uri = uri;
             this.response = response;
+            this.headers = populateHeaders();
+            addCookieStore(uri, headers);
+        }
+
+        private List<Header<?>> populateHeaders() {
+            final Headers headers = response.headers();
+            return headers.names().stream().map((Function<String, Header<?>>) name -> keyValue(name, headers.get(name))).collect(toList());
         }
 
         @Override
@@ -217,8 +271,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public List<Header<?>> getHeaders() {
-            final Headers headers = response.headers();
-            return headers.names().stream().map((Function<String, Header<?>>) name -> keyValue(name, headers.get(name))).collect(toList());
+            return headers;
         }
 
         @Override
@@ -271,25 +324,6 @@ public class OkHttpBuilder extends HttpBuilder {
             } finally {
                 inputStream.close();
             }
-        }
-    }
-
-    /**
-     * Implementation of the OkHttp `CookieJar` interface providing in-memory cookie persistence only. The library default has no cookies at all, so
-     * this at least addresses the issue; however, there is an issue in the HttpBuilder NG project to address cookie support in general.
-     */
-    private static class NonPersistingCookieJar implements CookieJar {
-
-        private final ConcurrentMap<HttpUrl, List<Cookie>> pantry = new ConcurrentHashMap<>();
-
-        @Override
-        public void saveFromResponse(final HttpUrl url, final List<Cookie> cookies) {
-            pantry.put(url, cookies);
-        }
-
-        @Override
-        public List<Cookie> loadForRequest(final HttpUrl url) {
-            return pantry.getOrDefault(url, emptyList());
         }
     }
 }

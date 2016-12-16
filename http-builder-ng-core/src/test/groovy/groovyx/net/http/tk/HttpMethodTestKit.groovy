@@ -15,15 +15,18 @@
  */
 package groovyx.net.http.tk
 
-import groovyx.net.http.MockWebServerRule
-import org.junit.Rule
+import com.stehno.ersatz.ErsatzServer
 
 /**
  * Base test kit for testing HTTP method handling by different client implementations.
  */
 abstract class HttpMethodTestKit extends TestKit {
 
-    @Rule MockWebServerRule serverRule = new MockWebServerRule()
+    protected final ErsatzServer ersatzServer = new ErsatzServer()
+
+    def cleanup() {
+        ersatzServer.stop()
+    }
 
     static String htmlContent(String text = 'Nothing special') {
         "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String

@@ -18,8 +18,6 @@ package groovyx.net.http.tk
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
 import groovyx.net.http.NativeHandlers
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.RecordedRequest
 import spock.lang.Issue
 import spock.lang.Unroll
 
@@ -39,28 +37,23 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
     def 'PUT /: returns content'() {
         setup:
-        serverRule.dispatcher('PUT', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        ersatzServer.expectations {
+            put('/').responds().content(htmlContent(), 'text/plain')
+        }.start()
 
         expect:
-        httpBuilder(serverRule.serverPort).put() == htmlContent()
+        httpBuilder(ersatzServer.port).put() == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).putAsync().get() == htmlContent()
+        httpBuilder(ersatzServer.port).putAsync().get() == htmlContent()
     }
 
     @Unroll def 'PUT /foo (#contentType): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/foo') {
-                String requestType = request.getHeader('Content-Type')
-                if (requestType == TEXT[0]) {
-                    return new MockResponse().setHeader('Content-Type', requestType).setBody(HTML_CONTENT)
-                } else if (requestType == JSON[0]) {
-                    return new MockResponse().setHeader('Content-Type', requestType).setBody(JSON_CONTENT)
-                }
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            put('/foo').body(BODY_STRING, TEXT[0]).responds().content(HTML_CONTENT, TEXT[0])
+            put('/foo').body([name: 'Chuck', age: 56], JSON[0]).responds().content(JSON_CONTENT, JSON[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -70,10 +63,10 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).put(config) == result
+        httpBuilder(ersatzServer.port).put(config) == result
 
         and:
-        httpBuilder(serverRule.serverPort).putAsync(config).get() == result
+        httpBuilder(ersatzServer.port).putAsync(config).get() == result
 
         where:
         content     | contentType | parser                               || result
@@ -81,15 +74,11 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         JSON_STRING | JSON        | NativeHandlers.Parsers.&json         || [accepted: false, id: 123]
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'PUT /foo (cookie): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/foo' && request.getHeader('Content-Type') == TEXT[0] && request.getHeader('Cookie').contains('userid=spock')) {
-                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent())
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            put('/foo').body(BODY_STRING, TEXT[0]).cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -99,20 +88,17 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).put(config) == htmlContent()
+        httpBuilder(ersatzServer.port).put(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).putAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.port).putAsync(config).get() == htmlContent()
     }
 
     def 'PUT /foo (query string): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/foo?action=login' && request.getHeader('Content-Type') == TEXT[0]) {
-                return new MockResponse().setHeader('Content-Type', TEXT[0]).setBody(htmlContent('Authenticate'))
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            put('/foo').body(BODY_STRING, TEXT[0]).query('action', 'login').responds().content(htmlContent(), TEXT[0])
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -122,20 +108,17 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).put(config) == htmlContent('Authenticate')
+        httpBuilder(ersatzServer.port).put(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverPort).putAsync(config).get() == htmlContent('Authenticate')
+        httpBuilder(ersatzServer.port).putAsync(config).get() == htmlContent()
     }
 
     def 'PUT /date: returns content as Date'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'PUT' && request.path == '/date' && request.getHeader('Content-Type') == 'text/plain' && request.getBody().toString() == '[text=Something Interesting]') {
-                return new MockResponse().setHeader('Content-Type', 'text/date').setBody(DATE_STRING)
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            put('/date').body(BODY_STRING, TEXT[0]).responds().content(DATE_STRING, 'text/date')
+        }.start()
 
         def config = {
             request.uri.path = '/date'
@@ -147,9 +130,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverPort).put(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).put(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
 
         and:
-        httpBuilder(serverRule.serverPort).putAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        httpBuilder(ersatzServer.port).putAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
     }
 }

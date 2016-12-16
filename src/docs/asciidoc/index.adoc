@@ -69,6 +69,19 @@ HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
 
 Assuming, of course, that you have configured the `http-builder-ng-apache` dependency in your project.
 
+Alternately, each of the client implementations provides their own `configure` methods using themselves as the factory, for the Apache client, you
+would use:
+
+[source,groovy]
+----
+HttpBuilder http = ApacheHttpBuilder.configure {
+    // configuration...
+}
+----
+
+Notice that the `configure` method is called on the `ApacheHttpBuilder` rather than the core `HttpBuilder` class. This allows a simpler configuration
+of the client factory to be used.
+
 === Authentication
 
 There are two methods of authentication supported: BASIC and DIGEST.

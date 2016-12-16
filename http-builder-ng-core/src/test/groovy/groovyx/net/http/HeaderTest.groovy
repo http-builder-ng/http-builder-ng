@@ -65,14 +65,16 @@ class HeaderTest extends Specification {
 
     def "Set Cookie Header"() {
         setup:
-        def h = FromServer.Header.full('Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1');
-
+        def h = FromServer.Header.full('Set-Cookie2: UserID=JohnDoe; Max-Age=3600; Version=1');
+        def listCookies = h.parsed;
+        
         expect:
-        h.key == 'Set-Cookie';
+        h.key == 'Set-Cookie2';
         h.value == 'UserID=JohnDoe; Max-Age=3600; Version=1';
-        h.parsed.size() == 3;
-        h.parsed['UserID'] == 'JohnDoe';
-        h.parsed['Version'] == '1';
+        listCookies.size() == 1;
+        listCookies[0].name == 'UserID';
+        listCookies[0].value == 'JohnDoe';
+        listCookies[0].version == 1;
     }
 
     def "Find Header"() {

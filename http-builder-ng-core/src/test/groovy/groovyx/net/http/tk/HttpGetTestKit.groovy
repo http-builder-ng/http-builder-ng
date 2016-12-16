@@ -15,16 +15,15 @@
  */
 package groovyx.net.http.tk
 
-import groovyx.net.http.*
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.RecordedRequest
-import spock.lang.Ignore
-import spock.lang.IgnoreRest
+import com.stehno.ersatz.feat.BasicAuthFeature
+import groovyx.net.http.ChainedHttpConfig
+import groovyx.net.http.CountedClosure
+import groovyx.net.http.FromServer
+import groovyx.net.http.NativeHandlers
 import spock.lang.Issue
-import spock.lang.Requires
 import spock.lang.Unroll
 
-import java.util.concurrent.Executors
+import static com.stehno.ersatz.Verifiers.once
 
 /**
  * Test kit for testing the HTTP GET method with different clients.
@@ -33,19 +32,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll def 'GET /status(#status): verify when handler'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET') {
-                if (request.path == '/status200') {
-                    return new MockResponse().setResponseCode(200)
-                } else if (request.path == '/status300') {
-                    return new MockResponse().setResponseCode(300)
-                } else if (request.path == '/status400') {
-                    return new MockResponse().setResponseCode(400)
-                } else if (request.path == '/status500') {
-                    return new MockResponse().setResponseCode(500)
-                }
+        ersatzServer.expectations {
+            [200, 300, 400, 500].each { code ->
+                get("/status$code").verifier(once()).responds().code(code)
             }
-            return new MockResponse().setResponseCode(404)
         }
 
         CountedClosure counter = new CountedClosure()
@@ -55,15 +45,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             response.when status, counter.closure
         }
 
+        ersatzServer.start()
+
         when:
-        httpBuilder(serverRule.serverUrl).get config
+        httpBuilder(ersatzServer.serverUrl).get config
 
         then:
         counter.called
         counter.clear()
 
         when:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get()
 
         then:
         counter.called
@@ -74,19 +66,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll def 'GET /status(#status): success/failure handler'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET') {
-                if (request.path == '/status200') {
-                    return new MockResponse().setResponseCode(200)
-                } else if (request.path == '/status300') {
-                    return new MockResponse().setResponseCode(300)
-                } else if (request.path == '/status400') {
-                    return new MockResponse().setResponseCode(400)
-                } else if (request.path == '/status500') {
-                    return new MockResponse().setResponseCode(500)
-                }
+        ersatzServer.expectations {
+            [200, 300, 400, 500].each { code ->
+                get("/status$code").verifier(once()).responds().code(code)
             }
-            return new MockResponse().setResponseCode(404)
         }
 
         CountedClosure successCounter = new CountedClosure()
@@ -98,8 +81,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             response.failure failureCounter.closure
         }
 
+        ersatzServer.start()
+
         when:
-        httpBuilder(serverRule.serverUrl).get config
+        httpBuilder(ersatzServer.serverUrl).get config
 
         then:
         successCounter.called == success
@@ -109,7 +94,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         failureCounter.clear()
 
         when:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get()
 
         then:
         successCounter.called == success
@@ -125,19 +110,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll def 'GET /status(#status): with only failure handler'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET') {
-                if (request.path == '/status200') {
-                    return new MockResponse().setResponseCode(200)
-                } else if (request.path == '/status300') {
-                    return new MockResponse().setResponseCode(300)
-                } else if (request.path == '/status400') {
-                    return new MockResponse().setResponseCode(400)
-                } else if (request.path == '/status500') {
-                    return new MockResponse().setResponseCode(500)
-                }
+        ersatzServer.expectations {
+            [200, 300, 400, 500].each { code ->
+                get("/status$code").verifier(once()).responds().code(code)
             }
-            return new MockResponse().setResponseCode(404)
         }
 
         CountedClosure failureCounter = new CountedClosure()
@@ -147,15 +123,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             response.failure failureCounter.closure
         }
 
+        ersatzServer.start()
+
         when:
-        httpBuilder(serverRule.serverUrl).get config
+        httpBuilder(ersatzServer.serverUrl).get config
 
         then:
         failureCounter.called == failure
         failureCounter.clear()
 
         when:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get()
 
         then:
         failureCounter.called == failure
@@ -170,33 +148,39 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     def 'GET /: returns content'() {
         setup:
-        serverRule.dispatcher('GET', '/', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        ersatzServer.expectations {
+            get('/').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         expect:
-        httpBuilder(serverRule.serverUrl).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get() == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync().get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync().get() == htmlContent()
     }
 
     def 'GET /foo: returns content'() {
         given:
-        serverRule.dispatcher('GET', '/foo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        ersatzServer.expectations {
+            get('/foo').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
     def 'GET /xml: returns xml'() {
         given:
-        serverRule.dispatcher('GET', '/xml', new MockResponse().setHeader('Content-Type', 'text/xml').setBody(xmlContent()))
+        ersatzServer.expectations {
+            get('/xml').responds().contentType('text/xml').content(xmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/xml'
@@ -204,15 +188,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config).child.text.text() == 'Nothing special'
+        httpBuilder(ersatzServer.serverUrl).get(config).child.text.text() == 'Nothing special'
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get().child.text.text() == 'Nothing special'
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get().child.text.text() == 'Nothing special'
     }
 
     def 'GET /json: returns json'() {
         given:
-        serverRule.dispatcher('GET', '/json', new MockResponse().setHeader('Content-Type', 'text/json').setBody(jsonContent()))
+        ersatzServer.expectations {
+            get('/json').responds().contentType('text/json').content(jsonContent())
+        }.start()
 
         def config = {
             request.uri.path = '/json'
@@ -220,7 +206,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         when:
-        def result = httpBuilder(serverRule.serverUrl).get(config)
+        def result = httpBuilder(ersatzServer.serverUrl).get(config)
 
         then:
         result.items[0].text == 'Nothing special'
@@ -228,7 +214,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         result.items[0].score == 123
 
         when:
-        result = httpBuilder(serverRule.serverUrl).getAsync(config).get()
+        result = httpBuilder(ersatzServer.serverUrl).getAsync(config).get()
 
         then:
         result.items[0].text == 'Nothing special'
@@ -236,15 +222,11 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         result.items[0].score == 123
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'GET /foo (cookie): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('biscuit=wafer')) {
-                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent())
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            get('/foo').cookie('biscuit', 'wafer').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -252,21 +234,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
-    @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/49')
     def 'GET /foo (cookie2): returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET' && request.path == '/foo' && request.getHeader('Cookie').contains('coffee=black')) {
-                return new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent())
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            get('/foo').cookie('coffee', 'black').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -274,15 +252,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
     def 'GET /foo?alpha=bravo: returns content'() {
         given:
-        serverRule.dispatcher('GET', '/foo?alpha=bravo', new MockResponse().setHeader('Content-Type', 'text/plain').setBody(htmlContent()))
+        ersatzServer.expectations {
+            get('/foo').query('alpha', 'bravo').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/foo'
@@ -290,26 +270,19 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
     def 'GET (BASIC) /basic: returns content'() {
         given:
-        serverRule.dispatcher { RecordedRequest request ->
-            if (request.method == 'GET') {
-                String encodedCred = "Basic ${'admin:$3cr3t'.bytes.encodeBase64()}"
+        ersatzServer.addFeature new BasicAuthFeature()
 
-                if (request.path == '/basic' && !request.getHeader('Authorization')) {
-                    return new MockResponse().setHeader('WWW-Authenticate', 'Basic realm="Test Realm"').setResponseCode(401)
-                } else if (request.path == '/basic' && request.getHeader('Authorization') == encodedCred) {
-                    return new MockResponse().setHeader('Authorization', encodedCred).setHeader('Content-Type', 'text/plain').setBody(htmlContent())
-                }
-            }
-            return new MockResponse().setResponseCode(404)
-        }
+        ersatzServer.expectations {
+            get('/basic').responds().contentType('text/plain').content(htmlContent())
+        }.start()
 
         def config = {
             request.uri.path = '/basic'
@@ -317,15 +290,17 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         expect:
-        httpBuilder(serverRule.serverUrl).get(config) == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).get(config) == htmlContent()
 
         and:
-        httpBuilder(serverRule.serverUrl).getAsync(config).get() == htmlContent()
+        httpBuilder(ersatzServer.serverUrl).getAsync(config).get() == htmlContent()
     }
 
     def 'GET /date: returns content of specified type'() {
         given:
-        serverRule.dispatcher('GET', '/date', new MockResponse().setHeader('Content-Type', 'text/date').setBody('2016.08.25 14:43'))
+        ersatzServer.expectations {
+            get('/date').responds().contentType('text/date').content('2016.08.25 14:43')
+        }.start()
 
         def config = {
             request.uri.path = '/date'
@@ -335,14 +310,14 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         when:
-        def result = httpBuilder(serverRule.serverUrl).get(Date, config)
+        def result = httpBuilder(ersatzServer.serverUrl).get(Date, config)
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(serverRule.serverUrl).getAsync(Date, config).get()
+        result = httpBuilder(ersatzServer.serverUrl).getAsync(Date, config).get()
 
         then:
         result instanceof Date
