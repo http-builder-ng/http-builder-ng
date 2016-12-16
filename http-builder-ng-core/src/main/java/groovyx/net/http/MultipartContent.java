@@ -18,6 +18,7 @@ package groovyx.net.http;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
@@ -106,6 +107,20 @@ public class MultipartContent {
      */
     public MultipartContent file(String fieldName, String fileName, String contentType, Path content) {
         entries.add(new MultipartEntry(fieldName, fileName, contentType, content));
+        return this;
+    }
+
+    /**
+     * Adds a file part with the specified properties.
+     *
+     * @param fieldName the field name
+     * @param fileName the file name
+     * @param contentType the content type of the part
+     * @param stream the content of the part as an {@link InputStream}
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent file(String fieldName, String fileName, String contentType, InputStream stream){
+        entries.add(new MultipartEntry(fieldName, fileName, contentType, stream));
         return this;
     }
 

@@ -20,6 +20,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 import static org.apache.http.entity.ContentType.parse;
@@ -66,6 +67,9 @@ public class ApacheEncoders {
 
                     } else if (mpe.getContent() instanceof Path) {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), ((Path) mpe.getContent()).toFile(), partContentType, mpe.getFileName());
+
+                    } else if (mpe.getContent() instanceof InputStream) {
+                        entityBuilder.addBinaryBody(mpe.getFieldName(), (InputStream) mpe.getContent(), partContentType, mpe.getFileName());
 
                     } else if (mpe.getContent() instanceof byte[]) {
                         entityBuilder.addBinaryBody(mpe.getFieldName(), (byte[]) mpe.getContent(), partContentType, mpe.getFileName());

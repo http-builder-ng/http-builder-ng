@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,9 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okio.Buffer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 import static okhttp3.MediaType.parse;
@@ -56,13 +58,16 @@ public class OkHttpEncoders {
                 if (mpe.isField()) {
                     builder.addFormDataPart(mpe.getFieldName(), (String) mpe.getContent());
                 } else {
-                    RequestBody requestBody = null;
+                    RequestBody requestBody;
 
                     if (mpe.getContent() instanceof String) {
                         requestBody = create(parse(mpe.getContentType()), (String) mpe.getContent());
 
                     } else if (mpe.getContent() instanceof Path) {
                         requestBody = create(parse(mpe.getContentType()), ((Path) mpe.getContent()).toFile());
+
+                    } else if (mpe.getContent() instanceof InputStream) {
+                        requestBody = create(parse(mpe.getContentType()), transfer((InputStream) mpe.getContent()));
 
                     } else if (mpe.getContent() instanceof byte[]) {
                         requestBody = create(parse(mpe.getContentType()), (byte[]) mpe.getContent());
@@ -83,6 +88,22 @@ public class OkHttpEncoders {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static byte[] transfer(final InputStream istream) throws IOException {
+        try (ByteArrayOutputStream ostream = new ByteArrayOutputStream()) {
+            final byte[] bytes = new byte[2_048];
+
+            int read;
+            while ((read = istream.read(bytes)) != -1) {
+                ostream.write(bytes, 0, read);
+            }
+
+            return ostream.toByteArray();
+
+        } finally {
+            istream.close();
         }
     }
 }
