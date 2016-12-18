@@ -176,21 +176,15 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     public static class ApacheToServer implements ToServer, HttpEntity {
 
-        private String contentType;
+        private ChainedHttpConfig config;
         private InputStream inputStream;
 
-        public ApacheToServer(final String contentType) {
-            this.contentType = contentType;
+        public ApacheToServer(final ChainedHttpConfig config) {
+            this.config = config;
         }
 
         public void toServer(final InputStream inputStream) {
             this.inputStream = inputStream;
-        }
-
-        @Override
-        public void toServer(final InputStream inputStream, final String contentType) {
-            this.contentType = contentType;
-            toServer(inputStream);
         }
 
         public boolean isRepeatable() {
@@ -206,7 +200,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public org.apache.http.Header getContentType() {
-            return new BasicHeader("Content-Type", contentType);
+            return new BasicHeader("Content-Type", config.findContentType());
         }
 
         public org.apache.http.Header getContentEncoding() {
@@ -329,7 +323,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     }
 
     private HttpEntity entity(final ChainedHttpConfig config) {
-        final ApacheToServer ats = new ApacheToServer(config.findContentType());
+        final ApacheToServer ats = new ApacheToServer(config);
         config.findEncoder().accept(config, ats);
         return ats;
     }

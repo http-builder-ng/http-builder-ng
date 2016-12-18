@@ -75,8 +75,8 @@ class ApacheEncodersSpec extends Specification {
         http.post {
             request.uri = "${ersatzServer.serverUrl}/multi"
             request.body = MultipartContent.multipart {
-                file 'filea', fileA.name, TEXT[0], fileA.toPath()
-                file 'fileb', fileB.name, TEXT[0], fileB.toPath()
+                part 'filea', fileA.name, TEXT[0], fileA.toPath()
+                part 'fileb', fileB.name, TEXT[0], fileB.toPath()
             }
         } == 'ok'
 
@@ -92,8 +92,8 @@ class ApacheEncodersSpec extends Specification {
         http.post {
             request.uri = "${ersatzServer.serverUrl}/multi"
             request.body = MultipartContent.multipart {
-                file 'filea', fileA.name, TEXT[0], fileA.bytes
-                file 'fileb', fileB.name, TEXT[0], fileB.bytes
+                part 'filea', fileA.name, TEXT[0], fileA.bytes
+                part 'fileb', fileB.name, TEXT[0], fileB.bytes
             }
         } == 'ok'
 
@@ -109,8 +109,8 @@ class ApacheEncodersSpec extends Specification {
         http.post {
             request.uri = "${ersatzServer.serverUrl}/multi"
             request.body = MultipartContent.multipart {
-                file 'filea', fileA.name, TEXT[0], fileA.text
-                file 'fileb', fileB.name, TEXT[0], fileB.text
+                part 'filea', fileA.name, TEXT[0], fileA.text
+                part 'fileb', fileB.name, TEXT[0], fileB.text
             }
         } == 'ok'
 
@@ -126,8 +126,8 @@ class ApacheEncodersSpec extends Specification {
         http.post {
             request.uri = "${ersatzServer.serverUrl}/multi"
             request.body = MultipartContent.multipart {
-                file 'filea', fileA.name, TEXT[0], fileA.newInputStream()
-                file 'fileb', fileB.name, TEXT[0], fileB.newInputStream()
+                part 'filea', fileA.name, TEXT[0], fileA.newInputStream()
+                part 'fileb', fileB.name, TEXT[0], fileB.newInputStream()
             }
         } == 'ok'
 

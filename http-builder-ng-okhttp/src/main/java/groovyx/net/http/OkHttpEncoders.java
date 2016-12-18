@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,8 +56,8 @@ public class OkHttpEncoders {
 
             final MultipartBody.Builder builder = new MultipartBody.Builder();
 
-            for (final MultipartContent.MultipartEntry mpe : ((MultipartContent) body).entries()) {
-                if (mpe.isField()) {
+            for (final MultipartContent.MultipartPart mpe : ((MultipartContent) body).parts()) {
+                if (mpe.getFileName() == null) {
                     builder.addFormDataPart(mpe.getFieldName(), (String) mpe.getContent());
                 } else {
                     RequestBody requestBody;
@@ -86,7 +86,9 @@ public class OkHttpEncoders {
             MultipartBody multipartBody = builder.build();
             multipartBody.writeTo(buffer);
 
-            ts.toServer(buffer.inputStream(), "multipart/mixed; boundary=" + multipartBody.boundary());
+            request.setContentType("multipart/form-data; boundary=" + multipartBody.boundary());
+
+            ts.toServer(buffer.inputStream());
 
         } catch (IOException e) {
             e.printStackTrace();

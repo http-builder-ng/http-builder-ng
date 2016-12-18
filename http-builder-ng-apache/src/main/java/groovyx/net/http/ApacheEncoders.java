@@ -56,10 +56,12 @@ public class ApacheEncoders {
             final String boundary = RandomStringUtils.randomAlphanumeric(10);
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setBoundary(boundary);
 
-            entityBuilder.setContentType(ContentType.parse("multipart/mixed; boundary=" + boundary));
+            final String boundaryContentType = "multipart/form-data; boundary=" + boundary;
 
-            for (final MultipartContent.MultipartEntry mpe : ((MultipartContent) body).entries()) {
-                if (mpe.isField()) {
+            entityBuilder.setContentType(ContentType.parse(boundaryContentType));
+
+            for (final MultipartContent.MultipartPart mpe : ((MultipartContent) body).parts()) {
+                if (mpe.getFileName() == null) {
                     entityBuilder.addTextBody(mpe.getFieldName(), (String) mpe.getContent());
 
                 } else {
@@ -84,7 +86,9 @@ public class ApacheEncoders {
                 }
             }
 
-            ts.toServer(entityBuilder.build().getContent(), "multipart/mixed; boundary=" + boundary);
+            request.setContentType(boundaryContentType);
+
+            ts.toServer(entityBuilder.build().getContent());
 
         } catch (IOException ioe) {
             ioe.printStackTrace();

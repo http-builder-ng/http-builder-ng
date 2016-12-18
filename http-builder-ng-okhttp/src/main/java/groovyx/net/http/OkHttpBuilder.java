@@ -195,7 +195,7 @@ public class OkHttpBuilder extends HttpBuilder {
     private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig, ChainedHttpConfig.ChainedRequest cr) {
         RequestBody body = RequestBody.create(MediaType.parse("text/html"), "");
         if (cr.actualBody() != null) {
-            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig.findContentType());
+            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);
             chainedConfig.findEncoder().accept(chainedConfig, toServer);
 
             body = toServer;
@@ -296,11 +296,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
     private static class OkHttpToServer extends RequestBody implements ToServer {
 
-        private String contentType;
+        private ChainedHttpConfig config;
         private InputStream inputStream;
 
-        private OkHttpToServer(final String contentType) {
-            this.contentType = contentType;
+        private OkHttpToServer(final ChainedHttpConfig config) {
+            this.config = config;
         }
 
         @Override
@@ -309,14 +309,8 @@ public class OkHttpBuilder extends HttpBuilder {
         }
 
         @Override
-        public void toServer(final InputStream inputStream, final String contentType) {
-            this.contentType = contentType;
-            toServer(inputStream);
-        }
-
-        @Override
         public MediaType contentType() {
-            return MediaType.parse(contentType);
+            return MediaType.parse(config.findContentType());
         }
 
         @Override

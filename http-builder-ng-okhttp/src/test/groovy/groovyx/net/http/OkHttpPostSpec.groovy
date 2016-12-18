@@ -42,7 +42,7 @@ class OkHttpPostSpec extends HttpPostTestKit implements UsesOkClient {
             request.contentType = MULTIPART_FORMDATA[0]
             request.body = multipart {
                 field 'alpha', 'some data'
-                file 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
+                part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
             }
             request.encoder(MULTIPART_FORMDATA, OkHttpEncoders.&multipart)
         }

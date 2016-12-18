@@ -35,6 +35,8 @@ import java.io.*;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,7 @@ public class NativeHandlers {
      * returned by the invoked parser.
      *
      * @param fromServer Backend independent representation of what the server returned
-     * @param data The parsed data
+     * @param data       The parsed data
      * @return The data object.
      */
     public static Object success(final FromServer fromServer, final Object data) {
@@ -56,8 +58,9 @@ public class NativeHandlers {
 
     /**
      * Default failure handler. Throws an HttpException.
+     *
      * @param fromServer Backend independent representation of what the server returned
-     * @param data If parsing was possible, this will be the parsed data, otherwise null
+     * @param data       If parsing was possible, this will be the parsed data, otherwise null
      * @return Nothing will be returned, the return type is Object for interface consistency
      * @throws HttpException
      */
@@ -68,39 +71,40 @@ public class NativeHandlers {
     protected static class Expanding {
         CharBuffer charBuffer = CharBuffer.allocate(2048);
         final char[] charAry = new char[2048];
-        
+
         private void resize(final int toWrite) {
             final int byAtLeast = toWrite - charBuffer.remaining();
             int next = charBuffer.capacity() << 1;
-            while((next - charBuffer.capacity()) + charBuffer.remaining() < byAtLeast) {
+            while ((next - charBuffer.capacity()) + charBuffer.remaining() < byAtLeast) {
                 next = next << 1;
             }
-            
+
             CharBuffer tmp = CharBuffer.allocate(next);
             charBuffer.flip();
             tmp.put(charBuffer);
             charBuffer = tmp;
         }
-        
+
         public void append(final int total) {
-            if(charBuffer.remaining() < total) {
+            if (charBuffer.remaining() < total) {
                 resize(total);
             }
-            
+
             charBuffer.put(charAry, 0, total);
         }
     }
-    
+
     protected static final ThreadLocal<Expanding> tlExpanding = new ThreadLocal<Expanding>() {
-            @Override protected Expanding initialValue() {
-                return new Expanding();
-            }
-        };
+        @Override
+        protected Expanding initialValue() {
+            return new Expanding();
+        }
+    };
 
     public static class Encoders {
 
         public static Object checkNull(final Object body) {
-            if(body == null) {
+            if (body == null) {
                 throw new NullPointerException("Effective body cannot be null");
             }
 
@@ -109,15 +113,15 @@ public class NativeHandlers {
 
         public static void checkTypes(final Object body, final Class<?>[] allowedTypes) {
             final Class<?> type = body.getClass();
-            for(Class<?> allowed : allowedTypes) {
-                if(allowed.isAssignableFrom(type)) {
+            for (Class<?> allowed : allowedTypes) {
+                if (allowed.isAssignableFrom(type)) {
                     return;
                 }
             }
 
             final String msg = String.format("Cannot encode bodies of type %s, only bodies of: %s",
-                                             type.getName(),
-                                             Arrays.stream(allowedTypes).map(Class::getName).collect(Collectors.joining(", ")));
+                type.getName(),
+                Arrays.stream(allowedTypes).map(Class::getName).collect(Collectors.joining(", ")));
 
             throw new IllegalArgumentException(msg);
         }
@@ -134,160 +138,172 @@ public class NativeHandlers {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
             final Object body = request.actualBody();
             final Charset charset = request.actualCharset();
-            
+
             try {
-                if(body instanceof File) {
+                if (body instanceof File) {
                     ts.toServer(new FileInputStream((File) body));
                     return true;
-                }
-                else if(body instanceof InputStream) {
+                } else if (body instanceof Path) {
+                    ts.toServer(Files.newInputStream((Path) body));
+                    return true;
+                } else if (body instanceof byte[]) {
+                    ts.toServer(new ByteArrayInputStream((byte[]) body));
+                    return true;
+                } else if (body instanceof InputStream) {
                     ts.toServer((InputStream) body);
                     return true;
-                }
-                else if(body instanceof Reader) {
+                } else if (body instanceof Reader) {
                     ts.toServer(new ReaderInputStream((Reader) body, charset));
                     return true;
-                }
-                else {
+                } else {
                     return false;
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        private static final Class[] BINARY_TYPES = new Class[] { ByteArrayInputStream.class, InputStream.class, Closure.class };
+        private static final Class[] BINARY_TYPES = new Class[]{ByteArrayInputStream.class, InputStream.class, byte[].class, Closure.class};
 
         /**
          * Standard encoder for binary types. Accepts ByteArrayInputStream, InputStream, and byte[] types.
          *
          * @param config Fully configured chained request
-         * @param ts Formatted http body is passed to the ToServer argument
+         * @param ts     Formatted http body is passed to the ToServer argument
          */
         public static void binary(final ChainedHttpConfig config, final ToServer ts) {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
             final Object body = checkNull(request.actualBody());
-            if(handleRawUpload(config, ts)) {
+            if (handleRawUpload(config, ts)) {
                 return;
             }
-            
+
             checkTypes(body, BINARY_TYPES);
-            
-            if(body instanceof byte[]) {
+
+            if (body instanceof byte[]) {
                 ts.toServer(new ByteArrayInputStream((byte[]) body));
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException();
             }
         }
 
-        private static final Class[] TEXT_TYPES = new Class[] { Closure.class, Writable.class, Reader.class, String.class };
-        
+        private static final Class[] TEXT_TYPES = new Class[]{Closure.class, Writable.class, Reader.class, String.class};
+
         /**
          * Standard encoder for text types. Accepts String and Reader types
          *
          * @param config Fully configured chained request
-         * @param ts Formatted http body is passed to the ToServer argument
+         * @param ts     Formatted http body is passed to the ToServer argument
          */
         public static void text(final ChainedHttpConfig config, final ToServer ts) throws IOException {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
-            if(handleRawUpload(config, ts)) {
+            if (handleRawUpload(config, ts)) {
                 return;
             }
-            
+
             final Object body = checkNull(request.actualBody());
             checkTypes(body, TEXT_TYPES);
+
             ts.toServer(stringToStream(body.toString(), request.actualCharset()));
         }
 
-        private static final Class[] FORM_TYPES = { Map.class, String.class };
+        private static final Class[] FORM_TYPES = {Map.class, String.class};
 
         /**
-         * Standard encoder for requests with content type 'application/x-www-form-urlencoded'. 
+         * Standard encoder for requests with content type 'application/x-www-form-urlencoded'.
          * Accepts String and Map types. If the body is a String type the method assumes it is properly
          * url encoded and is passed to the ToServer parameter as is. If the body is a Map type then
          * the output is generated by the {@link Form} class.
-         * 
+         *
          * @param config Fully configured chained request
-         * @param ts Formatted http body is passed to the ToServer argument
+         * @param ts     Formatted http body is passed to the ToServer argument
          */
         public static void form(final ChainedHttpConfig config, final ToServer ts) {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
-            if(handleRawUpload(config, ts)) {
+            if (handleRawUpload(config, ts)) {
                 return;
             }
-            
+
             final Object body = checkNull(request.actualBody());
             checkTypes(body, FORM_TYPES);
 
-            if(body instanceof String) {
+            if (body instanceof String) {
                 ts.toServer(stringToStream((String) body, request.actualCharset()));
-            }
-            else if(body instanceof Map) {
-                final Map<?,?> params = (Map) body;
+            } else if (body instanceof Map) {
+                final Map<?, ?> params = (Map) body;
                 final String encoded = Form.encode(params, request.actualCharset());
                 ts.toServer(stringToStream(encoded, request.actualCharset()));
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException();
             }
         }
 
-        private static final Class[] XML_TYPES = new Class[] { String.class, StreamingMarkupBuilder.class };
+        private static final Class[] XML_TYPES = new Class[]{String.class, StreamingMarkupBuilder.class};
 
         /**
          * Standard encoder for requests with an xml body.
-         *
+         * <p>
          * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to xml using Groovy's {@link StreamingMarkupBuilder}.
          *
          * @param config Fully configured chained request
-         * @param ts Formatted http body is passed to the ToServer argument
+         * @param ts     Formatted http body is passed to the ToServer argument
          */
         public static void xml(final ChainedHttpConfig config, final ToServer ts) {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
-            if(handleRawUpload(config, ts)) {
+            if (handleRawUpload(config, ts)) {
                 return;
             }
-            
+
             final Object body = checkNull(request.actualBody());
             checkTypes(body, XML_TYPES);
 
-            if(body instanceof String) {
+            if (body instanceof String) {
                 ts.toServer(stringToStream((String) body, request.actualCharset()));
-            }
-            else if(body instanceof Closure) {
+            } else if (body instanceof Closure) {
                 final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
                 ts.toServer(stringToStream(smb.bind(body).toString(), request.actualCharset()));
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException();
             }
         }
 
         /**
          * Standard encoder for requests with a json body.
-         *
+         * <p>
          * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to json using Groovy's {@link JsonBuilder}.
          *
          * @param config Fully configured chained request
-         * @param ts Formatted http body is passed to the ToServer argument
+         * @param ts     Formatted http body is passed to the ToServer argument
          */
         public static void json(final ChainedHttpConfig config, final ToServer ts) {
             final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
-            if(handleRawUpload(config, ts)) {
+            if (handleRawUpload(config, ts)) {
                 return;
             }
-            
+
             final Object body = checkNull(request.actualBody());
             final String json = ((body instanceof String || body instanceof GString)
-                                 ? body.toString()
-                                 : new JsonBuilder(body).toString());
+                ? body.toString()
+                : new JsonBuilder(body).toString());
             ts.toServer(stringToStream(json, request.actualCharset()));
+        }
+
+        private static final Class[] MULTIPART_TYPES = {MultipartContent.class};
+
+        // FIXME: document
+        public static void multipart(final ChainedHttpConfig config, final ToServer ts) {
+            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
+
+            final Object body = request.actualBody();
+            checkTypes(body, MULTIPART_TYPES);
+
+            MultipartContent mp = (MultipartContent) request.actualBody();
+            request.setContentType("multipart/form-data; boundary=" + mp.boundary());
+            ts.toServer(mp.toInputStream(config));
         }
     }
 
@@ -302,19 +318,18 @@ public class NativeHandlers {
          * do not parse catalog files while using the resolver, it should be fine.
          */
         public static CatalogResolver catalogResolver;
-        
+
         static {
             CatalogManager catalogManager = new CatalogManager();
-            catalogManager.setIgnoreMissingProperties( true );
-            catalogManager.setUseStaticCatalog( false );
-            catalogManager.setRelativeCatalogs( true );
-            
+            catalogManager.setIgnoreMissingProperties(true);
+            catalogManager.setUseStaticCatalog(false);
+            catalogManager.setRelativeCatalogs(true);
+
             try {
-                catalogResolver = new CatalogResolver( catalogManager );
+                catalogResolver = new CatalogResolver(catalogManager);
                 catalogResolver.getCatalog().parseCatalog(NativeHandlers.class.getResource("/catalog/html.xml"));
-            }
-            catch(IOException ex) {
-                if(log.isWarnEnabled()) {
+            } catch (IOException ex) {
+                if (log.isWarnEnabled()) {
                     log.warn("Could not resolve default XML catalog", ex);
                 }
             }
@@ -324,19 +339,16 @@ public class NativeHandlers {
             try {
                 final byte[] bytes = new byte[2_048];
                 int read;
-                while((read = istream.read(bytes)) != -1) {
+                while ((read = istream.read(bytes)) != -1) {
                     ostream.write(bytes, 0, read);
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
-            }
-            finally {
-                if(close) {
+            } finally {
+                if (close) {
                     try {
                         ostream.close();
-                    }
-                    catch(IOException ioe) {
+                    } catch (IOException ioe) {
                         throw new RuntimeException(ioe);
                     }
                 }
@@ -358,7 +370,7 @@ public class NativeHandlers {
         /**
          * Standard parser for text response content.
          *
-         * @param config the http client configuration
+         * @param config     the http client configuration
          * @param fromServer Backend independent representation of data returned from http server
          * @return Body of response
          */
@@ -368,25 +380,24 @@ public class NativeHandlers {
                 final Expanding e = tlExpanding.get();
                 e.charBuffer.clear();
                 int total;
-                while((total = reader.read(e.charAry)) != -1) {
+                while ((total = reader.read(e.charAry)) != -1) {
                     e.append(total);
                 }
-                
+
                 e.charBuffer.flip();
                 return e.charBuffer.toString();
-            }
-            catch(IOException ioe) {
+            } catch (IOException ioe) {
                 throw new RuntimeException(ioe);
             }
         }
-        
+
         /**
          * Standard parser for responses with content type 'application/x-www-form-urlencoded'.
          *
          * @param fromServer Backend indenpendent representation of data returned from http server
          * @return Form data
          */
-        public static Map<String,List<String>> form(final ChainedHttpConfig config, final FromServer fromServer) {
+        public static Map<String, List<String>> form(final ChainedHttpConfig config, final FromServer fromServer) {
             return Form.decode(fromServer.getInputStream(), fromServer.getCharset());
         }
 
@@ -403,8 +414,7 @@ public class NativeHandlers {
                 xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
                 xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                 return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
-            }
-            catch(IOException | SAXException | ParserConfigurationException ex) {
+            } catch (IOException | SAXException | ParserConfigurationException ex) {
                 throw new RuntimeException(ex);
             }
         }

@@ -27,21 +27,19 @@ import static com.stehno.ersatz.Verifiers.once
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.ContentTypes.TEXT
 
-class OkHttpEncodersSpec extends Specification {
+class EncodersSpec extends Specification {
 
     @Rule TemporaryFolder folder = new TemporaryFolder()
     @AutoCleanup('stop') private final ErsatzServer ersatzServer = new ErsatzServer()
     private HttpBuilder http
 
-    def setup() {
-        http = OkHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, OkHttpEncoders.&multipart)
+    def 'multipart'() {
+        setup:
+        http = JavaHttpBuilder.configure {
+            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
             request.contentType = MULTIPART_FORMDATA[0]
         }
-    }
 
-    def 'multipart: field'() {
-        setup:
         ersatzServer.expectations {
             post('/multi') {
                 condition MultipartContentMatcher.multipart {
@@ -67,6 +65,11 @@ class OkHttpEncodersSpec extends Specification {
 
     def 'multipart: file (path)'() {
         setup:
+        http = JavaHttpBuilder.configure {
+            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.contentType = MULTIPART_FORMDATA[0]
+        }
+
         def (File fileA, File fileB) = setupMultipartFileExpectations()
 
         expect:
@@ -84,6 +87,11 @@ class OkHttpEncodersSpec extends Specification {
 
     def 'multipart: file (bytes)'() {
         setup:
+        http = JavaHttpBuilder.configure {
+            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.contentType = MULTIPART_FORMDATA[0]
+        }
+
         def (File fileA, File fileB) = setupMultipartFileExpectations()
 
         expect:
@@ -101,6 +109,11 @@ class OkHttpEncodersSpec extends Specification {
 
     def 'multipart: file (string)'() {
         setup:
+        http = JavaHttpBuilder.configure {
+            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.contentType = MULTIPART_FORMDATA[0]
+        }
+
         def (File fileA, File fileB) = setupMultipartFileExpectations()
 
         expect:
@@ -118,6 +131,11 @@ class OkHttpEncodersSpec extends Specification {
 
     def 'multipart: file (stream)'() {
         setup:
+        http = JavaHttpBuilder.configure {
+            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.contentType = MULTIPART_FORMDATA[0]
+        }
+
         def (File fileA, File fileB) = setupMultipartFileExpectations()
 
         expect:
@@ -143,8 +161,8 @@ class OkHttpEncodersSpec extends Specification {
         ersatzServer.expectations {
             post('/multi') {
                 condition MultipartContentMatcher.multipart {
-                    file(0, 'filea', 'file-a.txt', TEXT_PLAIN.value, 'some-a-content') &&
-                        file(1, 'fileb', 'file-b.xtx', TEXT_PLAIN.value, 'some-b-content')
+                    file(0, 'filea', 'file-a.txt', TEXT_PLAIN, 'some-a-content') &&
+                        file(1, 'fileb', 'file-b.xtx', TEXT_PLAIN, 'some-b-content')
                 }
                 verifier(once())
                 responds().content('ok', TEXT_PLAIN)

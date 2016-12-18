@@ -15,7 +15,7 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.MultipartContent.MultipartEntry
+import groovyx.net.http.MultipartContent.MultipartPart
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -35,18 +35,18 @@ class MultipartContentSpec extends Specification {
         when:
         MultipartContent multipart = MultipartContent.multipart {
             field 'alpha', 'bravo'
-            file 'charlie', 'charlie.txt', 'text/plain', 'This is some text'.bytes
-            file 'delta', 'delta.txt', 'text/plain', 'This is also text'
-            file 'echo', echoFile.name, 'text/plain', echoFile.toPath()
-            file 'foxtrot', echoFile.name, 'text/plain', echoFile.newInputStream()
+            part 'charlie', 'charlie.txt', 'text/plain', 'This is some text'.bytes
+            part 'delta', 'delta.txt', 'text/plain', 'This is also text'
+            part 'echo', echoFile.name, 'text/plain', echoFile.toPath()
+            part 'foxtrot', echoFile.name, 'text/plain', echoFile.newInputStream()
         }
 
         then:
-        assertField multipart.entries()[0], 'alpha', 'bravo'
-        assertFile multipart.entries()[1], 'charlie', 'charlie.txt', 'text/plain', isBytes('This is some text')
-        assertFile multipart.entries()[2], 'delta', 'delta.txt', 'text/plain', isString('This is also text')
-        assertFile multipart.entries()[3], 'echo', 'echo.txt', 'text/plain', isPath(echoFile.toPath())
-        assertFile multipart.entries()[4], 'foxtrot', 'echo.txt', 'text/plain', isStream(echoFile)
+        assertField multipart.parts()[0], 'alpha', 'bravo'
+        assertFile multipart.parts()[1], 'charlie', 'charlie.txt', 'text/plain', isBytes('This is some text')
+        assertFile multipart.parts()[2], 'delta', 'delta.txt', 'text/plain', isString('This is also text')
+        assertFile multipart.parts()[3], 'echo', 'echo.txt', 'text/plain', isPath(echoFile.toPath())
+        assertFile multipart.parts()[4], 'foxtrot', 'echo.txt', 'text/plain', isStream(echoFile)
     }
 
     def 'java function'() {
@@ -58,19 +58,19 @@ class MultipartContentSpec extends Specification {
         MultipartContent multipart = MultipartContent.multipart(new Consumer<MultipartContent>() {
             @Override void accept(final MultipartContent mc) {
                 mc.field 'alpha', 'bravo'
-                mc.file 'charlie', 'charlie.txt', 'text/plain', 'This is some text'.bytes
-                mc.file 'delta', 'delta.txt', 'text/plain', 'This is also text'
-                mc.file 'echo', echoFile.name, 'text/plain', echoFile.toPath()
-                mc.file 'foxtrot', echoFile.name, 'text/plain', echoFile.newInputStream()
+                mc.part 'charlie', 'charlie.txt', 'text/plain', 'This is some text'.bytes
+                mc.part 'delta', 'delta.txt', 'text/plain', 'This is also text'
+                mc.part 'echo', echoFile.name, 'text/plain', echoFile.toPath()
+                mc.part 'foxtrot', echoFile.name, 'text/plain', echoFile.newInputStream()
             }
         })
 
         then:
-        assertField multipart.entries()[0], 'alpha', 'bravo'
-        assertFile multipart.entries()[1], 'charlie', 'charlie.txt', 'text/plain', isBytes('This is some text')
-        assertFile multipart.entries()[2], 'delta', 'delta.txt', 'text/plain', isString('This is also text')
-        assertFile multipart.entries()[3], 'echo', 'echo.txt', 'text/plain', isPath(echoFile.toPath())
-        assertFile multipart.entries()[4], 'foxtrot', 'echo.txt', 'text/plain', isStream(echoFile)
+        assertField multipart.parts()[0], 'alpha', 'bravo'
+        assertFile multipart.parts()[1], 'charlie', 'charlie.txt', 'text/plain', isBytes('This is some text')
+        assertFile multipart.parts()[2], 'delta', 'delta.txt', 'text/plain', isString('This is also text')
+        assertFile multipart.parts()[3], 'echo', 'echo.txt', 'text/plain', isPath(echoFile.toPath())
+        assertFile multipart.parts()[4], 'foxtrot', 'echo.txt', 'text/plain', isStream(echoFile)
     }
 
     private static Closure<Boolean> isBytes(final String value) {
@@ -89,20 +89,18 @@ class MultipartContentSpec extends Specification {
         return { c -> c instanceof InputStream && c.text == file.text }
     }
 
-    private static boolean assertField(MultipartEntry entry, String name, String value) {
+    private static boolean assertField(MultipartPart entry, String name, String value) {
         assert entry.fieldName == name
         assert entry.content == value
-        assert entry.field
-        assert !entry.contentType
+        assert entry.contentType == 'text/plain'
         assert !entry.fileName
         true
     }
 
-    private static boolean assertFile(MultipartEntry entry, String fieldName, String fileName, String type, Closure<Boolean> check) {
+    private static boolean assertFile(MultipartPart entry, String fieldName, String fileName, String type, Closure<Boolean> check) {
         assert entry.fieldName == fieldName
         assert entry.fileName == fileName
         assert entry.contentType == type
-        assert !entry.field
         assert check.call(entry.content)
         true
     }
