@@ -40,6 +40,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class NativeHandlers {
@@ -101,7 +103,12 @@ public class NativeHandlers {
         }
     };
 
+    /**
+     * The set of available content encoders.
+     */
     public static class Encoders {
+
+        // FIXME: get some good testing around encoders
 
         public static Object checkNull(final Object body) {
             if (body == null) {
@@ -291,23 +298,14 @@ public class NativeHandlers {
                 : new JsonBuilder(body).toString());
             ts.toServer(stringToStream(json, request.actualCharset()));
         }
-
-        private static final Class[] MULTIPART_TYPES = {MultipartContent.class};
-
-        // FIXME: document
-        public static void multipart(final ChainedHttpConfig config, final ToServer ts) {
-            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();
-
-            final Object body = request.actualBody();
-            checkTypes(body, MULTIPART_TYPES);
-
-            MultipartContent mp = (MultipartContent) request.actualBody();
-            request.setContentType("multipart/form-data; boundary=" + mp.boundary());
-            ts.toServer(mp.toInputStream(config));
-        }
     }
 
+    /**
+     * The default collection of response content parsers.
+     */
     public static class Parsers {
+
+        // FIXME: get some good testing around parsers
 
         public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
         private static final Logger log = LoggerFactory.getLogger(Parsers.class);

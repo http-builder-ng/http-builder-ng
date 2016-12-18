@@ -24,7 +24,6 @@ import static groovyx.net.http.MultipartContent.multipart
 
 class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
 
-    // TODO: move this into TK during parser/encoder refactoring
     def 'POST /upload (multipart)'() {
         setup:
         ersatzServer.expectations {

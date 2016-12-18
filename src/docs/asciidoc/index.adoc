@@ -448,8 +448,8 @@ encoder, which converts the provided map data into the encoded message before se
 
 === Sending Multipart Data (POST)
 
-`HttpBuilder` supports multipart request content such as file uploads, but only with the Apache or OkHttp client implementations, not the core Java
-implementation. File uploads may be configured as (using the `OkHttpBuilder` implementation):
+`HttpBuilder` supports multipart request content such as file uploads, with either the generic `MultipartEncoder` or one of the client-specific
+encoders. For example, the `OkHttpBuilder` could use the `OkHttpEncoders.&multipart` encoder:
 
 [source,groovy]
 ----
@@ -462,7 +462,7 @@ OkHttpBuilder.configure {
     request.contentType = 'multipart/form-data'
     request.body = multipart {
         field 'name', 'This is my file'
-        file 'file', 'myfile.txt', 'text/plain', someFile
+        part 'file', 'myfile.txt', 'text/plain', someFile
     }
     request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
 }
@@ -473,6 +473,15 @@ important parts of the example are the `multipart` DSL extension, which is provi
 content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
 Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
 
+The available multipart encoders:
+
+* `groovyx.net.http.MultipartEncoder` - a generic minimalistic multipart encoder for use with the core Java client or any of the others.
+* `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
+* `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
+
+The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
+of a multipart content object must be specified beforehand.
+
 == Appendix A: Feature Support
 
 The goal is to support all features across all client implementations; however, due to the nature of the client implemeatations, this is not always
@@ -481,7 +490,7 @@ possible. The table below contains general feature support information per clien
 .Feature Support Matrix
 |===
 |Client |BASIC  |DIGEST |Multipart  |Compression
-|Java   |Y      |?      |N          |Y
+|Java   |Y      |?      |Y          |Y
 |Apache |Y      |?      |Y          |Y
 |OkHttp |Y      |?      |Y          |N
 |===

@@ -36,7 +36,7 @@ class EncodersSpec extends Specification {
     def 'multipart'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
             request.contentType = MULTIPART_FORMDATA[0]
         }
 
@@ -66,7 +66,7 @@ class EncodersSpec extends Specification {
     def 'multipart: file (path)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
             request.contentType = MULTIPART_FORMDATA[0]
         }
 
@@ -88,7 +88,7 @@ class EncodersSpec extends Specification {
     def 'multipart: file (bytes)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
             request.contentType = MULTIPART_FORMDATA[0]
         }
 
@@ -110,7 +110,7 @@ class EncodersSpec extends Specification {
     def 'multipart: file (string)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
             request.contentType = MULTIPART_FORMDATA[0]
         }
 
@@ -132,7 +132,7 @@ class EncodersSpec extends Specification {
     def 'multipart: file (stream)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, NativeHandlers.Encoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
             request.contentType = MULTIPART_FORMDATA[0]
         }
 

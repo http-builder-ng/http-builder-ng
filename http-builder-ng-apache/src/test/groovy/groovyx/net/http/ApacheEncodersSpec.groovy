@@ -29,7 +29,7 @@ import static groovyx.net.http.ContentTypes.TEXT
 
 class ApacheEncodersSpec extends Specification {
 
-    // TODO: there is duplication in these encoder tests - maybe another testkit for shared testing?
+    // FIXME: pull encoders testing into a testkit
 
     @Rule TemporaryFolder folder = new TemporaryFolder()
     @AutoCleanup('stop') private final ErsatzServer ersatzServer = new ErsatzServer()

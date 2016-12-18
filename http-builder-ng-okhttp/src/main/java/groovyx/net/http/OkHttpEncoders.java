@@ -20,10 +20,9 @@ import okhttp3.RequestBody;
 import okio.Buffer;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 
-import static groovyx.net.http.util.IoUtils.streamToBytes;
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA;
+import static groovyx.net.http.EmbeddedEncoder.encode;
 import static okhttp3.MediaType.parse;
 import static okhttp3.RequestBody.create;
 
@@ -35,7 +34,8 @@ import static okhttp3.RequestBody.create;
 public class OkHttpEncoders {
 
     /**
-     * Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class.
+     * Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class. Individual parts will be
+     *  encoded using the encoders available to the {@link ChainedHttpConfig} object.
      *
      * @param config the chained configuration object
      * @param ts     the server adapter
@@ -50,7 +50,7 @@ public class OkHttpEncoders {
             }
 
             final String contentType = request.actualContentType();
-            if (!contentType.equals(ContentTypes.MULTIPART_FORMDATA.getAt(0))) {
+            if (!contentType.equals(MULTIPART_FORMDATA.getAt(0))) {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 
@@ -60,25 +60,11 @@ public class OkHttpEncoders {
                 if (mpe.getFileName() == null) {
                     builder.addFormDataPart(mpe.getFieldName(), (String) mpe.getContent());
                 } else {
-                    RequestBody requestBody;
-
-                    if (mpe.getContent() instanceof String) {
-                        requestBody = create(parse(mpe.getContentType()), (String) mpe.getContent());
-
-                    } else if (mpe.getContent() instanceof Path) {
-                        requestBody = create(parse(mpe.getContentType()), ((Path) mpe.getContent()).toFile());
-
-                    } else if (mpe.getContent() instanceof InputStream) {
-                        requestBody = create(parse(mpe.getContentType()), streamToBytes((InputStream) mpe.getContent()));
-
-                    } else if (mpe.getContent() instanceof byte[]) {
-                        requestBody = create(parse(mpe.getContentType()), (byte[]) mpe.getContent());
-
-                    } else {
-                        throw new IllegalArgumentException("Unsupported multipart content object type: " + mpe.getContent().getClass());
-                    }
-
-                    builder.addFormDataPart(mpe.getFieldName(), mpe.getFileName(), requestBody);
+                    builder.addFormDataPart(
+                        mpe.getFieldName(),
+                        mpe.getFileName(),
+                        create(parse(mpe.getContentType()), encode(config, mpe.getContentType(), mpe.getContent()))
+                    );
                 }
             }
 

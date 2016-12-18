@@ -24,7 +24,6 @@ import static groovyx.net.http.MultipartContent.multipart
 
 class OkHttpPutSpec extends HttpPutTestKit implements UsesOkClient {
 
-    // TODO: move this into TK during parser/encoder refactoring
     def 'PUT /upload (multipart)'() {
         setup:
         ersatzServer.expectations {

@@ -20,10 +20,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 
-import static groovyx.net.http.util.IoUtils.streamToBytes;
 import static org.apache.http.entity.ContentType.parse;
 
 /**
@@ -34,7 +31,8 @@ import static org.apache.http.entity.ContentType.parse;
 public class ApacheEncoders {
 
     /**
-     *  Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class.
+     *  Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class. Individual parts will be
+     *  encoded using the encoders available to the {@link ChainedHttpConfig} object.
      *
      * @param config the chained configuration object
      * @param ts the server adapter
@@ -65,24 +63,8 @@ public class ApacheEncoders {
                     entityBuilder.addTextBody(mpe.getFieldName(), (String) mpe.getContent());
 
                 } else {
-                    final ContentType partContentType = parse(mpe.getContentType());
-
-                    if (mpe.getContent() instanceof String) {
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), ((String) mpe.getContent()).getBytes(), partContentType, mpe.getFileName());
-
-                    } else if (mpe.getContent() instanceof Path) {
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), ((Path) mpe.getContent()).toFile(), partContentType, mpe.getFileName());
-
-                    } else if (mpe.getContent() instanceof InputStream) {
-                        // seems that client needs to know content-length (needs more investigation)
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), streamToBytes((InputStream) mpe.getContent()), partContentType, mpe.getFileName());
-
-                    } else if (mpe.getContent() instanceof byte[]) {
-                        entityBuilder.addBinaryBody(mpe.getFieldName(), (byte[]) mpe.getContent(), partContentType, mpe.getFileName());
-
-                    } else {
-                        throw new IllegalArgumentException("Unsupported multipart content object type: " + mpe.getContent().getClass());
-                    }
+                    final byte[] encodedBytes = EmbeddedEncoder.encode(config, mpe.getContentType(), mpe.getContent());
+                    entityBuilder.addBinaryBody(mpe.getFieldName(), encodedBytes, parse(mpe.getContentType()), mpe.getFileName());
                 }
             }
 

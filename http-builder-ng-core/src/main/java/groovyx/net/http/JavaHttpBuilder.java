@@ -97,7 +97,6 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         public Object execute() {
             try {
-//                addHeaders();
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
                     if (sslContext != null) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
@@ -105,13 +104,11 @@ public class JavaHttpBuilder extends HttpBuilder {
                     }
 
                     final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-                    final Object body = cr.actualBody();
-                    final JavaToServer j2s;
-                    if (body != null) {
+
+                    JavaToServer j2s = null;
+                    if (cr.actualBody() != null) {
                         j2s = new JavaToServer();
                         requestConfig.findEncoder().accept(requestConfig, j2s);
-                    } else {
-                        j2s = null;
                     }
 
                     addHeaders();
