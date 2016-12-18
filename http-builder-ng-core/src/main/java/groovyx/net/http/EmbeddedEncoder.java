@@ -47,8 +47,7 @@ class EmbeddedEncoder {
             try {
                 bytes = IoUtils.streamToBytes(inputStream);
             } catch (IOException e) {
-                // FIXME: something better?
-                e.printStackTrace();
+                throw new RuntimeException("Unable to perform embedded encoding due to error: " + e.getMessage());
             }
         }
 

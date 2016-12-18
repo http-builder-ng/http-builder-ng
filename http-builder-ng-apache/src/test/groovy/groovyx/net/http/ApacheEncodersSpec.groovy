@@ -15,144 +15,20 @@
  */
 package groovyx.net.http
 
-import com.stehno.ersatz.ErsatzServer
-import com.stehno.ersatz.MultipartContentMatcher
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
-import spock.lang.AutoCleanup
-import spock.lang.Specification
+import groovyx.net.http.tk.EncoderTestKit
 
-import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static com.stehno.ersatz.Verifiers.once
-import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
-import static groovyx.net.http.ContentTypes.TEXT
+import java.util.function.BiConsumer
+import java.util.function.Function
 
-class ApacheEncodersSpec extends Specification {
+class ApacheEncodersSpec extends EncoderTestKit {
 
-    // FIXME: pull encoders testing into a testkit
-
-    @Rule TemporaryFolder folder = new TemporaryFolder()
-    @AutoCleanup('stop') private final ErsatzServer ersatzServer = new ErsatzServer()
-    private HttpBuilder http
-
-    def setup() {
-        http = ApacheHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, ApacheEncoders.&multipart)
-            request.contentType = MULTIPART_FORMDATA[0]
-        }
+    @Override
+    Function getClientFactory() {
+        return { c -> new ApacheHttpBuilder(c) } as Function
     }
 
-    def 'multipart: field'() {
-        setup:
-        ersatzServer.expectations {
-            post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    field(0, 'alpha', 'one') && field(1, 'bravo', 'two')
-                }
-                verifier(once())
-                responds().content('ok', TEXT_PLAIN)
-            }
-        }.start()
-
-        expect:
-        http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
-            request.body = MultipartContent.multipart {
-                field 'alpha', 'one'
-                field 'bravo', 'two'
-            }
-        } == 'ok'
-
-        and:
-        ersatzServer.verify()
-    }
-
-    def 'multipart: file (path)'() {
-        setup:
-        def (File fileA, File fileB) = setupMultipartFileExpectations()
-
-        expect:
-        http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
-            request.body = MultipartContent.multipart {
-                part 'filea', fileA.name, TEXT[0], fileA.toPath()
-                part 'fileb', fileB.name, TEXT[0], fileB.toPath()
-            }
-        } == 'ok'
-
-        and:
-        ersatzServer.verify()
-    }
-
-    def 'multipart: file (bytes)'() {
-        setup:
-        def (File fileA, File fileB) = setupMultipartFileExpectations()
-
-        expect:
-        http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
-            request.body = MultipartContent.multipart {
-                part 'filea', fileA.name, TEXT[0], fileA.bytes
-                part 'fileb', fileB.name, TEXT[0], fileB.bytes
-            }
-        } == 'ok'
-
-        and:
-        ersatzServer.verify()
-    }
-
-    def 'multipart: file (string)'() {
-        setup:
-        def (File fileA, File fileB) = setupMultipartFileExpectations()
-
-        expect:
-        http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
-            request.body = MultipartContent.multipart {
-                part 'filea', fileA.name, TEXT[0], fileA.text
-                part 'fileb', fileB.name, TEXT[0], fileB.text
-            }
-        } == 'ok'
-
-        and:
-        ersatzServer.verify()
-    }
-
-    def 'multipart: file (stream)'() {
-        setup:
-        def (File fileA, File fileB) = setupMultipartFileExpectations()
-
-        expect:
-        http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
-            request.body = MultipartContent.multipart {
-                part 'filea', fileA.name, TEXT[0], fileA.newInputStream()
-                part 'fileb', fileB.name, TEXT[0], fileB.newInputStream()
-            }
-        } == 'ok'
-
-        and:
-        ersatzServer.verify()
-    }
-
-    private setupMultipartFileExpectations() {
-        File fileA = folder.newFile('file-a.txt')
-        fileA.text = 'some-a-content'
-
-        File fileB = folder.newFile('file-b.xtx')
-        fileB.text = 'some-b-content'
-
-        ersatzServer.expectations {
-            post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    file(0, 'filea', 'file-a.txt', TEXT_PLAIN.value, 'some-a-content') &&
-                        file(1, 'fileb', 'file-b.xtx', TEXT_PLAIN.value, 'some-b-content')
-                }
-                verifier(once())
-                responds().content('ok', TEXT_PLAIN)
-            }
-        }.start()
-
-        [fileA, fileB]
+    @Override
+    BiConsumer<ChainedHttpConfig, ToServer> getEncoder() {
+        ApacheEncoders.&multipart
     }
 }
