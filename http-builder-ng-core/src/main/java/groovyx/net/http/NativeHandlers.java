@@ -108,7 +108,7 @@ public class NativeHandlers {
      */
     public static class Encoders {
 
-        // FIXME: get some good testing around encoders
+        // TODO: better testing around encoders
 
         public static Object checkNull(final Object body) {
             if (body == null) {
@@ -305,7 +305,7 @@ public class NativeHandlers {
      */
     public static class Parsers {
 
-        // FIXME: get some good testing around parsers
+        // TODO: better testing around parsers
 
         public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
         private static final Logger log = LoggerFactory.getLogger(Parsers.class);
