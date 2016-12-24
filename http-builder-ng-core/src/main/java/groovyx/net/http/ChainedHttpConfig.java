@@ -15,8 +15,8 @@
  */
 package groovyx.net.http;
 
-import java.nio.charset.Charset;
 import java.net.HttpCookie;
+import java.nio.charset.Charset;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -31,16 +31,21 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     interface ChainedRequest extends Request {
         ChainedRequest getParent();
+
         List<HttpCookie> getCookies();
+
         Object getBody();
+
         String getContentType();
-        Map<String,BiConsumer<ChainedHttpConfig,ToServer>> getEncoderMap();
+
+        Map<String, BiConsumer<ChainedHttpConfig, ToServer>> getEncoderMap();
+
         Charset getCharset();
 
         default Charset actualCharset() {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCharset(), Traverser::notNull);
         }
-        
+
         default String actualContentType() {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getContentType(), Traverser::notNull);
         }
@@ -49,23 +54,25 @@ public interface ChainedHttpConfig extends HttpConfig {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getBody(), Traverser::notNull);
         }
 
-        default Map<String,String> actualHeaders(final Map<String,String> map) {
-            Predicate<Map<String,String>> addValues = (headers) -> { map.putAll(headers); return false; };
+        default Map<String, String> actualHeaders(final Map<String, String> map) {
+            Predicate<Map<String, String>> addValues = (headers) -> {
+                map.putAll(headers);
+                return false;
+            };
             traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getHeaders(), addValues);
             return map;
         }
 
-        default BiConsumer<ChainedHttpConfig,ToServer> actualEncoder(final String contentType) {
-            final Function<ChainedRequest, BiConsumer<ChainedHttpConfig,ToServer>> theValue = (cr) -> {
-                BiConsumer<ChainedHttpConfig,ToServer> ret = cr.encoder(contentType);
-                if(ret != null) {
+        default BiConsumer<ChainedHttpConfig, ToServer> actualEncoder(final String contentType) {
+            final Function<ChainedRequest, BiConsumer<ChainedHttpConfig, ToServer>> theValue = (cr) -> {
+                BiConsumer<ChainedHttpConfig, ToServer> ret = cr.encoder(contentType);
+                if (ret != null) {
                     return ret;
-                }
-                else {
+                } else {
                     return cr.encoder(ContentTypes.ANY.getAt(0));
                 }
             };
-            
+
             return traverse(this, (cr) -> cr.getParent(), theValue, Traverser::notNull);
         }
 
@@ -75,7 +82,10 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
 
         default List<HttpCookie> actualCookies(final List<HttpCookie> list) {
-            Predicate<List<HttpCookie>> addAll = (cookies) -> { list.addAll(cookies); return false; };
+            Predicate<List<HttpCookie>> addAll = (cookies) -> {
+                list.addAll(cookies);
+                return false;
+            };
             traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCookies(), addAll);
             return list;
         }
@@ -83,19 +93,19 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     interface ChainedResponse extends Response {
         ChainedResponse getParent();
+
         Class<?> getType();
-        
+
         default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
         }
-        
-        default BiFunction<ChainedHttpConfig,FromServer,Object> actualParser(final String contentType) {
-            final Function<ChainedResponse, BiFunction<ChainedHttpConfig,FromServer,Object>> theValue = (cr) -> {
-                BiFunction<ChainedHttpConfig,FromServer,Object> ret = cr.parser(contentType);
-                if(ret != null) {
+
+        default BiFunction<ChainedHttpConfig, FromServer, Object> actualParser(final String contentType) {
+            final Function<ChainedResponse, BiFunction<ChainedHttpConfig, FromServer, Object>> theValue = (cr) -> {
+                BiFunction<ChainedHttpConfig, FromServer, Object> ret = cr.parser(contentType);
+                if (ret != null) {
                     return ret;
-                }
-                else {
+                } else {
                     return cr.parser(ContentTypes.ANY.getAt(0));
                 }
             };
@@ -104,38 +114,56 @@ public interface ChainedHttpConfig extends HttpConfig {
         }
     }
 
-    Map<Map.Entry<String,Object>,Object> getContextMap();
-    
+    Map<Map.Entry<String, Object>, Object> getContextMap();
+
     default Object actualContext(final String contentType, final Object id) {
-        final Map.Entry<String,Object> key = new AbstractMap.SimpleImmutableEntry<>(contentType, id);
-        final Map.Entry<String,Object> anyKey = new AbstractMap.SimpleImmutableEntry<>(ContentTypes.ANY.getAt(0), id);
-        
-        final Function<ChainedHttpConfig,Object> theValue = (config) -> {
+        final Map.Entry<String, Object> key = new AbstractMap.SimpleImmutableEntry<>(contentType, id);
+        final Map.Entry<String, Object> anyKey = new AbstractMap.SimpleImmutableEntry<>(ContentTypes.ANY.getAt(0), id);
+
+        final Function<ChainedHttpConfig, Object> theValue = (config) -> {
             Object ctx = config.getContextMap().get(key);
-            if(ctx != null) {
+            if (ctx != null) {
                 return ctx;
-            }
-            else {
+            } else {
                 return config.getContextMap().get(anyKey);
             }
         };
-        
+
         return traverse(this, (config) -> config.getParent(), theValue, Traverser::notNull);
     }
 
     ChainedResponse getChainedResponse();
+
     ChainedRequest getChainedRequest();
+
     ChainedHttpConfig getParent();
 
-    default BiFunction<ChainedHttpConfig,FromServer,Object> findParser(final String contentType) {
-        final BiFunction<ChainedHttpConfig,FromServer,Object> found = getChainedResponse().actualParser(contentType);
+    default BiFunction<ChainedHttpConfig, FromServer, Object> findParser(final String contentType) {
+        final BiFunction<ChainedHttpConfig, FromServer, Object> found = getChainedResponse().actualParser(contentType);
         return found == null ? NativeHandlers.Parsers::streamToBytes : found;
     }
-    
-    default BiConsumer<ChainedHttpConfig,ToServer> findEncoder() {
-        final BiConsumer<ChainedHttpConfig,ToServer> encoder = getChainedRequest().actualEncoder(findContentType());
-        if(encoder == null) {
-            throw new IllegalStateException("Did not find encoder");
+
+    /**
+     * Used to find the encoder configured to encode the current resolved content-type.
+     *
+     * @return the configured encoder
+     * @throws IllegalStateException if no coder was found
+     */
+    default BiConsumer<ChainedHttpConfig, ToServer> findEncoder() {
+        return findEncoder(findContentType());
+    }
+
+    /**
+     * Used to find the encoder configured to encode the specified content-type.
+     *
+     * @param contentType the content-type to be encoded
+     * @return the configured encoder
+     * @throws IllegalStateException if no coder was found
+     */
+    default BiConsumer<ChainedHttpConfig, ToServer> findEncoder(final String contentType) {
+        final BiConsumer<ChainedHttpConfig, ToServer> encoder = getChainedRequest().actualEncoder(contentType);
+        if (encoder == null) {
+            throw new IllegalStateException("Could not find encoder for content-type (" + contentType + ")");
         }
 
         return encoder;
@@ -143,7 +171,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     default String findContentType() {
         final String contentType = getChainedRequest().actualContentType();
-        if(contentType == null) {
+        if (contentType == null) {
             throw new IllegalStateException("Found request body, but content type is undefined");
         }
 

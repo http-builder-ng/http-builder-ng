@@ -20,7 +20,10 @@ import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -28,11 +31,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
-import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- *
+ * <p>
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -51,51 +53,41 @@ public class JavaHttpBuilder extends HttpBuilder {
                 this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
                 this.connection.setRequestMethod(verb);
 
-                if(cr.actualBody() != null) {
+                if (cr.actualBody() != null) {
                     this.connection.setDoOutput(true);
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
         private void addHeaders() {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-            for(Map.Entry<String,String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+            for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
                 connection.addRequestProperty(entry.getKey(), entry.getValue());
             }
 
             final String contentType = cr.actualContentType();
-            if(contentType != null) {
+            if (contentType != null) {
                 connection.addRequestProperty("Content-Type", contentType);
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
-            for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+            for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
                 connection.addRequestProperty(e.getKey(), e.getValue());
             }
         }
 
         private PasswordAuthentication getAuthInfo() {
             final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();
-            if(auth == null) {
+            if (auth == null) {
                 return null;
             }
 
-            if(auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {
+            if (auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {
                 return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException("HttpURLConnection does not support " + auth.getAuthType() + " authentication");
-            }
-        }
-
-        private void handleToServer() {
-            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-            final Object body = cr.actualBody();
-            if(body != null) {
-                requestConfig.findEncoder().accept(requestConfig, new JavaToServer());
             }
         }
 
@@ -105,31 +97,47 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         public Object execute() {
             try {
-                addHeaders();
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
-                        // FIXME: this seems to enforce HTTPS for auth - while a good practice, may not want to force
-                        if(sslContext != null) {
-                            HttpsURLConnection https = (HttpsURLConnection) connection;
-                            https.setSSLSocketFactory(sslContext.getSocketFactory());
-                        }
+                    if (sslContext != null) {
+                        HttpsURLConnection https = (HttpsURLConnection) connection;
+                        https.setSSLSocketFactory(sslContext.getSocketFactory());
+                    }
 
-                        connection.connect();
-                        handleToServer();
-                        return handleFromServer();
-                    });
-            }
-            catch(Exception e) {
+                    final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+
+                    JavaToServer j2s = null;
+                    if (cr.actualBody() != null) {
+                        j2s = new JavaToServer();
+                        requestConfig.findEncoder().accept(requestConfig, j2s);
+                    }
+
+                    addHeaders();
+
+                    connection.connect();
+
+                    if (j2s != null) {
+                        j2s.transfer();
+                    }
+
+                    return handleFromServer();
+                });
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        protected class JavaToServer implements ToServer {
+        private class JavaToServer implements ToServer {
+
+            private InputStream inputStream;
 
             public void toServer(final InputStream inputStream) {
+                this.inputStream = inputStream;
+            }
+
+            void transfer() {
                 try {
-                    transfer(inputStream, connection.getOutputStream(), true);
-                }
-                catch(IOException e) {
+                    NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -153,8 +161,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                     hasBody = bis.read() != -1;
                     bis.reset();
                     is = handleEncoding(bis);
-                }
-                catch(IOException e) {
+                } catch (IOException e) {
                     //swallow, no body is present?
                     is = null;
                     hasBody = false;
@@ -163,11 +170,10 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             private InputStream handleEncoding(final InputStream is) throws IOException {
                 Header<?> encodingHeader = Header.find(headers, "Content-Encoding");
-                if(encodingHeader != null) {
-                    if(encodingHeader.getValue().equals("gzip")) {
+                if (encodingHeader != null) {
+                    if (encodingHeader.getValue().equals("gzip")) {
                         return new GZIPInputStream(is);
-                    }
-                    else if(encodingHeader.getValue().equals("deflate")) {
+                    } else if (encodingHeader.getValue().equals("deflate")) {
                         return new InflaterInputStream(is);
                     }
                 }
@@ -176,24 +182,24 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             private String clean(final String str) {
-                if(str == null) {
+                if (str == null) {
                     return null;
                 }
 
                 final String tmp = str.trim();
                 return "".equals(tmp) ? null : tmp;
             }
-            
+
             private List<Header<?>> populateHeaders() {
                 final List<Header<?>> ret = new ArrayList<>();
-                for(int i = 0; i < Integer.MAX_VALUE; ++i) {
+                for (int i = 0; i < Integer.MAX_VALUE; ++i) {
                     final String key = clean(connection.getHeaderFieldKey(i));
                     final String value = clean(connection.getHeaderField(i));
-                    if(key == null && value == null) {
+                    if (key == null && value == null) {
                         break;
                     }
 
-                    if(key != null && value != null) {
+                    if (key != null && value != null) {
                         ret.add(Header.keyValue(key.trim(), value.trim()));
                     }
                 }
@@ -208,8 +214,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public int getStatusCode() {
                 try {
                     return connection.getResponseCode();
-                }
-                catch(IOException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -217,8 +222,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public String getMessage() {
                 try {
                     return connection.getResponseMessage();
-                }
-                catch(IOException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -252,8 +256,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             tlAuth.set(pa);
             try {
                 return callable.call();
-            }
-            finally {
+            } finally {
                 tlAuth.set(null);
             }
         }

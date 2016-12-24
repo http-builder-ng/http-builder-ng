@@ -15,12 +15,12 @@
  */
 package groovyx.net.http;
 
-import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.util.EnumMap;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.EnumMap;
-import java.io.File;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -41,15 +41,31 @@ public interface HttpObjectConfig extends HttpConfig {
      */
     interface Execution {
         /**
-         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         * Specifies the maximum number of connection threads to be used by the client.
+         *
+         * @param val the max thread count
          */
         void setMaxThreads(int val);
+
+        /**
+         * Retrieves the configured max number of connection threads used by the client.
+         *
+         * @return the max thread count
+         */
         int getMaxThreads();
 
         /**
-         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         * Specifies the executor to be used.
+         *
+         * @param val the executor to be used
          */
         void setExecutor(Executor val);
+
+        /**
+         * Retrieves the configured executor.
+         *
+         * @return the executor
+         */
         Executor getExecutor();
 
         /**
