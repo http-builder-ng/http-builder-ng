@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.11.1,</span>
-<span id="revdate">November 2016</span>
+<span id="revnumber">version 0.12.0,</span>
+<span id="revdate">December 2016</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -544,8 +544,11 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_resource_last_modified_head">Resource Last Modified (HEAD)</a></li>
 <li><a href="#_scraping_web_content_get">Scraping Web Content (GET)</a></li>
 <li><a href="#_sending_receiving_json_data_post">Sending/Receiving JSON Data (POST)</a></li>
+<li><a href="#_sending_form_data_post">Sending Form Data (POST)</a></li>
+<li><a href="#_sending_multipart_data_post">Sending Multipart Data (POST)</a></li>
 </ul>
 </li>
+<li><a href="#_appendix_a_feature_support">Appendix A: Feature Support</a></li>
 </ul>
 </div>
 </div>
@@ -649,6 +652,21 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 <div class="paragraph">
 <p>Assuming, of course, that you have configured the <code>http-builder-ng-apache</code> dependency in your project.</p>
+</div>
+<div class="paragraph">
+<p>Alternately, each of the client implementations provides their own <code>configure</code> methods using themselves as the factory, for the Apache client, you
+would use:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder http = ApacheHttpBuilder.configure {
+    <span class="comment">// configuration...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice that the <code>configure</code> method is called on the <code>ApacheHttpBuilder</code> rather than the core <code>HttpBuilder</code> class. This allows a simpler configuration
+of the client factory to be used.</p>
 </div>
 <div class="sect2">
 <h3 id="_authentication">Authentication</h3>
@@ -1166,13 +1184,134 @@ the request. The end result is the following display:</p>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_sending_form_data_post">Sending Form Data (POST)</h3>
+<div class="paragraph">
+<p>Posting HTML form data is a common <code>POST</code> operation, and it is supported by <code>HttpBuilder</code> with a custom encoder, such as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://example.com</span><span class="delimiter">'</span></span>
+}.post {
+    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/some/form</span><span class="delimiter">'</span></span>
+    request.body = [<span class="key">id</span>: <span class="string"><span class="delimiter">'</span><span class="content">234545</span><span class="delimiter">'</span></span>, <span class="key">label</span>: <span class="string"><span class="delimiter">'</span><span class="content">something interesting</span><span class="delimiter">'</span></span>]
+    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>
+    request.encoder <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>, NativeHandlers.Encoders.&amp;form
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>which would <code>POST</code> the specified body data map as urlencoded data to the server. The key here is the use of the <code>NativeHandlers.Encoders.&amp;form</code>
+encoder, which converts the provided map data into the encoded message before sending it to the server.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sending_multipart_data_post">Sending Multipart Data (POST)</h3>
+<div class="paragraph">
+<p><code>HttpBuilder</code> supports multipart request content such as file uploads, with either the generic <code>MultipartEncoder</code> or one of the client-specific
+encoders. For example, the <code>OkHttpBuilder</code> could use the <code>OkHttpEncoders.&amp;multipart</code> encoder:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">File</span> someFile = <span class="comment">// ...</span>
+
+OkHttpBuilder.configure {
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://example.com</span><span class="delimiter">'</span></span>
+}.post {
+    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/upload</span><span class="delimiter">'</span></span>
+    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">multipart/form-data</span><span class="delimiter">'</span></span>
+    request.body = multipart {
+        field <span class="string"><span class="delimiter">'</span><span class="content">name</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">This is my file</span><span class="delimiter">'</span></span>
+        part <span class="string"><span class="delimiter">'</span><span class="content">file</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">myfile.txt</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">text/plain</span><span class="delimiter">'</span></span>, someFile
+    }
+    request.encoder <span class="string"><span class="delimiter">'</span><span class="content">multipart/form-data</span><span class="delimiter">'</span></span>, OkHttpEncoders.&amp;multipart
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>which would <code>POST</code> the content of the file, <code>someFile</code> along with the specified <code>name</code> field to the server as a <code>multipart/form-data</code> request. The
+important parts of the example are the <code>multipart</code> DSL extension, which is provided by the <code>MultipartContent</code> class and aids in creating the upload
+content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
+Notice that the encoder is specific to the <code>OkHttpBuilder</code>, which we are using in this case.</p>
+</div>
+<div class="paragraph">
+<p>The available multipart encoders:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>groovyx.net.http.MultipartEncoder</code> - a generic minimalistic multipart encoder for use with the core Java client or any of the others.</p>
+</li>
+<li>
+<p><code>groovyx.net.http.OkHttpEncoders::multipart</code> - the encoder using OkHttp-specific multipart encoding.</p>
+</li>
+<li>
+<p><code>groovyx.net.http.ApacheEncoders::multipart</code> - the encoder using Apache client specific multipart encoding.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The encoding of the parts is done using the encoders configured on the <code>HttpBuilder</code> executing the request. Any encoders required to encode the parts
+of a multipart content object must be specified beforehand.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_a_feature_support">Appendix A: Feature Support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The goal is to support all features across all client implementations; however, due to the nature of the client implemeatations, this is not always
+possible. The table below contains general feature support information per client implementation.</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<caption class="title">Table 1. Feature Support Matrix</caption>
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Client</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BASIC</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DIGEST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Multipart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compression</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Java</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apache</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OkHttp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.11.1<br>
-Last updated 2016-12-02 05:04:30 -06:00
+Version 0.12.0<br>
+Last updated 2016-12-26 06:49:00 -06:00
 </div>
 </div>
 </body>

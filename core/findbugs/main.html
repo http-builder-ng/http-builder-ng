@@ -31,9 +31,9 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>2215 lines of code analyzed,
-            in 70 classes,
-            in 3 packages.</p>
+<p>2774 lines of code analyzed,
+            in 85 classes,
+            in 4 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
 <tr class="tableheader">
 <th align="left">Metric</th>
@@ -42,28 +42,28 @@
 </tr>
 <tr class="tablerow0">
 <td>High Priority Warnings</td>
-<td align="right">3</td>
-<td align="right">1.35</td>
+<td align="right">4</td>
+<td align="right">1.44</td>
 </tr>
 <tr class="tablerow1">
 <td>Medium Priority Warnings</td>
-<td align="right">5</td>
-<td align="right">2.26</td>
+<td align="right">8</td>
+<td align="right">2.88</td>
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">3</td>
-<td align="right">1.35</td>
+<td align="right">8</td>
+<td align="right">2.88</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>11</b>
+<b>20</b>
 </td>
 <td align="right">
-<b>4.97</b>
+<b>7.21</b>
 </td>
 </tr>
 </table>
@@ -84,7 +84,7 @@
 <td>
 <a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
 </td>
-<td align="right">1</td>
+<td align="right">3</td>
 </tr>
 <tr class="tablerow1">
 <td>
@@ -96,32 +96,32 @@
 <td>
 <a href="#Warnings_I18N">Internationalization Warnings</a>
 </td>
-<td align="right">2</td>
+<td align="right">5</td>
 </tr>
 <tr class="tablerow1">
 <td>
 <a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
 </td>
-<td align="right">3</td>
+<td align="right">1</td>
 </tr>
 <tr class="tablerow0">
 <td>
 <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
 </td>
-<td align="right">3</td>
+<td align="right">5</td>
 </tr>
 <tr class="tablerow1">
 <td>
 <a href="#Warnings_STYLE">Dodgy code Warnings</a>
 </td>
-<td align="right">1</td>
+<td align="right">5</td>
 </tr>
 <tr class="tablerow0">
 <td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>11</b>
+<b>20</b>
 </td>
 </tr>
 </table>
@@ -151,7 +151,33 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 367<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 367]</p>
+                                line 377<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 377]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">Method ignores exceptional return value</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Exceptional return value of java.io.File.delete() ignored in groovyx.net.http.FileBackedCookieStore.deleteFile(NonBlockingCookieStore$Key)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 80<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.deleteFile(NonBlockingCookieStore$Key)<br/>Called method java.io.File.delete()<br/>At FileBackedCookieStore.java:[line 80]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NM_CONFUSING">Confusing method names</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Confusing to have methods groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer.getUri() and groovyx.net.http.NonBlockingCookieStore$UriKey.getURI()<br/>
+<br/>
+<br/>In file JavaHttpBuilder.java,
+                        
+                                line 239<br/>In class groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer<br/>In method groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer.getUri()<br/>In class groovyx.net.http.NonBlockingCookieStore$UriKey<br/>In method groovyx.net.http.NonBlockingCookieStore$UriKey.getURI()<br/>At JavaHttpBuilder.java:[line 239]</p>
 </td>
 </tr>
 </table>
@@ -178,7 +204,7 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 140<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 140] is not discharged<br/>Path continues at NativeHandlers.java:[line 141]<br/>Remaining obligations: {InputStream x 1}</p>
+                                line 151<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 151] is not discharged<br/>Path continues at NativeHandlers.java:[line 152]<br/>Remaining obligations: {InputStream x 1}</p>
 </td>
 </tr>
 </table>
@@ -205,7 +231,7 @@
 <br/>
 <br/>In file FromServer.java,
                         
-                                line 508<br/>In class groovyx.net.http.FromServer<br/>In method groovyx.net.http.FromServer.getReader()<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At FromServer.java:[line 508]</p>
+                                line 531<br/>In class groovyx.net.http.FromServer<br/>In method groovyx.net.http.FromServer.getReader()<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At FromServer.java:[line 531]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -218,7 +244,46 @@
 <br/>
 <br/>In file HttpConfigs.java,
                         
-                                line 495<br/>In class groovyx.net.http.HttpConfigs$BaseHttpConfig<br/>In method groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String)<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At HttpConfigs.java:[line 495]</p>
+                                line 507<br/>In class groovyx.net.http.HttpConfigs$BaseHttpConfig<br/>In method groovyx.net.http.HttpConfigs$BaseHttpConfig.configure(String)<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At HttpConfigs.java:[line 507]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$readAll$4(File): new java.io.FileReader(File)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 167<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$4(File)<br/>Called method new java.io.FileReader(File)<br/>At FileBackedCookieStore.java:[line 167]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$store$2(NonBlockingCookieStore$Key, HttpCookie): new java.io.FileWriter(File)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 149<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$store$2(NonBlockingCookieStore$Key, HttpCookie)<br/>Called method new java.io.FileWriter(File)<br/>At FileBackedCookieStore.java:[line 149]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Use of non-localized String.toUpperCase() or String.toLowerCase() in groovyx.net.http.NonBlockingCookieStore$Key.forStorage(String)<br/>
+<br/>
+<br/>In file NonBlockingCookieStore.java,
+                        
+                                line 125<br/>In class groovyx.net.http.NonBlockingCookieStore$Key<br/>In method groovyx.net.http.NonBlockingCookieStore$Key.forStorage(String)<br/>At NonBlockingCookieStore.java:[line 125]</p>
 </td>
 </tr>
 </table>
@@ -245,33 +310,7 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 313<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 313]</p>
-</td>
-</tr>
-<tr class="tablerow0">
-<td width="20%" valign="top">
-<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
-</td>
-<td width="10%" valign="top">Medium</td>
-<td width="70%">
-<p>groovyx.net.http.Cookie.getExpires() may expose internal representation by returning Cookie.expires<br/>
-<br/>
-<br/>In file Cookie.java,
-                        
-                                line 48<br/>In class groovyx.net.http.Cookie<br/>In method groovyx.net.http.Cookie.getExpires()<br/>Field groovyx.net.http.Cookie.expires<br/>At Cookie.java:[line 48]</p>
-</td>
-</tr>
-<tr class="tablerow1">
-<td width="20%" valign="top">
-<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
-</td>
-<td width="10%" valign="top">Medium</td>
-<td width="70%">
-<p>new groovyx.net.http.Cookie(String, String, Date) may expose internal representation by storing an externally mutable object into Cookie.expires<br/>
-<br/>
-<br/>In file Cookie.java,
-                        
-                                line 36<br/>In class groovyx.net.http.Cookie<br/>In method new groovyx.net.http.Cookie(String, String, Date)<br/>Field groovyx.net.http.Cookie.expires<br/>Local variable named expires<br/>At Cookie.java:[line 36]</p>
+                                line 327<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 327]</p>
 </td>
 </tr>
 </table>
@@ -290,6 +329,19 @@
 </tr>
 <tr class="tablerow1">
 <td width="20%" valign="top">
+<a href="#DM_BOXED_PRIMITIVE_FOR_PARSING">Boxing/unboxing to parse a primitive</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Boxing/unboxing to parse a primitive groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 267<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Called method Integer.intValue()<br/>Should call Integer.parseInt(String) instead<br/>At FileBackedCookieStore.java:[line 267]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
 <a href="#URF_UNREAD_FIELD">Unread field</a>
 </td>
 <td width="10%" valign="top">Medium</td>
@@ -298,7 +350,21 @@
 <br/>
 <br/>In file HttpConfigs.java,
                         
-                                line 94<br/>In class groovyx.net.http.HttpConfigs$ThreadSafeAuth<br/>Field groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive<br/>At HttpConfigs.java:[line 94]</p>
+                                line 96<br/>In class groovyx.net.http.HttpConfigs$ThreadSafeAuth<br/>Field groovyx.net.http.HttpConfigs$ThreadSafeAuth.preemptive<br/>At HttpConfigs.java:[line 96]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Private method groovyx.net.http.NonBlockingCookieStore.makeURI(String) is never called<br/>
+<br/>
+<br/>In file NonBlockingCookieStore.java,
+                        
+                                lines 231
+                                to 234<br/>In class groovyx.net.http.NonBlockingCookieStore<br/>In method groovyx.net.http.NonBlockingCookieStore.makeURI(String)<br/>At NonBlockingCookieStore.java:[lines 231-234]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -343,6 +409,58 @@
 </tr>
 <tr class="tablerow1">
 <td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Dead store to maxAge in groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 260<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Local variable named maxAge<br/>At FileBackedCookieStore.java:[line 260]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Dead store to H in groovyx.net.http.NonBlockingCookieStore.netscapeDomainMatches(String, String)<br/>
+<br/>
+<br/>In file NonBlockingCookieStore.java,
+                        
+                                line 278<br/>In class groovyx.net.http.NonBlockingCookieStore<br/>In method groovyx.net.http.NonBlockingCookieStore.netscapeDomainMatches(String, String)<br/>Local variable named H<br/>At NonBlockingCookieStore.java:[line 278]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference in groovyx.net.http.FileBackedCookieStore.readAll() due to return value of called method<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 163<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.readAll()<br/>Value loaded from ?<br/>Dereferenced at FileBackedCookieStore.java:[line 163]<br/>Known null at FileBackedCookieStore.java:[line 163]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_MIGHT_BE_INFEASIBLE">Possible null pointer dereference on branch that might be infeasible</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of NonBlockingCookieStore$DomainKey.path on branch that might be infeasible in groovyx.net.http.NonBlockingCookieStore$DomainKey.pathEquals(NonBlockingCookieStore$DomainKey)<br/>
+<br/>
+<br/>In file NonBlockingCookieStore.java,
+                        
+                                line 205<br/>In class groovyx.net.http.NonBlockingCookieStore$DomainKey<br/>In method groovyx.net.http.NonBlockingCookieStore$DomainKey.pathEquals(NonBlockingCookieStore$DomainKey)<br/>Value contained in groovyx.net.http.NonBlockingCookieStore$DomainKey.path<br/>Dereferenced at NonBlockingCookieStore.java:[line 205]<br/>Known null at NonBlockingCookieStore.java:[line 198]<br/>Known null at NonBlockingCookieStore.java:[line 201]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
 <a href="#XFB_XML_FACTORY_BYPASS">Method directly allocates a specific implementation of xml interfaces</a>
 </td>
 <td width="10%" valign="top">Low</td>
@@ -351,7 +469,7 @@
 <br/>
 <br/>In file Html.java,
                         
-                                line 41<br/>In class groovyx.net.http.optional.Html<br/>In method groovyx.net.http.optional.Html.neckoParse(ChainedHttpConfig, FromServer)<br/>At Html.java:[line 41]</p>
+                                line 57<br/>In class groovyx.net.http.optional.Html<br/>In method groovyx.net.http.optional.Html.neckoParse(ChainedHttpConfig, FromServer)<br/>At Html.java:[line 57]</p>
 </td>
 </tr>
 </table>
@@ -367,46 +485,62 @@
 <a name="Details">Warning Types</a>
 </h1>
 <h2>
+<a name="DM_BOXED_PRIMITIVE_FOR_PARSING">Boxing/unboxing to parse a primitive</a>
+</h2>
+
+  <p>A boxed primitive is created from a String, just to extract the unboxed primitive value.
+  It is more efficient to just call the static parseXXX method.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</h2>
+
+<p>
+This instruction assigns a value to a local variable,
+but the value is not read or used in any subsequent instruction.
+Often, this indicates an error, because the value computed is never
+used.
+</p>
+<p>
+Note that Sun's javac compiler often generates dead stores for
+final local variables.  Because FindBugs is a bytecode-based tool,
+there is no easy way to eliminate these false positives.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
+</h2>
+
+  <p> A String is being converted to upper or lowercase, using the platform's default encoding. This may
+      result in improper conversions when used with international characters. Use the </p>
+      <ul>
+    <li>String.toUpperCase( Locale l )</li>
+    <li>String.toLowerCase( Locale l )</li>
+    </ul>
+      <p>versions instead.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
 <a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
 </h2>
 
 <p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
 
       
-<p>
-<br/>
-<br/>
-</p>
-<h2>
-<a name="EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
-</h2>
-
-  <p> Returning a reference to a mutable object value stored in one of the object's fields
-  exposes the internal representation of the object.&nbsp;
-   If instances
-   are accessed by untrusted code, and unchecked changes to
-   the mutable object would compromise security or other
-   important properties, you will need to do something different.
-  Returning a new copy of the object is better approach in many situations.</p>
-
-    
-<p>
-<br/>
-<br/>
-</p>
-<h2>
-<a name="EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
-</h2>
-
-  <p> This code stores a reference to an externally mutable object into the
-  internal representation of the object.&nbsp;
-   If instances
-   are accessed by untrusted code, and unchecked changes to
-   the mutable object would compromise security or other
-   important properties, you will need to do something different.
-  Storing a copy of the object is better approach in many situations.</p>
-
-    
 <p>
 <br/>
 <br/>
@@ -421,6 +555,49 @@ could be changed by malicious code or
         by accident from another package.
         The field could be made final to avoid
         this vulnerability.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NM_CONFUSING">Confusing method names</a>
+</h2>
+
+  <p> The referenced methods have names that differ only by capitalization.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</h2>
+      
+<p> The return value from a method is dereferenced without a null check,
+and the return value of that method is one that should generally be checked
+for null.  This may lead to a <code>NullPointerException</code> when the code is executed.
+</p>
+      
+   
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_NULL_ON_SOME_PATH_MIGHT_BE_INFEASIBLE">Possible null pointer dereference on branch that might be infeasible</a>
+</h2>
+
+<p> There is a branch of statement that, <em>if executed,</em>  guarantees that
+a null value will be dereferenced, which
+would generate a <code>NullPointerException</code> when the code is executed.
+Of course, the problem might be that the branch or statement is infeasible and that
+the null pointer exception can't ever be executed; deciding that is beyond the ability of FindBugs.
+Due to the fact that this value had been previously tested for nullness,
+this is a definite possibility.
+</p>
 
     
 <p>
@@ -488,6 +665,39 @@ idea to use a <code>finally</code> block to ensure that streams are
 closed.</p>
 
     
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">Method ignores exceptional return value</a>
+</h2>
+
+   <p> This method returns a value that is not checked. The return value should be checked
+since it can indicate an unusual or unexpected function execution. For
+example, the <code>File.delete()</code> method returns false
+if the file could not be successfully deleted (rather than
+throwing an Exception).
+If you don't check the result, you won't notice if the method invocation
+signals unexpected behavior by returning an atypical return value.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
+</h2>
+
+<p> This private method is never called. Although it is
+possible that the method will be invoked through reflection,
+it is more likely that the method is never used, and should be
+removed.
+</p>
+
+
 <p>
 <br/>
 <br/>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartContent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-core</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">MultipartContent.java</span></div><h1>MultipartContent.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import org.apache.commons.lang3.RandomStringUtils;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static java.util.Collections.unmodifiableList;
+
+/**
+ * Multipart request content object used to define the multipart data. An example would be:
+ *
+ * [source,groovy]
+ * ----
+ * request.contentType = 'multipart/form-data'
+ * request.body = multipart {
+ *     field 'userid','someuser'
+ *     part 'icon', 'user-icon.jpg', 'image/jpeg', imageFile
+ * }
+ * ----
+ *
+ * which would define a `multipart/form-data` request with a field part and a file part with the specified properties.
+ */
+<span class="fc" id="L42">public class MultipartContent {</span>
+
+<span class="fc" id="L44">    private final List&lt;MultipartPart&gt; entries = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L45">    private final String boundary = RandomStringUtils.randomAlphanumeric(16);</span>
+
+    /**
+     * Configures multipart request content using a Groovy closure (delegated to {@link MultipartContent}).
+     *
+     * @param closure the configuration closure
+     * @return a configured instance of {@link MultipartContent}
+     */
+    public static MultipartContent multipart(@DelegatesTo(MultipartContent.class) Closure closure) {
+<span class="fc" id="L54">        MultipartContent content = new MultipartContent();</span>
+<span class="fc" id="L55">        closure.setDelegate(content);</span>
+<span class="fc" id="L56">        closure.call();</span>
+<span class="fc" id="L57">        return content;</span>
+    }
+
+    /**
+     * Configures multipart request content using a {@link Consumer} which will have an instance of {@link MultipartContent} passed into it for
+     * configuring the multipart content data.
+     *
+     * @param config the configuration {@link Consumer}
+     * @return a configured instance of {@link MultipartContent}
+     */
+    public static MultipartContent multipart(final Consumer&lt;MultipartContent&gt; config) {
+<span class="fc" id="L68">        MultipartContent content = new MultipartContent();</span>
+<span class="fc" id="L69">        config.accept(content);</span>
+<span class="fc" id="L70">        return content;</span>
+    }
+
+    /**
+     * Configures a field part with the given field name and value.
+     *
+     * @param fieldName the field name
+     * @param value the value
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent field(String fieldName, String value) {
+<span class="fc" id="L81">        return part(fieldName, value);</span>
+    }
+
+    /**
+     * Configures a field part with the given field name and value (of the specified content type).
+     *
+     * @param fieldName the field name
+     * @param contentType the value content type
+     * @param value the value
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent field(String fieldName, String contentType, String value) {
+<span class="nc" id="L93">        return part(fieldName, contentType, value);</span>
+    }
+
+    /**
+     * Configures a field part with the given field name and value.
+     *
+     * @param fieldName the field name
+     * @param value the value
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent part(String fieldName, String value) {
+<span class="fc" id="L104">        return part(fieldName, null, ContentTypes.TEXT.getAt(0), value);</span>
+    }
+
+    /**
+     * Configures a field part with the given field name and value (of the specified content type).
+     *
+     * @param fieldName the field name
+     * @param contentType the value content type
+     * @param value the value
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent part(String fieldName, String contentType, String value) {
+<span class="nc" id="L116">        return part(fieldName, null, contentType, value);</span>
+    }
+
+    /**
+     * Configures a file part with the specified properties. Encoders must be configured on the {@link HttpBuilder} to handle the content type
+     * of each configured part.
+     *
+     * @param fieldName the field name
+     * @param fileName the file name
+     * @param contentType the part content type
+     * @param content the part content (encoders must be configured)
+     * @return a reference to this {@link MultipartContent} instance
+     */
+    public MultipartContent part(String fieldName, String fileName, String contentType, Object content) {
+<span class="fc" id="L130">        entries.add(new MultipartPart(fieldName, fileName, contentType, content));</span>
+<span class="fc" id="L131">        return this;</span>
+    }
+
+    /**
+     * Iterates over the configured parts.
+     *
+     * @return an {@link Iterable} view of the configured parts.
+     */
+    Iterable&lt;MultipartPart&gt; parts() {
+<span class="fc" id="L140">        return unmodifiableList(entries);</span>
+    }
+
+    /**
+     * Used to retrieve the multipart content boundary used by this content. Encoders may provide their own boundary implementation or use
+     * the one provided by this method.
+     *
+     * @return a multipart boundary string for this content.
+     */
+    String boundary() {
+<span class="fc" id="L150">        return boundary;</span>
+    }
+
+    /**
+     * Represents a single multipart part.
+     */
+    static class MultipartPart {
+
+        private final String fieldName;
+        private final String fileName;
+        private final String contentType;
+        private final Object content;
+
+<span class="fc" id="L163">        private MultipartPart(String fieldName, String fileName, String contentType, Object content) {</span>
+<span class="fc" id="L164">            this.fieldName = fieldName;</span>
+<span class="fc" id="L165">            this.fileName = fileName;</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            this.contentType = contentType != null ? contentType : ContentTypes.TEXT.getAt(0);</span>
+<span class="fc" id="L167">            this.content = content;</span>
+<span class="fc" id="L168">        }</span>
+
+        public String getFieldName() {
+<span class="fc" id="L171">            return fieldName;</span>
+        }
+
+        public String getFileName() {
+<span class="fc" id="L175">            return fileName;</span>
+        }
+
+        public String getContentType() {
+<span class="fc" id="L179">            return contentType;</span>
+        }
+
+        public Object getContent() {
+<span class="fc" id="L183">            return content;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

@@ -31,7 +31,7 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>154 lines of code analyzed,
+<p>173 lines of code analyzed,
             in 5 classes,
             in 1 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
@@ -50,15 +50,20 @@
 <td align="right"/>
 <td align="right">NaN</td>
 </tr>
+<tr class="tablerow1">
+<td>Low Priority Warnings</td>
+<td align="right">1</td>
+<td align="right">5.78</td>
+</tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>0</b>
+<b>1</b>
 </td>
 <td align="right">
-<b>0.00</b>
+<b>5.78</b>
 </td>
 </tr>
 </table>
@@ -77,10 +82,16 @@
 </tr>
 <tr class="tablerow0">
 <td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow1">
+<td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>0</b>
+<b>1</b>
 </td>
 </tr>
 </table>
@@ -91,6 +102,34 @@
 <h1>Warnings</h1>
 <p>Click on each warning link to see a full description of the issue, and
                     details of how to resolve it.</p>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS">Could be refactored into a static inner class</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>The class groovyx.net.http.OkHttpBuilder$OkHttpFromServer could be refactored into a _static_ inner class<br/>
+<br/>
+<br/>In file OkHttpBuilder.java,
+                        
+                                lines 239
+                                to 294<br/>In class groovyx.net.http.OkHttpBuilder$OkHttpFromServer<br/>At OkHttpBuilder.java:[lines 239-294]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
 <p>
 <br/>
 <br/>
@@ -98,5 +137,25 @@
 <h1>
 <a name="Details">Warning Types</a>
 </h1>
+<h2>
+<a name="SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS">Could be refactored into a static inner class</a>
+</h2>
+
+  <p> This class is an inner class, but does not use its embedded reference
+  to the object which created it except during construction of the
+inner object.&nbsp; This reference makes the instances
+  of the class larger, and may keep the reference to the creator object
+  alive longer than necessary.&nbsp; If possible, the class should be
+  made into a <em>static</em> inner class. Since the reference to the
+   outer object is required during construction of the inner instance,
+   the inner class will need to be refactored so as to
+   pass a reference to the outer instance to the constructor
+   for the inner class.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
 </body>
 </html>

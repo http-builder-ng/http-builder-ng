@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultipartEncoder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-core</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">MultipartEncoder.java</span></div><h1>MultipartEncoder.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2016 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.StringJoiner;
+import java.util.function.BiConsumer;
+
+/**
+ * Standard encoder for multipart requests. This is _not_ a full multipart implementation, but should account for most use cases. If a
+ * full implementation is required, consider using one of the alternate client implementations and its client-specific multipart content
+ * encoder instead.
+ */
+<span class="fc" id="L31">public class MultipartEncoder implements BiConsumer&lt;ChainedHttpConfig, ToServer&gt; {</span>
+
+<span class="fc" id="L33">    private static final Class[] MULTIPART_TYPES = {MultipartContent.class};</span>
+    private static final String BOUNDARY_MARK = &quot;--&quot;;
+    private static final String CRLF = &quot;\r\n&quot;;
+
+    @Override
+    public void accept(final ChainedHttpConfig config, final ToServer ts) {
+<span class="fc" id="L39">        final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+
+<span class="fc" id="L41">        final Object body = request.actualBody();</span>
+<span class="fc" id="L42">        NativeHandlers.Encoders.checkTypes(body, MULTIPART_TYPES);</span>
+
+<span class="fc" id="L44">        MultipartContent mp = (MultipartContent) request.actualBody();</span>
+<span class="fc" id="L45">        request.setContentType(&quot;multipart/form-data; boundary=&quot; + mp.boundary());</span>
+<span class="fc" id="L46">        ts.toServer(stream(config, mp));</span>
+<span class="fc" id="L47">    }</span>
+
+    private static InputStream stream(final ChainedHttpConfig config, final MultipartContent content) {
+<span class="fc" id="L50">        final ByteArrayOutputStream buffer = new ByteArrayOutputStream(1024);</span>
+
+        try {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            for (final MultipartContent.MultipartPart part : content.parts()) {</span>
+<span class="fc" id="L54">                buffer.write(string(BOUNDARY_MARK, content.boundary(), CRLF));</span>
+<span class="fc" id="L55">                buffer.write(string(&quot;Content-Type: &quot;, part.getContentType(), CRLF));</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">                if (part.getFileName() != null) {</span>
+<span class="fc" id="L58">                    buffer.write(string(&quot;Content-Disposition: form-data; name=\&quot;&quot;, part.getFieldName(), &quot;\&quot;; filename=\&quot;&quot;, part.getFileName(), &quot;\&quot;&quot;, CRLF));</span>
+
+                } else {
+<span class="fc" id="L61">                    buffer.write(string(&quot;Content-Disposition: form-data; name=\&quot;&quot;, part.getFieldName(), &quot;\&quot;&quot;, CRLF));</span>
+                }
+
+                // TODO: do we need content-transfer-encoding?
+                // buffer.write(string(&quot;Content-Transfer-Encoding: &quot;, , CRLF));
+
+<span class="fc" id="L67">                buffer.write(string(CRLF));</span>
+
+<span class="fc" id="L69">                buffer.write(EmbeddedEncoder.encode(config, part.getContentType(), part.getContent()));</span>
+
+<span class="fc" id="L71">                buffer.write(string(CRLF));</span>
+<span class="fc" id="L72">            }</span>
+
+<span class="fc" id="L74">            buffer.write(string(BOUNDARY_MARK, content.boundary(), BOUNDARY_MARK));</span>
+
+<span class="nc" id="L76">        } catch (IOException e) {</span>
+<span class="nc" id="L77">            throw new RuntimeException(&quot;Problem while encoding multipart content: &quot; + e.getMessage());</span>
+<span class="fc" id="L78">        }</span>
+
+<span class="fc" id="L80">        return new ByteArrayInputStream(buffer.toByteArray());</span>
+    }
+
+    private static byte[] string(final String... str) {
+<span class="fc" id="L84">        final StringJoiner joiner = new StringJoiner(&quot;&quot;);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        for (final String s : str) {</span>
+<span class="fc" id="L86">            joiner.add(s);</span>
+        }
+<span class="fc" id="L88">        return joiner.toString().getBytes(StandardCharsets.UTF_8);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

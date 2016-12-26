@@ -35,37 +35,39 @@ import static java.util.Collections.unmodifiableList;
 <span class="fc" id="L35">    XML(&quot;application/xml&quot;, &quot;text/xml&quot;, &quot;application/xhtml+xml&quot;, &quot;application/atom+xml&quot;),</span>
 <span class="fc" id="L36">    HTML(&quot;text/html&quot;),</span>
 <span class="fc" id="L37">    URLENC(&quot;application/x-www-form-urlencoded&quot;),</span>
-<span class="fc" id="L38">    BINARY(&quot;application/octet-stream&quot;);</span>
+<span class="fc" id="L38">    BINARY(&quot;application/octet-stream&quot;),</span>
+<span class="fc" id="L39">    MULTIPART_FORMDATA(&quot;multipart/form-data&quot;),</span>
+<span class="fc" id="L40">    MULTIPART_MIXED(&quot;multipart/mixed&quot;);</span>
 
     private final List&lt;String&gt; values;
 
-<span class="fc" id="L42">    ContentTypes(final String... values) {</span>
-<span class="fc" id="L43">        this.values = unmodifiableList(asList(values));</span>
-<span class="fc" id="L44">    }</span>
+<span class="fc" id="L44">    ContentTypes(final String... values) {</span>
+<span class="fc" id="L45">        this.values = unmodifiableList(asList(values));</span>
+<span class="fc" id="L46">    }</span>
 
     public static ContentTypes fromValue(final String value) {
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (ContentTypes type : ContentTypes.values()) {</span>
-<span class="fc bfc" id="L48" title="All 2 branches covered.">            if (type.values.contains(value)) {</span>
-<span class="fc" id="L49">                return type;</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        for (ContentTypes type : ContentTypes.values()) {</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            if (type.values.contains(value)) {</span>
+<span class="fc" id="L51">                return type;</span>
             }
         }
-<span class="fc" id="L52">        return null;</span>
+<span class="fc" id="L54">        return null;</span>
     }
 
     public String getAt(final int index){
-<span class="fc" id="L56">        return values.get(index);</span>
+<span class="fc" id="L58">        return values.get(index);</span>
     }
 
     @Override public Iterator&lt;String&gt; iterator() {
-<span class="fc" id="L60">        return values.iterator();</span>
+<span class="fc" id="L62">        return values.iterator();</span>
     }
 
     @Override public void forEach(Consumer&lt;? super String&gt; action) {
-<span class="fc" id="L64">        values.forEach(action);</span>
-<span class="fc" id="L65">    }</span>
+<span class="fc" id="L66">        values.forEach(action);</span>
+<span class="fc" id="L67">    }</span>
 
     @Override public Spliterator&lt;String&gt; spliterator() {
-<span class="nc" id="L68">        return values.spliterator();</span>
+<span class="nc" id="L70">        return values.spliterator();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
