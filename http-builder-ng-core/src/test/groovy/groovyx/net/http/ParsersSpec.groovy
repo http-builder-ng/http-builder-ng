@@ -20,7 +20,7 @@ import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static com.stehno.ersatz.MultipartContent.multipart
+import static com.stehno.ersatz.MultipartResponseContent.multipart
 import static groovyx.net.http.ContentTypes.MULTIPART_MIXED
 
 class ParsersSpec extends Specification {

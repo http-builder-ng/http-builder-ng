@@ -20,21 +20,18 @@ import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.CountedClosure
 import groovyx.net.http.FromServer
 import groovyx.net.http.NativeHandlers
-import spock.lang.Issue
 import spock.lang.Unroll
-
-import static com.stehno.ersatz.Verifiers.once
 
 /**
  * Test kit for testing the HTTP GET method with different clients.
  */
 abstract class HttpGetTestKit extends HttpMethodTestKit {
 
-    @Unroll def 'GET /status(#status): verify when handler'() {
+    @Unroll 'GET /status(#status): verify when handler'() {
         given:
         ersatzServer.expectations {
             [200, 300, 400, 500].each { code ->
-                get("/status$code").verifier(once()).responds().code(code)
+                get("/status$code").called(1).responds().code(code)
             }
         }
 
@@ -64,11 +61,11 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         status << ['200', '300', '400', '500']
     }
 
-    @Unroll def 'GET /status(#status): success/failure handler'() {
+    @Unroll 'GET /status(#status): success/failure handler'() {
         given:
         ersatzServer.expectations {
             [200, 300, 400, 500].each { code ->
-                get("/status$code").verifier(once()).responds().code(code)
+                get("/status$code").called(1).responds().code(code)
             }
         }
 
@@ -108,11 +105,11 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         500    | false   | true
     }
 
-    @Unroll def 'GET /status(#status): with only failure handler'() {
+    @Unroll 'GET /status(#status): with only failure handler'() {
         given:
         ersatzServer.expectations {
             [200, 300, 400, 500].each { code ->
-                get("/status$code").verifier(once()).responds().code(code)
+                get("/status$code").called(1).responds().code(code)
             }
         }
 

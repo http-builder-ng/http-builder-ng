@@ -15,8 +15,7 @@
  */
 package groovyx.net.http.tk
 
-import com.stehno.ersatz.ErsatzServer
-import com.stehno.ersatz.MultipartContentMatcher
+import com.stehno.ersatz.*
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.HttpBuilder
 import groovyx.net.http.MultipartContent
@@ -30,9 +29,9 @@ import java.util.function.BiConsumer
 import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static com.stehno.ersatz.Verifiers.once
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.ContentTypes.TEXT
+import static org.hamcrest.Matchers.equalTo
 
 abstract class EncoderTestKit extends Specification {
 
@@ -45,7 +44,7 @@ abstract class EncoderTestKit extends Specification {
     abstract BiConsumer<ChainedHttpConfig, ToServer> getEncoder()
 
     def setup() {
-        http = HttpBuilder.configure(clientFactory){
+        http = HttpBuilder.configure(clientFactory) {
             request.encoder(MULTIPART_FORMDATA, encoder)
             request.contentType = MULTIPART_FORMDATA[0]
         }
@@ -55,10 +54,13 @@ abstract class EncoderTestKit extends Specification {
         setup:
         ersatzServer.expectations {
             post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    field(0, 'alpha', 'one') && field(1, 'bravo', 'two')
-                }
-                verifier(once())
+                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder TEXT_PLAIN, Decoders.utf8String
+                body MultipartRequestContent.multipart {
+                    part 'alpha', 'one'
+                    part 'bravo', 'two'
+                }, ContentType.MULTIPART_FORMDATA
+                called equalTo(1)
                 responds().content('ok', TEXT_PLAIN)
             }
         }.start()
@@ -153,11 +155,13 @@ abstract class EncoderTestKit extends Specification {
 
         ersatzServer.expectations {
             post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    file(0, 'filea', 'file-a.txt', TEXT_PLAIN.value, 'some-a-content') &&
-                        file(1, 'fileb', 'file-b.xtx', TEXT_PLAIN.value, 'some-b-content')
-                }
-                verifier(once())
+                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder TEXT_PLAIN, Decoders.utf8String
+                body MultipartRequestContent.multipart {
+                    part 'filea', 'file-a.txt', TEXT_PLAIN.value, 'some-a-content'
+                    part 'fileb', 'file-b.xtx', TEXT_PLAIN.value, 'some-b-content'
+                }, ContentType.MULTIPART_FORMDATA
+                called 1
                 responds().content('ok', TEXT_PLAIN)
             }
         }.start()

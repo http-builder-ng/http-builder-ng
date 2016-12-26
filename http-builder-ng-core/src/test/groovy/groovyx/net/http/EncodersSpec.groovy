@@ -15,17 +15,19 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.ContentType
+import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.ErsatzServer
-import com.stehno.ersatz.MultipartContentMatcher
+import com.stehno.ersatz.MultipartRequestContent
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static com.stehno.ersatz.Verifiers.once
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.ContentTypes.TEXT
+import static org.hamcrest.Matchers.equalTo
 
 class EncodersSpec extends Specification {
 
@@ -42,10 +44,13 @@ class EncodersSpec extends Specification {
 
         ersatzServer.expectations {
             post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    field(0, 'alpha', 'one') && field(1, 'bravo', 'two')
-                }
-                verifier(once())
+                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder TEXT_PLAIN, Decoders.utf8String
+                body MultipartRequestContent.multipart {
+                    part 'alpha', 'one'
+                    part 'bravo', 'two'
+                }, ContentType.MULTIPART_FORMDATA
+                called 1
                 responds().content('ok', TEXT_PLAIN)
             }
         }.start()
@@ -160,11 +165,13 @@ class EncodersSpec extends Specification {
 
         ersatzServer.expectations {
             post('/multi') {
-                condition MultipartContentMatcher.multipart {
-                    file(0, 'filea', 'file-a.txt', TEXT_PLAIN, 'some-a-content') &&
-                        file(1, 'fileb', 'file-b.xtx', TEXT_PLAIN, 'some-b-content')
-                }
-                verifier(once())
+                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder TEXT_PLAIN, Decoders.utf8String
+                body MultipartRequestContent.multipart {
+                    part 'filea', 'file-a.txt', TEXT_PLAIN, 'some-a-content'
+                    part 'fileb', 'file-b.xtx', TEXT_PLAIN, 'some-b-content'
+                }, ContentType.MULTIPART_FORMDATA
+                called equalTo(1)
                 responds().content('ok', TEXT_PLAIN)
             }
         }.start()

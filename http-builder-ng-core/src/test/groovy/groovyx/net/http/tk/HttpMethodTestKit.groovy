@@ -15,7 +15,13 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.ErsatzServer
+import com.stehno.ersatz.RequestDecoders
+
+import static com.stehno.ersatz.ContentType.APPLICATION_JSON
+import static com.stehno.ersatz.ContentType.APPLICATION_URLENCODED
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
 /**
  * Base test kit for testing HTTP method handling by different client implementations.
@@ -23,6 +29,11 @@ import com.stehno.ersatz.ErsatzServer
 abstract class HttpMethodTestKit extends TestKit {
 
     protected final ErsatzServer ersatzServer = new ErsatzServer()
+    protected final RequestDecoders commonDecoders = new RequestDecoders({
+        register TEXT_PLAIN, Decoders.utf8String
+        register APPLICATION_URLENCODED, Decoders.urlEncoded
+        register APPLICATION_JSON, Decoders.parseJson
+    })
 
     def cleanup() {
         ersatzServer.stop()

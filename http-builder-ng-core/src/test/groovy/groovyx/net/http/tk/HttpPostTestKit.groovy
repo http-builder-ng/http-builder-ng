@@ -15,6 +15,7 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.feat.BasicAuthFeature
 import groovy.json.JsonSlurper
 import groovyx.net.http.ChainedHttpConfig
@@ -54,14 +55,14 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         httpBuilder(ersatzServer.port).postAsync().get() == htmlContent()
     }
 
-    @Unroll def 'POST /foo (#contentType): returns content'() {
+    @Unroll 'POST /foo (#contentType): returns content'() {
         given:
         ersatzServer.expectations {
-            post('/foo').body(BODY_STRING, TEXT[0]).responds().content(HTML_CONTENT, TEXT[0])
+            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).responds().content(HTML_CONTENT, TEXT[0])
 
             post('/foo') {
+                decoders(commonDecoders)
                 body([age: 42, name: 'Bob'], JSON[0])
-                converter(JSON[0] as String, { b -> new JsonSlurper().parse(b) })
                 responder {
                     content('{"name":"Bob","age":42}', JSON[0])
                 }
@@ -90,7 +91,7 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     def 'POST /form (url-encoded)'() {
         setup:
         ersatzServer.expectations {
-            post('/form').body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).responds().content('ok', TEXT_PLAIN)
+            post('/form').decoders(commonDecoders).body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).responds().content('ok', TEXT_PLAIN)
         }.start()
 
         def config = {
@@ -107,10 +108,10 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         httpBuilder(ersatzServer.port).postAsync(config).get() == 'ok'
     }
 
-    @Unroll def 'POST /foo (#contentType): encodes and decodes properly and returns content'() {
+    @Unroll 'POST /foo (#contentType): encodes and decodes properly and returns content'() {
         given:
         ersatzServer.expectations {
-            post('/foo').body([name: 'Bob', age: 42], JSON[0]).responds().content(JSON_CONTENT, JSON[0])
+            post('/foo').decoders(commonDecoders).body([name: 'Bob', age: 42], JSON[0]).responds().content(JSON_CONTENT, JSON[0])
         }.start()
 
         def config = {
@@ -134,7 +135,7 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     def 'POST /foo (cookie): returns content'() {
         given:
         ersatzServer.expectations {
-            post('/foo').body(BODY_STRING, TEXT[0]).cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
+            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
         }.start()
 
         def config = {
@@ -154,7 +155,7 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     def 'POST /foo (query string): returns content'() {
         given:
         ersatzServer.expectations {
-            post('/foo').body(BODY_STRING, TEXT[0]).query('action', 'login').responds().content(htmlContent(), TEXT[0])
+            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).query('action', 'login').responds().content(htmlContent(), TEXT[0])
         }.start()
 
         def config = {
@@ -174,7 +175,12 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     def 'POST /date: returns content as Date'() {
         given:
         ersatzServer.expectations {
-            post('/date').body('DATE-TIME: 20160825-1443', 'text/datetime').responds().content(DATE_STRING, 'text/date')
+            post('/date'){
+                decoders(commonDecoders)
+                decoder 'text/datetime', Decoders.utf8String
+                body('DATE-TIME: 20160825-1443', 'text/datetime')
+                responds().content('2016.08.25 14:43', 'text/date')
+            }
         }.start()
 
         def config = {
@@ -197,12 +203,12 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
     }
 
     @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
-    def '[#client] POST (BASIC) /basic: returns content'() {
+    '[#client] POST (BASIC) /basic: returns content'() {
         setup:
         ersatzServer.addFeature new BasicAuthFeature()
 
         ersatzServer.expectations {
-            post('/basic').body([name: 'Bob', age: 42], JSON[0]).responds().content(htmlContent(), 'text/plain')
+            post('/basic').decoders(commonDecoders).body([name: 'Bob', age: 42], JSON[0]).responds().content(htmlContent(), 'text/plain')
         }.start()
 
         expect:
