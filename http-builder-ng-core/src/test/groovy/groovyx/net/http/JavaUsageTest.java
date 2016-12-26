@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,18 +15,20 @@
  */
 package groovyx.net.http;
 
-import okhttp3.mockwebserver.MockResponse;
+import com.stehno.ersatz.Decoders;
+import com.stehno.ersatz.ErsatzServer;
+import com.stehno.ersatz.RequestDecoders;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN;
+import static org.junit.Assert.*;
 
 /**
  * Demonstration (and test) of using {@link HttpBuilder} via standard Java.
@@ -34,23 +36,27 @@ import static org.junit.Assert.assertFalse;
 @Ignore
 public class JavaUsageTest {
 
-    @Rule
-    public MockWebServerRule serverRule = new MockWebServerRule();
-
     private static final String CONTENT = "This is CONTENT!!!";
+    private ErsatzServer ersatzServer;
+    private RequestDecoders decoders;
     private HttpBuilder http;
 
     @Before
     public void before() {
-        http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(serverRule.getServerUrl());
-        });
+        ersatzServer = new ErsatzServer();
+
+        decoders = new RequestDecoders();
+        decoders.register(TEXT_PLAIN, Decoders.getUtf8String());
     }
 
     @Test
     @SuppressWarnings({"unchecked", "Convert2Lambda"})
     public void head_request() throws Exception {
-        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+        ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -63,9 +69,11 @@ public class JavaUsageTest {
             });
         });
 
-        assertEquals(2, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(4, headers.size());
+        assertEquals(headers.get(0).toString(), "Connection: keep-alive");
         assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
+        assertEquals(headers.get(2).toString(), "Content-Length: 0");
+        assertTrue(headers.get(3).toString().startsWith("Date: "));
 
         CompletableFuture<List> future = http.headAsync(List.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -77,15 +85,21 @@ public class JavaUsageTest {
 
         headers = (List<FromServer.Header>) future.get();
 
-        assertEquals(2, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(4, headers.size());
+        assertEquals(headers.get(0).toString(), "Connection: keep-alive");
         assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
+        assertEquals(headers.get(2).toString(), "Content-Length: 0");
+        assertTrue(headers.get(3).toString().startsWith("Date: "));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void head_request_with_raw_function() throws Exception {
-        serverRule.dispatcher("HEAD","/foo", new MockResponse().setHeader("Content-Type", "text/plain"));
+        ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
             assertFalse(from.getHasBody());
@@ -97,14 +111,20 @@ public class JavaUsageTest {
             config.getResponse().success(successFunction);
         });
 
-        assertEquals(2, headers.size());
-        assertEquals(headers.get(0).toString(), "Content-Length: 0");
+        assertEquals(4, headers.size());
+        assertEquals(headers.get(0).toString(), "Connection: keep-alive");
         assertEquals(headers.get(1).toString(), "Content-Type: text/plain");
+        assertEquals(headers.get(2).toString(), "Content-Length: 0");
+        assertTrue(headers.get(3).toString().startsWith("Date: "));
     }
 
     @Test
     public void get_request() throws Exception {
-        serverRule.dispatcher("GET","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.get("/foo").responds().content(CONTENT, "text/plain")).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         String result = http.get(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -121,7 +141,11 @@ public class JavaUsageTest {
 
     @Test
     public void post_request() throws Exception {
-        serverRule.dispatcher("POST","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.post("/foo").decoders(decoders).body(CONTENT, TEXT_PLAIN).responds().content(CONTENT, TEXT_PLAIN)).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         String result = http.post(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -142,7 +166,11 @@ public class JavaUsageTest {
 
     @Test
     public void put_request() throws Exception {
-        serverRule.dispatcher("PUT","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.put("/foo").body(CONTENT, TEXT_PLAIN).decoders(decoders).responds().content(CONTENT, TEXT_PLAIN)).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         String result = http.put(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -163,7 +191,11 @@ public class JavaUsageTest {
 
     @Test
     public void delete_request() throws Exception {
-        serverRule.dispatcher("DELETE","/foo", new MockResponse().setHeader("Content-Type", "text/plain").setBody(CONTENT));
+        ersatzServer.expectations(ex -> ex.delete("/foo").responds().content(CONTENT, "text/plain")).start();
+
+        http = HttpBuilder.configure(config -> {
+            config.getRequest().setUri(ersatzServer.getServerUrl());
+        });
 
         String result = http.delete(String.class, config -> {
             config.getRequest().getUri().setPath("/foo");
@@ -176,5 +208,10 @@ public class JavaUsageTest {
         });
 
         assertEquals(future.get(), CONTENT);
+    }
+
+    @After
+    public void after() {
+        ersatzServer.stop();
     }
 }

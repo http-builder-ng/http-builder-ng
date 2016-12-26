@@ -15,27 +15,20 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.tk.HttpBuilderTestKit
+import groovyx.net.http.tk.EncoderTestKit
 
+import java.util.function.BiConsumer
 import java.util.function.Function
 
-class OkHttpBuilderSpec extends HttpBuilderTestKit {
+class OkHttpEncodersSpec extends EncoderTestKit {
 
-    def setup() {
-        clientFactory = { c -> new OkHttpBuilder(c) } as Function
-
-        option COMPRESSION_OPTION, false
-
-        init()
+    @Override
+    Function getClientFactory() {
+        return { c -> new OkHttpBuilder(c) } as Function
     }
 
-    def 'overridden configuration'() {
-        when:
-        HttpBuilder http = OkHttpBuilder.configure {
-            request.uri = 'http://localhost:12345'
-        }
-
-        then:
-        http instanceof OkHttpBuilder
+    @Override
+    BiConsumer<ChainedHttpConfig, ToServer> getEncoder() {
+        OkHttpEncoders.&multipart
     }
 }

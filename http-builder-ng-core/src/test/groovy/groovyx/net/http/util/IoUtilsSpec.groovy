@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http
+package groovyx.net.http.util
 
-import groovyx.net.http.tk.HttpBuilderTestKit
+import spock.lang.Specification
 
-import java.util.function.Function
+import static com.stehno.vanilla.test.Randomizers.forByteArray
+import static com.stehno.vanilla.test.Randomizers.random
 
-class OkHttpBuilderSpec extends HttpBuilderTestKit {
+class IoUtilsSpec extends Specification {
 
-    def setup() {
-        clientFactory = { c -> new OkHttpBuilder(c) } as Function
+    def 'streamToBytes'() {
+        expect:
+        IoUtils.streamToBytes(new ByteArrayInputStream(bytes)) == bytes
 
-        option COMPRESSION_OPTION, false
-
-        init()
-    }
-
-    def 'overridden configuration'() {
-        when:
-        HttpBuilder http = OkHttpBuilder.configure {
-            request.uri = 'http://localhost:12345'
-        }
-
-        then:
-        http instanceof OkHttpBuilder
+        where:
+        bytes << [
+            random(forByteArray(10..10)),
+            random(forByteArray(1000..1000)),
+            random(forByteArray(10000..10000))
+        ]
     }
 }

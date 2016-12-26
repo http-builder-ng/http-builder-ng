@@ -15,11 +15,12 @@
  */
 package groovyx.net.http;
 
-import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.util.EnumMap;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.EnumMap;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -40,15 +41,31 @@ public interface HttpObjectConfig extends HttpConfig {
      */
     interface Execution {
         /**
-         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         * Specifies the maximum number of connection threads to be used by the client.
+         *
+         * @param val the max thread count
          */
         void setMaxThreads(int val);
+
+        /**
+         * Retrieves the configured max number of connection threads used by the client.
+         *
+         * @return the max thread count
+         */
         int getMaxThreads();
 
         /**
-         * FIXME: document - what is the relation/interaction between threads and executor (used by both?)
+         * Specifies the executor to be used.
+         *
+         * @param val the executor to be used
          */
         void setExecutor(Executor val);
+
+        /**
+         * Retrieves the configured executor.
+         *
+         * @return the executor
+         */
         Executor getExecutor();
 
         /**
@@ -134,6 +151,22 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return the Cookie version supported
          */
         int getCookieVersion();
+
+        /**
+         * Specifies the location for storing cookies that will persist after your application terminates. If no folder is
+         * specified an in memory cookie store and no cookies will be persisted after your application terminates. If cookies
+         * are found here then the cookies will be loaded prior to sending any requests to remote servers.
+         *
+         * @param folder the folder used to store the cookies.
+         */
+        void setCookieFolder(File folder);
+
+        /**
+         * Retrieves the location for storing persistent cookies
+         *
+         * @return the folder containing persistent cookies, null if using an in memory store
+         */
+        File getCookieFolder();
     }
 
     ChainedHttpConfig getChainedConfig();
