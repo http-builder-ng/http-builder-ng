@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http;
+package groovyx.net.http.util
 
-import java.io.InputStream;
+import spock.lang.Specification
 
-/**
- * Adapter interface used to translate request content from the {@link HttpBuilder} API to the specific format required by the underlying client
- * implementation.
- */
-public interface ToServer {
+import static com.stehno.vanilla.test.Randomizers.forByteArray
+import static com.stehno.vanilla.test.Randomizers.random
 
-    /**
-     * Translates the request content appropriately for the underlying client implementation. The contentType will be determined by the request.
-     *
-     * @param inputStream the request input stream to be translated.
-     */
-    void toServer(InputStream inputStream);
+class IoUtilsSpec extends Specification {
+
+    def 'streamToBytes'() {
+        expect:
+        IoUtils.streamToBytes(new ByteArrayInputStream(bytes)) == bytes
+
+        where:
+        bytes << [
+            random(forByteArray(10..10)),
+            random(forByteArray(1000..1000)),
+            random(forByteArray(10000..10000))
+        ]
+    }
 }

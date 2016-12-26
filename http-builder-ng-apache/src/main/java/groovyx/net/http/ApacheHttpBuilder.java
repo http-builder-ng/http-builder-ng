@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.NativeHandlers.Parsers.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -175,11 +176,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     public static class ApacheToServer implements ToServer, HttpEntity {
 
-        private final String contentType;
+        private ChainedHttpConfig config;
         private InputStream inputStream;
 
-        public ApacheToServer(final String contentType) {
-            this.contentType = contentType;
+        public ApacheToServer(final ChainedHttpConfig config) {
+            this.config = config;
         }
 
         public void toServer(final InputStream inputStream) {
@@ -199,7 +200,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public org.apache.http.Header getContentType() {
-            return new BasicHeader("Content-Type", contentType);
+            return new BasicHeader("Content-Type", config.findContentType());
         }
 
         public org.apache.http.Header getContentEncoding() {
@@ -211,7 +212,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public void writeTo(final OutputStream outputStream) {
-            NativeHandlers.Parsers.transfer(inputStream, outputStream, false);
+            transfer(inputStream, outputStream, false);
         }
 
         public boolean isStreaming() {
@@ -322,7 +323,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     }
 
     private HttpEntity entity(final ChainedHttpConfig config) {
-        final ApacheToServer ats = new ApacheToServer(config.findContentType());
+        final ApacheToServer ats = new ApacheToServer(config);
         config.findEncoder().accept(config, ats);
         return ats;
     }
@@ -358,7 +359,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPost post = addHeaders(cr, new HttpPost(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
-            post.setEntity(entity(requestConfig));
+            final HttpEntity entity = entity(requestConfig);
+            post.setEntity(entity);
+            post.setHeader(entity.getContentType());
         }
 
         return exec(post, requestConfig);
@@ -368,7 +371,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));
         if(cr.actualBody() != null) {
-            put.setEntity(entity(requestConfig));
+            final HttpEntity entity = entity(requestConfig);
+            put.setEntity(entity);
+            put.setHeader(entity.getContentType());
         }
 
         return exec(put, requestConfig);

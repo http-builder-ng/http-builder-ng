@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http;
+package groovyx.net.http
 
-import java.io.InputStream;
+import groovyx.net.http.tk.EncoderTestKit
 
-/**
- * Adapter interface used to translate request content from the {@link HttpBuilder} API to the specific format required by the underlying client
- * implementation.
- */
-public interface ToServer {
+import java.util.function.BiConsumer
+import java.util.function.Function
 
-    /**
-     * Translates the request content appropriately for the underlying client implementation. The contentType will be determined by the request.
-     *
-     * @param inputStream the request input stream to be translated.
-     */
-    void toServer(InputStream inputStream);
+class ApacheEncodersSpec extends EncoderTestKit {
+
+    @Override
+    Function getClientFactory() {
+        return { c -> new ApacheHttpBuilder(c) } as Function
+    }
+
+    @Override
+    BiConsumer<ChainedHttpConfig, ToServer> getEncoder() {
+        ApacheEncoders.&multipart
+    }
 }
