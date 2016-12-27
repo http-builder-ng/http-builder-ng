@@ -54,7 +54,6 @@ or, for Maven add the following to your `pom.xml` file:
       <groupId>org.codehaus.groovy.modules</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
       <version>0.12.0</version>
-      <type>pom</type>
     </dependency>
     
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
