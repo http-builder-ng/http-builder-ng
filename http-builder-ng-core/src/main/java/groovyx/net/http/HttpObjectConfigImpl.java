@@ -15,8 +15,10 @@
  */
 package groovyx.net.http;
 
-import java.io.File;
+import org.apache.commons.lang3.BooleanUtils;
+
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
@@ -24,15 +26,17 @@ import java.util.function.Function;
 
 import static groovyx.net.http.HttpConfigs.basic;
 import static groovyx.net.http.HttpConfigs.root;
+import static java.lang.System.getProperty;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
-  
+
     private final ChainedHttpConfig config = basic(root());
 
     public ChainedHttpConfig getChainedConfig() {
         return config;
     }
-    
+
     final Exec exec = new Exec();
     final ClientConfig clientConfig = new ClientConfig();
 
@@ -52,12 +56,12 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
                 interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);
             }
         }
-        
+
         public void setMaxThreads(final int val) {
             if(val < 1) {
                 throw new IllegalArgumentException("Max Threads cannot be less than 1");
             }
-            
+
             this.maxThreads = val;
         }
 
@@ -69,7 +73,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
             if(val == null) {
                 throw new NullPointerException();
             }
-            
+
             this.executor = val;
         }
 
@@ -89,7 +93,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
             if(func == null) {
                 throw new NullPointerException("func cannot be null");
             }
-            
+
             interceptors.put(verb, func);
         }
 
@@ -108,6 +112,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
         private int cookieVersion = 0;
         private File cookieFolder;
+        private boolean ignoreSslIssues = toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"));
 
         @Override public void setCookieVersion(int version) {
             this.cookieVersion = version;
@@ -123,6 +128,14 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
         @Override public void setCookieFolder(final File val) {
             this.cookieFolder = val;
+        }
+
+        @Override public void setIgnoreSslIssues(boolean ignore) {
+            ignoreSslIssues = ignore;
+        }
+
+        @Override public boolean getIgnoreSslIssues() {
+            return ignoreSslIssues;
         }
     }
 

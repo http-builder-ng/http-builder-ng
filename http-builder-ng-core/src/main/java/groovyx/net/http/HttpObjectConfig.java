@@ -167,6 +167,25 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return the folder containing persistent cookies, null if using an in memory store
          */
         File getCookieFolder();
+
+        /**
+         * Used to toggle the ignoring of SSL certificate issues. In general this should only be used for *testing* purposes only (or for self-signed
+         * certificates) - you are basically accepting any certificate as valid.
+         *
+         * This behavior may also be configured using the `groovyx.net.http.ignore-ssl-issues=<true|false>` system property in cases where it is not
+         * desirable to configure it in the DSL. Note, that a value configured in the DSL (with this method) will override any system property-level
+         * configuration.
+         *
+         * @param ignore whether or not to ignore SSL issues.
+         */
+        void setIgnoreSslIssues(boolean ignore);
+
+        /**
+         * Retrieves the status of whether or not SSL issues are ignored.
+         *
+         * @return true, if SSL issues are ignored
+         */
+        boolean getIgnoreSslIssues();
     }
 
     ChainedHttpConfig getChainedConfig();

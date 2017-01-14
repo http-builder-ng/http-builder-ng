@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,7 @@
  */
 package groovyx.net.http;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,8 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -100,6 +101,11 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
                     if (sslContext != null) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
+
+                        if (hostnameVerifier != null) {
+                            https.setHostnameVerifier(hostnameVerifier);
+                        }
+
                         https.setSSLSocketFactory(sslContext.getSocketFactory());
                     }
 
@@ -270,14 +276,50 @@ public class JavaHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
+    final private HostnameVerifier hostnameVerifier;
     final private HttpObjectConfig.Client clientConfig;
 
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
-        this.sslContext = config.getExecution().getSslContext();
         this.clientConfig = config.getClient();
+
+        if (clientConfig.getIgnoreSslIssues()) {
+            this.hostnameVerifier = (s, sslSession) -> true;
+            this.sslContext = ignoreSslIssues();
+        } else {
+            this.hostnameVerifier = null;
+            this.sslContext = config.getExecution().getSslContext();
+        }
+    }
+
+    /// FIXME: shared code and bad name
+    private SSLContext ignoreSslIssues() {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+
+            // set up a TrustManager that trusts everything
+            final TrustManager[] trustManagers = {new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[]{};
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }};
+
+            sslContext.init(null, trustManagers, new SecureRandom());
+
+            return sslContext;
+
+        } catch (Exception ex) {
+            // FIXME: log error
+            return null;
+        }
     }
 
     protected ChainedHttpConfig getObjectConfig() {

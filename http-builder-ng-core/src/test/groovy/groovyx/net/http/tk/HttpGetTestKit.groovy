@@ -19,8 +19,11 @@ import com.stehno.ersatz.feat.BasicAuthFeature
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.CountedClosure
 import groovyx.net.http.FromServer
+import groovyx.net.http.JavaHttpBuilder
 import groovyx.net.http.NativeHandlers
 import spock.lang.Unroll
+
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
 /**
  * Test kit for testing the HTTP GET method with different clients.
@@ -314,10 +317,28 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         when:
-        result = httpBuilder(ersatzServer.serverUrl).getAsync(Date, config).get()
+        result = httpBuilder(ersatzServer.httpUrl).getAsync(Date, config).get()
 
         then:
         result instanceof Date
         result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
+    }
+
+    def 'ssl request (ignoring issues)'() {
+        setup:
+        ersatzServer.expectations {
+            get('/secure').protocol('https').responds().content('ok', TEXT_PLAIN)
+        }.start()
+
+        when:
+        def result = httpBuilder {
+            client.ignoreSslIssues = true
+            request.uri = ersatzServer.httpsUrl
+        }.get {
+            request.uri.path = '/secure'
+        }
+
+        then:
+        result == 'ok'
     }
 }

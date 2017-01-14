@@ -16,6 +16,8 @@
 package groovyx.net.http.tk
 
 import groovyx.net.http.HttpBuilder
+import groovyx.net.http.HttpConfig
+import groovyx.net.http.HttpObjectConfig
 import spock.lang.Specification
 
 import java.util.function.Function
@@ -31,7 +33,7 @@ abstract class TestKit extends Specification {
     Function clientFactory
     Map<Object,Object> options = [:]
 
-    protected HttpBuilder httpBuilder(Closure config) {
+    protected HttpBuilder httpBuilder(@DelegatesTo(HttpObjectConfig) Closure config) {
         HttpBuilder.configure(clientFactory, config)
     }
 
