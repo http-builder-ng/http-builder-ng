@@ -117,7 +117,7 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
 
     def 'DELETE (BASIC) /basic: returns content'() {
         given:
-        ersatzServer.addFeature new BasicAuthFeature()
+        ersatzServer.feature new BasicAuthFeature()
 
         ersatzServer.expectations {
             delete('/basic').responds().content(htmlContent(), TEXT[0])

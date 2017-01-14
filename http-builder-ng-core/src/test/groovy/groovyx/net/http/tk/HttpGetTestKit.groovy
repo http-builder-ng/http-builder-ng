@@ -275,7 +275,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     def 'GET (BASIC) /basic: returns content'() {
         given:
-        ersatzServer.addFeature new BasicAuthFeature()
+        ersatzServer.feature new BasicAuthFeature()
 
         ersatzServer.expectations {
             get('/basic').responds().contentType('text/plain').content(htmlContent())

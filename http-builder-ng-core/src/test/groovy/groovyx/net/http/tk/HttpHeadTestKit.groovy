@@ -18,7 +18,6 @@ package groovyx.net.http.tk
 import com.stehno.ersatz.feat.BasicAuthFeature
 import groovyx.net.http.CountedClosure
 import groovyx.net.http.FromServer
-import spock.lang.Issue
 import spock.lang.Unroll
 
 /**
@@ -88,7 +87,7 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
     def 'HEAD (BASIC) /basic: returns only headers'() {
         given:
-        ersatzServer.addFeature new BasicAuthFeature()
+        ersatzServer.feature new BasicAuthFeature()
 
         ersatzServer.expectations {
             head('/basic').responds().headers(HEADERS_A)
