@@ -51,11 +51,16 @@ public class SslUtils {
      * @param execution the {@link HttpObjectConfig.Execution} instance
      */
     public static void ignoreSslIssues(final HttpObjectConfig.Execution execution){
-        execution.setSslContext(sslContext());
+        execution.setSslContext(acceptingSslContext());
         execution.setHostnameVerifier(ANY_HOSTNAME);
     }
 
-    private static SSLContext sslContext() {
+    /**
+     * Creates an {@link SSLContext} that allows all requests, regardless of certificate issues.
+     *
+     * @return an all-accepting {@link SSLContext}
+     */
+    public static SSLContext acceptingSslContext() {
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, TRUST_MANAGERS, new SecureRandom());

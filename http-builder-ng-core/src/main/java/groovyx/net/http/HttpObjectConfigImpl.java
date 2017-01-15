@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,6 +25,8 @@ import java.util.function.Function;
 
 import static groovyx.net.http.HttpConfigs.basic;
 import static groovyx.net.http.HttpConfigs.root;
+import static groovyx.net.http.util.SslUtils.ANY_HOSTNAME;
+import static groovyx.net.http.util.SslUtils.acceptingSslContext;
 import static java.lang.System.getProperty;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 
@@ -39,7 +41,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
     final Exec exec = new Exec();
     final ClientConfig clientConfig = new ClientConfig();
 
-    public static Object nullInterceptor(final ChainedHttpConfig config, final Function<ChainedHttpConfig,Object> func) {
+    public static Object nullInterceptor(final ChainedHttpConfig config, final Function<ChainedHttpConfig, Object> func) {
         return func.apply(config);
     }
 
@@ -48,18 +50,22 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         private Executor executor = SingleThreaded.instance;
         private SSLContext sslContext;
         private HostnameVerifier hostnameVerifier;
-        private boolean ignoreSslIssues = toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"));
-        private final EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> interceptors;
+        private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
 
         public Exec() {
             interceptors = new EnumMap<>(HttpVerb.class);
-            for(HttpVerb verb : HttpVerb.values()) {
+            for (HttpVerb verb : HttpVerb.values()) {
                 interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);
+            }
+
+            if (toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"))) {
+                setSslContext(acceptingSslContext());
+                setHostnameVerifier(ANY_HOSTNAME);
             }
         }
 
         public void setMaxThreads(final int val) {
-            if(val < 1) {
+            if (val < 1) {
                 throw new IllegalArgumentException("Max Threads cannot be less than 1");
             }
 
@@ -71,7 +77,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         }
 
         public void setExecutor(final Executor val) {
-            if(val == null) {
+            if (val == null) {
                 throw new NullPointerException();
             }
 
@@ -100,21 +106,21 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
             return hostnameVerifier;
         }
 
-        public void interceptor(final HttpVerb verb, final BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func) {
-            if(func == null) {
+        public void interceptor(final HttpVerb verb, final BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object> func) {
+            if (func == null) {
                 throw new NullPointerException("func cannot be null");
             }
 
             interceptors.put(verb, func);
         }
 
-        public void interceptor(final HttpVerb[] verbs, final BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func) {
-            for(HttpVerb verb : verbs) {
+        public void interceptor(final HttpVerb[] verbs, final BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object> func) {
+            for (HttpVerb verb : verbs) {
                 interceptors.put(verb, func);
             }
         }
 
-        public EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> getInterceptors() {
+        public EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> getInterceptors() {
             return interceptors;
         }
     }
@@ -124,19 +130,23 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         private int cookieVersion = 0;
         private File cookieFolder;
 
-        @Override public void setCookieVersion(int version) {
+        @Override
+        public void setCookieVersion(int version) {
             this.cookieVersion = version;
         }
 
-        @Override public int getCookieVersion() {
+        @Override
+        public int getCookieVersion() {
             return cookieVersion;
         }
 
-        @Override public File getCookieFolder() {
+        @Override
+        public File getCookieFolder() {
             return cookieFolder;
         }
 
-        @Override public void setCookieFolder(final File val) {
+        @Override
+        public void setCookieFolder(final File val) {
             this.cookieFolder = val;
         }
     }
@@ -165,7 +175,8 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         return exec;
     }
 
-    @Override public Client getClient() {
+    @Override
+    public Client getClient() {
         return clientConfig;
     }
 
