@@ -44,18 +44,18 @@ Hopefully that gives you a general idea of how Http Builder NG works. Http Build
 
 ## Artifacts
 
-WARNING: The project group-id was changed as of 0.13.0 from `org.codehaus.groovy.modules` to `io.github.http-builder-ng`. This was the only change in the 0.13.0 release. All releases going forward will use this new group-id. Please be sure to update your dependency coordinates.
+WARNING: The project group-id was changed as of 0.13.1 from `org.codehaus.groovy.modules` to `io.github.http-builder-ng`. This was the only change in the 0.13.1 release. All releases going forward will use this new group-id. Please be sure to update your dependency coordinates.
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.13.0'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.13.1'
     
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.13.0</version>
+      <version>0.13.1</version>
       <type>pom</type>
     </dependency>
     
