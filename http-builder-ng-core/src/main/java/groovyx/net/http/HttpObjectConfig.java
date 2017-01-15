@@ -15,6 +15,7 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.util.EnumMap;
@@ -76,6 +77,20 @@ public interface HttpObjectConfig extends HttpConfig {
         void setSslContext(SSLContext val);
 
         /**
+         * Specifies the {@link HostnameVerifier} to be used by the configured client (related to SSL).
+         *
+         * @param verifier the hostname verifier
+         */
+        void setHostnameVerifier(HostnameVerifier verifier);
+
+        /**
+         * Used to retrieve the {@link HostnameVerifier} configured for the client.
+         *
+         * @return the configured {@link HostnameVerifier}
+         */
+        HostnameVerifier getHostnameVerifier();
+
+        /**
          * Retrieves the {@link SSLContext} configured for the underlying HTTP client.
          *
          * @return the configured {@link SSLContext}
@@ -89,7 +104,7 @@ public interface HttpObjectConfig extends HttpConfig {
          * [source,groovy]
          * ----
          * long elapsed = configure {
-         *      request.uri = 'https://localhost:10101/foo'
+         *      request.uri = 'http://localhost:10101/foo'
          *      execution.interceptor(GET) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
          *          long started = System.currentTimeMillis()
          *          fx.apply(cfg)

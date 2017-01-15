@@ -28,7 +28,10 @@ import static com.stehno.ersatz.ContentType.TEXT_PLAIN
  */
 abstract class HttpMethodTestKit extends TestKit {
 
-    protected final ErsatzServer ersatzServer = new ErsatzServer()
+    protected final ErsatzServer ersatzServer = new ErsatzServer({
+        enableHttps()
+    })
+
     protected final RequestDecoders commonDecoders = new RequestDecoders({
         register TEXT_PLAIN, Decoders.utf8String
         register APPLICATION_URLENCODED, Decoders.urlEncoded
