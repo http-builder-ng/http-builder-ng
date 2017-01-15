@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.13.0,</span>
+<span id="revnumber">version 0.13.2,</span>
 <span id="revdate">January 2017</span>
 </div>
 <div id="toc" class="toc2">
@@ -539,6 +539,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_http_response_headers">HTTP Response Headers</a></li>
 <li><a href="#_client_library_integration">Client Library Integration</a></li>
 <li><a href="#_standard_java_usage">Standard Java Usage</a></li>
+<li><a href="#_ignoring_ssl_issues">Ignoring SSL Issues</a></li>
 <li><a href="#_examples">Examples</a>
 <ul class="sectlevel2">
 <li><a href="#_resource_last_modified_head">Resource Last Modified (HEAD)</a></li>
@@ -1056,6 +1057,33 @@ isolation from other implementations and minimizes unused dependencies in projec
 </div>
 </div>
 <div class="sect1">
+<h2 id="_ignoring_ssl_issues">Ignoring SSL Issues</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>During testing or debugging of HTTPS endpoints it is often useful to ignore SSL certificate errors. HttpBuilder-NG provides two methods of ignoring
+these issues. The first is via the configuration DSL using the <code>groovyx.net.http.util.SslUtils::ignoreSslIssues(final HttpObjectConfig.Execution)</code>
+method.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = JavaHttpBuilder.configure {
+    ignoreSslIssues execution
+    <span class="comment">// other config...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Applying this configuration helper will set an <code>SSLContext</code> and <code>HostnameVerifier</code> which will allow/trust all HTTP connections and ignore issues.
+While this approach is useful, you may also need to toggle this feature at times when you do not, or cannot, change the DSL code itself; this is
+why the second approach exists.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>groovyx.net.http.ignore-ssl-issues</code> system property is specified in the system properties with a value of <code>true</code>, the <code>ignoreSslIssues</code>
+functionality will be applied by default.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_examples">Examples</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -1310,8 +1338,8 @@ possible. The table below contains general feature support information per clien
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.13.0<br>
-Last updated 2017-01-13 09:10:24 -06:00
+Version 0.13.2<br>
+Last updated 2017-01-15 08:32:32 -06:00
 </div>
 </div>
 </body>

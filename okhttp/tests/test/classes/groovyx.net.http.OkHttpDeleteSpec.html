@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.550s</div>
+<div class="counter">0.620s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,27 +79,27 @@
 </thead>
 <tr>
 <td class="success">DELETE (BASIC) /basic: returns content</td>
-<td>0.051s</td>
+<td>0.057s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">DELETE /: returns content</td>
-<td>0.399s</td>
+<td>0.453s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">DELETE /date: returns content as Date</td>
-<td>0.022s</td>
+<td>0.028s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">DELETE /foo (cookie): returns content</td>
-<td>0.029s</td>
+<td>0.030s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">DELETE /foo (query string): returns content</td>
-<td>0.027s</td>
+<td>0.030s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
@@ -112,117 +112,123 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>09:11:31.092 [Test worker] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
-09:11:31.100 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@21cca4a0
-09:11:31.111 [Test worker] INFO org.xnio - XNIO version 3.3.6.Final
-09:11:31.131 [Test worker] INFO org.xnio.nio - XNIO NIO Implementation Version 3.3.6.Final
-09:11:31.232 [XNIO-1 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-4', selector sun.nio.ch.EPollSelectorImpl@3a81e966
-09:11:31.232 [XNIO-1 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6605be4d
-09:11:31.232 [XNIO-1 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-5', selector sun.nio.ch.EPollSelectorImpl@6470c6ea
-09:11:31.232 [XNIO-1 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-6', selector sun.nio.ch.EPollSelectorImpl@405a564a
-09:11:31.232 [XNIO-1 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-3', selector sun.nio.ch.EPollSelectorImpl@655f61d6
-09:11:31.232 [XNIO-1 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-2', selector sun.nio.ch.EPollSelectorImpl@6933331b
-09:11:31.232 [XNIO-1 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-7', selector sun.nio.ch.EPollSelectorImpl@4d71d7ca
-09:11:31.232 [XNIO-1 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-8', selector sun.nio.ch.EPollSelectorImpl@3b838e4
-09:11:31.232 [XNIO-1 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 Accept', selector sun.nio.ch.EPollSelectorImpl@6744412a
-09:11:31.234 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.314 [XNIO-1 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE / (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:34731]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.337 [XNIO-1 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.357 [XNIO-1 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE / (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:34731]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.359 [XNIO-1 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.361 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@21cca4a0
-09:11:31.366 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@51c3d62e
-09:11:31.367 [XNIO-2 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-1', selector sun.nio.ch.EPollSelectorImpl@7da3679b
-09:11:31.368 [XNIO-2 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-5', selector sun.nio.ch.EPollSelectorImpl@4f391242
-09:11:31.368 [XNIO-2 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-7', selector sun.nio.ch.EPollSelectorImpl@1148268a
-09:11:31.368 [XNIO-2 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-6', selector sun.nio.ch.EPollSelectorImpl@466e6318
-09:11:31.368 [XNIO-2 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-4', selector sun.nio.ch.EPollSelectorImpl@79364228
-09:11:31.368 [XNIO-2 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-2', selector sun.nio.ch.EPollSelectorImpl@ae9e951
-09:11:31.368 [XNIO-2 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-8', selector sun.nio.ch.EPollSelectorImpl@b719f26
-09:11:31.368 [XNIO-2 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 Accept', selector sun.nio.ch.EPollSelectorImpl@70f2149a
-09:11:31.368 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.369 [XNIO-2 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-3', selector sun.nio.ch.EPollSelectorImpl@4e55d3ea
-09:11:31.373 [XNIO-2 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:41747]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.374 [XNIO-2 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.380 [XNIO-2 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:41747]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.381 [XNIO-2 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.382 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@51c3d62e
-09:11:31.392 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@ad989ab
-09:11:31.394 [XNIO-3 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-1', selector sun.nio.ch.EPollSelectorImpl@2d5ba0d2
-09:11:31.394 [XNIO-3 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-3', selector sun.nio.ch.EPollSelectorImpl@71a9d52b
-09:11:31.394 [XNIO-3 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-2', selector sun.nio.ch.EPollSelectorImpl@621c78a9
-09:11:31.394 [XNIO-3 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-4', selector sun.nio.ch.EPollSelectorImpl@7ca11199
-09:11:31.394 [XNIO-3 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-5', selector sun.nio.ch.EPollSelectorImpl@5fc9e334
-09:11:31.394 [XNIO-3 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-7', selector sun.nio.ch.EPollSelectorImpl@1750fed2
-09:11:31.394 [XNIO-3 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-6', selector sun.nio.ch.EPollSelectorImpl@16685658
-09:11:31.394 [XNIO-3 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-8', selector sun.nio.ch.EPollSelectorImpl@4e6636e4
-09:11:31.394 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.394 [XNIO-3 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 Accept', selector sun.nio.ch.EPollSelectorImpl@7764977d
-09:11:31.402 [XNIO-3 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Cookie=[userid=spock], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:40593]}, cookies=[userid:io.undertow.server.handlers.CookieImpl@d1cf722]): &lt;empty&gt; }
-09:11:31.409 [XNIO-3 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.412 [XNIO-3 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Cookie=[userid=spock], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:40593]}, cookies=[userid:io.undertow.server.handlers.CookieImpl@449e5d94]): &lt;empty&gt; }
-09:11:31.412 [XNIO-3 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.413 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@ad989ab
-09:11:31.420 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@40fad4bf
-09:11:31.421 [XNIO-4 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-3', selector sun.nio.ch.EPollSelectorImpl@5c6a879f
-09:11:31.422 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.422 [XNIO-4 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-4', selector sun.nio.ch.EPollSelectorImpl@7cb9dce1
-09:11:31.422 [XNIO-4 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-5', selector sun.nio.ch.EPollSelectorImpl@3b166026
-09:11:31.422 [XNIO-4 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-7', selector sun.nio.ch.EPollSelectorImpl@45bc7d9f
-09:11:31.422 [XNIO-4 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-8', selector sun.nio.ch.EPollSelectorImpl@499422d5
-09:11:31.422 [XNIO-4 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-2', selector sun.nio.ch.EPollSelectorImpl@43f90a2a
-09:11:31.422 [XNIO-4 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6dbae669
-09:11:31.422 [XNIO-4 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 Accept', selector sun.nio.ch.EPollSelectorImpl@3be9a414
-09:11:31.422 [XNIO-4 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-6', selector sun.nio.ch.EPollSelectorImpl@3126b78b
-09:11:31.426 [XNIO-4 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[action:[login]], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Type=[text/plain], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35121]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.435 [XNIO-4 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.438 [XNIO-4 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[action:[login]], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Type=[text/plain], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35121]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.438 [XNIO-4 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.439 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@40fad4bf
-09:11:31.443 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@166f7779
-09:11:31.444 [XNIO-5 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-1', selector sun.nio.ch.EPollSelectorImpl@250a9e20
-09:11:31.444 [XNIO-5 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-5', selector sun.nio.ch.EPollSelectorImpl@5606004f
-09:11:31.444 [XNIO-5 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-6', selector sun.nio.ch.EPollSelectorImpl@244a59a4
-09:11:31.444 [XNIO-5 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-2', selector sun.nio.ch.EPollSelectorImpl@111183d2
-09:11:31.444 [XNIO-5 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-4', selector sun.nio.ch.EPollSelectorImpl@5a6dde49
-09:11:31.444 [XNIO-5 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-3', selector sun.nio.ch.EPollSelectorImpl@70838901
-09:11:31.444 [XNIO-5 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-7', selector sun.nio.ch.EPollSelectorImpl@e152551
-09:11:31.444 [XNIO-5 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-8', selector sun.nio.ch.EPollSelectorImpl@75bdc53a
-09:11:31.444 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.444 [XNIO-5 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 Accept', selector sun.nio.ch.EPollSelectorImpl@700dc15d
-09:11:31.450 [XNIO-5 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /date (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:33961]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.451 [XNIO-5 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: 2016.08.25 14:43
-09:11:31.460 [XNIO-5 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /date (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:33961]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.461 [XNIO-5 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Response: 2016.08.25 14:43
-09:11:31.462 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@166f7779
-09:11:31.477 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@6e37083f
-09:11:31.479 [XNIO-6 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-3', selector sun.nio.ch.EPollSelectorImpl@248710d8
-09:11:31.479 [XNIO-6 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-1', selector sun.nio.ch.EPollSelectorImpl@1e02a3d7
-09:11:31.479 [XNIO-6 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-2', selector sun.nio.ch.EPollSelectorImpl@6edcd308
-09:11:31.479 [XNIO-6 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-5', selector sun.nio.ch.EPollSelectorImpl@37cd9697
-09:11:31.479 [XNIO-6 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-7', selector sun.nio.ch.EPollSelectorImpl@21c1908d
-09:11:31.479 [XNIO-6 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-6', selector sun.nio.ch.EPollSelectorImpl@3b4b6a40
-09:11:31.479 [XNIO-6 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-4', selector sun.nio.ch.EPollSelectorImpl@e45c09d
-09:11:31.479 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-09:11:31.479 [XNIO-6 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-8', selector sun.nio.ch.EPollSelectorImpl@4e818fbf
-09:11:31.479 [XNIO-6 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 Accept', selector sun.nio.ch.EPollSelectorImpl@2fd871f6
-09:11:31.487 [XNIO-6 I/O-4] DEBUG io.undertow.request.security - Setting authentication required for exchange HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.489 [XNIO-6 task-1] DEBUG io.undertow.request.security - Attempting to authenticate HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}, authentication required: true
-09:11:31.493 [XNIO-6 task-1] DEBUG io.undertow.request.security - Found basic auth header admin:$3cr3t (decoded using charset UTF-8) in HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.500 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authenticated as admin, roles [TESTER]
-09:11:31.507 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authentication outcome was AUTHENTICATED with method io.undertow.security.impl.BasicAuthenticationMechanism@4dea72f8 for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.507 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authentication result was AUTHENTICATED for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.508 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /basic (query=[:], headers={Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.508 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.511 [XNIO-6 I/O-6] DEBUG io.undertow.request.security - Setting authentication required for exchange HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.511 [XNIO-6 task-2] DEBUG io.undertow.request.security - Attempting to authenticate HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}, authentication required: true
-09:11:31.511 [XNIO-6 task-2] DEBUG io.undertow.request.security - Found basic auth header admin:$3cr3t (decoded using charset UTF-8) in HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.511 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authenticated as admin, roles [TESTER]
-09:11:31.512 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authentication outcome was AUTHENTICATED with method io.undertow.security.impl.BasicAuthenticationMechanism@4dea72f8 for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.512 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authentication result was AUTHENTICATED for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]} response {}}
-09:11:31.512 [XNIO-6 task-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /basic (query=[:], headers={Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:38863]}, cookies=[:]): &lt;empty&gt; }
-09:11:31.512 [XNIO-6 task-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
-09:11:31.513 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@6e37083f
+<pre>08:34:02.068 [Test worker] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
+08:34:02.076 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@4f970031
+08:34:02.088 [Test worker] INFO org.xnio - XNIO version 3.3.6.Final
+08:34:02.110 [Test worker] INFO org.xnio.nio - XNIO NIO Implementation Version 3.3.6.Final
+08:34:02.214 [XNIO-1 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-4', selector sun.nio.ch.EPollSelectorImpl@43e44e9d
+08:34:02.214 [XNIO-1 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-2', selector sun.nio.ch.EPollSelectorImpl@20500328
+08:34:02.214 [XNIO-1 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-3', selector sun.nio.ch.EPollSelectorImpl@743262f8
+08:34:02.215 [XNIO-1 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-6', selector sun.nio.ch.EPollSelectorImpl@49115ee2
+08:34:02.214 [XNIO-1 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-5', selector sun.nio.ch.EPollSelectorImpl@48593a95
+08:34:02.214 [XNIO-1 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-1', selector sun.nio.ch.EPollSelectorImpl@5e53c379
+08:34:02.215 [XNIO-1 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-7', selector sun.nio.ch.EPollSelectorImpl@2c86022f
+08:34:02.215 [XNIO-1 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-8', selector sun.nio.ch.EPollSelectorImpl@5a74ecc6
+08:34:02.215 [XNIO-1 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 Accept', selector sun.nio.ch.EPollSelectorImpl@511f5898
+08:34:02.217 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.254 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.314 [XNIO-1 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE / (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:33217]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.343 [XNIO-1 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.365 [XNIO-1 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE / (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:33217]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.368 [XNIO-1 I/O-4] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.370 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@4f970031
+08:34:02.377 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@57a262f7
+08:34:02.379 [XNIO-2 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-1', selector sun.nio.ch.EPollSelectorImpl@b545db6
+08:34:02.379 [XNIO-2 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-2', selector sun.nio.ch.EPollSelectorImpl@7fa32d40
+08:34:02.379 [XNIO-2 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-3', selector sun.nio.ch.EPollSelectorImpl@2e7ef4f3
+08:34:02.379 [XNIO-2 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-4', selector sun.nio.ch.EPollSelectorImpl@6005c57
+08:34:02.379 [XNIO-2 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-5', selector sun.nio.ch.EPollSelectorImpl@3e36bc3d
+08:34:02.380 [XNIO-2 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-6', selector sun.nio.ch.EPollSelectorImpl@79420cf8
+08:34:02.380 [XNIO-2 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-7', selector sun.nio.ch.EPollSelectorImpl@377f143
+08:34:02.380 [XNIO-2 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-8', selector sun.nio.ch.EPollSelectorImpl@79af5ddc
+08:34:02.380 [XNIO-2 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 Accept', selector sun.nio.ch.EPollSelectorImpl@2ce4b908
+08:34:02.380 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.381 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.386 [XNIO-2 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:39019]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.386 [XNIO-2 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.391 [XNIO-2 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:39019]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.391 [XNIO-2 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.392 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@57a262f7
+08:34:02.401 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@21123500
+08:34:02.402 [XNIO-3 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-1', selector sun.nio.ch.EPollSelectorImpl@66911ab8
+08:34:02.402 [XNIO-3 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-3', selector sun.nio.ch.EPollSelectorImpl@b6e75f1
+08:34:02.402 [XNIO-3 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-2', selector sun.nio.ch.EPollSelectorImpl@61a700
+08:34:02.402 [XNIO-3 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-5', selector sun.nio.ch.EPollSelectorImpl@3fc7d99b
+08:34:02.402 [XNIO-3 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-4', selector sun.nio.ch.EPollSelectorImpl@2c08ef2b
+08:34:02.402 [XNIO-3 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-6', selector sun.nio.ch.EPollSelectorImpl@18626dcc
+08:34:02.402 [XNIO-3 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-7', selector sun.nio.ch.EPollSelectorImpl@554aa7d1
+08:34:02.402 [XNIO-3 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-8', selector sun.nio.ch.EPollSelectorImpl@5ca7b411
+08:34:02.402 [XNIO-3 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 Accept', selector sun.nio.ch.EPollSelectorImpl@2d640e74
+08:34:02.402 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.404 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.412 [XNIO-3 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Cookie=[userid=spock], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:36455]}, cookies=[userid:io.undertow.server.handlers.CookieImpl@5c1f81b9]): &lt;empty&gt; }
+08:34:02.418 [XNIO-3 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.422 [XNIO-3 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Cookie=[userid=spock], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:36455]}, cookies=[userid:io.undertow.server.handlers.CookieImpl@565fdf61]): &lt;empty&gt; }
+08:34:02.422 [XNIO-3 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.423 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@21123500
+08:34:02.433 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@100221fc
+08:34:02.434 [XNIO-4 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-2', selector sun.nio.ch.EPollSelectorImpl@4960be2d
+08:34:02.434 [XNIO-4 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-1', selector sun.nio.ch.EPollSelectorImpl@25d3ddd1
+08:34:02.435 [XNIO-4 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-4', selector sun.nio.ch.EPollSelectorImpl@a1ba57a
+08:34:02.435 [XNIO-4 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-5', selector sun.nio.ch.EPollSelectorImpl@553f3b5e
+08:34:02.435 [XNIO-4 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-3', selector sun.nio.ch.EPollSelectorImpl@2bedc87f
+08:34:02.435 [XNIO-4 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-6', selector sun.nio.ch.EPollSelectorImpl@12cd527d
+08:34:02.435 [XNIO-4 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-7', selector sun.nio.ch.EPollSelectorImpl@360e7285
+08:34:02.435 [XNIO-4 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-8', selector sun.nio.ch.EPollSelectorImpl@6b79428f
+08:34:02.435 [XNIO-4 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 Accept', selector sun.nio.ch.EPollSelectorImpl@3275c89a
+08:34:02.435 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.436 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.441 [XNIO-4 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[action:[login]], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Type=[text/plain], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:45095]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.447 [XNIO-4 I/O-6] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.451 [XNIO-4 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /foo (query=[action:[login]], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Type=[text/plain], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:45095]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.451 [XNIO-4 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.452 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@100221fc
+08:34:02.458 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@5e9dbc91
+08:34:02.460 [XNIO-5 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-2', selector sun.nio.ch.EPollSelectorImpl@28112b1b
+08:34:02.460 [XNIO-5 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-1', selector sun.nio.ch.EPollSelectorImpl@360f7dda
+08:34:02.460 [XNIO-5 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-4', selector sun.nio.ch.EPollSelectorImpl@193203a5
+08:34:02.460 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.460 [XNIO-5 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-3', selector sun.nio.ch.EPollSelectorImpl@51a532d2
+08:34:02.460 [XNIO-5 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-7', selector sun.nio.ch.EPollSelectorImpl@2e03e662
+08:34:02.460 [XNIO-5 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-6', selector sun.nio.ch.EPollSelectorImpl@d074251
+08:34:02.460 [XNIO-5 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-5', selector sun.nio.ch.EPollSelectorImpl@49b878db
+08:34:02.460 [XNIO-5 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-8', selector sun.nio.ch.EPollSelectorImpl@2ed09e5
+08:34:02.460 [XNIO-5 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 Accept', selector sun.nio.ch.EPollSelectorImpl@1fcc361c
+08:34:02.461 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.467 [XNIO-5 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /date (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:41267]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.468 [XNIO-5 I/O-8] DEBUG com.stehno.ersatz.ErsatzServer - Response: 2016.08.25 14:43
+08:34:02.479 [XNIO-5 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /date (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:41267]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.480 [XNIO-5 I/O-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: 2016.08.25 14:43
+08:34:02.481 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@5e9dbc91
+08:34:02.500 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@24703cd0
+08:34:02.502 [XNIO-6 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-1', selector sun.nio.ch.EPollSelectorImpl@3f6e43f2
+08:34:02.502 [XNIO-6 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-6', selector sun.nio.ch.EPollSelectorImpl@7745722d
+08:34:02.502 [XNIO-6 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-4', selector sun.nio.ch.EPollSelectorImpl@38d66e51
+08:34:02.502 [XNIO-6 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-3', selector sun.nio.ch.EPollSelectorImpl@28961441
+08:34:02.502 [XNIO-6 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-2', selector sun.nio.ch.EPollSelectorImpl@2e50770d
+08:34:02.502 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+08:34:02.502 [XNIO-6 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-5', selector sun.nio.ch.EPollSelectorImpl@6bc7df7e
+08:34:02.502 [XNIO-6 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-8', selector sun.nio.ch.EPollSelectorImpl@514c79ea
+08:34:02.502 [XNIO-6 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-7', selector sun.nio.ch.EPollSelectorImpl@7d46d6d
+08:34:02.502 [XNIO-6 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 Accept', selector sun.nio.ch.EPollSelectorImpl@3632d978
+08:34:02.503 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTPS for interface localhost and port 0
+08:34:02.511 [XNIO-6 I/O-6] DEBUG io.undertow.request.security - Setting authentication required for exchange HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.512 [XNIO-6 task-1] DEBUG io.undertow.request.security - Attempting to authenticate HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}, authentication required: true
+08:34:02.516 [XNIO-6 task-1] DEBUG io.undertow.request.security - Found basic auth header admin:$3cr3t (decoded using charset UTF-8) in HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.524 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authenticated as admin, roles [TESTER]
+08:34:02.532 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authentication outcome was AUTHENTICATED with method io.undertow.security.impl.BasicAuthenticationMechanism@30a6504f for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.532 [XNIO-6 task-1] DEBUG io.undertow.request.security - Authentication result was AUTHENTICATED for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.532 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /basic (query=[:], headers={Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.533 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.536 [XNIO-6 I/O-8] DEBUG io.undertow.request.security - Setting authentication required for exchange HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.536 [XNIO-6 task-2] DEBUG io.undertow.request.security - Attempting to authenticate HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}, authentication required: true
+08:34:02.536 [XNIO-6 task-2] DEBUG io.undertow.request.security - Found basic auth header admin:$3cr3t (decoded using charset UTF-8) in HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.537 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authenticated as admin, roles [TESTER]
+08:34:02.537 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authentication outcome was AUTHENTICATED with method io.undertow.security.impl.BasicAuthenticationMechanism@30a6504f for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.537 [XNIO-6 task-2] DEBUG io.undertow.request.security - Authentication result was AUTHENTICATED for HttpServerExchange{ DELETE /basic request {Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]} response {}}
+08:34:02.537 [XNIO-6 task-2] DEBUG com.stehno.ersatz.ErsatzServer - Request: { DELETE /basic (query=[:], headers={Connection=[Keep-Alive], Authorization=[Basic YWRtaW46JDNjcjN0], Accept-Encoding=[gzip], Content-Length=[0], User-Agent=[okhttp/3.4.2], Host=[localhost:35565]}, cookies=[:]): &lt;empty&gt; }
+08:34:02.538 [XNIO-6 task-2] DEBUG com.stehno.ersatz.ErsatzServer - Response: &lt;html&gt;&lt;body&gt;&lt;!-- a bunch of really interesting content that you would be sorry to miss --&gt;Nothing special&lt;/body&gt;&lt;/html&gt;
+08:34:02.538 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@24703cd0
 </pre>
 </span>
 </div>
@@ -234,7 +240,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 3.2</a> at Jan 13, 2017 9:11:32 AM</p>
+<a href="http://www.gradle.org">Gradle 3.2</a> at Jan 15, 2017 8:34:04 AM</p>
 </div>
 </div>
 </body>

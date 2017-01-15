@@ -153,7 +153,7 @@ public abstract class HttpBuilder implements Closeable {
      * }
      * ----
      *
-     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.optional.ApacheHttpBuilder})
+     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.ApacheHttpBuilder})
      * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
      * @return the configured `HttpBuilder`
      */

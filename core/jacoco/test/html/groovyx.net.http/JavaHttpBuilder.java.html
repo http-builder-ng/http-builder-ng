@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JavaHttpBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng-core</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">JavaHttpBuilder.java</span></div><h1>JavaHttpBuilder.java</h1><pre class="source lang-java linenums">/**
  * Copyright (C) 2016 David Clark
- *
+ * &lt;p&gt;
  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * &lt;p&gt;
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * &lt;p&gt;
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
@@ -46,101 +47,106 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
 
-<span class="fc" id="L49">        public Action(final ChainedHttpConfig requestConfig, final String verb) {</span>
+<span class="fc" id="L50">        public Action(final ChainedHttpConfig requestConfig, final String verb) {</span>
             try {
-<span class="fc" id="L51">                this.requestConfig = requestConfig;</span>
-<span class="fc" id="L52">                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L53">                this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();</span>
-<span class="fc" id="L54">                this.connection.setRequestMethod(verb);</span>
+<span class="fc" id="L52">                this.requestConfig = requestConfig;</span>
+<span class="fc" id="L53">                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L54">                this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();</span>
+<span class="fc" id="L55">                this.connection.setRequestMethod(verb);</span>
 
-<span class="fc bfc" id="L56" title="All 2 branches covered.">                if (cr.actualBody() != null) {</span>
-<span class="fc" id="L57">                    this.connection.setDoOutput(true);</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">                if (cr.actualBody() != null) {</span>
+<span class="fc" id="L58">                    this.connection.setDoOutput(true);</span>
                 }
-<span class="nc" id="L59">            } catch (IOException e) {</span>
-<span class="nc" id="L60">                throw new RuntimeException(e);</span>
-<span class="fc" id="L61">            }</span>
-<span class="fc" id="L62">        }</span>
+<span class="nc" id="L60">            } catch (IOException e) {</span>
+<span class="nc" id="L61">                throw new RuntimeException(e);</span>
+<span class="fc" id="L62">            }</span>
+<span class="fc" id="L63">        }</span>
 
         private void addHeaders() {
-<span class="fc" id="L65">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L67">                connection.addRequestProperty(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L68">            }</span>
+<span class="fc" id="L66">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L68">                connection.addRequestProperty(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L69">            }</span>
 
-<span class="fc" id="L70">            final String contentType = cr.actualContentType();</span>
-<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (contentType != null) {</span>
-<span class="fc" id="L72">                connection.addRequestProperty(&quot;Content-Type&quot;, contentType);</span>
+<span class="fc" id="L71">            final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (contentType != null) {</span>
+<span class="fc" id="L73">                connection.addRequestProperty(&quot;Content-Type&quot;, contentType);</span>
             }
 
-<span class="fc" id="L75">            connection.addRequestProperty(&quot;Accept-Encoding&quot;, &quot;gzip, deflate&quot;);</span>
-<span class="fc bfc" id="L76" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
-<span class="fc" id="L77">                connection.addRequestProperty(e.getKey(), e.getValue());</span>
-<span class="fc" id="L78">            }</span>
-<span class="fc" id="L79">        }</span>
+<span class="fc" id="L76">            connection.addRequestProperty(&quot;Accept-Encoding&quot;, &quot;gzip, deflate&quot;);</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L78">                connection.addRequestProperty(e.getKey(), e.getValue());</span>
+<span class="fc" id="L79">            }</span>
+<span class="fc" id="L80">        }</span>
 
         private PasswordAuthentication getAuthInfo() {
-<span class="fc" id="L82">            final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();</span>
-<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (auth == null) {</span>
-<span class="fc" id="L84">                return null;</span>
+<span class="fc" id="L83">            final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (auth == null) {</span>
+<span class="fc" id="L85">                return null;</span>
             }
 
-<span class="pc bpc" id="L87" title="3 of 4 branches missed.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
-<span class="fc" id="L88">                return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());</span>
+<span class="pc bpc" id="L88" title="3 of 4 branches missed.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
+<span class="fc" id="L89">                return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());</span>
             } else {
-<span class="nc" id="L90">                throw new UnsupportedOperationException(&quot;HttpURLConnection does not support &quot; + auth.getAuthType() + &quot; authentication&quot;);</span>
+<span class="nc" id="L91">                throw new UnsupportedOperationException(&quot;HttpURLConnection does not support &quot; + auth.getAuthType() + &quot; authentication&quot;);</span>
             }
         }
 
         private Object handleFromServer() {
-<span class="fc" id="L95">            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));</span>
+<span class="fc" id="L96">            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));</span>
         }
 
         public Object execute() {
             try {
-<span class="fc" id="L100">                return ThreadLocalAuth.with(getAuthInfo(), () -&gt; {</span>
-<span class="pc bpc" id="L101" title="1 of 2 branches missed.">                    if (sslContext != null) {</span>
-<span class="nc" id="L102">                        HttpsURLConnection https = (HttpsURLConnection) connection;</span>
-<span class="nc" id="L103">                        https.setSSLSocketFactory(sslContext.getSocketFactory());</span>
+<span class="fc" id="L101">                return ThreadLocalAuth.with(getAuthInfo(), () -&gt; {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                    if (sslContext != null) {</span>
+<span class="fc" id="L103">                        HttpsURLConnection https = (HttpsURLConnection) connection;</span>
+
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">                        if (hostnameVerifier != null) {</span>
+<span class="fc" id="L106">                            https.setHostnameVerifier(hostnameVerifier);</span>
+                        }
+
+<span class="fc" id="L109">                        https.setSSLSocketFactory(sslContext.getSocketFactory());</span>
                     }
 
-<span class="fc" id="L106">                    final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L112">                    final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
 
-<span class="fc" id="L108">                    JavaToServer j2s = null;</span>
-<span class="fc bfc" id="L109" title="All 2 branches covered.">                    if (cr.actualBody() != null) {</span>
-<span class="fc" id="L110">                        j2s = new JavaToServer();</span>
-<span class="fc" id="L111">                        requestConfig.findEncoder().accept(requestConfig, j2s);</span>
+<span class="fc" id="L114">                    JavaToServer j2s = null;</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">                    if (cr.actualBody() != null) {</span>
+<span class="fc" id="L116">                        j2s = new JavaToServer();</span>
+<span class="fc" id="L117">                        requestConfig.findEncoder().accept(requestConfig, j2s);</span>
                     }
 
-<span class="fc" id="L114">                    addHeaders();</span>
+<span class="fc" id="L120">                    addHeaders();</span>
 
-<span class="fc" id="L116">                    connection.connect();</span>
+<span class="fc" id="L122">                    connection.connect();</span>
 
-<span class="fc bfc" id="L118" title="All 2 branches covered.">                    if (j2s != null) {</span>
-<span class="fc" id="L119">                        j2s.transfer();</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                    if (j2s != null) {</span>
+<span class="fc" id="L125">                        j2s.transfer();</span>
                     }
 
-<span class="fc" id="L122">                    return handleFromServer();</span>
+<span class="fc" id="L128">                    return handleFromServer();</span>
                 });
-<span class="nc" id="L124">            } catch (Exception e) {</span>
-<span class="nc" id="L125">                throw new RuntimeException(e);</span>
+<span class="nc" id="L130">            } catch (Exception e) {</span>
+<span class="nc" id="L131">                throw new RuntimeException(e);</span>
             }
         }
 
-<span class="fc" id="L129">        private class JavaToServer implements ToServer {</span>
+<span class="fc" id="L135">        private class JavaToServer implements ToServer {</span>
 
             private InputStream inputStream;
 
             public void toServer(final InputStream inputStream) {
-<span class="fc" id="L134">                this.inputStream = inputStream;</span>
-<span class="fc" id="L135">            }</span>
+<span class="fc" id="L140">                this.inputStream = inputStream;</span>
+<span class="fc" id="L141">            }</span>
 
             void transfer() {
                 try {
-<span class="fc" id="L139">                    NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);</span>
-<span class="nc" id="L140">                } catch (IOException e) {</span>
-<span class="nc" id="L141">                    throw new RuntimeException(e);</span>
-<span class="fc" id="L142">                }</span>
-<span class="fc" id="L143">            }</span>
+<span class="fc" id="L145">                    NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);</span>
+<span class="nc" id="L146">                } catch (IOException e) {</span>
+<span class="nc" id="L147">                    throw new RuntimeException(e);</span>
+<span class="fc" id="L148">                }</span>
+<span class="fc" id="L149">            }</span>
         }
 
         protected class JavaFromServer implements FromServer {
@@ -150,166 +156,167 @@ public class JavaHttpBuilder extends HttpBuilder {
             private List&lt;Header&lt;?&gt;&gt; headers;
             private URI uri;
 
-<span class="fc" id="L153">            public JavaFromServer(final URI originalUri) {</span>
-<span class="fc" id="L154">                this.uri = originalUri;</span>
+<span class="fc" id="L159">            public JavaFromServer(final URI originalUri) {</span>
+<span class="fc" id="L160">                this.uri = originalUri;</span>
                 //TODO: detect non success and read from error stream instead
                 try {
-<span class="fc" id="L157">                    headers = populateHeaders();</span>
-<span class="fc" id="L158">                    addCookieStore(uri, headers);</span>
-<span class="fc" id="L159">                    BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());</span>
-<span class="fc" id="L160">                    bis.mark(0);</span>
-<span class="fc bfc" id="L161" title="All 2 branches covered.">                    hasBody = bis.read() != -1;</span>
-<span class="fc" id="L162">                    bis.reset();</span>
-<span class="fc" id="L163">                    is = handleEncoding(bis);</span>
-<span class="fc" id="L164">                } catch (IOException e) {</span>
+<span class="fc" id="L163">                    headers = populateHeaders();</span>
+<span class="fc" id="L164">                    addCookieStore(uri, headers);</span>
+<span class="fc" id="L165">                    BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());</span>
+<span class="fc" id="L166">                    bis.mark(0);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">                    hasBody = bis.read() != -1;</span>
+<span class="fc" id="L168">                    bis.reset();</span>
+<span class="fc" id="L169">                    is = handleEncoding(bis);</span>
+<span class="fc" id="L170">                } catch (IOException e) {</span>
                     //swallow, no body is present?
-<span class="fc" id="L166">                    is = null;</span>
-<span class="fc" id="L167">                    hasBody = false;</span>
-<span class="fc" id="L168">                }</span>
-<span class="fc" id="L169">            }</span>
+<span class="fc" id="L172">                    is = null;</span>
+<span class="fc" id="L173">                    hasBody = false;</span>
+<span class="fc" id="L174">                }</span>
+<span class="fc" id="L175">            }</span>
 
             private InputStream handleEncoding(final InputStream is) throws IOException {
-<span class="fc" id="L172">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
-<span class="fc bfc" id="L173" title="All 2 branches covered.">                if (encodingHeader != null) {</span>
-<span class="pc bpc" id="L174" title="1 of 2 branches missed.">                    if (encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
-<span class="fc" id="L175">                        return new GZIPInputStream(is);</span>
-<span class="nc bnc" id="L176" title="All 2 branches missed.">                    } else if (encodingHeader.getValue().equals(&quot;deflate&quot;)) {</span>
-<span class="nc" id="L177">                        return new InflaterInputStream(is);</span>
+<span class="fc" id="L178">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">                if (encodingHeader != null) {</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">                    if (encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L181">                        return new GZIPInputStream(is);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                    } else if (encodingHeader.getValue().equals(&quot;deflate&quot;)) {</span>
+<span class="nc" id="L183">                        return new InflaterInputStream(is);</span>
                     }
                 }
 
-<span class="fc" id="L181">                return is;</span>
+<span class="fc" id="L187">                return is;</span>
             }
 
             private String clean(final String str) {
-<span class="fc bfc" id="L185" title="All 2 branches covered.">                if (str == null) {</span>
-<span class="fc" id="L186">                    return null;</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">                if (str == null) {</span>
+<span class="fc" id="L192">                    return null;</span>
                 }
 
-<span class="fc" id="L189">                final String tmp = str.trim();</span>
-<span class="pc bpc" id="L190" title="1 of 2 branches missed.">                return &quot;&quot;.equals(tmp) ? null : tmp;</span>
+<span class="fc" id="L195">                final String tmp = str.trim();</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">                return &quot;&quot;.equals(tmp) ? null : tmp;</span>
             }
 
             private List&lt;Header&lt;?&gt;&gt; populateHeaders() {
-<span class="fc" id="L194">                final List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
-<span class="pc bpc" id="L195" title="1 of 2 branches missed.">                for (int i = 0; i &lt; Integer.MAX_VALUE; ++i) {</span>
-<span class="fc" id="L196">                    final String key = clean(connection.getHeaderFieldKey(i));</span>
-<span class="fc" id="L197">                    final String value = clean(connection.getHeaderField(i));</span>
-<span class="fc bfc" id="L198" title="All 4 branches covered.">                    if (key == null &amp;&amp; value == null) {</span>
-<span class="fc" id="L199">                        break;</span>
+<span class="fc" id="L200">                final List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">                for (int i = 0; i &lt; Integer.MAX_VALUE; ++i) {</span>
+<span class="fc" id="L202">                    final String key = clean(connection.getHeaderFieldKey(i));</span>
+<span class="fc" id="L203">                    final String value = clean(connection.getHeaderField(i));</span>
+<span class="fc bfc" id="L204" title="All 4 branches covered.">                    if (key == null &amp;&amp; value == null) {</span>
+<span class="fc" id="L205">                        break;</span>
                     }
 
-<span class="pc bpc" id="L202" title="1 of 4 branches missed.">                    if (key != null &amp;&amp; value != null) {</span>
-<span class="fc" id="L203">                        ret.add(Header.keyValue(key.trim(), value.trim()));</span>
+<span class="pc bpc" id="L208" title="1 of 4 branches missed.">                    if (key != null &amp;&amp; value != null) {</span>
+<span class="fc" id="L209">                        ret.add(Header.keyValue(key.trim(), value.trim()));</span>
                     }
                 }
 
-<span class="fc" id="L207">                return Collections.unmodifiableList(ret);</span>
+<span class="fc" id="L213">                return Collections.unmodifiableList(ret);</span>
             }
 
             public InputStream getInputStream() {
-<span class="fc" id="L211">                return is;</span>
+<span class="fc" id="L217">                return is;</span>
             }
 
             public int getStatusCode() {
                 try {
-<span class="fc" id="L216">                    return connection.getResponseCode();</span>
-<span class="nc" id="L217">                } catch (IOException e) {</span>
-<span class="nc" id="L218">                    throw new RuntimeException(e);</span>
+<span class="fc" id="L222">                    return connection.getResponseCode();</span>
+<span class="nc" id="L223">                } catch (IOException e) {</span>
+<span class="nc" id="L224">                    throw new RuntimeException(e);</span>
                 }
             }
 
             public String getMessage() {
                 try {
-<span class="nc" id="L224">                    return connection.getResponseMessage();</span>
-<span class="nc" id="L225">                } catch (IOException e) {</span>
-<span class="nc" id="L226">                    throw new RuntimeException(e);</span>
+<span class="nc" id="L230">                    return connection.getResponseMessage();</span>
+<span class="nc" id="L231">                } catch (IOException e) {</span>
+<span class="nc" id="L232">                    throw new RuntimeException(e);</span>
                 }
             }
 
             public List&lt;Header&lt;?&gt;&gt; getHeaders() {
-<span class="fc" id="L231">                return headers;</span>
+<span class="fc" id="L237">                return headers;</span>
             }
 
             public boolean getHasBody() {
-<span class="fc" id="L235">                return hasBody;</span>
+<span class="fc" id="L241">                return hasBody;</span>
             }
 
             public URI getUri() {
-<span class="fc" id="L239">                return uri;</span>
+<span class="fc" id="L245">                return uri;</span>
             }
 
             public void finish() {
                 //do nothing, should auto cleanup
-<span class="fc" id="L244">            }</span>
+<span class="fc" id="L250">            }</span>
         }
     }
 
-<span class="fc" id="L248">    protected static class ThreadLocalAuth extends Authenticator {</span>
-<span class="fc" id="L249">        private static final ThreadLocal&lt;PasswordAuthentication&gt; tlAuth = new ThreadLocal&lt;PasswordAuthentication&gt;();</span>
+<span class="fc" id="L254">    protected static class ThreadLocalAuth extends Authenticator {</span>
+<span class="fc" id="L255">        private static final ThreadLocal&lt;PasswordAuthentication&gt; tlAuth = new ThreadLocal&lt;PasswordAuthentication&gt;();</span>
 
         public PasswordAuthentication getPasswordAuthentication() {
-<span class="fc" id="L252">            return tlAuth.get();</span>
+<span class="fc" id="L258">            return tlAuth.get();</span>
         }
 
         public static final &lt;V&gt; V with(final PasswordAuthentication pa, final Callable&lt;V&gt; callable) throws Exception {
-<span class="fc" id="L256">            tlAuth.set(pa);</span>
+<span class="fc" id="L262">            tlAuth.set(pa);</span>
             try {
-<span class="fc" id="L258">                return callable.call();</span>
+<span class="fc" id="L264">                return callable.call();</span>
             } finally {
-<span class="pc" id="L260">                tlAuth.set(null);</span>
+<span class="pc" id="L266">                tlAuth.set(null);</span>
             }
         }
     }
 
-
     static {
-<span class="fc" id="L267">        Authenticator.setDefault(new ThreadLocalAuth());</span>
-<span class="fc" id="L268">    }</span>
+<span class="fc" id="L272">        Authenticator.setDefault(new ThreadLocalAuth());</span>
+<span class="fc" id="L273">    }</span>
 
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
+    final private HostnameVerifier hostnameVerifier;
     final private HttpObjectConfig.Client clientConfig;
 
     public JavaHttpBuilder(final HttpObjectConfig config) {
-<span class="fc" id="L276">        super(config);</span>
-<span class="fc" id="L277">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
-<span class="fc" id="L278">        this.executor = config.getExecution().getExecutor();</span>
-<span class="fc" id="L279">        this.sslContext = config.getExecution().getSslContext();</span>
-<span class="fc" id="L280">        this.clientConfig = config.getClient();</span>
-<span class="fc" id="L281">    }</span>
+<span class="fc" id="L282">        super(config);</span>
+<span class="fc" id="L283">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L284">        this.executor = config.getExecution().getExecutor();</span>
+<span class="fc" id="L285">        this.clientConfig = config.getClient();</span>
+<span class="fc" id="L286">        this.hostnameVerifier = config.getExecution().getHostnameVerifier();</span>
+<span class="fc" id="L287">        this.sslContext = config.getExecution().getSslContext();</span>
+<span class="fc" id="L288">    }</span>
 
     protected ChainedHttpConfig getObjectConfig() {
-<span class="fc" id="L284">        return config;</span>
+<span class="fc" id="L291">        return config;</span>
     }
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L288">        return new Action(requestConfig, &quot;GET&quot;).execute();</span>
+<span class="fc" id="L295">        return new Action(requestConfig, &quot;GET&quot;).execute();</span>
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L292">        return new Action(requestConfig, &quot;HEAD&quot;).execute();</span>
+<span class="fc" id="L299">        return new Action(requestConfig, &quot;HEAD&quot;).execute();</span>
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L296">        return new Action(requestConfig, &quot;POST&quot;).execute();</span>
+<span class="fc" id="L303">        return new Action(requestConfig, &quot;POST&quot;).execute();</span>
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L300">        return new Action(requestConfig, &quot;PUT&quot;).execute();</span>
+<span class="fc" id="L307">        return new Action(requestConfig, &quot;PUT&quot;).execute();</span>
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L304">        return new Action(requestConfig, &quot;DELETE&quot;).execute();</span>
+<span class="fc" id="L311">        return new Action(requestConfig, &quot;DELETE&quot;).execute();</span>
     }
 
     public Executor getExecutor() {
-<span class="fc" id="L308">        return executor;</span>
+<span class="fc" id="L315">        return executor;</span>
     }
 
     public void close() {
-<span class="nc" id="L312">        throw new UnsupportedOperationException();</span>
+<span class="nc" id="L319">        throw new UnsupportedOperationException();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
