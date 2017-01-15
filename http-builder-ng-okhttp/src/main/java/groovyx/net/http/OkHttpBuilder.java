@@ -20,6 +20,7 @@ import groovy.lang.DelegatesTo;
 import okhttp3.*;
 import okio.BufferedSink;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,8 +60,10 @@ public class OkHttpBuilder extends HttpBuilder {
 
         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-        if (config.getClient().getIgnoreSslIssues()) {
-            builder.sslSocketFactory(sslContext().getSocketFactory(), (X509TrustManager) TRUST_MANAGERS[0]).hostnameVerifier(ANY_HOSTNAME);
+        final SSLContext sslContext = config.getExecution().getSslContext();
+        if (sslContext != null) {
+            builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);
+            builder.hostnameVerifier(config.getExecution().getHostnameVerifier());
         }
 
         this.client = builder.build();

@@ -19,11 +19,11 @@ import com.stehno.ersatz.feat.BasicAuthFeature
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.CountedClosure
 import groovyx.net.http.FromServer
-import groovyx.net.http.JavaHttpBuilder
 import groovyx.net.http.NativeHandlers
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static groovyx.net.http.util.SslIssueIgnoring.ignoreSslIssues
 
 /**
  * Test kit for testing the HTTP GET method with different clients.
@@ -332,7 +332,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         when:
         def result = httpBuilder {
-            client.ignoreSslIssues = true
+            ignoreSslIssues(execution)
             request.uri = ersatzServer.httpsUrl
         }.get {
             request.uri.path = '/secure'

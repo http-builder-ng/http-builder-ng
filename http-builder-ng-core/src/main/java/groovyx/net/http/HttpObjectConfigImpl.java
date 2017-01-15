@@ -15,8 +15,7 @@
  */
 package groovyx.net.http;
 
-import org.apache.commons.lang3.BooleanUtils;
-
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.util.EnumMap;
@@ -48,6 +47,8 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         private int maxThreads = 1;
         private Executor executor = SingleThreaded.instance;
         private SSLContext sslContext;
+        private HostnameVerifier hostnameVerifier;
+        private boolean ignoreSslIssues = toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"));
         private final EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> interceptors;
 
         public Exec() {
@@ -89,6 +90,16 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
             return sslContext;
         }
 
+        @Override
+        public void setHostnameVerifier(HostnameVerifier verifier) {
+            this.hostnameVerifier = verifier;
+        }
+
+        @Override
+        public HostnameVerifier getHostnameVerifier() {
+            return hostnameVerifier;
+        }
+
         public void interceptor(final HttpVerb verb, final BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object> func) {
             if(func == null) {
                 throw new NullPointerException("func cannot be null");
@@ -112,7 +123,6 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
         private int cookieVersion = 0;
         private File cookieFolder;
-        private boolean ignoreSslIssues = toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"));
 
         @Override public void setCookieVersion(int version) {
             this.cookieVersion = version;
@@ -128,14 +138,6 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
 
         @Override public void setCookieFolder(final File val) {
             this.cookieFolder = val;
-        }
-
-        @Override public void setIgnoreSslIssues(boolean ignore) {
-            ignoreSslIssues = ignore;
-        }
-
-        @Override public boolean getIgnoreSslIssues() {
-            return ignoreSslIssues;
         }
     }
 

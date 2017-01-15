@@ -1,5 +1,7 @@
 package groovyx.net.http.util;
 
+import groovyx.net.http.HttpObjectConfig;
+
 import javax.net.ssl.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -36,5 +38,10 @@ public class SslIssueIgnoring {
             // FIXME: log this
             return null;
         }
+    }
+
+    public static void ignoreSslIssues(final HttpObjectConfig.Execution execution){
+        execution.setSslContext(sslContext());
+        execution.setHostnameVerifier(ANY_HOSTNAME);
     }
 }

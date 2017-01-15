@@ -32,12 +32,10 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
-import static groovyx.net.http.util.SslIssueIgnoring.ANY_HOSTNAME;
-import static groovyx.net.http.util.SslIssueIgnoring.sslContext;
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- *
+ * <p>
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -285,15 +283,8 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
-
-        if (clientConfig.getIgnoreSslIssues()) {
-            // FIXME: move config to execution?
-            this.hostnameVerifier = ANY_HOSTNAME;
-            this.sslContext = sslContext();
-        } else {
-            this.hostnameVerifier = null;
-            this.sslContext = config.getExecution().getSslContext();
-        }
+        this.hostnameVerifier = config.getExecution().getHostnameVerifier();
+        this.sslContext = config.getExecution().getSslContext();
     }
 
     protected ChainedHttpConfig getObjectConfig() {
