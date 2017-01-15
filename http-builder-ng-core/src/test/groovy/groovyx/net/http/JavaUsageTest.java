@@ -55,7 +55,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
@@ -98,7 +98,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.head("/foo").responds().contentType("text/plain")).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         BiFunction<FromServer, Object, Object> successFunction = (from, body) -> {
@@ -123,7 +123,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.get("/foo").responds().content(CONTENT, "text/plain")).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         String result = http.get(String.class, config -> {
@@ -144,7 +144,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.post("/foo").decoders(decoders).body(CONTENT, TEXT_PLAIN).responds().content(CONTENT, TEXT_PLAIN)).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         String result = http.post(String.class, config -> {
@@ -169,7 +169,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.put("/foo").body(CONTENT, TEXT_PLAIN).decoders(decoders).responds().content(CONTENT, TEXT_PLAIN)).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         String result = http.put(String.class, config -> {
@@ -194,7 +194,7 @@ public class JavaUsageTest {
         ersatzServer.expectations(ex -> ex.delete("/foo").responds().content(CONTENT, "text/plain")).start();
 
         http = HttpBuilder.configure(config -> {
-            config.getRequest().setUri(ersatzServer.getServerUrl());
+            config.getRequest().setUri(ersatzServer.getHttpUrl());
         });
 
         String result = http.delete(String.class, config -> {

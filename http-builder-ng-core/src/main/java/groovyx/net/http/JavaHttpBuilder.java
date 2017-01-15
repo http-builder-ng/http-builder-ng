@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
@@ -100,6 +101,11 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
                     if (sslContext != null) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
+
+                        if (hostnameVerifier != null) {
+                            https.setHostnameVerifier(hostnameVerifier);
+                        }
+
                         https.setSSLSocketFactory(sslContext.getSocketFactory());
                     }
 
@@ -262,7 +268,6 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
     }
 
-
     static {
         Authenticator.setDefault(new ThreadLocalAuth());
     }
@@ -270,14 +275,16 @@ public class JavaHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private SSLContext sslContext;
+    final private HostnameVerifier hostnameVerifier;
     final private HttpObjectConfig.Client clientConfig;
 
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
-        this.sslContext = config.getExecution().getSslContext();
         this.clientConfig = config.getClient();
+        this.hostnameVerifier = config.getExecution().getHostnameVerifier();
+        this.sslContext = config.getExecution().getSslContext();
     }
 
     protected ChainedHttpConfig getObjectConfig() {

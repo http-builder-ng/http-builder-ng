@@ -1,6 +1,6 @@
 = Http Builder NG Users Guide
 David Clark & Christopher J. Stehno
-v0.13.0, January 2017
+v0.13.1, January 2017
 :toc: left
 :toclevels: 3
 
@@ -320,6 +320,27 @@ List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class
 ----
 
 Java 8 lambda expressions and function objects may be used interchangeably. All configuration and verb interfaces should be usable by both Groovy and Java code.
+
+== Ignoring SSL Issues
+
+During testing or debugging of HTTPS endpoints it is often useful to ignore SSL certificate errors. HttpBuilder-NG provides two methods of ignoring
+these issues. The first is via the configuration DSL using the `groovyx.net.http.util.SslUtils::ignoreSslIssues(final HttpObjectConfig.Execution)`
+method.
+
+[source,groovy]
+----
+def http = JavaHttpBuilder.configure {
+    ignoreSslIssues execution
+    // other config...
+}
+----
+
+Applying this configuration helper will set an `SSLContext` and `HostnameVerifier` which will allow/trust all HTTP connections and ignore issues.
+While this approach is useful, you may also need to toggle this feature at times when you do not, or cannot, change the DSL code itself; this is
+why the second approach exists.
+
+If the `groovyx.net.http.ignore-ssl-issues` system property is specified in the system properties with a value of `true`, the `ignoreSslIssues`
+functionality will be applied by default.
 
 == Examples
 

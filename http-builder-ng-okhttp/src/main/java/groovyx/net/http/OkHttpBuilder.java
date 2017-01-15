@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,28 +20,24 @@ import groovy.lang.DelegatesTo;
 import okhttp3.*;
 import okio.BufferedSink;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static okhttp3.internal.http.HttpDate.MAX_DATE;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- *
+ * <p>
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
@@ -59,20 +55,29 @@ public class OkHttpBuilder extends HttpBuilder {
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.clientConfig = config.getClient();
         this.executor = config.getExecution().getExecutor();
-        this.client = new OkHttpClient.Builder().build();
+
+        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        final SSLContext sslContext = config.getExecution().getSslContext();
+        if (sslContext != null) {
+            builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);
+            builder.hostnameVerifier(config.getExecution().getHostnameVerifier());
+        }
+
+        this.client = builder.build();
     }
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * <p>
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * <p>
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
-     *     request.uri = 'http://localhost:10101'
+     * request.uri = 'http://localhost:10101'
      * }
      * ----
      *
@@ -85,28 +90,28 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * <p>
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * <p>
      * This configuration method is generally meant for use with standard Java.
-     *
+     * <p>
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
-     *     public void accept(HttpObjectConfig config) {
-     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
-     *     }
+     * public void accept(HttpObjectConfig config) {
+     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * }
      * });
      * ----
-     *
+     * <p>
      * Or, using lambda expressions:
-     *
+     * <p>
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
-     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
      * });
      * ----
      *
@@ -204,16 +209,16 @@ public class OkHttpBuilder extends HttpBuilder {
     }
 
     private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
-        for(Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+        for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
 
         final String contentType = cr.actualContentType();
-        if(contentType != null) {
+        if (contentType != null) {
             requestBuilder.addHeader("Content-Type", contentType);
         }
 
-        for(Map.Entry<String,String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
+        for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
             requestBuilder.addHeader(e.getKey(), e.getValue());
         }
     }

@@ -15,7 +15,10 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.ContentType
+import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.ErsatzServer
+import com.stehno.ersatz.MultipartResponseContent
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
@@ -35,6 +38,7 @@ class ParsersSpec extends Specification {
         ersatzServer.expectations {
             get('/download') {
                 responder {
+                    encoder ContentType.MULTIPART_MIXED, MultipartResponseContent, Encoders.multipart
                     content multipart {
                         boundary 'abc123'
                         encoder TEXT_PLAIN, String, { o -> o as String }
