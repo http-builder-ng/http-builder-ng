@@ -20,12 +20,10 @@ import groovy.lang.DelegatesTo;
 import okhttp3.*;
 import okio.BufferedSink;
 
-import javax.net.ssl.*;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +33,7 @@ import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.util.SslIssueIgnoring.*;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -60,42 +59,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-        if (config.getClient().getIgnoreSslIssues()){
-            ignoreSslIssues(builder);
+        if (config.getClient().getIgnoreSslIssues()) {
+            builder.sslSocketFactory(sslContext().getSocketFactory(), (X509TrustManager) TRUST_MANAGERS[0]).hostnameVerifier(ANY_HOSTNAME);
         }
 
         this.client = builder.build();
-    }
-
-    // FIXME: the ssl ignore code has some shared components
-    private void ignoreSslIssues(final OkHttpClient.Builder builder) {
-        try {
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-
-            // set up a TrustManager that trusts everything
-            final TrustManager[] trustManagers = {new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[]{};
-                }
-
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                }
-
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                }
-            }};
-
-            sslContext.init(null, trustManagers, new SecureRandom());
-
-            // Create an ssl socket factory with our all-trusting manager
-            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustManagers[0])
-                .hostnameVerifier((s, sslSession) -> true);
-
-        } catch (Exception ex) {
-            // FIXME: error log
-        }
     }
 
     /**

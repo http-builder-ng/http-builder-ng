@@ -17,6 +17,7 @@ package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import groovyx.net.http.util.SslIssueIgnoring;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -25,7 +26,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -38,14 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,6 +52,7 @@ import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.NativeHandlers.Parsers.transfer;
+import static groovyx.net.http.util.SslIssueIgnoring.ANY_HOSTNAME;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
@@ -275,35 +272,12 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         if( config.getClient().getIgnoreSslIssues()  ){
-            ignoreSslIssues(myBuilder);
+            SSLContext sslContext = SslIssueIgnoring.sslContext();
+            myBuilder.setSSLContext(sslContext);
+            myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, ANY_HOSTNAME));
         }
 
         this.client = myBuilder.build();
-    }
-
-    private void ignoreSslIssues(final HttpClientBuilder builder) {
-        try {
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-
-            // set up a TrustManager that trusts everything
-            sslContext.init(null, new TrustManager[]{new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                }
-
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                }
-            }}, new SecureRandom());
-
-            builder.setSSLContext(sslContext);
-            builder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE));
-
-        } catch(Exception ex){
-            // FIXME: error log - no SSL ignore
-        }
     }
 
     protected ChainedHttpConfig getObjectConfig() {

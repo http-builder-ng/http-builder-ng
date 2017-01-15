@@ -15,7 +15,9 @@
  */
 package groovyx.net.http;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +25,6 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -32,10 +32,12 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.util.SslIssueIgnoring.ANY_HOSTNAME;
+import static groovyx.net.http.util.SslIssueIgnoring.sslContext;
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -268,7 +270,6 @@ public class JavaHttpBuilder extends HttpBuilder {
         }
     }
 
-
     static {
         Authenticator.setDefault(new ThreadLocalAuth());
     }
@@ -286,39 +287,12 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.clientConfig = config.getClient();
 
         if (clientConfig.getIgnoreSslIssues()) {
-            this.hostnameVerifier = (s, sslSession) -> true;
-            this.sslContext = ignoreSslIssues();
+            // FIXME: move config to execution?
+            this.hostnameVerifier = ANY_HOSTNAME;
+            this.sslContext = sslContext();
         } else {
             this.hostnameVerifier = null;
             this.sslContext = config.getExecution().getSslContext();
-        }
-    }
-
-    /// FIXME: shared code and bad name
-    private SSLContext ignoreSslIssues() {
-        try {
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-
-            // set up a TrustManager that trusts everything
-            final TrustManager[] trustManagers = {new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[]{};
-                }
-
-                public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                }
-
-                public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                }
-            }};
-
-            sslContext.init(null, trustManagers, new SecureRandom());
-
-            return sslContext;
-
-        } catch (Exception ex) {
-            // FIXME: log error
-            return null;
         }
     }
 

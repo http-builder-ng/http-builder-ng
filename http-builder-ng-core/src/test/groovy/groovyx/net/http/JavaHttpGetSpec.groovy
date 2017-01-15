@@ -17,6 +17,25 @@ package groovyx.net.http
 
 import groovyx.net.http.tk.HttpGetTestKit
 
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+
 class JavaHttpGetSpec extends HttpGetTestKit implements UsesJavaClient {
 
+//    def 'ssl request (ignoring issues / alternate config)'() {
+//        setup:
+//        ersatzServer.expectations {
+//            get('/secure').protocol('https').responds().content('ok', TEXT_PLAIN)
+//        }.start()
+//
+//        when:
+//        def result = httpBuilder {
+//            execution.sslContext =
+//            request.uri = ersatzServer.httpsUrl
+//        }.get {
+//            request.uri.path = '/secure'
+//        }
+//
+//        then:
+//        result == 'ok'
+//    }
 }
