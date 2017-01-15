@@ -21,7 +21,6 @@ import okhttp3.*;
 import okio.BufferedSink;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -34,7 +33,6 @@ import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
-import static groovyx.net.http.util.SslIssueIgnoring.*;
 import static java.util.stream.Collectors.toList;
 
 /**

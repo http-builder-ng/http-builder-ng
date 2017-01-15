@@ -23,7 +23,7 @@ import groovyx.net.http.NativeHandlers
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static groovyx.net.http.util.SslIssueIgnoring.ignoreSslIssues
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 /**
  * Test kit for testing the HTTP GET method with different clients.
