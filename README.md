@@ -1,10 +1,14 @@
 # Http Builder NG, The Easy Http Client for Groovy (and Java)
 
-[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-core "Core Library")
-[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-apache "Apache Library")
-[![Bintray](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-okhttp/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-okhttp "OkHttp Library")
+[![Bintray - Core](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-core "Core Library")
+[![Bintray - Apache](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-apache "Apache Library")
+[![Bintray - OkHttp](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-okhttp/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-okhttp "OkHttp Library")
 [![Travis Build Status](https://travis-ci.org/http-builder-ng/http-builder-ng.svg?branch=master)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 [![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
+
+[![Maven Central - Core](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-core) 
+[![Maven Central - Apache](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-apache/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-apache) 
+[![Maven Central - OkHttp](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-okhttp/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.http-builder-ng/http-builder-ng-okhttp) 
 
 ## Quick Links for the Impatient
 
