@@ -47,16 +47,16 @@ Hopefully that gives you a general idea of how Http Builder NG works. Http Build
 
 WARNING: The project group-id was changed as of 0.13.0 from `org.codehaus.groovy.modules` to `io.github.http-builder-ng`. This was the only change in the 0.13.0 release. All releases going forward will use this new group-id. Please be sure to update your dependency coordinates.
 
-Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng), for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
+Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng) and Maven Central, for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.13.2'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.13.3'
     
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.13.2</version>
+      <version>0.13.3</version>
     </dependency>
     
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
@@ -102,10 +102,14 @@ When ready to release a new version of the project, perform the following steps 
 
 Once the pull request has been merged into `master`, checkout the `master` branch and:
 
-1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site.
-1. Confirm the publication of the new artifact on the Bintray web site. 
-1. Run `./gradlew verifyRelease`  to ensure that the artifacts and site have been published (optional but recommended).
-1. A Git tag should be created for the released version.
+1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site. You will need to provide (or have configured in your `HOME/.gradle/gradle.properties` file):
+  * `user` - the Bintray username
+  * `key` - the Bintray key/password
+  * `sonotypeUser` - the Sonotype username (from API key)
+  * `sonotypePass` - the Sonotype password (from API key) 
+2. Manually confirm the publication of the new artifact on the Bintray web site (or the publication will expire) - this step may no longer be needed, but verify anyway.
+3. Run `./gradlew verifyRelease`  to ensure that the artifacts and site have been published (optional but recommended).
+4. A Git tag should be created for the released version.
 
 The `development` branch may now be used for the next round of development work.
 
