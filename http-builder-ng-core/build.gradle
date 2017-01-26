@@ -1,5 +1,5 @@
 plugins {
-    id 'com.jfrog.bintray' version '1.7.1'
+    id 'com.jfrog.bintray' version '1.7.3'
     id "com.github.hierynomus.license" version "0.13.1"
     id 'com.github.kt3k.coveralls' version '2.7.1'
     id 'com.github.ben-manes.versions' version '0.13.0'
@@ -39,7 +39,7 @@ bintray {
         user = project.property('user')
         key = project.property('key')
 
-        publications = ['mavenJava']
+        publications = ['httpbPublication']
 
         pkg {
             repo = 'dclark'
@@ -49,6 +49,22 @@ bintray {
             licenses = ['Apache-2.0']
             labels = ['groovy']
             vcsUrl = 'https://github.com/http-builder-ng/http-builder-ng'
+            websiteUrl = 'https://http-builder-ng.github.io/http-builder-ng/'
+            issueTrackerUrl = 'https://github.com/http-builder-ng/http-builder-ng/issues'
+            publicDownloadNumbers = true
+
+            version {
+                name = project.version
+                vcsTag = "v${project.version}"
+                gpg {
+                    sign = true
+                }
+                mavenCentralSync {
+                    sync = true
+                    user = project.property('sonotypeUser')
+                    password = project.property('sonotypePass')
+                }
+            }
         }
     }
 }

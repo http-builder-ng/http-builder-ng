@@ -15,7 +15,7 @@ plugins {
 apply plugin: 'org.asciidoctor.convert'
 
 group = 'io.github.http-builder-ng'
-version = '0.13.2'
+version = '0.13.3'
 
 repositories {
     jcenter()
@@ -92,24 +92,58 @@ subprojects {
     }
 
     task sourcesJar(type: Jar) {
-        description = 'Creates sources JAR.'
+        description = 'Creates sources jar.'
         classifier = 'sources'
         from project.sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar) {
+        description = 'Creates API documentation jar.'
+        classifier = 'javadoc'
+        from javadoc
     }
 
     artifacts {
         archives jar
         archives sourcesJar
+        archives javadocJar
     }
 
-    project.publishing {
+    publishing {
         publications {
-            mavenJava(MavenPublication) {
+            httpbPublication(MavenPublication) {
                 from components.java
-                //artifact jar
                 artifact sourcesJar
+                artifact javadocJar
                 groupId project.group
+                artifactId project.name
                 version project.version
+                pom.withXml {
+                    def root = asNode()
+                    root.appendNode('description', 'Groovy client for making http requests.')
+                    root.appendNode('name', project.name)
+                    root.appendNode('url', 'https://http-builder-ng.github.io/http-builder-ng/')
+
+                    def licenseNode = root.appendNode('licenses').appendNode('license')
+                    licenseNode.appendNode('name', 'The Apache Software License, Version 2.0')
+                    licenseNode.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                    licenseNode.appendNode('distribution', 'repo')
+
+                    def developersNode = root.appendNode('developers')
+                    def developerNode = developersNode.appendNode('developer')
+                    developerNode.appendNode('id', 'dwclark')
+                    developerNode.appendNode('name', 'David Clark')
+
+                    developerNode = developersNode.appendNode('developer')
+                    developerNode.appendNode('id', 'cjstehno')
+                    developerNode.appendNode('name', 'Christopher J Stehno')
+                    developerNode.appendNode('email', 'chris@stehno.com')
+
+                    def scmNode = root.appendNode('scm')
+                    scmNode.appendNode('connection', 'scm:git:git@github.com:http-builder-ng/http-builder-ng.git')
+                    scmNode.appendNode('developerConnection', 'scm:git:git@github.com:http-builder-ng/http-builder-ng.git')
+                    scmNode.appendNode('url', 'https://github.com/http-builder-ng/http-builder-ng')
+                }
             }
         }
     }
