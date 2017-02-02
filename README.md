@@ -18,6 +18,7 @@
 * JavaDocs (core): https://http-builder-ng.github.io/http-builder-ng/core/javadoc/
 * JavaDocs (apache): https://http-builder-ng.github.io/http-builder-ng/apache/javadoc/
 * User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
+* Twitter: [@HttpBuilderNG](https://twitter.com/HttpBuilderNG)
 
 ## Quick Overview
 
