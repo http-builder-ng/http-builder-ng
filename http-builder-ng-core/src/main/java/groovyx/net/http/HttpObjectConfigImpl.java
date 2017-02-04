@@ -27,8 +27,7 @@ import static groovyx.net.http.HttpConfigs.basic;
 import static groovyx.net.http.HttpConfigs.root;
 import static groovyx.net.http.util.SslUtils.ANY_HOSTNAME;
 import static groovyx.net.http.util.SslUtils.acceptingSslContext;
-import static java.lang.System.getProperty;
-import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+import static groovyx.net.http.util.Misc.isPropertySet;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
 
@@ -58,7 +57,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
                 interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);
             }
 
-            if (toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"))) {
+            if(isPropertySet("groovyx.net.http.ignore-ssl-issues")) {
                 setSslContext(acceptingSslContext());
                 setHostnameVerifier(ANY_HOSTNAME);
             }

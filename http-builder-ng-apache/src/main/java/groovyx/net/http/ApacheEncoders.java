@@ -15,14 +15,13 @@
  */
 package groovyx.net.http;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.IOException;
 
 import static org.apache.http.entity.ContentType.parse;
-
+import static groovyx.net.http.util.Misc.randomString;
 /**
  * Request content encoders specific to the Apache client implementation.
  *
@@ -51,7 +50,7 @@ public class ApacheEncoders {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 
-            final String boundary = RandomStringUtils.randomAlphanumeric(10);
+            final String boundary = randomString(10);
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create().setBoundary(boundary);
 
             final String boundaryContentType = "multipart/form-data; boundary=" + boundary;
