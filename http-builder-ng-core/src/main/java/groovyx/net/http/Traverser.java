@@ -15,6 +15,7 @@
  */
 package groovyx.net.http;
 
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -36,5 +37,6 @@ public class Traverser {
     }
 
     public static <V> boolean notNull(final V v) { return v != null; }
+    public static boolean nonEmptyMap(final Map<?,?> v) { return v != null && !v.isEmpty(); }
     public static <V> Predicate<V> notValue(final V v) { return (toTest) -> !v.equals(toTest); }
 }

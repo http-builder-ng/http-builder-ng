@@ -21,7 +21,6 @@ import org.codehaus.groovy.runtime.GStringImpl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -33,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
 /**
@@ -181,11 +181,12 @@ public abstract class UriBuilder {
             final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
             final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
             final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
-            final Map<String, ?> queryMap = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
-            final String query = populateQueryString(queryMap);
+            final String query = populateQueryString(traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::nonEmptyMap));
             final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
             final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
+
             return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -224,7 +225,7 @@ public abstract class UriBuilder {
 
             final String rawQuery = uri.getQuery();
             if (rawQuery != null) {
-                setQuery(Form.decode(new StringBuilder(rawQuery), StandardCharsets.UTF_8));
+                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
             }
 
             setFragment(uri.getFragment());

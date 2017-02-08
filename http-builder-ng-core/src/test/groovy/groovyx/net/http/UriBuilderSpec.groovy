@@ -15,8 +15,12 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.ContentType
+import com.stehno.ersatz.Encoders
+import com.stehno.ersatz.ErsatzServer
 import spock.lang.Specification
 
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.UriBuilder.basic
 import static groovyx.net.http.UriBuilder.root;
 
@@ -157,5 +161,25 @@ class UriBuilderSpec extends Specification {
 
         then:
         uri == 'http://test.com/a?b=c&b=f&d=e'.toURI()
+    }
+
+    def 'uri with query in configuration and empty verb'() {
+        setup:
+        def server = new ErsatzServer({
+            encoder TEXT_PLAIN, String, Encoders.text
+            expects().get('/something').query('foo', 'bar').responds().content('ok', TEXT_PLAIN)
+        })
+        server.start()
+
+        when:
+        def http = JavaHttpBuilder.configure {
+            request.uri = "${server.httpUrl}/something?foo=bar"
+        }.get()
+
+        then:
+        http == 'ok'
+
+        cleanup:
+        server.stop()
     }
 }
