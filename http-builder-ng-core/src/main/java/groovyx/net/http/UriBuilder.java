@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 David Clark
+ * Copyright (C) 2017 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,18 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
+import static java.util.Collections.singletonList;
 
 /**
  * Provides a simple means of creating a request URI and optionally overriding its parts.
@@ -188,12 +193,21 @@ public abstract class UriBuilder {
 
     private static final Object[] EMPTY = new Object[0];
 
-    private static String populateQueryString(final Map<String,?> queryMap) {
-        if(queryMap == null || queryMap.isEmpty()) {
+    private static String populateQueryString(final Map<String, ?> queryMap) {
+        if (queryMap == null || queryMap.isEmpty()) {
             return null;
-        }
-        else {
-            return queryMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
+
+        } else {
+            final List<String> nvps = new LinkedList<>();
+
+            queryMap.entrySet().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
+                final Collection<?> values = entry.getValue() instanceof Collection ? (Collection<?>) entry.getValue() : singletonList(entry.getValue().toString());
+                values.forEach(value -> {
+                    nvps.add(entry.getKey() + "=" + value);
+                });
+            });
+
+            return nvps.stream().collect(Collectors.joining("&"));
         }
     }
 
@@ -230,7 +244,7 @@ public abstract class UriBuilder {
     public final UriBuilder setFull(final String str) {
         try {
             return setFull(new URI(str));
-        } catch (URISyntaxException ex){
+        } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getMessage());
         }
     }
