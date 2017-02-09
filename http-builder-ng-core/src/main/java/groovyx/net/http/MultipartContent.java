@@ -17,14 +17,13 @@ package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import static java.util.Collections.unmodifiableList;
-
+import static groovyx.net.http.util.Misc.randomString;
 /**
  * Multipart request content object used to define the multipart data. An example would be:
  *
@@ -40,10 +39,10 @@ import static java.util.Collections.unmodifiableList;
  * which would define a `multipart/form-data` request with a field part and a file part with the specified properties.
  */
 public class MultipartContent {
-
+    
     private final List<MultipartPart> entries = new LinkedList<>();
-    private final String boundary = RandomStringUtils.randomAlphanumeric(16);
-
+    private final String boundary = randomString(16);
+    
     /**
      * Configures multipart request content using a Groovy closure (delegated to {@link MultipartContent}).
      *
