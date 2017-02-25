@@ -41,11 +41,4 @@ abstract class TestKit extends Specification {
             request.uri = uri
         }
     }
-
-    // TODO: see where this is used?
-    protected HttpBuilder httpBuilder(int port) {
-        httpBuilder {
-            request.uri = "http://localhost:${port}"
-        }
-    }
 }

@@ -64,31 +64,7 @@ abstract class HttpMethodTestKit extends TestKit {
     def cleanup() {
         ersatzServer.stop()
     }
-
-    // FIXME: get rid of these!
-
-    static String htmlContent(String text = 'Nothing special') {
-        "<html><body><!-- a bunch of really interesting content that you would be sorry to miss -->$text</body></html>" as String
-    }
-
-    static String xmlContent(String text = 'Nothing special') {
-        "<?xml version=\"1.0\"?><root><child><elt name='foo' /><text>$text</text></child></root>" as String
-    }
-
-    static String jsonContent(String text = 'Nothing special') {
-        """
-            {
-                "items":[
-                    {
-                        "name":"alpha",
-                        "score":123,
-                        "text": "${text}"
-                    }
-                ]
-            }
-        """.stripIndent()
-    }
-
+    
     protected static String findExceptionMessage(Exception ex) {
         ex.cause ? findExceptionMessage(ex.cause) : ex.message
     }
