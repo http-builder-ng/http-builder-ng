@@ -15,10 +15,7 @@
  */
 package groovyx.net.http;
 
-import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyShell;
-import groovy.time.BaseDuration;
 import groovy.transform.TypeChecked;
 import groovyx.net.http.optional.Csv;
 import groovyx.net.http.optional.Html;
@@ -43,7 +40,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static groovyx.net.http.ChainedHttpConfig.*;
 import static groovyx.net.http.Safe.ifClassIsLoaded;
@@ -175,8 +171,10 @@ public class HttpConfigs {
 
         public void setHeaders(final Map<String,String> toAdd) {
             final Map<String,String> h = getHeaders();
-            for(Map.Entry<String,String> entry : toAdd.entrySet()) {
-                h.put(entry.getKey(), entry.getValue());
+            if(toAdd != null){
+                for(final Map.Entry<String,String> entry : toAdd.entrySet()) {
+                    h.put(entry.getKey(), entry.getValue());
+                }
             }
         }
 

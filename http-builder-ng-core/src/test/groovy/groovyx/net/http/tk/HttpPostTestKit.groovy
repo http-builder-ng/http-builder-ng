@@ -15,216 +15,615 @@
  */
 package groovyx.net.http.tk
 
-import com.stehno.ersatz.Decoders
+import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.feat.BasicAuthFeature
-import groovy.json.JsonSlurper
-import groovyx.net.http.ChainedHttpConfig
-import groovyx.net.http.FromServer
-import groovyx.net.http.NativeHandlers
-import groovyx.net.http.ToServer
-import spock.lang.Ignore
-import spock.lang.Issue
+import com.stehno.ersatz.feat.DigestAuthFeature
+import groovyx.net.http.*
 import spock.lang.Unroll
 
-import static com.stehno.ersatz.ContentType.APPLICATION_URLENCODED
-import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static groovyx.net.http.ContentTypes.*
+import java.util.function.BiFunction
+import java.util.function.Consumer
+import java.util.function.Function
+
+import static com.stehno.ersatz.ContentType.*
+import static groovyx.net.http.ContentTypes.URLENC
+import static groovyx.net.http.HttpVerb.POST
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 /**
  * Test kit for testing the HTTP POST method with different clients.
  */
 abstract class HttpPostTestKit extends HttpMethodTestKit {
 
-    private static final String DATE_STRING = '2016.08.25 14:43'
-    private static final Date DATE_OBJECT = Date.parse('yyyy.MM.dd HH:mm', DATE_STRING)
-    private static final String JSON_STRING = '{"name":"Bob","age":42}'
-    private static final String BODY_STRING = 'This is CONTENT!!'
-    private static final String HTML_CONTENT = htmlContent('Something Different')
-    private static final String JSON_CONTENT = '{ "accepted":true, "id":100 }'
-
-    def 'POST /: returns content'() {
+    @Unroll 'post(): #protocol #contentType.value #body'() {
         setup:
         ersatzServer.expectations {
-            post('/').responds().content(htmlContent(), 'text/plain')
-        }.start()
+            post('/alpha').body(expectedBody, APPLICATION_JSON).protocol(protocol).called(2).responds().content(content, contentType)
+        }
 
-        expect:
-        httpBuilder(ersatzServer.port).post() == htmlContent()
+        // TODO: this construct is reused - refactor it into a common area
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
 
-        and:
-        httpBuilder(ersatzServer.port).postAsync().get() == htmlContent()
-    }
-
-    @Unroll 'POST /foo (#contentType): returns content'() {
-        given:
-        ersatzServer.expectations {
-            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).responds().content(HTML_CONTENT, TEXT[0])
-
-            post('/foo') {
-                decoders(commonDecoders)
-                body([age: 42, name: 'Bob'], JSON[0])
-                responder {
-                    content('{"name":"Bob","age":42}', JSON[0])
-                }
-            }
-        }.start()
-
-        def config = {
-            request.uri.path = '/foo'
-            request.body = requestContent
-            request.contentType = contentType[0]
-            response.parser contentType, parser
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/alpha"
+            request.body = body
+            request.contentType = APPLICATION_JSON.value
         }
 
         expect:
-        httpBuilder(ersatzServer.port).post(config) == result
+        result(http.post())
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == result
+        result(http.postAsync().get())
+
+        and:
+        ersatzServer.verify()
 
         where:
-        requestContent | contentType | parser                               || result
-        BODY_STRING    | TEXT        | NativeHandlers.Parsers.&textToString || HTML_CONTENT
-        JSON_STRING    | JSON        | NativeHandlers.Parsers.&json         || [age: 42, name: 'Bob']
+        protocol | body               | expectedBody          | contentType      | content || result
+        'HTTP'   | null               | ''                    | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        'HTTPS'  | null               | ''                    | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+
+        'HTTP'   | [:]                | '{}'                  | APPLICATION_JSON | OK_JSON || { r -> r == [value: 'ok-json'] }
+        'HTTPS'  | [:]                | '{}'                  | APPLICATION_JSON | OK_JSON || { r -> r == [value: 'ok-json'] }
+
+        'HTTP'   | [one: '1']         | '{"one":"1"}'         | APPLICATION_XML  | OK_XML  || { r -> r == OK_XML_DOC }
+        'HTTPS'  | [one: '1']         | '{"one":"1"}'         | APPLICATION_XML  | OK_XML  || { r -> r == OK_XML_DOC }
+
+        'HTTP'   | [two: 2]           | '{"two":2}'           | TEXT_HTML        | OK_HTML || { r -> r.body().text() == 'ok-html' }
+        'HTTPS'  | [two: 2]           | '{"two":2}'           | TEXT_HTML        | OK_HTML || { r -> r.body().text() == 'ok-html' }
+
+        'HTTP'   | [one: '1', two: 2] | '{"one":"1","two":2}' | 'text/csv'       | OK_CSV  || { r -> r == OK_CSV_DOC }
+        'HTTPS'  | [one: '1', two: 2] | '{"one":"1","two":2}' | 'text/csv'       | OK_CSV  || { r -> r == OK_CSV_DOC }
     }
 
-    def 'POST /form (url-encoded)'() {
+    @Unroll 'post(Closure): query -> #query'() {
         setup:
         ersatzServer.expectations {
-            post('/form').decoders(commonDecoders).body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).responds().content('ok', TEXT_PLAIN)
-        }.start()
+            post('/bravo').body(REQUEST_BODY_JSON, APPLICATION_JSON).queries(query).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
 
         def config = {
-            request.uri.path = '/form'
-            request.body = [username: 'bobvila', password: 'oldhouse']
-            request.contentType = URLENC[0]
-            request.encoder(URLENC, NativeHandlers.Encoders.&form)
+            request.uri.path = '/bravo'
+            request.uri.query = query
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
         }
 
         expect:
-        httpBuilder(ersatzServer.port).post(config) == 'ok'
+        http.post(config) == OK_TEXT
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == 'ok'
-    }
-
-    @Unroll 'POST /foo (#contentType): encodes and decodes properly and returns content'() {
-        given:
-        ersatzServer.expectations {
-            post('/foo').decoders(commonDecoders).body([name: 'Bob', age: 42], JSON[0]).responds().content(JSON_CONTENT, JSON[0])
-        }.start()
-
-        def config = {
-            request.uri.path = '/foo'
-            request.body = content
-            request.contentType = contentType[0]
-        }
-
-        expect:
-        httpBuilder(ersatzServer.port).post(config) == result
+        http.postAsync(config).get() == OK_TEXT
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == result
+        ersatzServer.verify()
 
         where:
-        contentType | content                || result
-        JSON        | [name: 'Bob', age: 42] || [accepted: true, id: 100]
-        JSON        | { name 'Bob'; age 42 } || [accepted: true, id: 100]
+        query << [
+            null,
+            [:],
+            [alpha: 'one'],
+            [alpha: ['one']],
+            [alpha: ['one', 'two']],
+            [alpha: ['one', 'two'], bravo: 'three']
+        ]
     }
 
-    def 'POST /foo (cookie): returns content'() {
-        given:
+    @Unroll 'post(Consumer): headers -> #headers'() {
+        setup:
         ersatzServer.expectations {
-            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).cookie('userid', 'spock').responds().content(htmlContent(), TEXT[0])
-        }.start()
+            post('/charlie').body(REQUEST_BODY_JSON, APPLICATION_JSON).headers(headers).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
 
-        def config = {
-            request.uri.path = '/foo'
-            request.body = BODY_STRING
-            request.contentType = TEXT[0]
-            request.cookie 'userid', 'spock'
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
+
+        // odd scoping issue requires this
+        def requestHeaders = headers
+
+        Consumer<HttpConfig> consumer = new Consumer<HttpConfig>() {
+            @Override void accept(final HttpConfig config) {
+                config.request.uri.path = '/charlie'
+                config.request.headers = requestHeaders
+                config.request.body = REQUEST_BODY
+                config.request.contentType = APPLICATION_JSON.value
+            }
         }
 
         expect:
-        httpBuilder(ersatzServer.port).post(config) == htmlContent()
+        http.post(consumer) == OK_TEXT
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == htmlContent()
+        http.postAsync(consumer).get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        headers << [
+            null,
+            [:],
+            [hat: 'fedora']
+        ]
     }
 
-    def 'POST /foo (query string): returns content'() {
-        given:
+    @Unroll 'post(Class,Closure): cookies -> #cookies'() {
+        setup:
         ersatzServer.expectations {
-            post('/foo').decoders(commonDecoders).body(BODY_STRING, TEXT[0]).query('action', 'login').responds().content(htmlContent(), TEXT[0])
-        }.start()
-
-        def config = {
-            request.uri.path = '/foo'
-            request.uri.query = [action: 'login']
-            request.body = BODY_STRING
-            request.contentType = TEXT[0]
+            post('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies).called(2).responder {
+                encoder 'text/date', String, Encoders.text
+                content('2016.08.25 14:43', 'text/date')
+            }
         }
 
-        expect:
-        httpBuilder(ersatzServer.port).post(config) == htmlContent()
-
-        and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == htmlContent()
-    }
-
-    def 'POST /date: returns content as Date'() {
-        given:
-        ersatzServer.expectations {
-            post('/date'){
-                decoders(commonDecoders)
-                decoder 'text/datetime', Decoders.utf8String
-                body('DATE-TIME: 20160825-1443', 'text/datetime')
-                responds().content('2016.08.25 14:43', 'text/date')
-            }
-        }.start()
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
 
         def config = {
-            request.uri.path = '/date'
-            request.body = DATE_OBJECT
-            request.contentType = 'text/datetime'
-            request.encoder('text/datetime') { ChainedHttpConfig config, ToServer req ->
-                req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd-HHmm')}".bytes))
+            request.uri.path = '/delta'
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+
+            cookies.each { n, v ->
+                request.cookie n, v
             }
+
             response.parser('text/date') { ChainedHttpConfig config, FromServer fromServer ->
                 Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
             }
         }
 
         expect:
-        httpBuilder(ersatzServer.port).post(Date, config).format('yyyy.MM.dd HH:mm') == DATE_STRING
+        http.post(Date, config).format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(Date, config).get().format('yyyy.MM.dd HH:mm') == DATE_STRING
+        http.postAsync(Date, config).get().format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        cookies << [
+            null,
+            [:],
+            [flavor: 'chocolate-chip'],
+            [flavor: 'chocolate-chip', count: 'dozen']
+        ]
     }
 
-    @Ignore @Issue('https://github.com/http-builder-ng/http-builder-ng/issues/10')
-    '[#client] POST (BASIC) /basic: returns content'() {
+    @Unroll 'post(Class,Consumer): cookies -> #cookies'() {
         setup:
-        ersatzServer.addFeature new BasicAuthFeature()
-
         ersatzServer.expectations {
-            post('/basic').decoders(commonDecoders).body([name: 'Bob', age: 42], JSON[0]).responds().content(htmlContent(), 'text/plain')
-        }.start()
+            post('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies).called(2).responder {
+                encoder 'text/date', String, Encoders.text
+                content('2016.08.25 14:43', 'text/date')
+            }
+        }
+
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
+
+        // required for variable scoping
+        def consumerCookies = cookies
+
+        Consumer<HttpConfig> consumer = new Consumer<HttpConfig>() {
+            @Override void accept(final HttpConfig config) {
+                config.request.uri.path = '/delta'
+                config.request.body = REQUEST_BODY
+                config.request.contentType = APPLICATION_JSON.value
+
+                consumerCookies.each { n, v ->
+                    config.request.cookie n, v
+                }
+
+                config.response.parser('text/date') { ChainedHttpConfig cfg, FromServer fromServer ->
+                    Date.parse('yyyy.MM.dd HH:mm', fromServer.inputStream.text)
+                }
+            }
+        }
 
         expect:
-        httpBuilder(ersatzServer.port).post({
-            request.uri.path = '/basic'
-            request.body = JSON_STRING
-            request.contentType = JSON[0]
-            request.auth.basic 'admin', '$3cr3t'
-        }) == htmlContent()
+        http.post(Date, consumer).format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
 
         and:
-        httpBuilder(ersatzServer.port).postAsync({
-            request.uri.path = '/basic'
-            request.body = JSON_STRING
-            request.contentType = JSON[0]
+        http.postAsync(Date, consumer).get().format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        cookies << [
+            null,
+            [:],
+            [flavor: 'peanut-butter'],
+            [flavor: 'oatmeal', count: 'dozen']
+        ]
+    }
+
+    @Unroll '#protocol POST with BASIC authentication (authorized)'() {
+        setup:
+        ersatzServer.feature new BasicAuthFeature()
+
+        ersatzServer.expectations {
+            post('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/basic"
             request.auth.basic 'admin', '$3cr3t'
-        }).get() == htmlContent()
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+        }
+
+        expect:
+        http.post() == OK_TEXT
+
+        and:
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    @Unroll '#protocol POST with BASIC authentication (unauthorized)'() {
+        setup:
+        ersatzServer.feature new BasicAuthFeature()
+
+        ersatzServer.expectations {
+            post('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/basic"
+            request.auth.basic 'guest', 'blah'
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+        }
+
+        when:
+        http.post()
+
+        then:
+        def ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        when:
+        http.postAsync().get()
+
+        then:
+        ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    @Unroll '#protocol POST with DIGEST authentication (authorized)'() {
+        setup:
+        ersatzServer.feature new DigestAuthFeature()
+
+        ersatzServer.expectations {
+            post('/digest').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/digest"
+            request.auth.digest 'admin', '$3cr3t'
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+        }
+
+        expect:
+        http.post() == OK_TEXT
+
+        and:
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    @Unroll '#protocol POST with DIGEST authentication (unauthorized)'() {
+        setup:
+        ersatzServer.feature new DigestAuthFeature()
+
+        ersatzServer.expectations {
+            post('/digest').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/digest"
+            request.auth.digest 'nobody', 'foobar'
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+        }
+
+        when:
+        http.post()
+
+        then:
+        def ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        when:
+        http.postAsync().get()
+
+        then:
+        ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    def 'interceptor'() {
+        setup:
+        ersatzServer.expectations {
+            post('/pass').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/pass"
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            execution.interceptor(POST) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
+                "Response: ${fx.apply(cfg)}"
+            }
+        }
+
+        expect:
+        http.post() == 'Response: ok-text'
+
+        and:
+        http.postAsync().get() == 'Response: ok-text'
+
+        and:
+        ersatzServer.verify()
+    }
+
+    @Unroll 'when handler with Closure (#code)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            response.when(status) { FromServer fs, Object body ->
+                "Code: ${fs.statusCode}"
+            }
+        }
+
+        expect:
+        http.post() == result
+
+        and:
+        http.postAsync().get() == result
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        code | status                    || result
+        205  | HttpConfig.Status.SUCCESS || 'Code: 205'
+        210  | 210                       || 'Code: 210'
+        211  | '211'                     || 'Code: 211'
+    }
+
+    @Unroll 'when handler with BiFunction (#code)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            response.when(status, new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "Code: ${fs.statusCode}"
+                }
+            })
+        }
+
+        expect:
+        http.post() == result
+
+        and:
+        http.postAsync().get() == result
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        code | status                    || result
+        205  | HttpConfig.Status.SUCCESS || 'Code: 205'
+        210  | 210                       || 'Code: 210'
+        211  | '211'                     || 'Code: 211'
+    }
+
+    @Unroll 'success/failure handler with Closure (#code)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            response.success { FromServer fs, Object body ->
+                "Success: ${fs.statusCode}"
+            }
+            response.failure { FromServer fs, Object body ->
+                "Failure: ${fs.statusCode}"
+            }
+        }
+
+        expect:
+        http.post() == result
+
+        and:
+        http.postAsync().get() == result
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        code || result
+        200  || 'Success: 200'
+        300  || 'Success: 300'
+        400  || 'Failure: 400'
+        500  || 'Failure: 500'
+    }
+
+    @Unroll 'success/failure handler with BiFunction (#code)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            response.success(new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "Success: ${fs.statusCode}"
+                }
+            })
+            response.failure(new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "Failure: ${fs.statusCode}"
+                }
+            })
+        }
+
+        expect:
+        http.post() == result
+
+        and:
+        http.postAsync().get() == result
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        code || result
+        200  || 'Success: 200'
+        300  || 'Success: 300'
+        400  || 'Failure: 400'
+        500  || 'Failure: 500'
+    }
+
+    def 'gzip compression supported'() {
+        setup:
+        ersatzServer.expectations {
+            post('/gzip').body(REQUEST_BODY_JSON, APPLICATION_JSON).header('Accept-Encoding', 'gzip').called(2).responds().content('x' * 1000, TEXT_PLAIN)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/gzip"
+            request.headers = ['Accept-Encoding': 'gzip']
+            request.body = REQUEST_BODY
+            request.contentType = APPLICATION_JSON.value
+            response.success { FromServer fs, Object body ->
+                "${fs.headers.find { FromServer.Header h -> h.key == 'Content-Encoding' }.value} (${fs.statusCode}): ${body.toString().length()}"
+            }
+        }
+
+        expect:
+        http.post() == 'gzip (200): 1000'
+
+        and:
+        http.postAsync().get() == 'gzip (200): 1000'
+
+        and:
+        ersatzServer.verify()
+    }
+
+    @Unroll 'request content encoding (#contentType.value)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/types').body(expected, contentType).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/types"
+            request.body = content
+            request.contentType = contentType
+        }
+
+        expect:
+        http.post() == OK_TEXT
+
+        and:
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        content     | contentType            | expected
+        OK_JSON     | APPLICATION_JSON.value | OK_JSON
+        OK_XML      | APPLICATION_XML.value  | OK_XML
+        OK_HTML_DOC | TEXT_HTML.value        | 'ok-html'
+    }
+
+    @Unroll 'form (url-encoded): #protocol'() {
+        setup:
+        ersatzServer.expectations {
+            post('/form').body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        def http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/form"
+            request.body = [username: 'bobvila', password: 'oldhouse']
+            request.contentType = URLENC[0]
+            request.encoder URLENC, NativeHandlers.Encoders.&form
+        }
+
+        expect:
+        http.post() == OK_TEXT
+
+        and:
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
     }
 }

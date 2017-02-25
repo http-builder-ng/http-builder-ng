@@ -19,29 +19,36 @@ import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.MultipartRequestContent
 import groovyx.net.http.tk.HttpPostTestKit
+import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.MultipartContent.multipart
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
 
-    def 'POST /upload (multipart)'() {
+    @Unroll 'multipart request #proto'() {
         setup:
         ersatzServer.expectations {
             post('/upload') {
                 decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
-                decoder ContentType.TEXT_PLAIN, Decoders.utf8String
+                decoder TEXT_PLAIN, Decoders.utf8String
+                called(2)
+                protocol(proto)
                 body MultipartRequestContent.multipart {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
-                responds().content('ok', TEXT_PLAIN)
+                responds().content(OK_TEXT, TEXT_PLAIN)
             }
-        }.start()
+        }
 
-        def config = {
-            request.uri.path = '/upload'
+        String serverUri = "${proto == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+
+        def http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri}/upload"
             request.contentType = MULTIPART_FORMDATA[0]
             request.body = multipart {
                 field 'alpha', 'some data'
@@ -51,9 +58,15 @@ class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
         }
 
         expect:
-        httpBuilder(ersatzServer.port).post(config) == 'ok'
+        http.post() == OK_TEXT
 
         and:
-        httpBuilder(ersatzServer.port).postAsync(config).get() == 'ok'
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        proto << ['HTTP', 'HTTPS']
     }
 }

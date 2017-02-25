@@ -21,11 +21,7 @@ import org.codehaus.groovy.runtime.GStringImpl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -352,8 +348,10 @@ public abstract class UriBuilder {
 
         private Map<String, Object> query = new LinkedHashMap<>(1);
 
-        public UriBuilder setQuery(Map<String, ?> val) {
-            query.putAll(val);
+        public UriBuilder setQuery(final Map<String, ?> val) {
+            if(val != null) {
+                query.putAll(val);
+            }
             return this;
         }
 

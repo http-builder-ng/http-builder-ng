@@ -19,4 +19,5 @@ import groovyx.net.http.tk.HttpPostTestKit
 
 class JavaHttpPostSpec extends HttpPostTestKit implements UsesJavaClient {
 
+    // TODO: support and test multipart requests in Core client
 }

@@ -99,7 +99,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         public Object execute() {
             try {
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
-                    if (sslContext != null) {
+                    if (sslContext != null && connection instanceof HttpsURLConnection) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
 
                         if (hostnameVerifier != null) {
