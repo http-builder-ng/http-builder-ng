@@ -38,9 +38,6 @@ abstract class HttpMethodTestKit extends TestKit {
     protected static final OK_CSV_DOC = [['alpha', 'bravo', 'charlie'], ['one', 'two', 'three']]
     protected static final OK_HTML_DOC = Jsoup.parse(OK_HTML)
 
-    // FIXME: still need a common testing area for HttpBuilder configuration methods
-    // FIXME: test configuration overrided (for clients)
-
     protected final ErsatzServer ersatzServer = new ErsatzServer({
         enableAutoStart()
         enableHttps()
