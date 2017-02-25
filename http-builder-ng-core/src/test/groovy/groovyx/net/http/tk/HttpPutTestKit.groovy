@@ -295,14 +295,14 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         then:
         def ex = thrown(Exception)
-        ex.cause.message == 'Unauthorized'
+        findExceptionMessage(ex) == 'Unauthorized'
 
         when:
         http.putAsync().get()
 
         then:
         ex = thrown(Exception)
-        ex.cause.cause.message == 'Unauthorized'
+        findExceptionMessage(ex) == 'Unauthorized'
 
         and:
         ersatzServer.verify()
@@ -365,14 +365,14 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         then:
         def ex = thrown(Exception)
-        ex.cause.message == 'Unauthorized'
+        findExceptionMessage(ex) == 'Unauthorized'
 
         when:
         http.putAsync().get()
 
         then:
         ex = thrown(Exception)
-        ex.cause.cause.message == 'Unauthorized'
+        findExceptionMessage(ex) == 'Unauthorized'
 
         and:
         ersatzServer.verify()
@@ -409,7 +409,7 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
     @Unroll 'when handler with Closure (#code)'() {
         setup:
         ersatzServer.expectations {
-            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().content(OK_TEXT, TEXT_PLAIN).code(code)
+            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
         }
 
         def http = httpBuilder {
@@ -417,7 +417,7 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
             response.when(status) { FromServer fs, Object body ->
-                "$body (${fs.statusCode})"
+                "Code: ${fs.statusCode}"
             }
         }
 
@@ -432,15 +432,15 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         where:
         code | status                    || result
-        205  | HttpConfig.Status.SUCCESS || 'ok-text (205)'
-        210  | 210                       || 'ok-text (210)'
-        211  | '211'                     || 'ok-text (211)'
+        205  | HttpConfig.Status.SUCCESS || 'Code: 205'
+        210  | 210                       || 'Code: 210'
+        211  | '211'                     || 'Code: 211'
     }
 
     @Unroll 'when handler with BiFunction (#code)'() {
         setup:
         ersatzServer.expectations {
-            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().content(OK_TEXT, TEXT_PLAIN).code(code)
+            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
         }
 
         def http = httpBuilder {
@@ -449,7 +449,7 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             request.contentType = APPLICATION_JSON.value
             response.when(status, new BiFunction<FromServer, Object, Object>() {
                 @Override Object apply(FromServer fs, Object body) {
-                    "$body (${fs.statusCode})"
+                    "Code: ${fs.statusCode}"
                 }
             })
         }
@@ -465,15 +465,15 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         where:
         code | status                    || result
-        205  | HttpConfig.Status.SUCCESS || 'ok-text (205)'
-        210  | 210                       || 'ok-text (210)'
-        211  | '211'                     || 'ok-text (211)'
+        205  | HttpConfig.Status.SUCCESS || 'Code: 205'
+        210  | 210                       || 'Code: 210'
+        211  | '211'                     || 'Code: 211'
     }
 
     @Unroll 'success/failure handler with Closure (#code)'() {
         setup:
         ersatzServer.expectations {
-            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().content(OK_TEXT, TEXT_PLAIN).code(code)
+            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
         }
 
         def http = httpBuilder {
@@ -481,10 +481,10 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
             response.success { FromServer fs, Object body ->
-                "Success: $body (${fs.statusCode})"
+                "Success: ${fs.statusCode}"
             }
             response.failure { FromServer fs, Object body ->
-                "Failure: $body (${fs.statusCode})"
+                "Failure: ${fs.statusCode}"
             }
         }
 
@@ -499,16 +499,16 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         where:
         code || result
-        200  || 'Success: ok-text (200)'
-        300  || 'Success: ok-text (300)'
-        400  || 'Failure: null (400)'
-        500  || 'Failure: null (500)'
+        200  || 'Success: 200'
+        300  || 'Success: 300'
+        400  || 'Failure: 400'
+        500  || 'Failure: 500'
     }
 
     @Unroll 'success/failure handler with BiFunction (#code)'() {
         setup:
         ersatzServer.expectations {
-            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().content(OK_TEXT, TEXT_PLAIN).code(code)
+            put('/handling').body(REQUEST_BODY_JSON, APPLICATION_JSON).called(2).responds().code(code)
         }
 
         def http = httpBuilder {
@@ -517,12 +517,12 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             request.contentType = APPLICATION_JSON.value
             response.success(new BiFunction<FromServer, Object, Object>() {
                 @Override Object apply(FromServer fs, Object body) {
-                    "Success: $body (${fs.statusCode})"
+                    "Success: ${fs.statusCode}"
                 }
             })
             response.failure(new BiFunction<FromServer, Object, Object>() {
                 @Override Object apply(FromServer fs, Object body) {
-                    "Failure: $body (${fs.statusCode})"
+                    "Failure: ${fs.statusCode}"
                 }
             })
         }
@@ -538,10 +538,10 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
 
         where:
         code || result
-        200  || 'Success: ok-text (200)'
-        300  || 'Success: ok-text (300)'
-        400  || 'Failure: null (400)'
-        500  || 'Failure: null (500)'
+        200  || 'Success: 200'
+        300  || 'Success: 300'
+        400  || 'Failure: 400'
+        500  || 'Failure: 500'
     }
 
     def 'gzip compression supported'() {
@@ -556,15 +556,15 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
             response.success { FromServer fs, Object body ->
-                "${fs.headers.find { FromServer.Header h -> h.key == 'Content-Encoding' }.value} (${fs.statusCode}): ${body.toString().length()}"
+                "${fs.headers.find { FromServer.Header h -> h.key == 'Content-Encoding' }.value} (${fs.statusCode})"
             }
         }
 
         expect:
-        http.put() == 'gzip (200): 1000'
+        http.put() == 'gzip (200)'
 
         and:
-        http.putAsync().get() == 'gzip (200): 1000'
+        http.putAsync().get() == 'gzip (200)'
 
         and:
         ersatzServer.verify()
