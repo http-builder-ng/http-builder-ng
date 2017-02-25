@@ -6,7 +6,7 @@ v0.13.3, January 2017
 
 == Introduction
 
-The https://http-builder-ng.github.io/http-builder-ng/[HTTP Builder NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
+The https://http-builder-ng.github.io/http-builder-ng/[HttpBuilder-NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
 Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
 version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
 
@@ -112,7 +112,8 @@ def http = HttpBuilder.configure {
 
 There is nothing more to do on the client side.
 
-WARNING: Currently there are some support issues with DIGEST and it's support may be removed altogether.
+WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure()` method, not in the individual verb configuration
+closures - this is due to how the client configures DIGEST support internally.
 
 == Encoders
 
@@ -515,8 +516,3 @@ The available multipart encoders:
 
 The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
 of a multipart content object must be specified beforehand.
-
-== Appendix A: Feature Support
-
-
-FIXME: DIGEST support for OkHttp only allowed on main configuration, not methods
