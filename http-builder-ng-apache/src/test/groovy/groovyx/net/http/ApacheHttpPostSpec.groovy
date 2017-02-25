@@ -44,11 +44,9 @@ class ApacheHttpPostSpec extends HttpPostTestKit implements UsesApacheClient {
             }
         }
 
-        String serverUri = "${proto == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         def http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/upload"
+            request.uri = "${serverUri(proto)}/upload"
             request.contentType = MULTIPART_FORMDATA[0]
             request.body = multipart {
                 field 'alpha', 'some data'

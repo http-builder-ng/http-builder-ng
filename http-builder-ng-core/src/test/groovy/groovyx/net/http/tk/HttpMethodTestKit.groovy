@@ -64,7 +64,11 @@ abstract class HttpMethodTestKit extends TestKit {
     def cleanup() {
         ersatzServer.stop()
     }
-    
+
+    protected String serverUri(final String protocol){
+        "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
+    }
+
     protected static String findExceptionMessage(Exception ex) {
         ex.cause ? findExceptionMessage(ex.cause) : ex.message
     }

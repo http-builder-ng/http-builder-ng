@@ -43,12 +43,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
             delete('/alpha').protocol(protocol).called(2).responds().content(content, contentType)
         }
 
-        // TODO: this construct is reused - refactor it into a common area
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/alpha"
+            request.uri = "${serverUri(protocol)}/alpha"
         }
 
         expect:
@@ -241,11 +238,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
             delete('/basic').protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'admin', '$3cr3t'
         }
 
@@ -270,11 +265,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
             delete('/basic').protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'guest', 'blah'
         }
 
@@ -308,11 +301,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
             delete('/digest').protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'admin', '$3cr3t'
         }
 
@@ -337,11 +328,9 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
             delete('/digest').protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'nobody', 'foobar'
         }
 

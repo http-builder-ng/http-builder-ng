@@ -44,11 +44,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
             }
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/alpha"
+            request.uri = "${serverUri(protocol)}/alpha"
             response.success { FromServer fs, Object body ->
                 !body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')
             }
@@ -245,11 +243,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
             head('/basic').protocol(protocol).called(2).responds().code(200)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'admin', '$3cr3t'
             response.success { FromServer fs, Object body ->
                 !body && fs.statusCode == 200
@@ -277,11 +273,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
             head('/basic').protocol(protocol).called(0).responds().code(200)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'guest', 'blah'
         }
 
@@ -314,11 +308,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
             head('/digest').protocol(protocol).called(2).responds().code(200)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'admin', '$3cr3t'
             response.success { FromServer fs, Object body ->
                 !body && fs.statusCode == 200
@@ -346,11 +338,9 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
             head('/digest').protocol(protocol).called(0).responds().code(200)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'nobody', 'foobar'
         }
 

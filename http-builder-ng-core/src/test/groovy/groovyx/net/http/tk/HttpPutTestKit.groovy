@@ -41,12 +41,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/alpha').body(expectedBody, APPLICATION_JSON).protocol(protocol).called(2).responds().content(content, contentType)
         }
 
-        // TODO: this construct is reused - refactor it into a common area
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/alpha"
+            request.uri = "${serverUri(protocol)}/alpha"
             request.body = body
             request.contentType = APPLICATION_JSON.value
         }
@@ -249,11 +246,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'admin', '$3cr3t'
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
@@ -280,11 +275,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/basic"
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'guest', 'blah'
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
@@ -320,11 +313,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/digest')/*.body(REQUEST_BODY_JSON, APPLICATION_JSON)*/.protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'admin', '$3cr3t'
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
@@ -351,11 +342,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/digest').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/digest"
+            request.uri = "${serverUri(protocol)}/digest"
             request.auth.digest 'nobody', 'foobar'
             request.body = REQUEST_BODY
             request.contentType = APPLICATION_JSON.value
@@ -605,11 +594,9 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
             put('/form').body([username: 'bobvila', password: 'oldhouse'], APPLICATION_URLENCODED).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        String serverUri = "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
-
         def http = httpBuilder {
             ignoreSslIssues execution
-            request.uri = "${serverUri}/form"
+            request.uri = "${serverUri(protocol)}/form"
             request.body = [username: 'bobvila', password: 'oldhouse']
             request.contentType = URLENC[0]
             request.encoder URLENC, NativeHandlers.Encoders.&form
