@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 David Clark
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,10 @@
  */
 package groovyx.net.http;
 
+import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
+import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
+import com.burgstaller.okhttp.digest.CachingAuthenticator;
+import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import okhttp3.*;
@@ -27,12 +31,14 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -62,6 +68,17 @@ public class OkHttpBuilder extends HttpBuilder {
         if (sslContext != null) {
             builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);
             builder.hostnameVerifier(config.getExecution().getHostnameVerifier());
+        }
+
+        // DIGEST support - defining this here only allows DIGEST config on the HttpBuilder configuration, not for individual methods.
+        final HttpConfig.Auth auth = config.getRequest().getAuth();
+        if (auth != null && auth.getAuthType() == DIGEST) {
+            Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
+
+            builder.addInterceptor(new AuthenticationCacheInterceptor(authCache));
+            builder.authenticator(new CachingAuthenticatorDecorator(
+                new DigestAuthenticator(new com.burgstaller.okhttp.digest.Credentials(auth.getUser(), auth.getPassword())), authCache)
+            );
         }
 
         this.client = builder.build();
@@ -121,7 +138,6 @@ public class OkHttpBuilder extends HttpBuilder {
     public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
         return configure(okFactory, configuration);
     }
-
 
     @Override
     protected ChainedHttpConfig getObjectConfig() {
@@ -198,7 +214,7 @@ public class OkHttpBuilder extends HttpBuilder {
     }
 
     private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig, ChainedHttpConfig.ChainedRequest cr) {
-        RequestBody body = RequestBody.create(MediaType.parse("text/html"), "");
+        RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), "");
         if (cr.actualBody() != null) {
             final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);
             chainedConfig.findEncoder().accept(chainedConfig, toServer);
@@ -226,7 +242,13 @@ public class OkHttpBuilder extends HttpBuilder {
     private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
         final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();
         if (auth != null) {
-            requestBuilder.addHeader("Authorization", Credentials.basic(auth.getUser(), auth.getPassword()));
+            switch (auth.getAuthType()) {
+                case BASIC:
+                    requestBuilder.addHeader("Authorization", Credentials.basic(auth.getUser(), auth.getPassword()));
+                    break;
+                case DIGEST:
+                    // supported in constructor with an interceptor
+            }
         }
     }
 

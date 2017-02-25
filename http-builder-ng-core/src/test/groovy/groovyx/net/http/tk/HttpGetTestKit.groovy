@@ -528,15 +528,15 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             request.uri = "${ersatzServer.httpUrl}/gzip"
             request.headers = ['Accept-Encoding': 'gzip']
             response.success { FromServer fs, Object body ->
-                "${fs.headers.find { FromServer.Header h -> h.key == 'Content-Encoding' }.value} (${fs.statusCode}): ${body.toString().length()}"
+                "${fs.headers.find { FromServer.Header h -> h.key == 'Content-Encoding' }.value} (${fs.statusCode})"
             }
         }
 
         expect:
-        http.get() == 'gzip (200): 1000'
+        http.get() == 'gzip (200)'
 
         and:
-        http.getAsync().get() == 'gzip (200): 1000'
+        http.getAsync().get() == 'gzip (200)'
 
         and:
         ersatzServer.verify()
