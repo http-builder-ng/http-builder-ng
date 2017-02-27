@@ -10,6 +10,8 @@ buildscript {
 
 plugins {
     id "com.stehno.gradle.webpreview" version "0.1.1"
+    id 'com.github.kt3k.coveralls' version '2.7.1'
+    id 'jacoco'
 }
 
 apply plugin: 'org.asciidoctor.convert'
@@ -335,3 +337,37 @@ static boolean checkUrl(String url) {
         return false
     }
 }
+
+// Merged coverage report
+
+def publishedProjects = subprojects.findAll()
+
+task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+
+    dependsOn(publishedProjects.test)
+
+    additionalSourceDirs = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(publishedProjects.sourceSets.main.output)
+    executionData = files(publishedProjects.jacocoTestReport.executionData)
+
+    doFirst {
+        executionData = files(executionData.findAll { it.exists() })
+    }
+
+    reports {
+        html.enabled = true // human readable
+        xml.enabled = true // required by coveralls
+    }
+}
+
+coveralls {
+    sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+}
+
+// FIXME: use unified coverage report for site
+// FIXME: disable report generation for sub-projects
+// FIXME: unify javadoc and use for site
+// FIXME: unify findbugs report and use for site (or just remove)
