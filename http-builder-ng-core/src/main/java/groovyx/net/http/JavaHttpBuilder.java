@@ -35,7 +35,7 @@ import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCT
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.

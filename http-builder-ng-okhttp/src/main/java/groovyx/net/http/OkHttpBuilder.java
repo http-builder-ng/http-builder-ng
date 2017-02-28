@@ -43,7 +43,7 @@ import static java.util.stream.Collectors.toList;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
@@ -86,11 +86,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
-     * <p>
+     *
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     * <p>
+     *
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
@@ -107,13 +107,13 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
-     * <p>
+     *
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     * <p>
+     *
      * This configuration method is generally meant for use with standard Java.
-     * <p>
+     *
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
@@ -122,9 +122,9 @@ public class OkHttpBuilder extends HttpBuilder {
      * }
      * });
      * ----
-     * <p>
+     *
      * Or, using lambda expressions:
-     * <p>
+     *
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
