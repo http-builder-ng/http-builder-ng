@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.13.3,</span>
-<span id="revdate">January 2017</span>
+<span id="revnumber">version 0.14.0,</span>
+<span id="revdate">March 2017</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -549,34 +549,17 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_sending_multipart_data_post">Sending Multipart Data (POST)</a></li>
 </ul>
 </li>
-<li><a href="#_appendix_a_feature_support">Appendix A: Feature Support</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
-<div class="sectionbody">
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Warning</div>
-</td>
-<td class="content">
-As of version 0.11.0 the underlying Apache client implementation has been broken out into a separate sub-project dependent on the core library. The <code>ApacheHttpBuilder</code> package name and file location were changed and you will need to update your code to address this change.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
 <div class="sect1">
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <a href="https://http-builder-ng.github.io/http-builder-ng/">HTTP Builder NG</a> project is a modern Groovy DSL for making HTTP requests. It is usable with both
-Groovy and Java. It requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn&#8217;t make any assumptions about which
-version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make HTTP requests in a natural and readable way.</p>
+<p>The <a href="https://http-builder-ng.github.io/http-builder-ng/">HttpBuilder-NG</a> project is a modern Groovy DSL for making HTTP requests. It is usable with both
+Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn&#8217;t make any assumptions about which
+version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.</p>
 </div>
 </div>
 </div>
@@ -584,14 +567,14 @@ version of Groovy you are using. The main goal of HTTP Builder NG is to allow yo
 <h2 id="_history">History</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
+<p>HttpBuilder-NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
 <a href="https://github.com/jgritman/httpbuilder">Jason Gritman</a> who maintained it for several years.</p>
 </div>
 <div class="paragraph">
-<p>The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
+<p>The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
 was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
-typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HTTP
-Builder NG is basically a complete re-write and re-architecture.</p>
+typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HttpBuilder-NG
+is basically a complete re-write and re-architecture.</p>
 </div>
 </div>
 </div>
@@ -599,11 +582,11 @@ Builder NG is basically a complete re-write and re-architecture.</p>
 <h2 id="_license">License</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>HTTP Builder NG is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2</a> open source license.</p>
+<p>HttpBuilder-NG is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2</a> open source license.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Copyright 2016 David Clark
+<pre>Copyright 2017 David Clark
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
@@ -714,7 +697,8 @@ of the client factory to be used.</p>
 <div class="title">Warning</div>
 </td>
 <td class="content">
-Currently there are some support issues with DIGEST and it&#8217;s support may be removed altogether.
+Currently, the OkHttp client will <em>only</em> support DIGEST configuration in the <code>configure()</code> method, not in the individual verb configuration
+closures - this is due to how the client configures DIGEST support internally.
 </td>
 </tr>
 </table>
@@ -752,7 +736,26 @@ used to handle. Say we wanted to be able to send <code>Date</code> objects to th
 <code>InputStream</code>.</p>
 </div>
 <div class="paragraph">
-<p>Default encoders are provided for: CSV, JSON and TEXT content.</p>
+<p>Some default encoders are provided:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>CSV (when the <code>com.opencsv:opencsv:3.8</code> library is on the classpath)</p>
+</li>
+<li>
+<p>JSON (when either Groovy or the <code>com.fasterxml.jackson.core:jackson-databind:2.8.1</code> library is on the classpath)</p>
+</li>
+<li>
+<p>TEXT (with no additional libraries required)</p>
+</li>
+<li>
+<p>XML (without any additional libraries)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Specific dependency versions are as of the writing of this document, see the project <code>build.gradle</code> dependencies block for specific optional dependency versions.</p>
 </div>
 </div>
 </div>
@@ -780,7 +783,29 @@ we could request the time with the following code:</p>
 <p>which would parse the incoming response and convert it to a <code>Date</code> object.</p>
 </div>
 <div class="paragraph">
-<p>Default parsers are provided for: HTML (<code>org.jsoup.nodes.Document</code>), JSON (Groovy JSON map), XML (<code>org.w3c.dom.Document</code>) and TEXT (String).</p>
+<p>Some default parsers are provided:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>HTML (when either the 'org.jsoup:jsoup:' or 'net.sourceforge.nekohtml:nekohtml:' library is on the classpath),</p>
+</li>
+<li>
+<p>JSON (when either Groovy or the <code>com.fasterxml.jackson.core:jackson-databind:2.8.1</code> library is on the classpath)</p>
+</li>
+<li>
+<p>CSV (when the <code>com.opencsv:opencsv:3.8</code> library is on the classpath)</p>
+</li>
+<li>
+<p>XML (without any additional libraries)</p>
+</li>
+<li>
+<p>TEXT (without any additional libraries)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Specific dependency versions are as of the writing of this document, see the project <code>build.gradle</code> dependencies block for specific optional dependency versions.</p>
 </div>
 </div>
 </div>
@@ -826,7 +851,7 @@ response content from the server). The displayed result will be something like:<
 <h2 id="_http_response_headers">HTTP Response Headers</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>HTTP headers are retrieved from the response using the <code>FromServer.getHeaders()</code> method. Some common headers enriched with the ability to parse themselves into
+<p>HTTP headers are retrieved from the response using the <code>FromServer.getHeaders()</code> method. Some common headers are enriched with the ability to parse themselves into
 more useful types, for example:</p>
 </div>
 <div class="listingblock">
@@ -975,7 +1000,7 @@ headers.find { h-&gt; h.key == <span class="string"><span class="delimiter">'</s
 <h2 id="_client_library_integration">Client Library Integration</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Currently the HTTP Builder NG library has three HTTP client implementations, one based on the <code>HttpURLConnection</code> class, another based on the Apache Http
+<p>Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the <code>HttpURLConnection</code> class, another based on the Apache Http
 Components and the third based on OkHttp; however, there is no reason other HTTP clients could not be used, perhaps the
 <a href="https://github.com/google/google-http-java-client">Google HTTP Java Client</a> if needed.</p>
 </div>
@@ -1286,60 +1311,11 @@ of a multipart content object must be specified beforehand.</p>
 </div>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_appendix_a_feature_support">Appendix A: Feature Support</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The goal is to support all features across all client implementations; however, due to the nature of the client implemeatations, this is not always
-possible. The table below contains general feature support information per client implementation.</p>
-</div>
-<table class="tableblock frame-all grid-all spread">
-<caption class="title">Table 1. Feature Support Matrix</caption>
-<colgroup>
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Client</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">BASIC</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">DIGEST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Multipart</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Compression</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Java</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Apache</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OkHttp</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">?</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.13.3<br>
-Last updated 2017-01-26 10:53:51 -06:00
+Version 0.14.0<br>
+Last updated 2017-03-03 10:03:39 -06:00
 </div>
 </div>
 </body>

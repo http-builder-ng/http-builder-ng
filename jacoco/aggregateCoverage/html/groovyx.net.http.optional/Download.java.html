@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Download.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http.optional</a> &gt; <span class="el_source">Download.java</span></div><h1>Download.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http.optional;
+
+import groovyx.net.http.ChainedHttpConfig;
+import groovyx.net.http.ContentTypes;
+import groovyx.net.http.FromServer;
+import groovyx.net.http.HttpConfig;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import static groovyx.net.http.NativeHandlers.Parsers.transfer;
+
+/**
+ * Helper methods used to assist in downloading remote content.
+ *
+ * [source,groovy]
+ * ----
+ * def http = HttpBuilder.configure {
+ *     request.uri = 'http://example.com/download/foo.zip
+ * }
+ * File file = http.get { Download.toTempFile(delegate) }
+ * ----
+ *
+ * The example will use a GET request to download the content as a temporary file and return the handle. The `delegate` property is a reference to the
+ * `Closure` delegate, which in our case is an instance of `HttpConfig`.
+ *
+ * Any other configuration of the builder must be done in the `configure` closure.
+ */
+<span class="nc" id="L46">public class Download {</span>
+
+    private static final String ID = &quot;LdazOKMfPTGymyyz5eLb/djgY3A=&quot;;
+
+    /**
+     * Downloads the content to a temporary file (*.tmp in the system temp directory).
+     *
+     * @param config the `HttpConfig` instance
+     */
+    public static void toTempFile(final HttpConfig config) {
+<span class="fc" id="L56">        toTempFile(config, ContentTypes.ANY.getAt(0));</span>
+<span class="fc" id="L57">    }</span>
+
+    /**
+     * Downloads the content to a temporary file (*.tmp in the system temp directory) with the specified content type.
+     *
+     * @param config the `HttpConfig` instance
+     * @param contentType the content type
+     */
+    public static void toTempFile(final HttpConfig config, final String contentType) {
+        try {
+<span class="fc" id="L67">            toFile(config, contentType, File.createTempFile(&quot;tmp&quot;, &quot;.tmp&quot;));</span>
+<span class="nc" id="L68">        } catch (IOException e) {</span>
+<span class="nc" id="L69">            throw new RuntimeException(e);</span>
+<span class="fc" id="L70">        }</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Downloads the content to a specified file.
+     *
+     * @param config the `HttpConfig` instance
+     * @param file the file where content will be downloaded
+     */
+    public static void toFile(final HttpConfig config, final File file) {
+<span class="fc" id="L80">        toFile(config, ContentTypes.ANY.getAt(0), file);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Downloads the content to a specified file with the specified content type.
+     *
+     * @param config the `HttpConfig` instance
+     * @param file the file where content will be downloaded
+     * @param contentType the content type
+     */
+    public static void toFile(final HttpConfig config, final String contentType, final File file) {
+<span class="fc" id="L91">        config.context(contentType, ID, file);</span>
+<span class="fc" id="L92">        config.getResponse().parser(contentType, Download::fileParser);</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Downloads the content into an `OutputStream`.
+     *
+     * @param config the `HttpConfig` instance
+     * @param ostream the `OutputStream` to contain the content.
+     */
+    public static void toStream(final HttpConfig config, final OutputStream ostream) {
+<span class="fc" id="L102">        toStream(config, ContentTypes.ANY.getAt(0), ostream);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Downloads the content into an `OutputStream` with the specified content type.
+     *
+     * @param config the `HttpConfig` instance
+     * @param ostream the `OutputStream` to contain the content.
+     * @param contentType the content type
+     */
+    public static void toStream(final HttpConfig config, final String contentType, final OutputStream ostream) {
+<span class="fc" id="L113">        config.context(contentType, ID, ostream);</span>
+<span class="fc" id="L114">        config.getResponse().parser(contentType, Download::streamParser);</span>
+<span class="fc" id="L115">    }</span>
+
+    private static File fileParser(final ChainedHttpConfig config, final FromServer fs) {
+        try {
+<span class="fc" id="L119">            final File file = (File) config.actualContext(fs.getContentType(), ID);</span>
+<span class="fc" id="L120">            transfer(fs.getInputStream(), new FileOutputStream(file), true);</span>
+<span class="fc" id="L121">            return file;</span>
+<span class="nc" id="L122">        } catch (IOException e) {</span>
+<span class="nc" id="L123">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    private static OutputStream streamParser(final ChainedHttpConfig config, final FromServer fs) {
+<span class="fc" id="L128">        final OutputStream ostream = (OutputStream) config.actualContext(fs.getContentType(), ID);</span>
+<span class="fc" id="L129">        transfer(fs.getInputStream(), ostream, false);</span>
+<span class="fc" id="L130">        return ostream;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

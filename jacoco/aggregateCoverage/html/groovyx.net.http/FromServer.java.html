@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FromServer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">FromServer.java</span></div><h1>FromServer.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.CookieStore;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.function.BiFunction;
+
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
+/**
+ * Adapter interface used to provide a bridge for response data between the {@link HttpBuilder} API and the underlying client implementation.
+ */
+public interface FromServer {
+
+    public static final String DEFAULT_CONTENT_TYPE = &quot;application/octet-stream&quot;;
+
+    /**
+     * Defines the interface to the HTTP headers contained in the response. (see also
+     * https://en.wikipedia.org/wiki/List_of_HTTP_header_fields[List of HTTP Header Fields])
+     */
+    public static abstract class Header&lt;T&gt; implements Map.Entry&lt;String, String&gt; {
+
+        final String key;
+        final String value;
+        private T parsed;
+
+        protected static String key(final String raw) {
+<span class="fc" id="L64">            return raw.substring(0, raw.indexOf(':')).trim();</span>
+        }
+
+        protected static String cleanQuotes(final String str) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            return str.startsWith(&quot;\&quot;&quot;) ? str.substring(1, str.length() - 1) : str;</span>
+        }
+
+        protected static String value(final String raw) {
+<span class="fc" id="L72">            return cleanQuotes(raw.substring(raw.indexOf(':') + 1).trim());</span>
+        }
+
+<span class="fc" id="L75">        protected Header(final String key, final String value) {</span>
+<span class="fc" id="L76">            this.key = key;</span>
+<span class="fc" id="L77">            this.value = value;</span>
+<span class="fc" id="L78">        }</span>
+
+        /**
+         * Retrieves the header `key`.
+         *
+         * @return the header key
+         */
+        public String getKey() {
+<span class="fc" id="L86">            return key;</span>
+        }
+
+        /**
+         * Retrieves the header `value`.
+         *
+         * @return the header value
+         */
+        public String getValue() {
+<span class="fc" id="L95">            return value;</span>
+        }
+
+        /**
+         * Unsupported, headers are read-only.
+         *
+         * @throws UnsupportedOperationException always
+         */
+        public String setValue(final String val) {
+<span class="nc" id="L104">            throw new UnsupportedOperationException();</span>
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            if (!(o instanceof Header)) {</span>
+<span class="nc" id="L110">                return false;</span>
+            }
+
+<span class="nc" id="L113">            Header other = (Header) o;</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            return (Objects.equals(getKey(), other.getKey()) &amp;&amp;</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                Objects.equals(getValue(), other.getValue()));</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L120">            return Objects.hash(getKey(), getValue());</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L125">            return key + &quot;: &quot; + value;</span>
+        }
+
+        /**
+         * Retrieves the parsed representation of the 'value`. The type of
+         * the returned `Object` depends on the header and will be given
+         * by the `getParsedType()` property. 
+         *
+         * @return the parsed header value
+         */
+        public T getParsed() {
+<span class="fc bfc" id="L136" title="All 2 branches covered.">            if (parsed == null) {</span>
+<span class="fc" id="L137">                this.parsed = parse();</span>
+            }
+
+<span class="fc" id="L140">            return parsed;</span>
+        }
+
+        /**
+         * Retrieves the type of the parsed representation of the 'value`.
+         *
+         * @return the parsed header value type
+         */
+        public abstract Class&lt;?&gt; getParsedType();
+
+        /**
+         * Performs the parse of the `value`
+         *
+         * @return the parsed header value
+         */
+        protected abstract T parse();
+
+        /**
+         * Creates a `Header` from a full header string. The string format is colon-delimited as `KEY:VALUE`.
+         *
+         * [source,groovy]
+         * ----
+         * Header header = Header.full('Content-Type:text/plain')
+         * assert header.key == 'Content-Type'
+         * assert header.value == 'text/plain'
+         * ----
+         *
+         * @param raw the full header string
+         * @return the `Header` representing the given header string
+         */
+        public static Header&lt;?&gt; full(final String raw) {
+<span class="fc" id="L171">            return keyValue(key(raw), value(raw));</span>
+        }
+
+        /**
+         * Creates a `Header` from a given `key` and `value`.
+         *
+         * @param key the header key
+         * @param value the header value
+         * @return the populated `Header`
+         */
+        public static Header&lt;?&gt; keyValue(String key, String value) {
+<span class="fc" id="L182">            final BiFunction&lt;String, String, ? extends Header&gt; func = constructors.get(key);</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            return func == null ? new ValueOnly(key, value) : func.apply(key, value);</span>
+        }
+
+        /**
+         * Used to find a specific `Header` by key from a {@link Collection} of `Header`s.
+         *
+         * @param headers the {@link Collection} of `Header`s to be searched
+         * @param key the key of the desired `Header`
+         * @return the `Header` with the matching key (or `null`)
+         */
+        public static Header&lt;?&gt; find(final Collection&lt;Header&lt;?&gt;&gt; headers, final String key) {
+<span class="fc" id="L194">            return headers.stream().filter((h) -&gt; h.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);</span>
+        }
+
+        /**
+         * Type representing headers that are simple key/values, with no parseable structure in the value. For example: `Accept-Ranges: bytes`.
+         */
+        public static class ValueOnly extends Header&lt;String&gt; {
+            public ValueOnly(final String key, final String value) {
+<span class="fc" id="L202">                super(key, value);</span>
+<span class="fc" id="L203">            }</span>
+
+            public String parse() {
+<span class="fc" id="L206">                return getValue();</span>
+            }
+
+            /**
+             * Always returns {@link String}
+             *
+             * @return the parsed header type
+             */
+            public Class&lt;?&gt; getParsedType() {
+<span class="fc" id="L215">                return String.class;</span>
+            }
+        }
+
+        /**
+         * Type representing headers that have values which are parseable as key/value pairs,
+         * provided the header hey is included in the key/value map.
+         * For example: `Content-Type: text/html; charset=utf-8`
+         */
+        public static class CombinedMap extends Header&lt;Map&lt;String, String&gt;&gt; {
+            public CombinedMap(final String key, final String value) {
+<span class="fc" id="L226">                super(key, value);</span>
+<span class="fc" id="L227">            }</span>
+
+            public Map&lt;String, String&gt; parse() {
+<span class="fc" id="L230">                Map&lt;String, String&gt; ret = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
+<span class="fc" id="L231">                final String[] ary = getValue().split(&quot;;&quot;);</span>
+<span class="fc" id="L232">                ret.put(key, cleanQuotes(ary[0].trim()));</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">                if (ary.length &gt; 1) {</span>
+<span class="fc" id="L234">                    final String[] secondary = ary[1].split(&quot;=&quot;);</span>
+<span class="fc" id="L235">                    ret.put(secondary[0].trim(), cleanQuotes(secondary[1].trim()));</span>
+                }
+
+<span class="fc" id="L238">                return unmodifiableMap(ret);</span>
+            }
+
+            /**
+             * Always returns {@link List}
+             *
+             * @return the parsed header type
+             */
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L247">                return Map.class;</span>
+            }
+        }
+
+        /**
+         * Type representing headers that have values which are comma separated lists.
+         * For example: `Allow: GET, HEAD`
+         */
+        public static class CsvList extends Header&lt;List&lt;String&gt;&gt; {
+            public CsvList(final String key, final String value) {
+<span class="fc" id="L257">                super(key, value);</span>
+<span class="fc" id="L258">            }</span>
+
+            public List&lt;String&gt; parse() {
+<span class="fc" id="L261">                return unmodifiableList(stream(getValue().split(&quot;,&quot;)).map(String::trim).collect(toList()));</span>
+            }
+
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L265">                return List.class;</span>
+            }
+        }
+
+        /**
+         * Type representing headers that have values which are zoned date time values.
+         * Values representing seconds from now are also converted to zoned date time values
+         * with UTC/GMT zone offsets.
+         *
+         * * Example 1: `Retry-After: Fri, 07 Nov 2014 23:59:59 GMT`
+         * * Example 2: `Retry-After: 120`
+         */
+        public static class HttpDate extends Header&lt;ZonedDateTime&gt; {
+            public HttpDate(final String key, final String value) {
+<span class="fc" id="L279">                super(key, value);</span>
+<span class="fc" id="L280">            }</span>
+
+            private boolean isSimpleNumber() {
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">                for (int i = 0; i &lt; getValue().length(); ++i) {</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">                    if (!Character.isDigit(getValue().charAt(i))) {</span>
+<span class="fc" id="L285">                        return false;</span>
+                    }
+                }
+
+<span class="nc" id="L289">                return true;</span>
+            }
+
+            /**
+             * Always returns {@link ZonedDateTime}
+             *
+             * @return the parsed header type
+             */
+            public ZonedDateTime parse() {
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">                if (isSimpleNumber()) {</span>
+<span class="nc" id="L299">                    return ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(Long.parseLong(getValue()));</span>
+                } else {
+<span class="fc" id="L301">                    return parse(RFC_1123_DATE_TIME);</span>
+                }
+            }
+
+            /**
+             * Retrieves the {@link ZonedDateTime} value of the header using the provided {@link DateTimeFormatter}.
+             *
+             * @param formatter the formatter to be used
+             * @return
+             */
+            public ZonedDateTime parse(final DateTimeFormatter formatter) {
+<span class="fc" id="L312">                return ZonedDateTime.parse(getValue(), formatter);</span>
+            }
+
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L316">                return ZonedDateTime.class;</span>
+            }
+        }
+
+        /**
+         * Type representing headers that have values which are parseable as key/value pairs.
+         * For example: `Alt-Svc: h2=&quot;http2.example.com:443&quot;; ma=7200`
+         */
+        public static class MapPairs extends Header&lt;Map&lt;String, String&gt;&gt; {
+            public MapPairs(final String key, final String value) {
+<span class="fc" id="L326">                super(key, value);</span>
+<span class="fc" id="L327">            }</span>
+
+            public Map&lt;String, String&gt; parse() {
+<span class="fc" id="L330">                return stream(getValue().split(&quot;;&quot;))</span>
+<span class="fc" id="L331">                    .map(String::trim)</span>
+<span class="fc" id="L332">                    .map((str) -&gt; str.split(&quot;=&quot;))</span>
+<span class="fc" id="L333">                    .collect(toMap((ary) -&gt; ary[0].trim(),</span>
+                        (ary) -&gt; {
+<span class="pc bpc" id="L335" title="1 of 2 branches missed.">                            if (ary.length == 1) {</span>
+<span class="nc" id="L336">                                return ary[0];</span>
+                            } else {
+<span class="fc" id="L338">                                return cleanQuotes(ary[1].trim());</span>
+                            }
+                        },
+<span class="nc" id="L341">                        (oldVal, newVal) -&gt; newVal,</span>
+<span class="fc" id="L342">                        () -&gt; new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER)));</span>
+            }
+
+            /**
+             * Always returns {@link Map}
+             *
+             * @return the parsed header type
+             */
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L351">                return Map.class;</span>
+            }
+        }
+
+        /**
+         * Type representing headers that have values which are parseable as longs.
+         * For example: `Content-Length: 348`
+         */
+        public static class SingleLong extends Header&lt;Long&gt; {
+            public SingleLong(final String key, final String value) {
+<span class="fc" id="L361">                super(key, value);</span>
+<span class="fc" id="L362">            }</span>
+
+            public Long parse() {
+<span class="fc" id="L365">                return Long.valueOf(getValue());</span>
+            }
+
+            /**
+             * Always returns {@link Long}
+             *
+             * @return the parsed header type
+             */
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L374">                return Long.class;</span>
+            }
+        }
+
+        public static class HttpCookies extends Header&lt;List&lt;HttpCookie&gt;&gt; {
+            public HttpCookies(final String key, final String value) {
+<span class="fc" id="L380">                super(key, value);</span>
+<span class="fc" id="L381">            }</span>
+
+            public List&lt;HttpCookie&gt; parse() {
+<span class="fc" id="L384">                return HttpCookie.parse(key + &quot;: &quot; + value);</span>
+            }
+
+            public Class&lt;?&gt; getParsedType() {
+<span class="nc" id="L388">                return List.class;</span>
+            }
+        }
+
+        private static final Map&lt;String, BiFunction&lt;String, String, ? extends Header&gt;&gt; constructors;
+
+        static {
+<span class="fc" id="L395">            final Map&lt;String, BiFunction&lt;String, String, ? extends Header&gt;&gt; tmp = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
+<span class="fc" id="L396">            tmp.put(&quot;Access-Control-Allow-Origin&quot;, ValueOnly::new);</span>
+<span class="fc" id="L397">            tmp.put(&quot;Accept-Patch&quot;, CombinedMap::new);</span>
+<span class="fc" id="L398">            tmp.put(&quot;Accept-Ranges&quot;, ValueOnly::new);</span>
+<span class="fc" id="L399">            tmp.put(&quot;Age&quot;, SingleLong::new);</span>
+<span class="fc" id="L400">            tmp.put(&quot;Allow&quot;, CsvList::new);</span>
+<span class="fc" id="L401">            tmp.put(&quot;Alt-Svc&quot;, MapPairs::new);</span>
+<span class="fc" id="L402">            tmp.put(&quot;Cache-Control&quot;, MapPairs::new);</span>
+<span class="fc" id="L403">            tmp.put(&quot;Connection&quot;, ValueOnly::new);</span>
+<span class="fc" id="L404">            tmp.put(&quot;Content-Disposition&quot;, CombinedMap::new);</span>
+<span class="fc" id="L405">            tmp.put(&quot;Content-Encoding&quot;, ValueOnly::new);</span>
+<span class="fc" id="L406">            tmp.put(&quot;Content-Language&quot;, ValueOnly::new);</span>
+<span class="fc" id="L407">            tmp.put(&quot;Content-Length&quot;, SingleLong::new);</span>
+<span class="fc" id="L408">            tmp.put(&quot;Content-Location&quot;, ValueOnly::new);</span>
+<span class="fc" id="L409">            tmp.put(&quot;Content-MD5&quot;, ValueOnly::new);</span>
+<span class="fc" id="L410">            tmp.put(&quot;Content-Range&quot;, ValueOnly::new);</span>
+<span class="fc" id="L411">            tmp.put(&quot;Content-Type&quot;, CombinedMap::new);</span>
+<span class="fc" id="L412">            tmp.put(&quot;Date&quot;, HttpDate::new);</span>
+<span class="fc" id="L413">            tmp.put(&quot;ETag&quot;, ValueOnly::new);</span>
+<span class="fc" id="L414">            tmp.put(&quot;Expires&quot;, HttpDate::new);</span>
+<span class="fc" id="L415">            tmp.put(&quot;Last-Modified&quot;, HttpDate::new);</span>
+<span class="fc" id="L416">            tmp.put(&quot;Link&quot;, CombinedMap::new);</span>
+<span class="fc" id="L417">            tmp.put(&quot;Location&quot;, ValueOnly::new);</span>
+<span class="fc" id="L418">            tmp.put(&quot;P3P&quot;, MapPairs::new);</span>
+<span class="fc" id="L419">            tmp.put(&quot;Pragma&quot;, ValueOnly::new);</span>
+<span class="fc" id="L420">            tmp.put(&quot;Proxy-Authenticate&quot;, ValueOnly::new);</span>
+<span class="fc" id="L421">            tmp.put(&quot;Public-Key-Pins&quot;, MapPairs::new);</span>
+<span class="fc" id="L422">            tmp.put(&quot;Refresh&quot;, CombinedMap::new);</span>
+<span class="fc" id="L423">            tmp.put(&quot;Retry-After&quot;, HttpDate::new);</span>
+<span class="fc" id="L424">            tmp.put(&quot;Server&quot;, ValueOnly::new);</span>
+<span class="fc" id="L425">            tmp.put(&quot;Set-Cookie&quot;, HttpCookies::new);</span>
+<span class="fc" id="L426">            tmp.put(&quot;Set-Cookie2&quot;, HttpCookies::new);</span>
+<span class="fc" id="L427">            tmp.put(&quot;Status&quot;, ValueOnly::new);</span>
+<span class="fc" id="L428">            tmp.put(&quot;Strict-Transport-Security&quot;, MapPairs::new);</span>
+<span class="fc" id="L429">            tmp.put(&quot;Trailer&quot;, ValueOnly::new);</span>
+<span class="fc" id="L430">            tmp.put(&quot;Transfer-Encoding&quot;, ValueOnly::new);</span>
+<span class="fc" id="L431">            tmp.put(&quot;TSV&quot;, ValueOnly::new);</span>
+<span class="fc" id="L432">            tmp.put(&quot;Upgrade&quot;, CsvList::new);</span>
+<span class="fc" id="L433">            tmp.put(&quot;Vary&quot;, ValueOnly::new);</span>
+<span class="fc" id="L434">            tmp.put(&quot;Via&quot;, CsvList::new);</span>
+<span class="fc" id="L435">            tmp.put(&quot;Warning&quot;, ValueOnly::new);</span>
+<span class="fc" id="L436">            tmp.put(&quot;WWW-Authenticate&quot;, ValueOnly::new);</span>
+<span class="fc" id="L437">            tmp.put(&quot;X-Frame-Options&quot;, ValueOnly::new);</span>
+<span class="fc" id="L438">            constructors = unmodifiableMap(tmp);</span>
+<span class="fc" id="L439">        }</span>
+    }
+
+    /**
+     * Retrieves the value of the &quot;Content-Type&quot; header from the response.
+     *
+     * @return the value of the &quot;Content-Type&quot; response header
+     */
+    default String getContentType() {
+<span class="fc" id="L448">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="fc bfc" id="L449" title="All 2 branches covered.">        if (header == null) {</span>
+<span class="fc" id="L450">            return DEFAULT_CONTENT_TYPE;</span>
+        } else {
+<span class="fc" id="L452">            return header.getParsed().get(&quot;Content-Type&quot;);</span>
+        }
+    }
+
+    /**
+     * Retrieves the value of the charset from the &quot;Content-Type&quot; response header.
+     *
+     * @return the value of the charset from the &quot;Content-Type&quot; response header
+     */
+    default Charset getCharset() {
+<span class="fc" id="L462">        final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), &quot;Content-Type&quot;);</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">        if (header == null) {</span>
+<span class="nc" id="L464">            return StandardCharsets.UTF_8;</span>
+        }
+
+<span class="fc bfc" id="L467" title="All 2 branches covered.">        if (header.getParsed().containsKey(&quot;charset&quot;)) {</span>
+<span class="fc" id="L468">            Charset.forName(header.getParsed().get(&quot;charset&quot;));</span>
+        }
+
+<span class="fc" id="L471">        return StandardCharsets.UTF_8;</span>
+    }
+
+    default List&lt;HttpCookie&gt; getCookies() {
+<span class="nc" id="L475">        return HttpBuilder.cookies(getHeaders());</span>
+    }
+
+    /**
+     * Retrieves the {@link InputStream} containing the response content.
+     *
+     * @return the response content
+     */
+    InputStream getInputStream();
+
+    /**
+     * Retrieves the response status code (https://en.wikipedia.org/wiki/List_of_HTTP_status_codes[List of HTTP status code]).
+     *
+     * @return the response status code
+     */
+    int getStatusCode();
+
+    /**
+     * Retrieves the response status message.
+     *
+     * @return the response status message (or null)
+     */
+    String getMessage();
+
+    /**
+     * Retrieves a {@link List} of the response headers as ({@link Header} objects).
+     *
+     * @return a {@link List} of response headers
+     */
+    List&lt;Header&lt;?&gt;&gt; getHeaders();
+
+    /**
+     * Determines whether or not there is body content in the response.
+     *
+     * @return true if there is body content in the response
+     */
+    boolean getHasBody();
+
+    /**
+     * Retrieves the {@link URI} of the original request.
+     *
+     * @return the {@link URI} of the original request
+     */
+    URI getUri();
+
+    /**
+     * Performs any client-specific response finishing operations.
+     */
+    void finish();
+
+    /**
+     * Retrieves a {@link Reader} for the response body content (if there is any).
+     *
+     * @return a {@link Reader} for the response body content (may be empty)
+     */
+    default Reader getReader() {
+<span class="fc" id="L531">        return new BufferedReader(new InputStreamReader(getInputStream()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Csv.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http.optional</a> &gt; <span class="el_source">Csv.java</span></div><h1>Csv.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http.optional;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import groovyx.net.http.ChainedHttpConfig;
+import groovyx.net.http.FromServer;
+import groovyx.net.http.HttpConfig;
+import groovyx.net.http.ToServer;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+
+import static groovyx.net.http.NativeHandlers.Encoders.*;
+
+/**
+ * Optional CSV encoder/parser implementation based on the [OpenCSV](http://opencsv.sourceforge.net/) library. It will be available when the OpenCsv
+ * library is on the classpath (an optional dependency).
+ */
+<span class="nc" id="L39">public class Csv {</span>
+
+<span class="fc" id="L41">    public static final Supplier&lt;BiConsumer&lt;ChainedHttpConfig, ToServer&gt;&gt; encoderSupplier = () -&gt; Csv::encode;</span>
+<span class="fc" id="L42">    public static final Supplier&lt;BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt;&gt; parserSupplier = () -&gt; Csv::parse;</span>
+
+    public static class Context {
+
+        public static final String ID = &quot;3DOJ0FPjyD4GwLmpMjrCYnNJK60=&quot;;
+<span class="fc" id="L47">        public static final Context DEFAULT_CSV = new Context(',');</span>
+<span class="fc" id="L48">        public static final Context DEFAULT_TSV = new Context('\t');</span>
+
+        private final Character separator;
+        private final Character quoteChar;
+
+        public Context(final Character separator) {
+<span class="fc" id="L54">            this(separator, null);</span>
+<span class="fc" id="L55">        }</span>
+
+<span class="fc" id="L57">        public Context(final Character separator, final Character quoteChar) {</span>
+<span class="fc" id="L58">            this.separator = separator;</span>
+<span class="fc" id="L59">            this.quoteChar = quoteChar;</span>
+<span class="fc" id="L60">        }</span>
+
+        public char getSeparator() {
+<span class="nc" id="L63">            return separator;</span>
+        }
+
+        public boolean hasQuoteChar() {
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            return quoteChar != null;</span>
+        }
+
+        public char getQuoteChar() {
+<span class="nc" id="L71">            return quoteChar;</span>
+        }
+
+        private CSVReader makeReader(final Reader reader) {
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">            if (hasQuoteChar()) {</span>
+<span class="nc" id="L76">                return new CSVReader(reader, separator, quoteChar);</span>
+            } else {
+<span class="fc" id="L78">                return new CSVReader(reader, separator);</span>
+            }
+        }
+
+        private CSVWriter makeWriter(final Writer writer) {
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (hasQuoteChar()) {</span>
+<span class="nc" id="L84">                return new CSVWriter(writer, separator, quoteChar);</span>
+            } else {
+<span class="nc" id="L86">                return new CSVWriter(writer, separator);</span>
+            }
+        }
+    }
+
+    /**
+     * Used to parse the server response content using the OpenCsv parser.
+     *
+     * @param config the configuration
+     * @param fromServer the server content accessor
+     * @return the parsed object
+     */
+    public static Object parse(final ChainedHttpConfig config, final FromServer fromServer) {
+        try {
+<span class="fc" id="L100">            final Csv.Context ctx = (Csv.Context) config.actualContext(fromServer.getContentType(), Csv.Context.ID);</span>
+<span class="fc" id="L101">            return ctx.makeReader(fromServer.getReader()).readAll();</span>
+<span class="nc" id="L102">        } catch (IOException e) {</span>
+<span class="nc" id="L103">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    /**
+     * Used to encode the request content using the OpenCsv writer.
+     *
+     * @param config the configuration
+     * @param ts the server request content accessor
+     */
+    public static void encode(final ChainedHttpConfig config, final ToServer ts) {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L115">            return;</span>
+        }
+
+<span class="nc" id="L118">        final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc" id="L119">        final Csv.Context ctx = (Csv.Context) config.actualContext(request.actualContentType(), Csv.Context.ID);</span>
+<span class="nc" id="L120">        final Object body = checkNull(request.actualBody());</span>
+<span class="nc" id="L121">        checkTypes(body, new Class[]{Iterable.class});</span>
+<span class="nc" id="L122">        final StringWriter writer = new StringWriter();</span>
+<span class="nc" id="L123">        final CSVWriter csvWriter = ctx.makeWriter(new StringWriter());</span>
+
+<span class="nc" id="L125">        Iterable&lt;?&gt; iterable = (Iterable&lt;?&gt;) body;</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        for (Object o : iterable) {</span>
+<span class="nc" id="L127">            csvWriter.writeNext((String[]) o);</span>
+<span class="nc" id="L128">        }</span>
+
+<span class="nc" id="L130">        ts.toServer(stringToStream(writer.toString(), request.actualCharset()));</span>
+<span class="nc" id="L131">    }</span>
+
+    /**
+     * Used to configure the OpenCsv encoder/parser in the configuration context for the specified content type.
+     *
+     * @param delegate the configuration object
+     * @param contentType the content type to be registered
+     * @param separator the CSV column separator character
+     * @param quote the CSV quote character
+     */
+    public static void toCsv(final HttpConfig delegate, final String contentType, final Character separator, final Character quote) {
+<span class="fc" id="L142">        delegate.context(contentType, Context.ID, new Context(separator, quote));</span>
+<span class="fc" id="L143">        delegate.getRequest().encoder(contentType, Csv::encode);</span>
+<span class="fc" id="L144">        delegate.getResponse().parser(contentType, Csv::parse);</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * Used to configure the OpenCsv encoder/parser in the configuration context for the `text/csv` content-type. No quote character will be provided.
+     *
+     * @param delegate the configuration object
+     * @param separator the CSV column separator character
+     */
+    public static void toCsv(final HttpConfig delegate, final char separator) {
+<span class="nc" id="L154">        toCsv(delegate, &quot;text/csv&quot;, separator, null);</span>
+<span class="nc" id="L155">    }</span>
+
+    /**
+     * Used to configure the OpenCsv encoder/parser in the configuration context for the `text/csv` content-type.
+     *
+     * @param delegate the configuration object
+     * @param separator the CSV column separator character
+     * @param quote the CSV quote character
+     */
+    public static void toCsv(final HttpConfig delegate, final char separator, final char quote) {
+<span class="nc" id="L165">        toCsv(delegate, &quot;text/csv&quot;, separator, quote);</span>
+<span class="nc" id="L166">    }</span>
+
+    /**
+     * Used to configure the OpenCsv encoder/parser in the configuration context for the `text/tab-separated-values` content type, with a tab as the
+     * column separator character.
+     *
+     * @param delegate the configuration object
+     * @param quote the quote character to be used
+     */
+    public static void toTsv(final HttpConfig delegate, final char quote) {
+<span class="nc" id="L176">        toCsv(delegate, &quot;text/tab-separated-values&quot;, '\t', quote);</span>
+<span class="nc" id="L177">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

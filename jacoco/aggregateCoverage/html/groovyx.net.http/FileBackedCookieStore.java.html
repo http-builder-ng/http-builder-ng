@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileBackedCookieStore.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">FileBackedCookieStore.java</span></div><h1>FileBackedCookieStore.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+
+class FileBackedCookieStore extends NonBlockingCookieStore {
+
+<span class="fc" id="L40">    private static final ConcurrentMap&lt;File,File&gt; inUse = new ConcurrentHashMap&lt;&gt;(5, 0.75f, 1);</span>
+    
+    private static final int NUM_LOCKS = 16;
+    private static final String SUFFIX = &quot;.properties&quot;;
+    
+    private final File directory;
+    private final Object[] locks;
+    private final Executor executor;
+
+<span class="fc" id="L49">    private volatile boolean live = true;</span>
+    
+<span class="fc" id="L51">    public FileBackedCookieStore(final File directory, final Executor executor) {</span>
+<span class="fc" id="L52">        ensureUniqueControl(directory);</span>
+<span class="fc" id="L53">        this.directory = directory;</span>
+<span class="fc" id="L54">        this.locks = new Object[NUM_LOCKS];</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        for(int i = 0; i &lt; NUM_LOCKS; ++i) {</span>
+<span class="fc" id="L56">            locks[i] = new Object();</span>
+        }
+
+<span class="fc" id="L59">        this.executor = executor;</span>
+<span class="fc" id="L60">        readAll();</span>
+<span class="fc" id="L61">    }</span>
+
+    private static void ensureUniqueControl(final File directory) {
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if(null != inUse.putIfAbsent(directory, directory)) {</span>
+<span class="nc" id="L65">            throw new ConcurrentModificationException(directory + &quot; is already being used by another &quot; +</span>
+                                                      &quot;cookie store in this process&quot;);
+        }
+<span class="fc" id="L68">    }</span>
+    
+    private void withLock(final Key key, final Runnable runner) {
+<span class="fc" id="L71">        Object lock = locks[Math.abs(key.hashCode() % NUM_LOCKS)];</span>
+<span class="fc" id="L72">        synchronized(lock) {</span>
+<span class="fc" id="L73">            runner.run();</span>
+<span class="pc" id="L74">        }</span>
+<span class="fc" id="L75">    }</span>
+
+    private void deleteFile(final Key key) {
+<span class="fc" id="L78">        final File file = new File(directory, fileName(key));</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if(file.exists()) {</span>
+<span class="fc" id="L80">            file.delete();</span>
+        }
+<span class="fc" id="L82">    }</span>
+
+    @Override
+    public void add(final URI uri, final HttpCookie cookie) {
+<span class="fc" id="L86">        assertLive();</span>
+<span class="fc" id="L87">        final Key key = Key.make(uri, cookie);</span>
+<span class="fc" id="L88">        add(key, cookie);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if(cookie.getMaxAge() != -1L) {</span>
+<span class="fc" id="L90">            store(key, cookie);</span>
+        }
+<span class="fc" id="L92">    }</span>
+
+    @Override
+    public boolean remove(final URI uri, final HttpCookie cookie) {
+<span class="fc" id="L96">        assertLive();</span>
+<span class="fc" id="L97">        return remove(Key.make(uri, cookie));</span>
+    }
+
+    @Override
+    public boolean removeAll() {
+<span class="fc" id="L102">        assertLive();</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        final boolean ret = all.size() &gt; 0;</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        for(Map.Entry&lt;Key,HttpCookie&gt; entry : all.entrySet()) {</span>
+<span class="fc" id="L105">            remove(entry.getKey());</span>
+<span class="fc" id="L106">        }</span>
+
+<span class="fc" id="L108">        return ret;</span>
+    }
+
+    @Override
+    public boolean remove(final Key key) {
+<span class="fc" id="L113">        executor.execute(() -&gt; withLock(key, () -&gt; deleteFile(key)));</span>
+<span class="fc" id="L114">        return super.remove(key);</span>
+    }
+
+    private static String clean(final String str) {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if(str == null) {</span>
+<span class="fc" id="L119">            return &quot;&quot;;</span>
+        }
+        
+<span class="fc" id="L122">        String ret = str;</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if(ret.indexOf('/') != -1) {</span>
+<span class="fc" id="L124">            ret = ret.replace('/', '_');</span>
+        }
+
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        if(ret.indexOf('\\') != -1) {</span>
+<span class="nc" id="L128">            ret = ret.replace('\\', '_');</span>
+        }
+
+<span class="fc" id="L131">        return ret;</span>
+    }
+    
+    private static String fileName(final Key key) {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        if(key instanceof UriKey) {</span>
+<span class="nc" id="L136">            final UriKey uriKey = (UriKey) key;</span>
+<span class="nc" id="L137">            return clean(uriKey.host) + clean(uriKey.name) + SUFFIX;</span>
+        }
+        else {
+<span class="fc" id="L140">            final DomainKey domainKey = (DomainKey) key;</span>
+<span class="fc" id="L141">            return clean(domainKey.domain) + clean(domainKey.path) + clean(domainKey.name) + SUFFIX;</span>
+        }
+    }
+
+    private void store(final Key key, final HttpCookie cookie) {
+<span class="fc" id="L146">        final Runnable runner = () -&gt; {</span>
+<span class="fc" id="L147">            File file = new File(directory, fileName(key));</span>
+            
+<span class="pc" id="L149">            try(FileWriter fw = new FileWriter(file)) {</span>
+<span class="fc" id="L150">                toProperties(key, cookie).store(fw, &quot;&quot;);</span>
+<span class="pc bpc" id="L151" title="6 of 8 branches missed.">            }</span>
+<span class="nc" id="L152">            catch(IOException ioe) {</span>
+<span class="nc" id="L153">                throw new RuntimeException(ioe);</span>
+<span class="fc" id="L154">            } };</span>
+        
+<span class="fc" id="L156">        executor.execute(() -&gt; withLock(key, runner));</span>
+<span class="fc" id="L157">    }</span>
+
+    //since readAll happens in the constructor and there is a guarantee that
+    //each cookie store controls its own directory, we do not need to synchronize
+    private void readAll() {
+<span class="fc" id="L162">        final List&lt;CompletableFuture&lt;Void&gt;&gt; futures = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for(File file : directory.listFiles()) {</span>
+            
+<span class="fc" id="L165">            final Runnable loadFile = () -&gt; {</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">                if(file.getName().endsWith(SUFFIX)) {</span>
+<span class="pc" id="L167">                    try(FileReader reader = new FileReader(file)) {</span>
+<span class="fc" id="L168">                        Properties props = new Properties();</span>
+<span class="fc" id="L169">                        props.load(reader);</span>
+<span class="fc" id="L170">                        Map.Entry&lt;Key,HttpCookie&gt; entry = fromProperties(props);</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">                        if(entry != null) {</span>
+<span class="fc" id="L172">                            add(entry.getKey(), entry.getValue());</span>
+                        }
+                        else {
+<span class="nc" id="L175">                            file.delete();</span>
+                        }
+<span class="pc bpc" id="L177" title="6 of 8 branches missed.">                    }</span>
+<span class="nc" id="L178">                    catch(IOException ioe) {</span>
+<span class="nc" id="L179">                        throw new RuntimeException(ioe);</span>
+<span class="fc" id="L180">                    }</span>
+<span class="fc" id="L181">                } };</span>
+
+<span class="fc" id="L183">            futures.add(CompletableFuture.runAsync(loadFile, executor));</span>
+        }
+
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        for(CompletableFuture&lt;Void&gt; future : futures) {</span>
+            try {
+<span class="fc" id="L188">                future.get();</span>
+            }
+<span class="nc" id="L190">            catch(InterruptedException | ExecutionException e) {</span>
+                //just swallow it, we can't do anything about it
+                //since we aren't going to be able to load the cookie
+<span class="fc" id="L193">            }</span>
+<span class="fc" id="L194">        }</span>
+<span class="fc" id="L195">    }</span>
+
+    private void ifNotNull(final Properties props, final String key, final String value) {
+<span class="fc bfc" id="L198" title="All 2 branches covered.">        if(value != null) {</span>
+<span class="fc" id="L199">            props.setProperty(key, value);</span>
+        }
+<span class="fc" id="L201">    }</span>
+
+    private Properties keyProperties(final Key key) {
+<span class="fc" id="L204">        final Properties props = new Properties();</span>
+<span class="fc" id="L205">        props.setProperty(&quot;keyType&quot;, key.getKeyType());</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if(key instanceof UriKey) {</span>
+<span class="nc" id="L207">            props.setProperty(&quot;uri&quot;, String.format(&quot;http://%s&quot;, ((UriKey) key).getURI().toString()));</span>
+        }
+
+<span class="fc" id="L210">        return props;</span>
+    }
+
+    private Properties toProperties(final Key key, final HttpCookie cookie) {
+<span class="fc" id="L214">        final Properties props = keyProperties(key);</span>
+        
+<span class="fc" id="L216">        final Instant expires = key.createdAt.plusSeconds(cookie.getMaxAge());</span>
+<span class="fc" id="L217">        props.setProperty(&quot;expires&quot;, expires.toString());</span>
+<span class="fc" id="L218">        props.setProperty(&quot;name&quot;, cookie.getName());</span>
+<span class="fc" id="L219">        props.setProperty(&quot;value&quot;, cookie.getValue());</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">        if(cookie.getDomain() != null) {</span>
+<span class="fc" id="L221">            props.setProperty(&quot;domain&quot;, cookie.getDomain());</span>
+        }
+
+<span class="fc" id="L224">        props.setProperty(&quot;discard&quot;, Boolean.toString(cookie.getDiscard()));</span>
+<span class="fc" id="L225">        props.setProperty(&quot;secure&quot;, Boolean.toString(cookie.getSecure()));</span>
+<span class="fc" id="L226">        props.setProperty(&quot;version&quot;, Integer.toString(cookie.getVersion()));</span>
+<span class="fc" id="L227">        props.setProperty(&quot;httpOnly&quot;, Boolean.toString(cookie.isHttpOnly()));</span>
+
+<span class="fc" id="L229">        ifNotNull(props, &quot;comment&quot;, cookie.getComment());</span>
+<span class="fc" id="L230">        ifNotNull(props, &quot;commentURL&quot;, cookie.getCommentURL());</span>
+<span class="fc" id="L231">        ifNotNull(props, &quot;path&quot;, cookie.getPath());</span>
+<span class="fc" id="L232">        ifNotNull(props, &quot;portlist&quot;, cookie.getPortlist());</span>
+        
+<span class="fc" id="L234">        return props;</span>
+    }
+
+    private Map.Entry&lt;Key,HttpCookie&gt; fromProperties(final Properties props, final HttpCookie cookie) {
+<span class="fc" id="L238">        final String keyType = props.getProperty(&quot;keyType&quot;);</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">        if(UriKey.uriKey(keyType)) {</span>
+            try {
+<span class="nc" id="L241">                return new AbstractMap.SimpleImmutableEntry&lt;&gt;(new UriKey(new URI(props.getProperty(&quot;uri&quot;)), cookie), cookie);</span>
+            }
+<span class="nc" id="L243">            catch(URISyntaxException e) {</span>
+                //can ignore since the source should have come from a valid uri
+<span class="nc" id="L245">                return null;</span>
+            }
+        }
+        else {
+<span class="fc" id="L249">            return new AbstractMap.SimpleImmutableEntry&lt;&gt;(new DomainKey(cookie), cookie);</span>
+        }
+    }
+
+    private Map.Entry&lt;Key,HttpCookie&gt; fromProperties(final Properties props) {
+<span class="fc" id="L254">        final Instant now = Instant.now();</span>
+<span class="fc" id="L255">        final Instant expires = Instant.parse(props.getProperty(&quot;expires&quot;));</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">        if(now.isAfter(expires)) {</span>
+<span class="nc" id="L257">            return null;</span>
+        }
+
+<span class="fc" id="L260">        final long maxAge = (expires.toEpochMilli() - now.toEpochMilli()) / 1_000L;</span>
+<span class="fc" id="L261">        final String name = props.getProperty(&quot;name&quot;);</span>
+<span class="fc" id="L262">        final String value = props.getProperty(&quot;value&quot;);</span>
+        
+<span class="fc" id="L264">        final HttpCookie cookie = new HttpCookie(name, value);</span>
+<span class="fc" id="L265">        cookie.setDiscard(Boolean.valueOf(props.getProperty(&quot;discard&quot;)));</span>
+<span class="fc" id="L266">        cookie.setSecure(Boolean.valueOf(props.getProperty(&quot;secure&quot;)));</span>
+<span class="fc" id="L267">        cookie.setVersion(Integer.valueOf(props.getProperty(&quot;version&quot;)));</span>
+<span class="fc" id="L268">        cookie.setHttpOnly(Boolean.valueOf(props.getProperty(&quot;httpOnly&quot;)));</span>
+
+<span class="fc" id="L270">        final String domain = props.getProperty(&quot;domain&quot;, null);</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">        if(null != domain) cookie.setDomain(domain);</span>
+        
+<span class="fc" id="L273">        final String comment = props.getProperty(&quot;comment&quot;, null);</span>
+<span class="pc bpc" id="L274" title="1 of 2 branches missed.">        if(null != comment) cookie.setComment(comment);</span>
+        
+<span class="fc" id="L276">        final String commentURL = props.getProperty(&quot;commentURL&quot;, null);</span>
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">        if(null != commentURL) cookie.setCommentURL(commentURL);</span>
+
+<span class="fc" id="L279">        final String path = props.getProperty(&quot;path&quot;, null);</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">        if(null != path) cookie.setPath(path);</span>
+
+<span class="fc" id="L282">        final String portlist = props.getProperty(&quot;portlist&quot;, null);</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        if(null != portlist) cookie.setPortlist(portlist);</span>
+
+<span class="fc" id="L285">        return fromProperties(props, cookie);</span>
+    }
+
+    public void shutdown() {
+        //not necessary to call, but can be useful
+<span class="fc" id="L290">        live = false;</span>
+<span class="fc" id="L291">        inUse.remove(directory);</span>
+<span class="fc" id="L292">    }</span>
+
+    public void assertLive() {
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">        if(!live) {</span>
+<span class="nc" id="L296">            throw new IllegalStateException(&quot;You have already called shutdown on this object&quot;);</span>
+        }
+<span class="fc" id="L298">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

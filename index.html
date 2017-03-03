@@ -45,20 +45,12 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="core/javadoc" target="_blank">Core API Docs</a></li>
-                            <li><a href="core/tests/test" target="_blank">Core Tests</a></li>
-                            <li><a href="core/jacoco/test/html" target="_blank">Core Coverage</a></li>
-                            <li><a href="core/findbugs/main.html" target="_blank">Core FindBugs</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="apache/javadoc" target="_blank">Apache API Docs</a></li>
-                            <li><a href="apache/tests/test" target="_blank">Apache Tests</a></li>
-                            <li><a href="apache/jacoco/test/html" target="_blank">Apache Coverage</a></li>
-                            <li><a href="apache/findbugs/main.html" target="_blank">Apache FindBugs</a></li>
-                            <li role="separator" class="divider"></li>
-                            <li><a href="okhttp/javadoc" target="_blank">OkHttp API Docs</a></li>
-                            <li><a href="okhttp/tests/test" target="_blank">OkHttp Tests</a></li>
-                            <li><a href="okhttp/jacoco/test/html" target="_blank">OkHttp Coverage</a></li>
-                            <li><a href="okhttp/findbugs/main.html" target="_blank">OkHttp FindBugs</a></li>
+                            <li><a href="/javadoc" target="_blank">JavaDocs</a></li>
+                            <li><a href="/allTests" target="_blank">Test Results</a></li>
+                            <li><a href="/jacoco/aggregateCoverage/html" target="_blank">Core Coverage</a></li>
+                            <li><a href="core/findbugs/main.html" target="_blank">FindBugs (Core)</a></li>
+                            <li><a href="apache/findbugs/main.html" target="_blank">FindBugs (Apache)</a></li>
+                            <li><a href="okhttp/findbugs/main.html" target="_blank">FindBugs (OkHttp)</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -77,6 +69,17 @@
 <p>Http Builder NG is a modern Groovy DSL for making http requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x, but it
     doesn't make any assumptions about which version of Groovy you are using. The main goal of Http Builder NG is to allow you to make http requests in a
     natural and readable way. See the <a href="guide/html5" target="_blank">User Guide</a> for more details.</p>
+
+<h2>Features</h2>
+
+<ul>
+    <li>Equally usable with Groovy DSL and Java 8 functional interfaces</li>
+    <li>Multiple client implementations (core-Java, Apache, OkHttp)</li>
+    <li>HTTPS support (with ability to ignore SSL issues)</li>
+    <li>Content compression</li>
+    <li>Multipart request/response support</li>
+    <li>BASIC and DIGEST authentication support</li>
+</ul>
 
 <h2>Artifacts</h2>
 
@@ -102,13 +105,13 @@
     </tr>
     <tr>
         <td><strong>okhttp</strong></td>
-        <td>Client implementation based on the <a href="http://square.github.io/okhttp/">OkHttp</a> client library. Note that this implementation does not support request/response compression.</td>
+        <td>Client implementation based on the <a href="http://square.github.io/okhttp/">OkHttp</a> client library.</td>
     </tr>
 </table>
 
 <p>The library artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a> and Maven Central. For Gradle:
 
-<pre>compile 'io.github.http-builder-ng:http-builder-ng-[library-name]:0.13.3'</pre>
+<pre>compile 'io.github.http-builder-ng:http-builder-ng-[library-name]:0.14.0'</pre>
 
 <p>For Maven:</p>
 
@@ -116,7 +119,7 @@
 &lt;dependency&gt;
     &lt;groupId&gt;io.github.http-builder-ng&lt;/groupId&gt;
     &lt;artifactId&gt;http-builder-ng-[library-name]&lt;/artifactId&gt;
-    &lt;version&gt;0.13.3&lt;/version&gt;
+    &lt;version&gt;0.14.0&lt;/version&gt;
 &lt;/dependency&gt;
 </pre>
 

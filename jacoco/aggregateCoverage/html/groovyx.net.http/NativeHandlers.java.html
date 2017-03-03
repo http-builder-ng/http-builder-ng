@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NativeHandlers.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">NativeHandlers.java</span></div><h1>NativeHandlers.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import groovy.json.JsonBuilder;
+import groovy.json.JsonSlurper;
+import groovy.lang.Closure;
+import groovy.lang.GString;
+import groovy.lang.Writable;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
+import groovy.xml.StreamingMarkupBuilder;
+import org.apache.xml.resolver.Catalog;
+import org.apache.xml.resolver.CatalogManager;
+import org.apache.xml.resolver.tools.CatalogResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+
+<span class="nc" id="L47">public class NativeHandlers {</span>
+
+    /**
+     * Default success handler, just returns the passed data, which is the data
+     * returned by the invoked parser.
+     *
+     * @param fromServer Backend independent representation of what the server returned
+     * @param data       The parsed data
+     * @return The data object.
+     */
+    public static Object success(final FromServer fromServer, final Object data) {
+<span class="fc" id="L58">        return data;</span>
+    }
+
+    /**
+     * Default failure handler. Throws an HttpException.
+     *
+     * @param fromServer Backend independent representation of what the server returned
+     * @param data       If parsing was possible, this will be the parsed data, otherwise null
+     * @return Nothing will be returned, the return type is Object for interface consistency
+     * @throws HttpException
+     */
+    public static Object failure(final FromServer fromServer, final Object data) {
+<span class="fc" id="L70">        throw new HttpException(fromServer, data);</span>
+    }
+
+<span class="fc" id="L73">    protected static class Expanding {</span>
+<span class="fc" id="L74">        CharBuffer charBuffer = CharBuffer.allocate(2048);</span>
+<span class="fc" id="L75">        final char[] charAry = new char[2048];</span>
+
+        private void resize(final int toWrite) {
+<span class="nc" id="L78">            final int byAtLeast = toWrite - charBuffer.remaining();</span>
+<span class="nc" id="L79">            int next = charBuffer.capacity() &lt;&lt; 1;</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            while ((next - charBuffer.capacity()) + charBuffer.remaining() &lt; byAtLeast) {</span>
+<span class="nc" id="L81">                next = next &lt;&lt; 1;</span>
+            }
+
+<span class="nc" id="L84">            CharBuffer tmp = CharBuffer.allocate(next);</span>
+<span class="nc" id="L85">            charBuffer.flip();</span>
+<span class="nc" id="L86">            tmp.put(charBuffer);</span>
+<span class="nc" id="L87">            charBuffer = tmp;</span>
+<span class="nc" id="L88">        }</span>
+
+        public void append(final int total) {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">            if (charBuffer.remaining() &lt; total) {</span>
+<span class="nc" id="L92">                resize(total);</span>
+            }
+
+<span class="fc" id="L95">            charBuffer.put(charAry, 0, total);</span>
+<span class="fc" id="L96">        }</span>
+    }
+
+<span class="fc" id="L99">    protected static final ThreadLocal&lt;Expanding&gt; tlExpanding = new ThreadLocal&lt;Expanding&gt;() {</span>
+        @Override
+        protected Expanding initialValue() {
+<span class="fc" id="L102">            return new Expanding();</span>
+        }
+    };
+
+    /**
+     * The set of available content encoders.
+     */
+<span class="nc" id="L109">    public static class Encoders {</span>
+
+        // TODO: better testing around encoders
+
+        public static Object checkNull(final Object body) {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">            if (body == null) {</span>
+<span class="nc" id="L115">                throw new NullPointerException(&quot;Effective body cannot be null&quot;);</span>
+            }
+
+<span class="fc" id="L118">            return body;</span>
+        }
+
+        public static void checkTypes(final Object body, final Class&lt;?&gt;[] allowedTypes) {
+<span class="fc" id="L122">            final Class&lt;?&gt; type = body.getClass();</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">            for (Class&lt;?&gt; allowed : allowedTypes) {</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                if (allowed.isAssignableFrom(type)) {</span>
+<span class="fc" id="L125">                    return;</span>
+                }
+            }
+
+<span class="nc" id="L129">            final String msg = String.format(&quot;Cannot encode bodies of type %s, only bodies of: %s&quot;,</span>
+<span class="nc" id="L130">                type.getName(),</span>
+<span class="nc" id="L131">                Arrays.stream(allowedTypes).map(Class::getName).collect(Collectors.joining(&quot;, &quot;)));</span>
+
+<span class="nc" id="L133">            throw new IllegalArgumentException(msg);</span>
+        }
+
+        public static InputStream readerToStream(final Reader r, final Charset cs) throws IOException {
+<span class="nc" id="L137">            return new ReaderInputStream(r, cs);</span>
+        }
+
+        public static InputStream stringToStream(final String s, final Charset cs) {
+<span class="fc" id="L141">            return new CharSequenceInputStream(s, cs);</span>
+        }
+
+        public static boolean handleRawUpload(final ChainedHttpConfig config, final ToServer ts) {
+<span class="fc" id="L145">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="fc" id="L146">            final Object body = request.actualBody();</span>
+<span class="fc" id="L147">            final Charset charset = request.actualCharset();</span>
+
+            try {
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">                if (body instanceof File) {</span>
+<span class="nc" id="L151">                    ts.toServer(new FileInputStream((File) body));</span>
+<span class="nc" id="L152">                    return true;</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">                } else if (body instanceof Path) {</span>
+<span class="fc" id="L154">                    ts.toServer(Files.newInputStream((Path) body));</span>
+<span class="fc" id="L155">                    return true;</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">                } else if (body instanceof byte[]) {</span>
+<span class="fc" id="L157">                    ts.toServer(new ByteArrayInputStream((byte[]) body));</span>
+<span class="fc" id="L158">                    return true;</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">                } else if (body instanceof InputStream) {</span>
+<span class="fc" id="L160">                    ts.toServer((InputStream) body);</span>
+<span class="fc" id="L161">                    return true;</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">                } else if (body instanceof Reader) {</span>
+<span class="nc" id="L163">                    ts.toServer(new ReaderInputStream((Reader) body, charset));</span>
+<span class="nc" id="L164">                    return true;</span>
+                } else {
+<span class="fc" id="L166">                    return false;</span>
+                }
+<span class="nc" id="L168">            } catch (IOException e) {</span>
+<span class="nc" id="L169">                throw new RuntimeException(e);</span>
+            }
+        }
+
+<span class="fc" id="L173">        private static final Class[] BINARY_TYPES = new Class[]{ByteArrayInputStream.class, InputStream.class, byte[].class, Closure.class};</span>
+
+        /**
+         * Standard encoder for binary types. Accepts ByteArrayInputStream, InputStream, and byte[] types.
+         *
+         * @param config Fully configured chained request
+         * @param ts     Formatted http body is passed to the ToServer argument
+         */
+        public static void binary(final ChainedHttpConfig config, final ToServer ts) {
+<span class="nc" id="L182">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="nc" id="L183">            final Object body = checkNull(request.actualBody());</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">            if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L185">                return;</span>
+            }
+
+<span class="nc" id="L188">            checkTypes(body, BINARY_TYPES);</span>
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            if (body instanceof byte[]) {</span>
+<span class="nc" id="L191">                ts.toServer(new ByteArrayInputStream((byte[]) body));</span>
+            } else {
+<span class="nc" id="L193">                throw new UnsupportedOperationException();</span>
+            }
+<span class="nc" id="L195">        }</span>
+
+<span class="fc" id="L197">        private static final Class[] TEXT_TYPES = new Class[]{Closure.class, Writable.class, Reader.class, String.class};</span>
+
+        /**
+         * Standard encoder for text types. Accepts String and Reader types
+         *
+         * @param config Fully configured chained request
+         * @param ts     Formatted http body is passed to the ToServer argument
+         */
+        public static void text(final ChainedHttpConfig config, final ToServer ts) throws IOException {
+<span class="fc" id="L206">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="fc bfc" id="L207" title="All 2 branches covered.">            if (handleRawUpload(config, ts)) {</span>
+<span class="fc" id="L208">                return;</span>
+            }
+
+<span class="fc" id="L211">            final Object body = checkNull(request.actualBody());</span>
+<span class="fc" id="L212">            checkTypes(body, TEXT_TYPES);</span>
+
+<span class="fc" id="L214">            ts.toServer(stringToStream(body.toString(), request.actualCharset()));</span>
+<span class="fc" id="L215">        }</span>
+
+<span class="fc" id="L217">        private static final Class[] FORM_TYPES = {Map.class, String.class};</span>
+
+        /**
+         * Standard encoder for requests with content type 'application/x-www-form-urlencoded'.
+         * Accepts String and Map types. If the body is a String type the method assumes it is properly
+         * url encoded and is passed to the ToServer parameter as is. If the body is a Map type then
+         * the output is generated by the {@link Form} class.
+         *
+         * @param config Fully configured chained request
+         * @param ts     Formatted http body is passed to the ToServer argument
+         */
+        public static void form(final ChainedHttpConfig config, final ToServer ts) {
+<span class="fc" id="L229">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="pc bpc" id="L230" title="1 of 2 branches missed.">            if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L231">                return;</span>
+            }
+
+<span class="fc" id="L234">            final Object body = checkNull(request.actualBody());</span>
+<span class="fc" id="L235">            checkTypes(body, FORM_TYPES);</span>
+
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">            if (body instanceof String) {</span>
+<span class="nc" id="L238">                ts.toServer(stringToStream((String) body, request.actualCharset()));</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">            } else if (body instanceof Map) {</span>
+<span class="fc" id="L240">                final Map&lt;?, ?&gt; params = (Map) body;</span>
+<span class="fc" id="L241">                final String encoded = Form.encode(params, request.actualCharset());</span>
+<span class="fc" id="L242">                ts.toServer(stringToStream(encoded, request.actualCharset()));</span>
+<span class="fc" id="L243">            } else {</span>
+<span class="nc" id="L244">                throw new UnsupportedOperationException();</span>
+            }
+<span class="fc" id="L246">        }</span>
+
+<span class="fc" id="L248">        private static final Class[] XML_TYPES = new Class[]{String.class, StreamingMarkupBuilder.class};</span>
+
+        /**
+         * Standard encoder for requests with an xml body.
+         *
+         * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
+         * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
+         * to xml using Groovy's {@link StreamingMarkupBuilder}.
+         *
+         * @param config Fully configured chained request
+         * @param ts     Formatted http body is passed to the ToServer argument
+         */
+        public static void xml(final ChainedHttpConfig config, final ToServer ts) {
+<span class="fc" id="L261">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">            if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L263">                return;</span>
+            }
+
+<span class="fc" id="L266">            final Object body = checkNull(request.actualBody());</span>
+<span class="fc" id="L267">            checkTypes(body, XML_TYPES);</span>
+
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">            if (body instanceof String) {</span>
+<span class="fc" id="L270">                ts.toServer(stringToStream((String) body, request.actualCharset()));</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            } else if (body instanceof Closure) {</span>
+<span class="nc" id="L272">                final StreamingMarkupBuilder smb = new StreamingMarkupBuilder();</span>
+<span class="nc" id="L273">                ts.toServer(stringToStream(smb.bind(body).toString(), request.actualCharset()));</span>
+<span class="nc" id="L274">            } else {</span>
+<span class="nc" id="L275">                throw new UnsupportedOperationException();</span>
+            }
+<span class="fc" id="L277">        }</span>
+
+        /**
+         * Standard encoder for requests with a json body.
+         *
+         * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
+         * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
+         * to json using Groovy's {@link JsonBuilder}.
+         *
+         * @param config Fully configured chained request
+         * @param ts     Formatted http body is passed to the ToServer argument
+         */
+        public static void json(final ChainedHttpConfig config, final ToServer ts) {
+<span class="fc" id="L290">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">            if (handleRawUpload(config, ts)) {</span>
+<span class="nc" id="L292">                return;</span>
+            }
+
+<span class="fc" id="L295">            final Object body = checkNull(request.actualBody());</span>
+<span class="pc bpc" id="L296" title="1 of 4 branches missed.">            final String json = ((body instanceof String || body instanceof GString)</span>
+<span class="fc" id="L297">                ? body.toString()</span>
+<span class="fc" id="L298">                : new JsonBuilder(body).toString());</span>
+<span class="fc" id="L299">            ts.toServer(stringToStream(json, request.actualCharset()));</span>
+<span class="fc" id="L300">        }</span>
+    }
+
+    /**
+     * The default collection of response content parsers.
+     */
+<span class="nc" id="L306">    public static class Parsers {</span>
+
+        // TODO: better testing around parsers
+
+<span class="fc" id="L310">        public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;</span>
+<span class="fc" id="L311">        private static final Logger log = LoggerFactory.getLogger(Parsers.class);</span>
+
+        /**
+         * This CatalogResolver is static to avoid the overhead of re-parsing the catalog definition file every time.  Unfortunately, there's no
+         * way to share a single Catalog instance between resolvers.  The {@link Catalog} class is technically not thread-safe, but as long as you
+         * do not parse catalog files while using the resolver, it should be fine.
+         */
+        public static CatalogResolver catalogResolver;
+
+        static {
+<span class="fc" id="L321">            CatalogManager catalogManager = new CatalogManager();</span>
+<span class="fc" id="L322">            catalogManager.setIgnoreMissingProperties(true);</span>
+<span class="fc" id="L323">            catalogManager.setUseStaticCatalog(false);</span>
+<span class="fc" id="L324">            catalogManager.setRelativeCatalogs(true);</span>
+
+            try {
+<span class="fc" id="L327">                catalogResolver = new CatalogResolver(catalogManager);</span>
+<span class="fc" id="L328">                catalogResolver.getCatalog().parseCatalog(NativeHandlers.class.getResource(&quot;/catalog/html.xml&quot;));</span>
+<span class="nc" id="L329">            } catch (IOException ex) {</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">                if (log.isWarnEnabled()) {</span>
+<span class="nc" id="L331">                    log.warn(&quot;Could not resolve default XML catalog&quot;, ex);</span>
+                }
+<span class="fc" id="L333">            }</span>
+<span class="fc" id="L334">        }</span>
+
+        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+            try {
+<span class="fc" id="L338">                final byte[] bytes = new byte[2_048];</span>
+                int read;
+<span class="fc bfc" id="L340" title="All 2 branches covered.">                while ((read = istream.read(bytes)) != -1) {</span>
+<span class="fc" id="L341">                    ostream.write(bytes, 0, read);</span>
+                }
+<span class="nc" id="L343">            } catch (IOException e) {</span>
+<span class="nc" id="L344">                throw new RuntimeException(e);</span>
+            } finally {
+<span class="pc bpc" id="L346" title="2 of 4 branches missed.">                if (close) {</span>
+                    try {
+<span class="pc" id="L348">                        ostream.close();</span>
+<span class="nc" id="L349">                    } catch (IOException ioe) {</span>
+<span class="nc" id="L350">                        throw new RuntimeException(ioe);</span>
+<span class="pc" id="L351">                    }</span>
+                }
+            }
+<span class="fc" id="L354">        }</span>
+
+        /**
+         * Standard parser for raw bytes.
+         *
+         * @param fromServer Backend indenpendent representation of data returned from http server
+         * @return Raw bytes of body returned from http server
+         */
+        public static byte[] streamToBytes(final ChainedHttpConfig config, final FromServer fromServer) {
+<span class="fc" id="L363">            final ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L364">            transfer(fromServer.getInputStream(), baos, true);</span>
+<span class="fc" id="L365">            return baos.toByteArray();</span>
+        }
+
+        /**
+         * Standard parser for text response content.
+         *
+         * @param config     the http client configuration
+         * @param fromServer Backend independent representation of data returned from http server
+         * @return Body of response
+         */
+        public static String textToString(final ChainedHttpConfig config, final FromServer fromServer) {
+            try {
+<span class="fc" id="L377">                final Reader reader = new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset());</span>
+<span class="fc" id="L378">                final Expanding e = tlExpanding.get();</span>
+<span class="fc" id="L379">                e.charBuffer.clear();</span>
+                int total;
+<span class="fc bfc" id="L381" title="All 2 branches covered.">                while ((total = reader.read(e.charAry)) != -1) {</span>
+<span class="fc" id="L382">                    e.append(total);</span>
+                }
+
+<span class="fc" id="L385">                e.charBuffer.flip();</span>
+<span class="fc" id="L386">                return e.charBuffer.toString();</span>
+<span class="nc" id="L387">            } catch (IOException ioe) {</span>
+<span class="nc" id="L388">                throw new RuntimeException(ioe);</span>
+            }
+        }
+
+        /**
+         * Standard parser for responses with content type 'application/x-www-form-urlencoded'.
+         *
+         * @param fromServer Backend indenpendent representation of data returned from http server
+         * @return Form data
+         */
+        public static Map&lt;String, List&lt;String&gt;&gt; form(final ChainedHttpConfig config, final FromServer fromServer) {
+<span class="nc" id="L399">            return Form.decode(fromServer.getInputStream(), fromServer.getCharset());</span>
+        }
+
+        /**
+         * Standard parser for xml responses.
+         *
+         * @param fromServer Backend indenpendent representation of data returned from http server
+         * @return Body of response
+         */
+        public static GPathResult xml(final ChainedHttpConfig config, final FromServer fromServer) {
+            try {
+<span class="fc" id="L410">                final XmlSlurper xml = new XmlSlurper();</span>
+<span class="fc" id="L411">                xml.setEntityResolver(catalogResolver);</span>
+<span class="fc" id="L412">                xml.setFeature(&quot;http://apache.org/xml/features/disallow-doctype-decl&quot;, false);</span>
+<span class="fc" id="L413">                xml.setFeature(&quot;http://apache.org/xml/features/nonvalidating/load-external-dtd&quot;, false);</span>
+<span class="fc" id="L414">                return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
+<span class="nc" id="L415">            } catch (IOException | SAXException | ParserConfigurationException ex) {</span>
+<span class="nc" id="L416">                throw new RuntimeException(ex);</span>
+            }
+        }
+
+        /**
+         * Standard parser for json responses.
+         *
+         * @param fromServer Backend indenpendent representation of data returned from http server
+         * @return Body of response
+         */
+        public static Object json(final ChainedHttpConfig config, final FromServer fromServer) {
+<span class="fc" id="L427">            return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>
