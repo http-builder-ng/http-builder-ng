@@ -15,51 +15,32 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.tk.HttpBuilderTestKit
-import spock.lang.Issue
-import spock.lang.Requires
+import com.stehno.ersatz.ErsatzServer
+import spock.lang.AutoCleanup
+import spock.lang.Specification
 
-import java.util.function.Function
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
-@Requires(HttpBin)
-class ApacheHttpBuilderSpec extends HttpBuilderTestKit {
+class ApacheHttpBuilderSpec extends Specification {
 
-    def singleThreadHttpBin
-
-    def setup() {
-        clientFactory = { c -> new ApacheHttpBuilder(c) } as Function
-
-        init()
-
-        singleThreadHttpBin = HttpBuilder.configure(clientFactory) {
-            request.uri = 'http://httpbin.org/'
+    @AutoCleanup('stop')
+    private ErsatzServer ersatzServer = new ErsatzServer({
+        enableAutoStart()
+        expectations {
+            get('/foo').responds().content('ok', TEXT_PLAIN)
         }
-    }
+    })
 
-    def "Test Set Cookies"() {
-        expect:
-        singleThreadHttpBin.get {
-            request.uri.path = '/cookies'
-            request.cookie('foocookie', 'barcookie')
-        }.with {
-            cookies.foocookie == 'barcookie'
-        }
-
-        singleThreadHttpBin.get {
-            request.uri.path = '/cookies'
-            request.cookie('requestcookie', '12345')
-        }.with {
-            cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
-        }
-    }
-
-    def 'overridden configuration'() {
-        when:
+    def 'client-specific configuration'() {
+        setup:
         HttpBuilder http = ApacheHttpBuilder.configure {
-            request.uri = 'http://localhost:12345'
+            request.uri = "${ersatzServer.httpUrl}/foo"
         }
 
-        then:
+        expect:
+        http.get() == 'ok'
+
+        and:
         http instanceof ApacheHttpBuilder
     }
 }

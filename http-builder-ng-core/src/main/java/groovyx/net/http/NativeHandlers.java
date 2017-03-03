@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 David Clark
+ * Copyright (C) 2017 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -249,7 +249,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with an xml body.
-         * <p>
+         *
          * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to xml using Groovy's {@link StreamingMarkupBuilder}.
@@ -278,7 +278,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with a json body.
-         * <p>
+         *
          * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to json using Groovy's {@link JsonBuilder}.

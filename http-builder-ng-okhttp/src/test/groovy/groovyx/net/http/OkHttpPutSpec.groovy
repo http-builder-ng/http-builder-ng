@@ -19,29 +19,34 @@ import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.MultipartRequestContent
 import groovyx.net.http.tk.HttpPutTestKit
+import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.MultipartContent.multipart
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 class OkHttpPutSpec extends HttpPutTestKit implements UsesOkClient {
 
-    def 'PUT /upload (multipart)'() {
+    @Unroll 'multipart request #proto'() {
         setup:
         ersatzServer.expectations {
             put('/upload') {
                 body MultipartRequestContent.multipart {
                     decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
                     decoder ContentType.TEXT_PLAIN, Decoders.utf8String
+                    called(2)
+                    protocol(proto)
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
-                responds().content('ok', TEXT_PLAIN)
+                responds().content(OK_TEXT, TEXT_PLAIN)
             }
         }.start()
 
-        def config = {
-            request.uri.path = '/upload'
+        def http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(proto)}/upload"
             request.contentType = MULTIPART_FORMDATA[0]
             request.body = multipart {
                 field 'alpha', 'some data'
@@ -51,9 +56,15 @@ class OkHttpPutSpec extends HttpPutTestKit implements UsesOkClient {
         }
 
         expect:
-        httpBuilder(ersatzServer.port).put(config) == 'ok'
+        http.put() == OK_TEXT
 
         and:
-        httpBuilder(ersatzServer.port).putAsync(config).get() == 'ok'
+        http.putAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        proto << ['HTTP', 'HTTPS']
     }
 }

@@ -17,7 +17,6 @@ package groovyx.net.http
 
 import groovy.transform.Canonical
 import org.jsoup.nodes.Document
-import spock.lang.Requires
 import spock.lang.Specification
 
 import java.time.ZonedDateTime
@@ -33,7 +32,6 @@ import static java.time.format.DateTimeFormatter.ofPattern
 /**
  * These are not really tests, but examples, therefore they should never fail and they only print out results.
  */
-@Requires(HttpBin)
 class ExamplesSpec extends Specification {
 
     def 'Resource Last Modified (HEAD)'() {

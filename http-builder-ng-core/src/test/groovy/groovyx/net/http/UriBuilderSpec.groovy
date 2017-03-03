@@ -15,8 +15,12 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.ContentType
+import com.stehno.ersatz.Encoders
+import com.stehno.ersatz.ErsatzServer
 import spock.lang.Specification
 
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.UriBuilder.basic
 import static groovyx.net.http.UriBuilder.root;
 
@@ -27,7 +31,7 @@ class UriBuilderSpec extends Specification {
         root().toURI() == new URI('')
     }
 
-    def 'builder with parent'(){
+    def 'builder with parent'() {
         given:
         def builderA = basic(root()).setFull('http://localhost:8080/info')
 
@@ -55,19 +59,22 @@ class UriBuilderSpec extends Specification {
         builder.setScheme('https').toURI() == new URI('https://localhost:10101/foo')
 
         and:
-        builder.setPort(9191).toURI() ==  new URI('https://localhost:9191/foo')
+        builder.setPort(9191).toURI() == new URI('https://localhost:9191/foo')
 
         and:
-        builder.setHost('nohost').toURI() ==  new URI('https://nohost:9191/foo')
+        builder.setHost('nohost').toURI() == new URI('https://nohost:9191/foo')
 
         and:
-        builder.setQuery(alpha:'1', bravo:100).toURI() ==  new URI('https://nohost:9191/foo?alpha=1&bravo=100')
+        builder.setQuery(alpha: '1', bravo: 100).toURI() == new URI('https://nohost:9191/foo?alpha=1&bravo=100')
 
         and:
-        builder.setFragment('horse').toURI() ==  new URI('https://nohost:9191/foo?alpha=1&bravo=100#horse')
+        builder.setQuery(alpha: '1', bravo: [100, 200]).toURI() == new URI('https://nohost:9191/foo?alpha=1&bravo=100&bravo=200')
 
         and:
-        builder.setUserInfo('dog').toURI() ==  new URI('https://dog@nohost:9191/foo?alpha=1&bravo=100#horse')
+        builder.setFragment('horse').toURI() == new URI('https://nohost:9191/foo?alpha=1&bravo=100&bravo=200#horse')
+
+        and:
+        builder.setUserInfo('dog').toURI() == new URI('https://dog@nohost:9191/foo?alpha=1&bravo=100&bravo=200#horse')
     }
 
     def 'threadSafe from root'() {
@@ -87,19 +94,22 @@ class UriBuilderSpec extends Specification {
         builder.setScheme('https').toURI() == new URI('https://localhost:10101/foo')
 
         and:
-        builder.setPort(9191).toURI() ==  new URI('https://localhost:9191/foo')
+        builder.setPort(9191).toURI() == new URI('https://localhost:9191/foo')
 
         and:
-        builder.setHost('nohost').toURI() ==  new URI('https://nohost:9191/foo')
+        builder.setHost('nohost').toURI() == new URI('https://nohost:9191/foo')
 
         and:
-        builder.setQuery(alpha:'1', bravo:100).toURI() ==  new URI('https://nohost:9191/foo?bravo=100&alpha=1')
+        builder.setQuery(alpha: '1', bravo: 100).toURI() == new URI('https://nohost:9191/foo?bravo=100&alpha=1')
 
         and:
-        builder.setFragment('horse').toURI() ==  new URI('https://nohost:9191/foo?bravo=100&alpha=1#horse')
+        builder.setQuery(alpha: '1', bravo: [100, 300]).toURI() == new URI('https://nohost:9191/foo?bravo=100&bravo=300&alpha=1')
 
         and:
-        builder.setUserInfo('dog').toURI() ==  new URI('https://dog@nohost:9191/foo?bravo=100&alpha=1#horse')
+        builder.setFragment('horse').toURI() == new URI('https://nohost:9191/foo?bravo=100&bravo=300&alpha=1#horse')
+
+        and:
+        builder.setUserInfo('dog').toURI() == new URI('https://dog@nohost:9191/foo?bravo=100&bravo=300&alpha=1#horse')
     }
 
     def 'commas allowed in query string'() {
@@ -110,5 +120,66 @@ class UriBuilderSpec extends Specification {
         expect:
         tsafe.setFull('http://foo.com/endpoint').setQuery(ids: '1,2,3').toURI() == new URI('http://foo.com/endpoint?ids=1,2,3')
         tunsafe.setFull('http://foo.com/endpoint').setQuery(ids: '1,2,3').toURI() == new URI('http://foo.com/endpoint?ids=1,2,3')
+    }
+
+    def 'full uri with path'() {
+        setup:
+        UriBuilder builder = basic(root())
+
+        when:
+        builder.full = 'http://localhost:1234/something/else'
+
+        then:
+        builder.toURI() == 'http://localhost:1234/something/else'.toURI()
+
+        when:
+        builder.path = '/foo'
+
+        then:
+        builder.toURI() == 'http://localhost:1234/foo'.toURI()
+    }
+
+    def 'uri full specified with query string'() {
+        setup:
+        UriBuilder builder = basic(root())
+
+        when:
+        builder.full = 'http://test.com/a?b=c&d=e'
+        URI uri = builder.toURI()
+
+        then:
+        uri == 'http://test.com/a?b=c&d=e'.toURI()
+    }
+
+    def 'uri full specified with duplicates in query string'() {
+        setup:
+        UriBuilder builder = basic(root())
+
+        when:
+        builder.full = 'http://test.com/a?b=c&d=e&b=f'
+        URI uri = builder.toURI()
+
+        then:
+        uri == 'http://test.com/a?b=c&b=f&d=e'.toURI()
+    }
+
+    def 'uri with query in configuration and empty verb'() {
+        setup:
+        def server = new ErsatzServer({
+            encoder TEXT_PLAIN, String, Encoders.text
+            expects().get('/something').query('foo', 'bar').responds().content('ok', TEXT_PLAIN)
+        })
+        server.start()
+
+        when:
+        def http = JavaHttpBuilder.configure {
+            request.uri = "${server.httpUrl}/something?foo=bar"
+        }.get()
+
+        then:
+        http == 'ok'
+
+        cleanup:
+        server.stop()
     }
 }

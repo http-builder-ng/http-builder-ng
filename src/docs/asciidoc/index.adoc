@@ -1,33 +1,31 @@
 = Http Builder NG Users Guide
 David Clark & Christopher J. Stehno
-v0.13.3, January 2017
+v0.14.0, March 2017
 :toc: left
 :toclevels: 3
 
-WARNING: As of version 0.11.0 the underlying Apache client implementation has been broken out into a separate sub-project dependent on the core library. The `ApacheHttpBuilder` package name and file location were changed and you will need to update your code to address this change.
-
 == Introduction
 
-The https://http-builder-ng.github.io/http-builder-ng/[HTTP Builder NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
-Groovy and Java. It requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
-version of Groovy you are using. The main goal of HTTP Builder NG is to allow you to make HTTP requests in a natural and readable way.
+The https://http-builder-ng.github.io/http-builder-ng/[HttpBuilder-NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
+Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
+version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
 
 == History
 
-Http Builder NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
+HttpBuilder-NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
 https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years.
 
-The original intent of Http Builder NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
+The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
 was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
-typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HTTP
-Builder NG is basically a complete re-write and re-architecture.
+typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HttpBuilder-NG
+is basically a complete re-write and re-architecture.
 
 == License
 
-HTTP Builder NG is licensed under the http://www.apache.org/licenses/LICENSE-2.0[Apache 2] open source license.
+HttpBuilder-NG is licensed under the http://www.apache.org/licenses/LICENSE-2.0[Apache 2] open source license.
 
 ----
-Copyright 2016 David Clark
+Copyright 2017 David Clark
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
@@ -114,7 +112,8 @@ def http = HttpBuilder.configure {
 
 There is nothing more to do on the client side.
 
-WARNING: Currently there are some support issues with DIGEST and it's support may be removed altogether.
+WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure()` method, not in the individual verb configuration
+closures - this is due to how the client configures DIGEST support internally.
 
 == Encoders
 
@@ -140,7 +139,14 @@ HttpBuilder.configure {
 Notice that a Groovy `Closure` is usable as a `BiConsumer` function. The `Date` object in the request is formatted as String, converted to bytes and pushed to the request
 `InputStream`.
 
-Default encoders are provided for: CSV, JSON and TEXT content.
+Some default encoders are provided:
+
+* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
+* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
+* TEXT (with no additional libraries required)
+* XML (without any additional libraries)
+
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
 
 == Parsers
 
@@ -162,7 +168,15 @@ Date date = HttpBuilder.configure {
 
 which would parse the incoming response and convert it to a `Date` object.
 
-Default parsers are provided for: HTML (`org.jsoup.nodes.Document`), JSON (Groovy JSON map), XML (`org.w3c.dom.Document`) and TEXT (String).
+Some default parsers are provided:
+
+* HTML (when either the 'org.jsoup:jsoup:' or 'net.sourceforge.nekohtml:nekohtml:' library is on the classpath),
+* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
+* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
+* XML (without any additional libraries)
+* TEXT (without any additional libraries)
+
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
 
 == Interceptors
 
@@ -195,7 +209,7 @@ Using interceptors you can also modify the data before and after the `apply()` m
 
 == HTTP Response Headers
 
-HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers enriched with the ability to parse themselves into
+HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into
 more useful types, for example:
 
 [source,groovy]
@@ -253,7 +267,7 @@ All headers not explicitly typed are simply `ValueOnly`. The definitive list is 
 
 == Client Library Integration
 
-Currently the HTTP Builder NG library has three HTTP client implementations, one based on the `HttpURLConnection` class, another based on the Apache Http
+Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the `HttpURLConnection` class, another based on the Apache Http
 Components and the third based on OkHttp; however, there is no reason other HTTP clients could not be used, perhaps the
 https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
 
@@ -502,16 +516,3 @@ The available multipart encoders:
 
 The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
 of a multipart content object must be specified beforehand.
-
-== Appendix A: Feature Support
-
-The goal is to support all features across all client implementations; however, due to the nature of the client implemeatations, this is not always
-possible. The table below contains general feature support information per client implementation.
-
-.Feature Support Matrix
-|===
-|Client |BASIC  |DIGEST |Multipart  |Compression
-|Java   |Y      |?      |Y          |Y
-|Apache |Y      |?      |Y          |Y
-|OkHttp |Y      |?      |Y          |N
-|===

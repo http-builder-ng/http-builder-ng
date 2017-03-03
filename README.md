@@ -15,8 +15,7 @@
 
 * Site: https://http-builder-ng.github.io/http-builder-ng/
 * Project: https://github.com/http-builder-ng/http-builder-ng
-* JavaDocs (core): https://http-builder-ng.github.io/http-builder-ng/core/javadoc/
-* JavaDocs (apache): https://http-builder-ng.github.io/http-builder-ng/apache/javadoc/
+* JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
 * User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 * Twitter: [@HttpBuilderNG](https://twitter.com/HttpBuilderNG)
 
@@ -55,14 +54,14 @@ WARNING: The project group-id was changed as of 0.13.0 from `org.codehaus.groovy
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng) and Maven Central, for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.13.3'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.14.0'
     
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.13.3</version>
+      <version>0.14.0</version>
     </dependency>
     
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
@@ -73,13 +72,15 @@ Http Builder NG is built using [gradle](https://gradle.org). To perform a comple
 
 `$ ./gradlew clean build install`
 
+Test reports are not automatically generated; if you need a generated test report, add the `aggregateCoverage` task - it will be generated in the 
+root `build` directory.
+
 You can also generate the documentation using one of the following commands:
 
     ./gradlew javadoc
     ./gradlew asciidoctor
-    ./gradlew site
 
-which will generate the API Documentation, User Guide and Documentation web site respectively.
+which will generate the API Documentation and User Guide respectively.
 
 ## Documentation Site
 
@@ -119,7 +120,7 @@ Once the pull request has been merged into `master`, checkout the `master` branc
 
 The `development` branch may now be used for the next round of development work.
 
-> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
+> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task. This requirement may no longer be in place - TBD.
 
 ## Version Updates
 

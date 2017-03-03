@@ -16,296 +16,508 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.feat.BasicAuthFeature
-import groovyx.net.http.CountedClosure
+import com.stehno.ersatz.feat.DigestAuthFeature
+import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.HttpConfig
 import spock.lang.Unroll
+
+import java.util.function.BiFunction
+import java.util.function.Consumer
+import java.util.function.Function
+
+import static groovyx.net.http.HttpVerb.HEAD
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 /**
  * Test kit for testing the HTTP HEAD method with different clients.
  */
 abstract class HttpHeadTestKit extends HttpMethodTestKit {
 
-    private static final Map<String, String> HEADERS_A = [
-        alpha: '100', sometime: '03/04/2015 15:45', Accept: 'text/plain', Connection: 'keep-alive'
-    ].asImmutable()
-    private static final Map<String, String> HEADERS_B = [bravo: '200', Accept: 'text/html', Connection: 'keep-alive'].asImmutable()
-    private static final Map<String, String> HEADERS_C = [charlie: '200', Connection: 'keep-alive'].asImmutable()
-
-    def 'HEAD /: returns no content'() {
+    @Unroll 'head(): #protocol'() {
         setup:
         ersatzServer.expectations {
-            head('/').responds().headers(HEADERS_A)
-        }.start()
+            head('/alpha').protocol(protocol).called(2).responder {
+                code 200
+                header 'X-Something', 'Testing'
+            }
+        }
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(protocol)}/alpha"
+            response.success { FromServer fs, Object body ->
+                !body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')
+            }
+        }
 
         expect:
-        !httpBuilder(ersatzServer.port).head()
+        http.head()
 
         and:
-        !httpBuilder(ersatzServer.port).headAsync().get()
+        http.headAsync().get()
 
         and:
         ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
     }
 
-    def 'HEAD /foo: returns headers only'() {
-        given:
+    @Unroll 'head(Closure): #query'() {
+        setup:
         ersatzServer.expectations {
-            head('/foo').responds().headers(HEADERS_A)
-        }.start()
+            head('/alpha').queries(query).called(2).responder {
+                code 200
+                header 'X-Something', 'Testing'
+            }
+        }
 
-        def capturedHeaders = [:]
-        boolean hasBody = true
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
 
         def config = {
-            request.uri.path = '/foo'
-            response.success { resp ->
-                hasBody = resp.hasBody
-                resp.headers.each { FromServer.Header h ->
-                    capturedHeaders[h.key] = h.value
+            request.uri.path = '/alpha'
+            request.uri.query = query
+            response.success { FromServer fs, Object body ->
+                !body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')
+            }
+        }
+
+        expect:
+        http.head(config)
+
+        and:
+        http.headAsync(config).get()
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        query << [
+            null,
+            [:],
+            [alpha: 'one'],
+            [alpha: ['one']],
+            [alpha: ['one', 'two']],
+            [alpha: ['one', 'two'], bravo: 'three']
+        ]
+    }
+
+    @Unroll 'head(Consumer): #cookies'() {
+        setup:
+        ersatzServer.expectations {
+            head('/alpha').cookies(cookies).called(2).responder {
+                code 200
+                header 'X-Something', 'Testing'
+            }
+        }
+
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
+
+        // variable scoping
+        def requestCookies = cookies
+
+        Consumer<HttpConfig> consumer = new Consumer<HttpConfig>() {
+            @Override void accept(final HttpConfig config) {
+                config.request.uri.path = '/alpha'
+
+                requestCookies.each { n, v ->
+                    config.request.cookie n, v
+                }
+
+                config.response.success { FromServer fs, Object body ->
+                    !body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')
                 }
             }
         }
 
-        when:
-        httpBuilder(ersatzServer.port).head(config)
+        expect:
+        http.head(consumer)
 
-        then:
-        !hasBody
-        assertHeaders HEADERS_A, capturedHeaders
-        capturedHeaders.clear()
-
-        when:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
-
-        then:
-        !hasBody
-        assertHeaders HEADERS_A, capturedHeaders
+        and:
+        http.headAsync(consumer).get()
 
         and:
         ersatzServer.verify()
+
+        where:
+        cookies << [
+            null,
+            [:],
+            [flavor: 'chocolate-chip'],
+            [flavor: 'chocolate-chip', count: 'dozen']
+        ]
     }
 
-    def 'HEAD (BASIC) /basic: returns only headers'() {
-        given:
+    @Unroll 'head(Class,Closure): #headers'() {
+        setup:
+        ersatzServer.expectations {
+            head('/alpha').headers(headers).called(2).responder {
+                code 200
+                header 'X-Something', 'Testing'
+            }
+        }
+
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
+
+        def config = {
+            request.uri.path = '/alpha'
+            request.headers = headers
+            response.success { FromServer fs, Object body ->
+                (!body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')) as String
+            }
+        }
+
+        expect:
+        http.head(String, config) == 'true'
+
+        and:
+        http.headAsync(String, config).get() == 'true'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        headers << [
+            null,
+            [:],
+            [hat: 'fedora']
+        ]
+    }
+
+    @Unroll 'head(Class,Consumer): #headers'() {
+        setup:
+        ersatzServer.expectations {
+            head('/alpha').headers(headers).called(2).responder {
+                code 200
+                header 'X-Something', 'Testing'
+            }
+        }
+
+        HttpBuilder http = httpBuilder(ersatzServer.httpUrl)
+
+        // variable scoping
+        def requestHeaders = headers
+
+        Consumer<HttpConfig> consumer = new Consumer<HttpConfig>() {
+            @Override void accept(final HttpConfig config) {
+                config.request.uri.path = '/alpha'
+                config.request.headers = requestHeaders
+                config.response.success { FromServer fs, Object body ->
+                    (!body && headersMatch(fs, Connection: 'keep-alive', 'Content-Length': '0', Date: { d -> d }, 'X-Something': 'Testing')) as String
+                }
+            }
+        }
+
+        expect:
+        http.head(String, consumer) == 'true'
+
+        and:
+        http.headAsync(String, consumer).get() == 'true'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        headers << [
+            null,
+            [:],
+            [hat: 'fedora']
+        ]
+    }
+
+    protected static boolean headersMatch(final Map<String, Object> expectedHeaders = [:], final FromServer fs) {
+        def headers = fs.headers.collectEntries { h -> [h.key, h.value] }
+
+        headers.size() == expectedHeaders.size() && expectedHeaders.every { k, v ->
+            v instanceof Closure ? v(headers[k]) : headers[k] == v
+        }
+    }
+
+    @Unroll '#protocol HEAD with BASIC authentication (authorized)'() {
+        setup:
         ersatzServer.feature new BasicAuthFeature()
 
         ersatzServer.expectations {
-            head('/basic').responds().headers(HEADERS_A)
-        }.start()
+            head('/basic').protocol(protocol).called(2).responds().code(200)
+        }
 
-        def capturedHeaders = [:]
-        boolean hasBody = true
-
-        def config = {
-            request.uri.path = '/basic'
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(protocol)}/basic"
             request.auth.basic 'admin', '$3cr3t'
-            response.success { resp ->
-                hasBody = resp.hasBody
-                resp.headers.each { FromServer.Header h ->
-                    capturedHeaders[h.key] = h.value
-                }
+            response.success { FromServer fs, Object body ->
+                !body && fs.statusCode == 200
             }
         }
 
-        when:
-        httpBuilder(ersatzServer.port).head(config)
-
-        then:
-        !hasBody
-        assertHeaders HEADERS_A, capturedHeaders
-        capturedHeaders.clear()
+        expect:
+        http.head()
 
         and:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
+        http.headAsync().get()
 
-        then:
-        !hasBody
-        assertHeaders HEADERS_A, capturedHeaders
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
     }
 
-    def 'HEAD /foo (cookie): returns headers only'() {
-        given:
+    @Unroll '#protocol HEAD with BASIC authentication (unauthorized)'() {
+        setup:
+        ersatzServer.feature new BasicAuthFeature()
+
         ersatzServer.expectations {
-            head('/foo').cookie('biscuit', 'wafer').responds().headers(HEADERS_B)
-        }.start()
+            head('/basic').protocol(protocol).called(0).responds().code(200)
+        }
 
-        def capturedHeaders = [:]
-        boolean hasBody = true
-
-        def config = {
-            request.uri.path = '/foo'
-            request.cookie 'biscuit', 'wafer'
-            response.success { resp ->
-                hasBody = resp.hasBody
-                resp.headers.each { FromServer.Header h ->
-                    capturedHeaders[h.key] = h.value
-                }
-            }
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(protocol)}/basic"
+            request.auth.basic 'guest', 'blah'
         }
 
         when:
-        httpBuilder(ersatzServer.port).head(config)
+        http.head()
 
         then:
-        !hasBody
-        assertHeaders HEADERS_B, capturedHeaders
-        capturedHeaders.clear()
+        def ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
 
         when:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
+        http.headAsync().get()
 
         then:
-        !hasBody
-        assertHeaders HEADERS_B, capturedHeaders
+        ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    @Unroll '#protocol HEAD with DIGEST authentication (authorized)'() {
+        setup:
+        ersatzServer.feature new DigestAuthFeature()
+
+        ersatzServer.expectations {
+            head('/digest').protocol(protocol).called(2).responds().code(200)
+        }
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(protocol)}/digest"
+            request.auth.digest 'admin', '$3cr3t'
+            response.success { FromServer fs, Object body ->
+                !body && fs.statusCode == 200
+            }
+        }
+
+        expect:
+        http.head()
+
+        and:
+        http.headAsync().get()
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    @Unroll '#protocol HEAD with DIGEST authentication (unauthorized)'() {
+        setup:
+        ersatzServer.feature new DigestAuthFeature()
+
+        ersatzServer.expectations {
+            head('/digest').protocol(protocol).called(0).responds().code(200)
+        }
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(protocol)}/digest"
+            request.auth.digest 'nobody', 'foobar'
+        }
+
+        when:
+        http.head()
+
+        then:
+        def ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        when:
+        http.headAsync().get()
+
+        then:
+        ex = thrown(Exception)
+        findExceptionMessage(ex) == 'Unauthorized'
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol << ['HTTP', 'HTTPS']
+    }
+
+    def 'interceptor'() {
+        setup:
+        ersatzServer.expectations {
+            head('/pass').called(2).responds().code(200)
+        }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/pass"
+            execution.interceptor(HEAD) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
+                "Response: ${fx.apply(cfg)}"
+            }
+            response.success { FromServer fs, Object body ->
+                !body && fs.statusCode == 200
+            }
+        }
+
+        expect:
+        http.head() == 'Response: true'
+
+        and:
+        http.headAsync().get() == 'Response: true'
 
         and:
         ersatzServer.verify()
     }
 
-    def 'HEAD /foo?alpha=bravo: returns headers only'() {
-        given:
+    @Unroll 'when handler with Closure (#code)'() {
+        setup:
         ersatzServer.expectations {
-            head('/foo').query('alpha', 'bravo').responds().headers(HEADERS_C)
-        }.start()
+            head('/handling').called(2).responds().code(code)
+        }
 
-        def capturedHeaders = [:]
-        boolean hasBody = true
-
-        def config = {
-            request.uri.path = '/foo'
-            request.uri.query = [alpha: 'bravo']
-            response.success { resp ->
-                hasBody = resp.hasBody
-                resp.headers.each { FromServer.Header h ->
-                    capturedHeaders[h.key] = h.value
-                }
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            response.when(status) { FromServer fs, Object body ->
+                "$body (${fs.statusCode})"
             }
         }
 
-        when:
-        httpBuilder(ersatzServer.port).head(config)
+        expect:
+        http.head() == result
 
-        then:
-        !hasBody
-        assertHeaders HEADERS_C, capturedHeaders
-        capturedHeaders.clear()
-
-        when:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
-
-        then:
-        !hasBody
-        assertHeaders HEADERS_C, capturedHeaders
+        and:
+        http.headAsync().get() == result
 
         and:
         ersatzServer.verify()
-    }
-
-    @Unroll def 'HEAD /status#status: verify when handler'() {
-        given:
-        ersatzServer.expectations {
-            [200, 300, 400, 500].each { s ->
-                head("/status$s").responds().code(s)
-            }
-        }.start()
-
-        CountedClosure counter = new CountedClosure()
-
-        def config = {
-            request.uri.path = "/status${status}"
-            response.when status, counter.closure
-        }
-
-        when:
-        httpBuilder(ersatzServer.port).head config
-
-        then:
-        counter.called
-        counter.clear()
-
-        when:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
-
-        then:
-        counter.called
 
         where:
-        status << ['200', '300', '400', '500']
+        code | status                    || result
+        205  | HttpConfig.Status.SUCCESS || 'null (205)'
+        210  | 210                       || 'null (210)'
+        211  | '211'                     || 'null (211)'
     }
 
-    @Unroll def 'HEAD /status#status: verify success/failure handler'() {
-        given:
+    @Unroll 'when handler with BiFunction (#code)'() {
+        setup:
         ersatzServer.expectations {
-            [200, 300, 400, 500].each { s ->
-                head("/status$s").responds().code(s)
-            }
-        }.start()
-
-        CountedClosure successCounter = new CountedClosure()
-        CountedClosure failureCounter = new CountedClosure()
-
-        def config = {
-            request.uri.path = "/status${status}"
-            response.success successCounter.closure
-            response.failure failureCounter.closure
+            head('/handling').called(2).responds().code(code)
         }
 
-        when:
-        httpBuilder(ersatzServer.port).head config
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            response.when(status, new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "$body (${fs.statusCode})"
+                }
+            })
+        }
 
-        then:
-        successCounter.called == success
-        successCounter.clear()
+        expect:
+        http.head() == result
 
-        failureCounter.called == failure
-        failureCounter.clear()
+        and:
+        http.headAsync().get() == result
 
-        when:
-        httpBuilder(ersatzServer.port).headAsync(config).get()
-
-        then:
-        successCounter.called == success
-        failureCounter.called == failure
+        and:
+        ersatzServer.verify()
 
         where:
-        status | success | failure
-        200    | true    | false
-        300    | true    | false
-        400    | false   | true
-        500    | false   | true
+        code | status                    || result
+        205  | HttpConfig.Status.SUCCESS || 'null (205)'
+        210  | 210                       || 'null (210)'
+        211  | '211'                     || 'null (211)'
     }
 
-    def 'HEAD /date: returns content of specified type'() {
-        given:
+    @Unroll 'success/failure handler with Closure (#code)'() {
+        setup:
         ersatzServer.expectations {
-            head('/date').responds().header('stamp', '2016.08.25 14:43')
-        }.start()
+            head('/handling').called(2).responds().code(code)
+        }
 
-        def config = {
-            request.uri.path = '/date'
-            response.success { FromServer fromServer ->
-                Date.parse('yyyy.MM.dd HH:mm', fromServer.headers.find { it.key == 'stamp' }.value)
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            response.success { FromServer fs, Object body ->
+                "Success: $body (${fs.statusCode})"
+            }
+            response.failure { FromServer fs, Object body ->
+                "Failure: $body (${fs.statusCode})"
             }
         }
 
-        when:
-        def result = httpBuilder(ersatzServer.port).head(Date, config)
+        expect:
+        http.head() == result
 
-        then:
-        result instanceof Date
-        result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
+        and:
+        http.headAsync().get() == result
 
-        when:
-        result = httpBuilder(ersatzServer.port).headAsync(Date, config).get()
+        and:
+        ersatzServer.verify()
 
-        then:
-        result instanceof Date
-        result.format('MM/dd/yyyy HH:mm') == '08/25/2016 14:43'
+        where:
+        code || result
+        200  || 'Success: null (200)'
+        300  || 'Success: null (300)'
+        400  || 'Failure: null (400)'
+        500  || 'Failure: null (500)'
     }
 
-    private static void assertHeaders(Map expected, Map captured) {
-        expected.each { k, v ->
-            assert captured[k] == v
+    @Unroll 'success/failure handler with BiFunction (#code)'() {
+        setup:
+        ersatzServer.expectations {
+            head('/handling').called(2).responds().code(code)
         }
+
+        def http = httpBuilder {
+            request.uri = "${ersatzServer.httpUrl}/handling"
+            response.success(new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "Success: $body (${fs.statusCode})"
+                }
+            })
+            response.failure(new BiFunction<FromServer, Object, Object>() {
+                @Override Object apply(FromServer fs, Object body) {
+                    "Failure: $body (${fs.statusCode})"
+                }
+            })
+        }
+
+        expect:
+        http.head() == result
+
+        and:
+        http.headAsync().get() == result
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        code || result
+        200  || 'Success: null (200)'
+        300  || 'Success: null (300)'
+        400  || 'Failure: null (400)'
+        500  || 'Failure: null (500)'
     }
 }

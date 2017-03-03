@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2016 David Clark
- * <p>
+ * Copyright (C) 2017 David Clark
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +27,7 @@ import static groovyx.net.http.HttpConfigs.basic;
 import static groovyx.net.http.HttpConfigs.root;
 import static groovyx.net.http.util.SslUtils.ANY_HOSTNAME;
 import static groovyx.net.http.util.SslUtils.acceptingSslContext;
-import static java.lang.System.getProperty;
-import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+import static groovyx.net.http.util.Misc.isPropertySet;
 
 public class HttpObjectConfigImpl implements HttpObjectConfig {
 
@@ -58,7 +57,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
                 interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);
             }
 
-            if (toBoolean(getProperty("groovyx.net.http.ignore-ssl-issues"))) {
+            if(isPropertySet("groovyx.net.http.ignore-ssl-issues")) {
                 setSslContext(acceptingSslContext());
                 setHostnameVerifier(ANY_HOSTNAME);
             }

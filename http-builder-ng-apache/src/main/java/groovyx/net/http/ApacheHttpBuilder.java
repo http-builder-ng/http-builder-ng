@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2016 David Clark
- * <p>
+ * Copyright (C) 2017 David Clark
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,12 +17,13 @@ package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
+import groovyx.net.http.util.IoUtils;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -73,7 +75,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
-     *     request.uri = 'http://localhost:10101'
+     * request.uri = 'http://localhost:10101'
      * }
      * ----
      *
@@ -96,9 +98,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
-     *     public void accept(HttpObjectConfig config) {
-     *         config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
-     *     }
+     * public void accept(HttpObjectConfig config) {
+     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * }
      * });
      * ----
      *
@@ -107,7 +109,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
-     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
      * });
      * ----
      *
@@ -180,18 +182,22 @@ public class ApacheHttpBuilder extends HttpBuilder {
     public static class ApacheToServer implements ToServer, HttpEntity {
 
         private ChainedHttpConfig config;
-        private InputStream inputStream;
+        private byte[] bytes;
 
         public ApacheToServer(final ChainedHttpConfig config) {
             this.config = config;
         }
 
         public void toServer(final InputStream inputStream) {
-            this.inputStream = inputStream;
+            try {
+                this.bytes = IoUtils.streamToBytes(inputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         public boolean isRepeatable() {
-            return false;
+            return true;
         }
 
         public boolean isChunked() {
@@ -211,11 +217,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public InputStream getContent() {
-            return inputStream;
+            return new ByteArrayInputStream(bytes);
         }
 
         public void writeTo(final OutputStream outputStream) {
-            transfer(inputStream, outputStream, false);
+            transfer(getContent(), outputStream, false);
         }
 
         public boolean isStreaming() {
@@ -224,7 +230,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         @SuppressWarnings("deprecation") //apache httpentity requires method
         public void consumeContent() throws IOException {
-            inputStream.close();
+            bytes = null;
         }
     }
 
@@ -268,6 +274,22 @@ public class ApacheHttpBuilder extends HttpBuilder {
             myBuilder.setSSLContext(sslContext);
             myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, config.getExecution().getHostnameVerifier()));
         }
+
+        myBuilder.addInterceptorFirst((HttpResponseInterceptor) (response, context) -> {
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                Header ceheader = entity.getContentEncoding();
+                if (ceheader != null) {
+                    HeaderElement[] codecs = ceheader.getElements();
+                    for (HeaderElement codec : codecs) {
+                        if (codec.getName().equalsIgnoreCase("gzip")) {
+                            response.setEntity(new GzipDecompressingEntity(response.getEntity()));
+                            return;
+                        }
+                    }
+                }
+            }
+        });
 
         this.client = myBuilder.build();
     }

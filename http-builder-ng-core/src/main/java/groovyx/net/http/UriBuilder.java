@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 David Clark
+ * Copyright (C) 2017 David Clark
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,15 @@ import org.codehaus.groovy.runtime.GStringImpl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
 
 /**
  * Provides a simple means of creating a request URI and optionally overriding its parts.
@@ -176,11 +177,12 @@ public abstract class UriBuilder {
             final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
             final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
             final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
-            final Map<String, ?> queryMap = traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::notNull);
-            final String query = populateQueryString(queryMap);
+            final String query = populateQueryString(traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::nonEmptyMap));
             final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
             final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
+
             return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -188,12 +190,21 @@ public abstract class UriBuilder {
 
     private static final Object[] EMPTY = new Object[0];
 
-    private static String populateQueryString(final Map<String,?> queryMap) {
-        if(queryMap == null || queryMap.isEmpty()) {
+    private static String populateQueryString(final Map<String, ?> queryMap) {
+        if (queryMap == null || queryMap.isEmpty()) {
             return null;
-        }
-        else {
-            return queryMap.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue().toString()).collect(Collectors.joining("&"));
+
+        } else {
+            final List<String> nvps = new LinkedList<>();
+
+            queryMap.entrySet().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
+                final Collection<?> values = entry.getValue() instanceof Collection ? (Collection<?>) entry.getValue() : singletonList(entry.getValue().toString());
+                values.forEach(value -> {
+                    nvps.add(entry.getKey() + "=" + value);
+                });
+            });
+
+            return nvps.stream().collect(Collectors.joining("&"));
         }
     }
 
@@ -210,7 +221,7 @@ public abstract class UriBuilder {
 
             final String rawQuery = uri.getQuery();
             if (rawQuery != null) {
-                setQuery(Form.decode(new StringBuilder(rawQuery), StandardCharsets.UTF_8));
+                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
             }
 
             setFragment(uri.getFragment());
@@ -230,7 +241,7 @@ public abstract class UriBuilder {
     public final UriBuilder setFull(final String str) {
         try {
             return setFull(new URI(str));
-        } catch (URISyntaxException ex){
+        } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getMessage());
         }
     }
@@ -337,8 +348,10 @@ public abstract class UriBuilder {
 
         private Map<String, Object> query = new LinkedHashMap<>(1);
 
-        public UriBuilder setQuery(Map<String, ?> val) {
-            query.putAll(val);
+        public UriBuilder setQuery(final Map<String, ?> val) {
+            if(val != null) {
+                query.putAll(val);
+            }
             return this;
         }
 

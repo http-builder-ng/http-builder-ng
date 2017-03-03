@@ -1,12 +1,12 @@
 /**
- * Copyright (C) 2016 David Clark
- * <p>
+ * Copyright (C) 2017 David Clark
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,7 @@ import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCT
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -99,7 +99,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         public Object execute() {
             try {
                 return ThreadLocalAuth.with(getAuthInfo(), () -> {
-                    if (sslContext != null) {
+                    if (sslContext != null && connection instanceof HttpsURLConnection) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
 
                         if (hostnameVerifier != null) {

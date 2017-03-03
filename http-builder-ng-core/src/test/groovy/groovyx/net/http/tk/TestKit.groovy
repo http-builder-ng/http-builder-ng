@@ -31,7 +31,6 @@ import java.util.function.Function
 abstract class TestKit extends Specification {
 
     Function clientFactory
-    Map<Object,Object> options = [:]
 
     protected HttpBuilder httpBuilder(@DelegatesTo(HttpObjectConfig) Closure config) {
         HttpBuilder.configure(clientFactory, config)
@@ -41,19 +40,5 @@ abstract class TestKit extends Specification {
         httpBuilder {
             request.uri = uri
         }
-    }
-
-    protected HttpBuilder httpBuilder(int port) {
-        httpBuilder {
-            request.uri = "http://localhost:${port}"
-        }
-    }
-
-    protected void option(final Object key, final boolean value){
-        options[key] = value
-    }
-
-    protected boolean enabled(final Object key){
-        options[key]
     }
 }

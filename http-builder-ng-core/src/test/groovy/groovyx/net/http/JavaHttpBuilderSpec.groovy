@@ -15,44 +15,32 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.tk.HttpBuilderTestKit
-import spock.lang.Issue
-import spock.lang.Requires
+import com.stehno.ersatz.ErsatzServer
+import spock.lang.AutoCleanup
+import spock.lang.Specification
 
-import java.util.function.Function
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
-@Requires(HttpBin)
-class JavaHttpBuilderSpec extends HttpBuilderTestKit {
+class JavaHttpBuilderSpec extends Specification {
 
-    def setup() {
-        clientFactory = { c -> new JavaHttpBuilder(c) } as Function
-        init()
-    }
-
-    def "Test Set Cookies"() {
-        expect:
-        httpBin.get {
-            request.uri.path = '/cookies'
-            request.cookie('foocookie', 'barcookie')
-        }.with {
-            cookies.foocookie == 'barcookie'
+    @AutoCleanup('stop')
+    private ErsatzServer ersatzServer = new ErsatzServer({
+        enableAutoStart()
+        expectations {
+            get('/foo').responds().content('ok', TEXT_PLAIN)
         }
+    })
 
-        httpBin.get {
-            request.uri.path = '/cookies'
-            request.cookie('requestcookie', '12345')
-        }.with {
-            cookies.foocookie == 'barcookie' && cookies.requestcookie == '12345'
-        }
-    }
-
-    def 'overridden configuration'() {
-        when:
+    def 'client-specific configuration'() {
+        setup:
         HttpBuilder http = JavaHttpBuilder.configure {
-            request.uri = 'http://localhost:12345'
+            request.uri = "${ersatzServer.httpUrl}/foo"
         }
 
-        then:
+        expect:
+        http.get() == 'ok'
+
+        and:
         http instanceof JavaHttpBuilder
     }
 }

@@ -16,14 +16,11 @@
 package groovyx.net.http
 
 import groovy.transform.CompileStatic
-import spock.lang.Requires
-import spock.lang.Specification;
+import spock.lang.Specification
 
-@Requires(HttpBin)
 class StaticCompilationSpec extends Specification {
 
-    @CompileStatic
-    def 'typed handlers should compile static'() {
+    @CompileStatic 'typed handlers should compile static'() {
         setup:
         def httpBin = HttpBuilder.configure {
             request.uri = 'http://httpbin.org/';

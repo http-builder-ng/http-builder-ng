@@ -10,23 +10,34 @@ buildscript {
 
 plugins {
     id "com.stehno.gradle.webpreview" version "0.1.1"
+    id 'com.github.kt3k.coveralls' version '2.7.1'
+    id 'java'
+    id 'jacoco'
 }
 
 apply plugin: 'org.asciidoctor.convert'
 
 group = 'io.github.http-builder-ng'
-version = '0.13.3'
+version = '0.14.0'
 
 repositories {
     jcenter()
 }
 
+configurations {
+    asciidoclet
+}
+
+dependencies {
+    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
+}
+
 subprojects {
-    apply plugin:'groovy'
-    apply plugin:'maven'
-    apply plugin:'maven-publish'
-    apply plugin:'jacoco'
-    apply plugin:'findbugs'
+    apply plugin: 'groovy'
+    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
+    apply plugin: 'jacoco'
+    apply plugin: 'findbugs'
 
     group = project.parent.group
     version = project.parent.version
@@ -58,14 +69,18 @@ subprojects {
         }
 
         testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-        testCompile 'com.stehno.ersatz:ersatz:0.4.2'
+        testCompile 'com.stehno.ersatz:ersatz:0.6.0'
         testCompile 'com.stehno.vanilla:vanilla-core:0.5.1'
 
         asciidoclet 'org.asciidoctor:asciidoclet:1.+'
     }
 
+    test {
+        reports.html.enabled = false
+    }
+
     tasks.withType(FindBugs) {
-        ignoreFailures = true       // let's not kill the build for this
+        ignoreFailures = true // let's not kill the build for this
         effort = 'max'
         reportLevel = 'low'
         reports {
@@ -77,8 +92,8 @@ subprojects {
 
     jacocoTestReport {
         reports {
-            xml.enabled = true // coveralls plugin depends on xml format report
-            html.enabled = true
+            xml.enabled = false
+            html.enabled = false
         }
     }
 
@@ -166,12 +181,13 @@ asciidoctor {
 }
 
 task site(group: 'Documentation', description: 'Builds the documentation web site.', dependsOn: [
-    'build','http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
+    'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
     'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc', 'http-builder-ng-okhttp:javadoc',
     'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport', 'http-builder-ng-okhttp:jacocoTestReport',
     'http-builder-ng-core:findbugsMain', 'http-builder-ng-apache:findbugsMain', 'http-builder-ng-okhttp:findbugsMain',
+    'aggregateJavadoc', 'aggregateTestReport', 'aggregateCoverage',
     'asciidoctor'
-]){
+]) {
     doLast {
         logger.info 'Building documentation web site...'
 
@@ -180,7 +196,7 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
             from 'src/site'
             into 'build/site'
             include '**/*.html'
-            expand([ project_version:project.version ])
+            expand([project_version: project.version])
         }
 
         // copy the assets
@@ -198,9 +214,15 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
             into 'build/site/guide'
         }
 
+        copy {
+            from 'build/docs'
+            from 'build/reports'
+            include '**/**'
+            into 'build/site'
+        }
+
         // core
         copy {
-            from 'http-builder-ng-core/build/docs'
             from 'http-builder-ng-core/build/reports'
             include '**/**'
             into 'build/site/core'
@@ -208,7 +230,6 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
 
         // apache
         copy {
-            from 'http-builder-ng-apache/build/docs'
             from 'http-builder-ng-apache/build/reports'
             include '**/**'
             into 'build/site/apache'
@@ -216,7 +237,6 @@ task site(group: 'Documentation', description: 'Builds the documentation web sit
 
         // okhttp
         copy {
-            from 'http-builder-ng-okhttp/build/docs'
             from 'http-builder-ng-okhttp/build/reports'
             include '**/**'
             into 'build/site/okhttp'
@@ -229,7 +249,7 @@ task publishSite(type: GradleBuild, group: 'Publishing', description: 'Publishes
     tasks = ['publishGhPages']
 }
 
-task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version'){
+task updateVersion(group: 'Documentation', description: 'Updates the version in documentation based on the project version') {
     doLast {
         String newVersion = project.version
         String oldVersion = project.property('from')
@@ -242,7 +262,7 @@ task updateVersion(group: 'Documentation', description: 'Updates the version in 
     }
 }
 
-task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.'){
+task checkVersion(group: 'Verification', description: 'Verify that the project version is reflected in the documentation.') {
     doLast {
         logger.lifecycle "Verifying that the documentation references version ${project.version}..."
 
@@ -258,9 +278,10 @@ task checkVersion(group: 'Verification', description: 'Verify that the project v
     }
 }
 
-task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.'){
+task verifyArtifacts(group: 'Verification', description: 'Verifies that the published artifacts exist in the remote repository.') {
     doLast {
-        def base = 'https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules' ///${project.version}/"
+        def base = 'https://dl.bintray.com/http-builder-ng/dclark/org/codehaus/groovy/modules'
+        ///${project.version}/"
         def artifacts = [
             "$base/http-builder-ng-core/$project.version/http-builder-ng-core-$project.version-sources.jar",
             "$base/http-builder-ng-core/$project.version/http-builder-ng-core-${project.version}.jar",
@@ -287,14 +308,14 @@ task verifyArtifacts(group: 'Verification', description: 'Verifies that the publ
     }
 }
 
-task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.'){
+task verifySite(group: 'Verification', description: 'Verifies that the documentation site exists at the expected address.') {
     doLast {
         def siteUrl = project.hasProperty('siteUrl') ? project.property('siteUrl') : 'https://http-builder-ng.github.io/http-builder-ng/'
 
         logger.lifecycle "Verifying that site exists at ${siteUrl}..."
 
         // we'll just hit the important ones
-        boolean exists = [ '/index.html', '/guide/html5/index.html', '/core/javadoc/index.html' ].every { page ->
+        boolean exists = ['/index.html', '/guide/html5/index.html', '/core/javadoc/index.html'].every { page ->
             boolean ok = checkUrl("${siteUrl}${page}")
             logger.info " - Checking: ${siteUrl}${page}: $ok"
             ok
@@ -310,13 +331,13 @@ task release(group: 'Development', description: 'Release a new version of the li
     'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
     'http-builder-ng-core:bintrayUpload', 'http-builder-ng-apache:bintrayUpload', 'http-builder-ng-okhttp:bintrayUpload',
     'publishSite'
-]){
+]) {
     doLast {
         logger.lifecycle 'Library has been released - confirm the Bintray publications and run "./gradlew verifyRelease"'
     }
 }
 
-task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']){
+task verifyRelease(group: 'Verification', description: 'Verifies that the release was successful.', dependsOn: ['verifyArtifacts', 'verifySite']) {
     doLast {
         logger.lifecycle 'Release has been verified.'
     }
@@ -334,4 +355,52 @@ static boolean checkUrl(String url) {
     } catch (ex) {
         return false
     }
+}
+
+def publishedProjects = subprojects.findAll()
+
+task aggregateJavadoc(type: Javadoc, group: 'Documentation') {
+    description = 'Generates an aggregated Javadoc document.'
+
+    source publishedProjects.collect { it.sourceSets.main.allJava }
+    classpath = files(publishedProjects.collect { it.sourceSets.main.compileClasspath })
+    destinationDir = file("${buildDir}/docs/javadoc")
+
+    options.docletpath = configurations.asciidoclet.files.asType(List)
+    options.links('http://docs.oracle.com/javase/8/docs/api/', 'http://docs.groovy-lang.org/latest/html/gapi/');
+    options.doclet = 'org.asciidoctor.Asciidoclet'
+    options.overview = 'src/docs/overview.adoc'
+    options.addStringOption "-base-dir", "${projectDir}"
+    options.addStringOption "-attribute", "name=${project.name},version=${project.version},title-link=https://github.com/http-builder-ng/http-builder-ng[${project.name} ${project.version}]"
+}
+
+task aggregateCoverage(type: JacocoReport, group: 'Coverage reports') {
+    description = 'Generates an aggregate report from all subprojects'
+
+    dependsOn(publishedProjects.test)
+
+    additionalSourceDirs = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(publishedProjects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(publishedProjects.sourceSets.main.output)
+    executionData = files(publishedProjects.jacocoTestReport.executionData)
+
+    doFirst {
+        executionData = files(executionData.findAll { it.exists() })
+    }
+
+    reports {
+        html.enabled = true // human readable
+        xml.enabled = true // required by coveralls
+    }
+}
+
+task aggregateTestReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/allTests")
+//    testResultDirs = files('http-builder-ng-apache/build/test-results/test/binary/', 'http-builder-ng-core/build/test-results/test/binary/', 'http-builder-ng-okhttp/build/test-results/test/binary/')
+    reportOn subprojects*.test
+}
+
+coveralls {
+    sourceDirs = publishedProjects.sourceSets.main.allSource.srcDirs.flatten()
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
 }

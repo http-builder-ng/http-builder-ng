@@ -15,27 +15,32 @@
  */
 package groovyx.net.http
 
-import groovyx.net.http.tk.HttpBuilderTestKit
+import com.stehno.ersatz.ErsatzServer
+import spock.lang.AutoCleanup
+import spock.lang.Specification
 
-import java.util.function.Function
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
-class OkHttpBuilderSpec extends HttpBuilderTestKit {
+class OkHttpBuilderSpec extends Specification {
 
-    def setup() {
-        clientFactory = { c -> new OkHttpBuilder(c) } as Function
+    @AutoCleanup('stop')
+    private ErsatzServer ersatzServer = new ErsatzServer({
+        enableAutoStart()
+        expectations {
+            get('/foo').responds().content('ok', TEXT_PLAIN)
+        }
+    })
 
-        option COMPRESSION_OPTION, false
-
-        init()
-    }
-
-    def 'overridden configuration'() {
-        when:
+    def 'client-specific configuration'() {
+        setup:
         HttpBuilder http = OkHttpBuilder.configure {
-            request.uri = 'http://localhost:12345'
+            request.uri = "${ersatzServer.httpUrl}/foo"
         }
 
-        then:
+        expect:
+        http.get() == 'ok'
+
+        and:
         http instanceof OkHttpBuilder
     }
 }
