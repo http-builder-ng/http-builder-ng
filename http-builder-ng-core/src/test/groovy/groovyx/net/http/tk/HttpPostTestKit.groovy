@@ -16,8 +16,6 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.Encoders
-import com.stehno.ersatz.feat.BasicAuthFeature
-import com.stehno.ersatz.feat.DigestAuthFeature
 import groovyx.net.http.*
 import spock.lang.Unroll
 
@@ -240,7 +238,9 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol POST with BASIC authentication (authorized)'() {
         setup:
-        ersatzServer.feature new BasicAuthFeature()
+        ersatzServer.authentication {
+            basic()
+        }
 
         ersatzServer.expectations {
             post('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
@@ -269,7 +269,9 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol POST with BASIC authentication (unauthorized)'() {
         setup:
-        ersatzServer.feature new BasicAuthFeature()
+        ersatzServer.authentication {
+            basic()
+        }
 
         ersatzServer.expectations {
             post('/basic').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
@@ -306,7 +308,9 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol POST with DIGEST authentication (authorized)'() {
         setup:
-        ersatzServer.feature new DigestAuthFeature()
+        ersatzServer.authentication {
+            digest()
+        }
 
         // OkHttp fails due to missing expectation but the request looks good - relaxed the constraint until further investigation
         ersatzServer.expectations {
@@ -336,7 +340,9 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol POST with DIGEST authentication (unauthorized)'() {
         setup:
-        ersatzServer.feature new DigestAuthFeature()
+        ersatzServer.authentication {
+            digest()
+        }
 
         ersatzServer.expectations {
             post('/digest').body(REQUEST_BODY_JSON, APPLICATION_JSON).protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)

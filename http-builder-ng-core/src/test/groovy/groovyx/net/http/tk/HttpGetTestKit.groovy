@@ -16,8 +16,6 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.Encoders
-import com.stehno.ersatz.feat.BasicAuthFeature
-import com.stehno.ersatz.feat.DigestAuthFeature
 import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
 import groovyx.net.http.HttpBuilder
@@ -232,7 +230,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol GET with BASIC authentication (authorized)'() {
         setup:
-        ersatzServer.feature new BasicAuthFeature()
+        ersatzServer.authentication {
+            basic()
+        }
 
         ersatzServer.expectations {
             get('/basic').protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
@@ -259,7 +259,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol GET with BASIC authentication (unauthorized)'() {
         setup:
-        ersatzServer.feature new BasicAuthFeature()
+        ersatzServer.authentication {
+            basic()
+        }
 
         ersatzServer.expectations {
             get('/basic').protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)
@@ -294,7 +296,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol GET with DIGEST authentication (authorized)'() {
         setup:
-        ersatzServer.feature new DigestAuthFeature()
+        ersatzServer.authentication {
+            digest()
+        }
 
         ersatzServer.expectations {
             get('/digest').protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
@@ -321,7 +325,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @Unroll '#protocol GET with DIGEST authentication (unauthorized)'() {
         setup:
-        ersatzServer.feature new DigestAuthFeature()
+        ersatzServer.authentication {
+            digest()
+        }
 
         ersatzServer.expectations {
             get('/digest').protocol(protocol).called(0).responds().content(OK_TEXT, TEXT_PLAIN)

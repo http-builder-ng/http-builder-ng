@@ -67,7 +67,7 @@ abstract class EncoderTestKit extends Specification {
 
         expect:
         http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
+            request.uri = "${ersatzServer.httpUrl}/multi"
             request.body = MultipartContent.multipart {
                 field 'alpha', 'one'
                 field 'bravo', 'two'
@@ -84,7 +84,7 @@ abstract class EncoderTestKit extends Specification {
 
         expect:
         http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
+            request.uri = "${ersatzServer.httpUrl}/multi"
             request.body = MultipartContent.multipart {
                 part 'filea', fileA.name, TEXT[0], fileA.toPath()
                 part 'fileb', fileB.name, TEXT[0], fileB.toPath()
@@ -101,7 +101,7 @@ abstract class EncoderTestKit extends Specification {
 
         expect:
         http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
+            request.uri = "${ersatzServer.httpUrl}/multi"
             request.body = MultipartContent.multipart {
                 part 'filea', fileA.name, TEXT[0], fileA.bytes
                 part 'fileb', fileB.name, TEXT[0], fileB.bytes
@@ -118,7 +118,7 @@ abstract class EncoderTestKit extends Specification {
 
         expect:
         http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
+            request.uri = "${ersatzServer.httpUrl}/multi"
             request.body = MultipartContent.multipart {
                 part 'filea', fileA.name, TEXT[0], fileA.text
                 part 'fileb', fileB.name, TEXT[0], fileB.text
@@ -135,7 +135,7 @@ abstract class EncoderTestKit extends Specification {
 
         expect:
         http.post {
-            request.uri = "${ersatzServer.serverUrl}/multi"
+            request.uri = "${ersatzServer.httpUrl}/multi"
             request.body = MultipartContent.multipart {
                 part 'filea', fileA.name, TEXT[0], fileA.newInputStream()
                 part 'fileb', fileB.name, TEXT[0], fileB.newInputStream()

@@ -25,7 +25,7 @@ class ApacheHttpBuilderSpec extends Specification {
 
     @AutoCleanup('stop')
     private ErsatzServer ersatzServer = new ErsatzServer({
-        enableAutoStart()
+        autoStart()
         expectations {
             get('/foo').responds().content('ok', TEXT_PLAIN)
         }

@@ -40,7 +40,7 @@ class DownloadSpec extends Specification {
 
         when:
         File file = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toTempFile(delegate) }
 
         then:
@@ -56,7 +56,7 @@ class DownloadSpec extends Specification {
 
         when:
         File file = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toTempFile(delegate, TEXT[0]) }
 
         then:
@@ -74,7 +74,7 @@ class DownloadSpec extends Specification {
 
         when:
         File file = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toFile(delegate, saved) }
 
         then:
@@ -93,7 +93,7 @@ class DownloadSpec extends Specification {
 
         when:
         File file = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toFile(delegate, TEXT[0], saved) }
 
         then:
@@ -110,7 +110,7 @@ class DownloadSpec extends Specification {
 
         when:
         ByteArrayOutputStream stream = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toStream(delegate, new ByteArrayOutputStream()) }
 
         then:
@@ -125,7 +125,7 @@ class DownloadSpec extends Specification {
 
         when:
         ByteArrayOutputStream stream = configure {
-            request.uri = "${ersatzServer.serverUrl}/download"
+            request.uri = "${ersatzServer.httpUrl}/download"
         }.get { toStream(delegate, TEXT[0], new ByteArrayOutputStream()) }
 
         then:
