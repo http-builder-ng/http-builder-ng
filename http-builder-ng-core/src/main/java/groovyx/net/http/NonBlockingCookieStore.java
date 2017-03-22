@@ -167,7 +167,12 @@ class NonBlockingCookieStore implements CookieStore {
             }
 
             final UriKey rhs = (UriKey) o;
-            return host.equals(rhs.host) && name.equals(rhs.host);
+            return host.equals(rhs.host) && name.equals(rhs.name);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("UriKey(name: %s, host: %s)", name, host);
         }
     }
 
@@ -221,6 +226,11 @@ class NonBlockingCookieStore implements CookieStore {
         @Override
         public int hashCode() {
             return 37 * (37 * name.hashCode() + domain.hashCode()) + (path == null ? 0 : path.hashCode());
+        }
+
+        @Override
+        public String toString() {
+            return String.format("DomainKey(name: %s, domain: %s, path: %s", name, domain, path);
         }
     }
 
