@@ -51,7 +51,7 @@ class ParsersSpec extends Specification {
 
         when:
         String result = JavaHttpBuilder.configure {
-            request.uri = ersatzServer.serverUrl
+            request.uri = ersatzServer.httpUrl
         }.get {
             request.uri.path = '/download'
             response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->

@@ -40,7 +40,7 @@ class JacksonSpec extends Specification {
     def 'use with context config (alternate content type)'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/jackson"
+            request.uri = "${ersatzServer.httpUrl}/jackson"
             request.contentType = CONTENT_TYPE
             context CONTENT_TYPE, Jackson.OBJECT_MAPPER_ID, objectMapper
         }
@@ -57,7 +57,7 @@ class JacksonSpec extends Specification {
     def 'use with context config (default content type)'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/json"
+            request.uri = "${ersatzServer.httpUrl}/json"
             request.contentType = JSON[0]
             context JSON, Jackson.OBJECT_MAPPER_ID, objectMapper
         }
@@ -74,7 +74,7 @@ class JacksonSpec extends Specification {
     def 'use with mapper config (alternate content type)'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/jackson"
+            request.uri = "${ersatzServer.httpUrl}/jackson"
             request.contentType = CONTENT_TYPE
             Jackson.mapper(delegate, objectMapper, [CONTENT_TYPE])
         }
@@ -91,7 +91,7 @@ class JacksonSpec extends Specification {
     def 'use with mapper config (default content type)'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/json"
+            request.uri = "${ersatzServer.httpUrl}/json"
             request.contentType = JSON[0]
             Jackson.mapper(delegate, objectMapper)
         }

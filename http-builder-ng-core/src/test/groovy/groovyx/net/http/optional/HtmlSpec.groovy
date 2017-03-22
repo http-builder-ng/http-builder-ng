@@ -38,7 +38,7 @@ class HtmlSpec extends Specification {
     def 'use necko parser'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/html"
+            request.uri = "${ersatzServer.httpUrl}/html"
             response.parser([CONTENT_TYPE], Html.&neckoParse)
         }
 
@@ -49,7 +49,7 @@ class HtmlSpec extends Specification {
     def 'use jsoup parser'() {
         given:
         def http = HttpBuilder.configure {
-            request.uri = "${ersatzServer.serverUrl}/html"
+            request.uri = "${ersatzServer.httpUrl}/html"
             response.parser([CONTENT_TYPE], Html.&jsoupParse)
         }
 

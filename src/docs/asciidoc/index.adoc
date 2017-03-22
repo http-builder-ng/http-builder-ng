@@ -1,6 +1,6 @@
 = Http Builder NG Users Guide
 David Clark & Christopher J. Stehno
-v0.14.0, March 2017
+v0.14.1, March 2017
 :toc: left
 :toclevels: 3
 
@@ -90,6 +90,8 @@ https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC Authentication] 
 
 [source,groovy]
 ----
+import groovyx.net.http.HttpBuilder
+
 def http = HttpBuilder.configure {
     request.uri = 'http://localhost:10101'
     request.auth.basic 'admin', 'myp@$$w0rd'
@@ -104,6 +106,8 @@ https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST Authentication
 
 [source,groovy]
 ----
+import groovyx.net.http.HttpBuilder
+
 def http = HttpBuilder.configure {
     request.uri = 'http://localhost:10101'
     request.auth.digest 'admin', 'myp@$$w0rd'
@@ -126,6 +130,8 @@ used to handle. Say we wanted to be able to send `Date` objects to the server in
 
 [source,groovy]
 ----
+import groovyx.net.http.HttpBuilder
+
 HttpBuilder.configure {
     request.uri = 'http://locahost:1234/schedule'
     request.body = new Date()
@@ -157,6 +163,8 @@ we could request the time with the following code:
 
 [source,groovy]
 ----
+import groovyx.net.http.*
+
 Date date = HttpBuilder.configure {
     request.uri = 'http://localhost:1234/currenttime'
 }.get(Date){
@@ -187,6 +195,9 @@ could do something like the following:
 
 [source,groovy]
 ----
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.HttpVerb.GET
+
 long elapsed = configure {
     request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
     execution.interceptor(GET) { cfg, fx ->
@@ -317,6 +328,9 @@ The `HttpBuilder` may also be used in standard Java 8 code with no required Groo
 
 [source,java]
 ----
+import groovyx.net.http.HttpBuilder
+import java.util.function.BiFunction
+
 HttpBuilder http = HttpBuilder.configure(config -> {
     config.getRequest().setUri("http://localhost:9192");
 });
@@ -343,6 +357,9 @@ method.
 
 [source,groovy]
 ----
+import groovyx.net.http.JavaHttpBuilder
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
+
 def http = JavaHttpBuilder.configure {
     ignoreSslIssues execution
     // other config...
@@ -369,6 +386,9 @@ file content at this time, you just want the header information. `HttpBuilder` m
 
 [source,groovy]
 ----
+import static groovyx.net.http.HttpBuilder.configure
+import groovyx.net.http.*
+
 String uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
 Date lastModified = configure {
     request.uri = uri
@@ -397,6 +417,9 @@ Alternately, using header parsing along with the `java.time` API, you can simpli
 
 [source,groovy]
 ----
+import static groovyx.net.http.HttpBuilder.configure
+import groovyx.net.http.*
+
 ZonedDateTime lastModified = configure {
     request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
 }.head(ZonedDateTime) {
@@ -417,6 +440,9 @@ content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Documen
 
 [source,groovy]
 ----
+import static groovyx.net.http.HttpBuilder.configure
+import org.jsoup.nodes.Document
+
 Document page = configure {
     request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
 }.get()
@@ -439,6 +465,10 @@ a POST request with a "Content-Type" of `application/json` and a custom response
 
 [source,groovy]
 ----
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.ContentTypes.JSON
+import groovyx.net.http.*
+
 ItemScore itemScore = configure {
     request.uri = 'http://httpbin.org'
     request.contentType = JSON[0]
@@ -468,6 +498,8 @@ Posting HTML form data is a common `POST` operation, and it is supported by `Htt
 
 [source,groovy]
 ----
+import groovyx.net.http.HttpBuilder
+
 HttpBuilder.configure {
     request.uri = 'http://example.com'
 }.post {
@@ -488,6 +520,9 @@ encoders. For example, the `OkHttpBuilder` could use the `OkHttpEncoders.&multip
 
 [source,groovy]
 ----
+import groovyx.net.http.OkHttpBuilder
+import groovyx.net.http.*
+
 File someFile = // ...
 
 OkHttpBuilder.configure {
