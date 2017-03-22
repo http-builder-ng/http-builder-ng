@@ -167,7 +167,12 @@ import java.util.stream.Collectors;
             }
 
 <span class="fc" id="L169">            final UriKey rhs = (UriKey) o;</span>
-<span class="pc bpc" id="L170" title="2 of 4 branches missed.">            return host.equals(rhs.host) &amp;&amp; name.equals(rhs.host);</span>
+<span class="pc bpc" id="L170" title="2 of 4 branches missed.">            return host.equals(rhs.host) &amp;&amp; name.equals(rhs.name);</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L175">            return String.format(&quot;UriKey(name: %s, host: %s)&quot;, name, host);</span>
         }
     }
 
@@ -178,145 +183,150 @@ import java.util.stream.Collectors;
         final String path;
                 
         public DomainKey(final HttpCookie cookie) {
-<span class="fc" id="L181">            super(cookie.getName());</span>
-<span class="fc" id="L182">            this.domain = cookie.getDomain();</span>
-<span class="fc" id="L183">            this.path = cookie.getPath();</span>
-<span class="fc" id="L184">        }</span>
+<span class="fc" id="L186">            super(cookie.getName());</span>
+<span class="fc" id="L187">            this.domain = cookie.getDomain();</span>
+<span class="fc" id="L188">            this.path = cookie.getPath();</span>
+<span class="fc" id="L189">        }</span>
 
         public static boolean domainKey(final String type) {
-<span class="nc" id="L187">            return TYPE.equals(type);</span>
+<span class="nc" id="L192">            return TYPE.equals(type);</span>
         }
         
         public String getKeyType() {
-<span class="fc" id="L191">            return TYPE;</span>
+<span class="fc" id="L196">            return TYPE;</span>
         }
 
         private boolean pathEquals(final DomainKey rhs) {
-<span class="pc bpc" id="L195" title="1 of 4 branches missed.">            if(path == null &amp;&amp; rhs.path == null) {</span>
-<span class="fc" id="L196">                return true;</span>
+<span class="pc bpc" id="L200" title="1 of 4 branches missed.">            if(path == null &amp;&amp; rhs.path == null) {</span>
+<span class="fc" id="L201">                return true;</span>
             }
-<span class="pc bpc" id="L198" title="3 of 4 branches missed.">            else if(path == null &amp;&amp; rhs.path != null) {</span>
-<span class="nc" id="L199">                return false;</span>
+<span class="pc bpc" id="L203" title="3 of 4 branches missed.">            else if(path == null &amp;&amp; rhs.path != null) {</span>
+<span class="nc" id="L204">                return false;</span>
             }
-<span class="pc bpc" id="L201" title="2 of 4 branches missed.">            else if(path != null &amp;&amp; rhs.path == null) {</span>
-<span class="nc" id="L202">                return false;</span>
+<span class="pc bpc" id="L206" title="2 of 4 branches missed.">            else if(path != null &amp;&amp; rhs.path == null) {</span>
+<span class="nc" id="L207">                return false;</span>
             }
             else {
-<span class="fc" id="L205">                return path.equalsIgnoreCase(rhs.path);</span>
+<span class="fc" id="L210">                return path.equalsIgnoreCase(rhs.path);</span>
             }
         }
         
         @Override
         public boolean equals(final Object o) {
-<span class="pc bpc" id="L211" title="1 of 2 branches missed.">            if(!(o instanceof DomainKey)) {</span>
-<span class="nc" id="L212">                return false;</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">            if(!(o instanceof DomainKey)) {</span>
+<span class="nc" id="L217">                return false;</span>
             }
             
-<span class="fc" id="L215">            final DomainKey rhs = (DomainKey) o;</span>
-<span class="pc bpc" id="L216" title="1 of 2 branches missed.">            return (name.equalsIgnoreCase(rhs.name) &amp;&amp;</span>
-<span class="pc bpc" id="L217" title="1 of 2 branches missed.">                    domain.equalsIgnoreCase(rhs.domain) &amp;&amp;</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">                    pathEquals(rhs));</span>
+<span class="fc" id="L220">            final DomainKey rhs = (DomainKey) o;</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">            return (name.equalsIgnoreCase(rhs.name) &amp;&amp;</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">                    domain.equalsIgnoreCase(rhs.domain) &amp;&amp;</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">                    pathEquals(rhs));</span>
         }
 
         @Override
         public int hashCode() {
-<span class="fc bfc" id="L223" title="All 2 branches covered.">            return 37 * (37 * name.hashCode() + domain.hashCode()) + (path == null ? 0 : path.hashCode());</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">            return 37 * (37 * name.hashCode() + domain.hashCode()) + (path == null ? 0 : path.hashCode());</span>
+        }
+
+        @Override
+        public String toString() {
+<span class="nc" id="L233">            return String.format(&quot;DomainKey(name: %s, domain: %s, path: %s&quot;, name, domain, path);</span>
         }
     }
 
-<span class="fc" id="L227">    protected ConcurrentMap&lt;Key,HttpCookie&gt; all = new ConcurrentHashMap&lt;&gt;(100, 0.75f, 2);</span>
+<span class="fc" id="L237">    protected ConcurrentMap&lt;Key,HttpCookie&gt; all = new ConcurrentHashMap&lt;&gt;(100, 0.75f, 2);</span>
 
     private static URI makeURI(final String domain) {
         try {
-<span class="nc" id="L231">            return new URI(&quot;http&quot;, domain, null, null, null);</span>
+<span class="nc" id="L241">            return new URI(&quot;http&quot;, domain, null, null, null);</span>
         }
-<span class="nc" id="L233">        catch(URISyntaxException ex) {</span>
-<span class="nc" id="L234">            return null;</span>
+<span class="nc" id="L243">        catch(URISyntaxException ex) {</span>
+<span class="nc" id="L244">            return null;</span>
         }
     }
 
     public boolean entryValid(final Map.Entry&lt;Key,HttpCookie&gt; entry) {
-<span class="fc bfc" id="L239" title="All 2 branches covered.">        if(entry.getValue().hasExpired()) {</span>
-<span class="fc" id="L240">            remove(entry.getKey());</span>
-<span class="fc" id="L241">            return false;</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">        if(entry.getValue().hasExpired()) {</span>
+<span class="fc" id="L250">            remove(entry.getKey());</span>
+<span class="fc" id="L251">            return false;</span>
         }
         else {
-<span class="fc" id="L244">            return true;</span>
+<span class="fc" id="L254">            return true;</span>
         }
     }
 
     //shamelessly copied from jdk8 source code for InMemoryCookieStore
     private boolean netscapeDomainMatches(final String domain, final String host) {
-<span class="pc bpc" id="L250" title="2 of 4 branches missed.">        if (domain == null || host == null) {</span>
-<span class="nc" id="L251">            return false;</span>
-        }
-
-        // if there's no embedded dot in domain and domain is not .local
-<span class="fc" id="L255">        boolean isLocalDomain = &quot;.local&quot;.equalsIgnoreCase(domain);</span>
-<span class="fc" id="L256">        int embeddedDotInDomain = domain.indexOf('.');</span>
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">        if (embeddedDotInDomain == 0) {</span>
-<span class="nc" id="L258">            embeddedDotInDomain = domain.indexOf('.', 1);</span>
-        }
-<span class="pc bpc" id="L260" title="3 of 6 branches missed.">        if (!isLocalDomain &amp;&amp; (embeddedDotInDomain == -1 || embeddedDotInDomain == domain.length() - 1)) {</span>
+<span class="pc bpc" id="L260" title="2 of 4 branches missed.">        if (domain == null || host == null) {</span>
 <span class="nc" id="L261">            return false;</span>
         }
 
+        // if there's no embedded dot in domain and domain is not .local
+<span class="fc" id="L265">        boolean isLocalDomain = &quot;.local&quot;.equalsIgnoreCase(domain);</span>
+<span class="fc" id="L266">        int embeddedDotInDomain = domain.indexOf('.');</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        if (embeddedDotInDomain == 0) {</span>
+<span class="nc" id="L268">            embeddedDotInDomain = domain.indexOf('.', 1);</span>
+        }
+<span class="pc bpc" id="L270" title="3 of 6 branches missed.">        if (!isLocalDomain &amp;&amp; (embeddedDotInDomain == -1 || embeddedDotInDomain == domain.length() - 1)) {</span>
+<span class="nc" id="L271">            return false;</span>
+        }
+
         // if the host name contains no dot and the domain name is .local
-<span class="fc" id="L265">        int firstDotInHost = host.indexOf('.');</span>
-<span class="pc bpc" id="L266" title="1 of 4 branches missed.">        if (firstDotInHost == -1 &amp;&amp; isLocalDomain) {</span>
-<span class="nc" id="L267">            return true;</span>
+<span class="fc" id="L275">        int firstDotInHost = host.indexOf('.');</span>
+<span class="pc bpc" id="L276" title="1 of 4 branches missed.">        if (firstDotInHost == -1 &amp;&amp; isLocalDomain) {</span>
+<span class="nc" id="L277">            return true;</span>
         }
 
-<span class="fc" id="L270">        int domainLength = domain.length();</span>
-<span class="fc" id="L271">        int lengthDiff = host.length() - domainLength;</span>
-<span class="fc bfc" id="L272" title="All 2 branches covered.">        if (lengthDiff == 0) {</span>
+<span class="fc" id="L280">        int domainLength = domain.length();</span>
+<span class="fc" id="L281">        int lengthDiff = host.length() - domainLength;</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">        if (lengthDiff == 0) {</span>
             // if the host name and the domain name are just string-compare euqal
-<span class="fc" id="L274">            return host.equalsIgnoreCase(domain);</span>
+<span class="fc" id="L284">            return host.equalsIgnoreCase(domain);</span>
         }
-<span class="fc bfc" id="L276" title="All 2 branches covered.">        else if (lengthDiff &gt; 0) {</span>
+<span class="fc bfc" id="L286" title="All 2 branches covered.">        else if (lengthDiff &gt; 0) {</span>
             // need to check H &amp; D component
-<span class="fc" id="L278">            String H = host.substring(0, lengthDiff);</span>
-<span class="fc" id="L279">            String D = host.substring(lengthDiff);</span>
+<span class="fc" id="L288">            String H = host.substring(0, lengthDiff);</span>
+<span class="fc" id="L289">            String D = host.substring(lengthDiff);</span>
 
-<span class="fc" id="L281">            return (D.equalsIgnoreCase(domain));</span>
+<span class="fc" id="L291">            return (D.equalsIgnoreCase(domain));</span>
         }
-<span class="fc bfc" id="L283" title="All 2 branches covered.">        else if (lengthDiff == -1) {</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        else if (lengthDiff == -1) {</span>
             // if domain is actually .host
-<span class="pc bpc" id="L285" title="1 of 2 branches missed.">            return (domain.charAt(0) == '.' &amp;&amp;</span>
-<span class="pc bnc" id="L286" title="All 2 branches missed.">                    host.equalsIgnoreCase(domain.substring(1)));</span>
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">            return (domain.charAt(0) == '.' &amp;&amp;</span>
+<span class="pc bnc" id="L296" title="All 2 branches missed.">                    host.equalsIgnoreCase(domain.substring(1)));</span>
         }
 
-<span class="fc" id="L289">        return false;</span>
+<span class="fc" id="L299">        return false;</span>
     }
 
     private boolean matches(final Map.Entry&lt;Key,HttpCookie&gt; entry, final URI uri) {
-<span class="fc" id="L293">        final HttpCookie cookie = entry.getValue();</span>
-<span class="fc" id="L294">        final boolean secureLink = &quot;https&quot;.equalsIgnoreCase(uri.getScheme());</span>
-<span class="fc bfc" id="L295" title="All 4 branches covered.">        if(!secureLink &amp;&amp; cookie.getSecure()) {</span>
-<span class="fc" id="L296">            return false;</span>
+<span class="fc" id="L303">        final HttpCookie cookie = entry.getValue();</span>
+<span class="fc" id="L304">        final boolean secureLink = &quot;https&quot;.equalsIgnoreCase(uri.getScheme());</span>
+<span class="fc bfc" id="L305" title="All 4 branches covered.">        if(!secureLink &amp;&amp; cookie.getSecure()) {</span>
+<span class="fc" id="L306">            return false;</span>
         }
         
-<span class="fc" id="L299">        final String host = uri.getHost();</span>
-<span class="fc bfc" id="L300" title="All 2 branches covered.">        if(entry.getKey() instanceof UriKey) {</span>
-<span class="fc" id="L301">            return ((UriKey) entry.getKey()).host.equalsIgnoreCase(host);</span>
+<span class="fc" id="L309">        final String host = uri.getHost();</span>
+<span class="fc bfc" id="L310" title="All 2 branches covered.">        if(entry.getKey() instanceof UriKey) {</span>
+<span class="fc" id="L311">            return ((UriKey) entry.getKey()).host.equalsIgnoreCase(host);</span>
         }
         else {
-<span class="fc" id="L304">            final String domain = cookie.getDomain();</span>
-<span class="fc bfc" id="L305" title="All 2 branches covered.">            if(cookie.getVersion() == 0) {</span>
-<span class="fc" id="L306">                return netscapeDomainMatches(domain, host);</span>
+<span class="fc" id="L314">            final String domain = cookie.getDomain();</span>
+<span class="fc bfc" id="L315" title="All 2 branches covered.">            if(cookie.getVersion() == 0) {</span>
+<span class="fc" id="L316">                return netscapeDomainMatches(domain, host);</span>
             }
             else {
-<span class="fc" id="L309">                return HttpCookie.domainMatches(domain, host);</span>
+<span class="fc" id="L319">                return HttpCookie.domainMatches(domain, host);</span>
             }
         }
     }
 
     protected void add(final Key key, final HttpCookie cookie) {
-<span class="fc" id="L315">        all.put(key, cookie);</span>
-<span class="fc" id="L316">    }</span>
+<span class="fc" id="L325">        all.put(key, cookie);</span>
+<span class="fc" id="L326">    }</span>
 
     protected boolean remove(final Key key) {
-<span class="fc bfc" id="L319" title="All 2 branches covered.">        return all.remove(key) != null;</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">        return all.remove(key) != null;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

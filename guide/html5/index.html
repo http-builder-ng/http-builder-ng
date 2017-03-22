@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.14.0,</span>
+<span id="revnumber">version 0.14.1,</span>
 <span id="revdate">March 2017</span>
 </div>
 <div id="toc" class="toc2">
@@ -664,7 +664,9 @@ of the client factory to be used.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = HttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.HttpBuilder</span>
+
+<span class="keyword">def</span> http = HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:10101</span><span class="delimiter">'</span></span>
     request.auth.basic <span class="string"><span class="delimiter">'</span><span class="content">admin</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">myp@$$w0rd</span><span class="delimiter">'</span></span>
 }</code></pre>
@@ -681,7 +683,9 @@ of the client factory to be used.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = HttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.HttpBuilder</span>
+
+<span class="keyword">def</span> http = HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:10101</span><span class="delimiter">'</span></span>
     request.auth.digest <span class="string"><span class="delimiter">'</span><span class="content">admin</span><span class="delimiter">'</span></span>, <span class="string"><span class="delimiter">'</span><span class="content">myp@$$w0rd</span><span class="delimiter">'</span></span>
 }</code></pre>
@@ -721,7 +725,9 @@ used to handle. Say we wanted to be able to send <code>Date</code> objects to th
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.HttpBuilder</span>
+
+HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://locahost:1234/schedule</span><span class="delimiter">'</span></span>
     request.body = <span class="keyword">new</span> <span class="predefined-type">Date</span>()
     request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">text/date-time</span><span class="delimiter">'</span></span>
@@ -770,7 +776,9 @@ we could request the time with the following code:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">Date</span> date = HttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+
+<span class="predefined-type">Date</span> date = HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:1234/currenttime</span><span class="delimiter">'</span></span>
 }.get(<span class="predefined-type">Date</span>){
     response.parser(<span class="string"><span class="delimiter">'</span><span class="content">text/date-time</span><span class="delimiter">'</span></span>){ ChainedHttpConfig cfg, FromServer fs, <span class="predefined-type">Object</span> obj-&gt;
@@ -820,7 +828,10 @@ could do something like the following:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">long</span> elapsed = configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpVerb.GET</span>
+
+<span class="type">long</span> elapsed = configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all</span><span class="delimiter">'</span></span>
     execution.interceptor(GET) { cfg, fx -&gt;
         <span class="type">long</span> started = <span class="predefined-type">System</span>.currentTimeMillis()
@@ -1060,8 +1071,11 @@ isolation from other implementations and minimizes unused dependencies in projec
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">HttpBuilder http = HttpBuilder.configure(config -&gt; {
-    config.getRequest().setUri(<span class="string"><span class="delimiter">&quot;</span><span class="content">http://localhost:9192</span><span class="delimiter">&quot;</span></span>);
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">groovyx.net.http.HttpBuilder</span>
+<span class="include">import</span> <span class="include">java.util.function.BiFunction</span>
+
+<span class="include">HttpBuilder</span> <span class="include">http</span> = <span class="include">HttpBuilder.configure</span>(<span class="include">config</span> -&gt; {
+    <span class="include">config.getRequest</span>().<span class="include">setUri</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">http://localhost:9192</span><span class="delimiter">&quot;</span></span>);
 });
 
 <span class="predefined-type">List</span>&lt;FromServer.Header&gt; headers = (<span class="predefined-type">List</span>&lt;FromServer.Header&gt;) http.head(<span class="predefined-type">List</span>.class, config -&gt; {
@@ -1091,7 +1105,10 @@ method.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> http = JavaHttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.JavaHttpBuilder</span>
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.util.SslUtils.ignoreSslIssues</span>
+
+<span class="keyword">def</span> http = JavaHttpBuilder.configure {
     ignoreSslIssues execution
     <span class="comment">// other config...</span>
 }</code></pre>
@@ -1124,7 +1141,10 @@ file content at this time, you just want the header information. <code>HttpBuild
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">String</span> uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
+<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+
+<span class="predefined-type">String</span> uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
 <span class="predefined-type">Date</span> lastModified = configure {
     request.uri = uri
 }.head(<span class="predefined-type">Date</span>) {
@@ -1157,7 +1177,10 @@ println <span class="string"><span class="delimiter">&quot;</span><span class="c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">ZonedDateTime lastModified = configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
+<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+
+ZonedDateTime lastModified = configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
 }.head(ZonedDateTime) {
     response.success { FromServer resp -&gt;
@@ -1180,7 +1203,10 @@ content is parsed with the <a href="https://jsoup.org/">JSoup</a> HTML parser in
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">Document</span> page = configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
+<span class="keyword">import</span> <span class="include">org.jsoup.nodes.Document</span>
+
+<span class="predefined-type">Document</span> page = configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all</span><span class="delimiter">'</span></span>
 }.get()
 
@@ -1208,7 +1234,11 @@ a POST request with a "Content-Type" of <code>application/json</code> and a cust
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">ItemScore itemScore = configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
+<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+
+ItemScore itemScore = configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://httpbin.org</span><span class="delimiter">'</span></span>
     request.contentType = JSON[<span class="integer">0</span>]
     response.parser(JSON[<span class="integer">0</span>]) { config, resp -&gt;
@@ -1244,7 +1274,9 @@ the request. The end result is the following display:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder.configure {
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.HttpBuilder</span>
+
+HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://example.com</span><span class="delimiter">'</span></span>
 }.post {
     request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/some/form</span><span class="delimiter">'</span></span>
@@ -1267,7 +1299,10 @@ encoders. For example, the <code>OkHttpBuilder</code> could use the <code>OkHttp
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">File</span> someFile = <span class="comment">// ...</span>
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.OkHttpBuilder</span>
+<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+
+<span class="predefined-type">File</span> someFile = <span class="comment">// ...</span>
 
 OkHttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://example.com</span><span class="delimiter">'</span></span>
@@ -1314,8 +1349,8 @@ of a multipart content object must be specified beforehand.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.14.0<br>
-Last updated 2017-03-03 10:03:39 -06:00
+Version 0.14.1<br>
+Last updated 2017-03-22 07:01:10 -05:00
 </div>
 </div>
 </body>
