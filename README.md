@@ -20,6 +20,7 @@
 * JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
 * User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 * Twitter: [@HttpBuilderNG](https://twitter.com/HttpBuilderNG)
+* StackOverflow: [httpbuilder-ng](http://stackoverflow.com/questions/tagged/httpbuilder-ng)
 
 ## Quick Overview
 
