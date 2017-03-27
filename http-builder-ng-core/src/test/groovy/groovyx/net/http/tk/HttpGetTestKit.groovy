@@ -446,7 +446,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
     @Unroll 'success/failure handler with Closure (#code)'() {
         setup:
         ersatzServer.expectations {
-            get('/handling').called(2).responds().code(code).content(OK_TEXT, TEXT_PLAIN).code(code)
+            get('/handling').called(2).responds().content(OK_TEXT, TEXT_PLAIN).code(code)
         }
 
         def http = httpBuilder {
