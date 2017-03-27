@@ -446,16 +446,16 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
     @Unroll 'success/failure handler with Closure (#code)'() {
         setup:
         ersatzServer.expectations {
-            get('/handling').called(2).responds().code(code)
+            get('/handling').called(2).responds().code(code).content(OK_TEXT, TEXT_PLAIN).code(code)
         }
 
         def http = httpBuilder {
             request.uri = "${ersatzServer.httpUrl}/handling"
             response.success { FromServer fs, Object body ->
-                "Success: ${fs.statusCode}"
+                "Success: ${fs.statusCode}, Text: ${body}"
             }
             response.failure { FromServer fs, Object body ->
-                "Failure: ${fs.statusCode}"
+                "Failure: ${fs.statusCode}, Error: ${body}"
             }
         }
 
@@ -470,10 +470,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         where:
         code || result
-        200  || 'Success: 200'
-        300  || 'Success: 300'
-        400  || 'Failure: 400'
-        500  || 'Failure: 500'
+        200  || 'Success: 200, Text: ok-text'
+        300  || 'Success: 300, Text: ok-text'
+        400  || 'Failure: 400, Error: ok-text'
+        500  || 'Failure: 500, Error: ok-text'
     }
 
     @Unroll 'success/failure handler with BiFunction (#code)'() {
@@ -486,12 +486,12 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             request.uri = "${ersatzServer.httpUrl}/handling"
             response.success(new BiFunction<FromServer, Object, Object>() {
                 @Override Object apply(FromServer fs, Object body) {
-                    "Success: ${fs.statusCode}"
+                    "Success: ${fs.statusCode}, Text: ${body}"
                 }
             })
             response.failure(new BiFunction<FromServer, Object, Object>() {
                 @Override Object apply(FromServer fs, Object body) {
-                    "Failure: ${fs.statusCode}"
+                    "Failure: ${fs.statusCode}, Error: ${body}"
                 }
             })
         }
@@ -507,10 +507,10 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         where:
         code || result
-        200  || 'Success: 200'
-        300  || 'Success: 300'
-        400  || 'Failure: 400'
-        500  || 'Failure: 500'
+        200  || 'Success: 200, Text: ok-text'
+        300  || 'Success: 300, Text: ok-text'
+        400  || 'Failure: 400, Error: ok-text'
+        500  || 'Failure: 500, Error: ok-text'
     }
 
     def 'gzip compression supported'() {
