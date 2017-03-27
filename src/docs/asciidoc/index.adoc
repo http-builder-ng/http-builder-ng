@@ -168,7 +168,7 @@ import groovyx.net.http.*
 Date date = HttpBuilder.configure {
     request.uri = 'http://localhost:1234/currenttime'
 }.get(Date){
-    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs, Object obj->
+    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs ->
         Date.parse('MM/dd/yyyy HH:mm:ss', fs.inputStream.text)
     }
 }
