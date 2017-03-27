@@ -11,6 +11,8 @@
 [![Travis Build Status](https://travis-ci.org/http-builder-ng/http-builder-ng.svg?branch=master)](https://travis-ci.org/http-builder-ng/http-builder-ng)
 [![Coverage Status](https://coveralls.io/repos/github/http-builder-ng/http-builder-ng/badge.svg?branch=master)](https://coveralls.io/github/http-builder-ng/http-builder-ng?branch=master)
 
+[![Twitter Follow](https://img.shields.io/twitter/follow/httpbuilderng.svg?style=social&label=Follow)]()
+
 ## Quick Links for the Impatient
 
 * Site: https://http-builder-ng.github.io/http-builder-ng/
@@ -18,6 +20,7 @@
 * JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
 * User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 * Twitter: [@HttpBuilderNG](https://twitter.com/HttpBuilderNG)
+* StackOverflow: [httpbuilder-ng](http://stackoverflow.com/questions/tagged/httpbuilder-ng)
 
 ## Quick Overview
 
