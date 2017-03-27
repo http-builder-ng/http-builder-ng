@@ -1,4 +1,4 @@
-= Http Builder NG Users Guide
+= HttpBuilder-NG Users Guide
 David Clark & Christopher J. Stehno
 v0.14.1, March 2017
 :toc: left
@@ -328,8 +328,8 @@ The `HttpBuilder` may also be used in standard Java 8 code with no required Groo
 
 [source,java]
 ----
-import groovyx.net.http.HttpBuilder
-import java.util.function.BiFunction
+import groovyx.net.http.HttpBuilder;
+import java.util.function.BiFunction;
 
 HttpBuilder http = HttpBuilder.configure(config -> {
     config.getRequest().setUri("http://localhost:9192");
@@ -382,10 +382,13 @@ This section contains some stand-alone examples of how you can use `HttpBuilder`
 
 Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing the correct date, you can
 use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works nicely for this, since you don't care about the actual
-file content at this time, you just want the header information. `HttpBuilder` makes this easy:
+file content at this time, you just want the header information. HttpBuilder-NG makes this easy:
 
 [source,groovy]
+.resource_last_modified.groovy
 ----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
 import static groovyx.net.http.HttpBuilder.configure
 import groovyx.net.http.*
 
@@ -395,9 +398,9 @@ Date lastModified = configure {
 }.head(Date) {
     response.success { FromServer resp ->
         String value = FromServer.Header.find(
-            resp.headers,
-            'Last-Modified'
+            resp.headers, 'Last-Modified'
         )?.value
+
         value ? Date.parse(
             'EEE, dd MMM yyyy  H:mm:ss zzz',
             value
@@ -416,15 +419,22 @@ In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Centr
 Alternately, using header parsing along with the `java.time` API, you can simplify the header conversion:
 
 [source,groovy]
+.resource_last_modified_alt.groovy
 ----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
 import static groovyx.net.http.HttpBuilder.configure
+import static java.time.format.DateTimeFormatter.ofPattern
 import groovyx.net.http.*
+import java.time.*
 
 ZonedDateTime lastModified = configure {
     request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
 }.head(ZonedDateTime) {
     response.success { FromServer resp ->
-        resp.headers.find { h-> h.key == 'Last-Modified' }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
+        resp.headers.find { h->
+            h.key == 'Last-Modified'
+        }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
     }
 }
 
@@ -439,7 +449,11 @@ Scraping content from web sites doesn't seem to be a prevalent as it was years a
 content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
 
 [source,groovy]
+.web_scraping.groovy
 ----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+@Grab('org.jsoup:jsoup:1.9.2')
+
 import static groovyx.net.http.HttpBuilder.configure
 import org.jsoup.nodes.Document
 
@@ -464,10 +478,19 @@ Posting JSON content to the server and parsing the response body to build an obj
 a POST request with a "Content-Type" of `application/json` and a custom response parser:
 
 [source,groovy]
+.sending_receiving_post.groovy
 ----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
 import static groovyx.net.http.HttpBuilder.configure
 import static groovyx.net.http.ContentTypes.JSON
 import groovyx.net.http.*
+
+@groovy.transform.Canonical
+class ItemScore {
+    String item
+    Long score
+}
 
 ItemScore itemScore = configure {
     request.uri = 'http://httpbin.org'

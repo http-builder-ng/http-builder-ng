@@ -132,7 +132,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
         }
 
-        private class JavaToServer implements ToServer {
+        protected class JavaToServer implements ToServer {
 
             private InputStream inputStream;
 
