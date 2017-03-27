@@ -162,7 +162,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 try {
                     headers = populateHeaders();
                     addCookieStore(uri, headers);
-                    BufferedInputStream bis = new BufferedInputStream(connection.getInputStream());
+                    BufferedInputStream bis = new BufferedInputStream(correctInputStream());
                     bis.mark(0);
                     hasBody = bis.read() != -1;
                     bis.reset();
@@ -171,6 +171,15 @@ public class JavaHttpBuilder extends HttpBuilder {
                     //swallow, no body is present?
                     is = null;
                     hasBody = false;
+                }
+            }
+
+            private InputStream correctInputStream() throws IOException {
+                if(getStatusCode() < 400) {
+                    return connection.getInputStream();
+                }
+                else {
+                    return connection.getErrorStream();
                 }
             }
 
@@ -217,7 +226,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 return is;
             }
 
-            public int getStatusCode() {
+            public final int getStatusCode() {
                 try {
                     return connection.getResponseCode();
                 } catch (IOException e) {
