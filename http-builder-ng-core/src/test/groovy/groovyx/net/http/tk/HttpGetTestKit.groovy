@@ -455,7 +455,6 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
                 "Success: ${fs.statusCode}, Text: ${body}"
             }
             response.failure { FromServer fs, Object body ->
-                println("######## In success/failure handler with closure ##################");
                 "Failure: ${fs.statusCode}, Error: ${body}"
             }
         }
