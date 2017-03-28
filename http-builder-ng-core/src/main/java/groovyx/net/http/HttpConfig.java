@@ -17,6 +17,7 @@ package groovyx.net.http;
 
 import groovy.lang.Closure;
 import groovyx.net.http.fn.ClosureBiFunction;
+import groovyx.net.http.fn.ClosureFunction;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Provides the public interface used for the {@link HttpBuilder} shared and per-verb configuration.
@@ -753,7 +755,7 @@ public interface HttpConfig {
          *
          * http.get {
          *      request.uri.path = '/foo'
-         *      response.failure(){
+         *      response.failure {
          *          // executed when a failure response is received
          *      }
          * }
@@ -793,6 +795,12 @@ public interface HttpConfig {
          */
         void failure(BiFunction<FromServer, Object, ?> function);
 
+        default void exception(Closure<?> closure) {
+            exception(new ClosureFunction<>(closure));
+        }
+
+        void exception(Function<Throwable,?> function);
+        
         /**
          * Used to specify a response parser ({@link FromServer} instance) for the specified content type, wrapped in a {@link BiFunction}.
          *

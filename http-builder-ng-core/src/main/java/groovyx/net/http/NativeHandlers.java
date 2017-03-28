@@ -69,6 +69,17 @@ public class NativeHandlers {
     public static Object failure(final FromServer fromServer, final Object data) {
         throw new HttpException(fromServer, data);
     }
+    
+    /**
+     * Default exception handler. Throws an RuntimeException.
+     *
+     * @param thrown       The original thrown exception
+     * @return Nothing will be returned, the return type is Object for interface consistency
+     * @throws RuntimeException
+     */
+    public static Object exception(final Throwable thrown) {
+        throw new RuntimeException(thrown);
+    }
 
     protected static class Expanding {
         CharBuffer charBuffer = CharBuffer.allocate(2048);
