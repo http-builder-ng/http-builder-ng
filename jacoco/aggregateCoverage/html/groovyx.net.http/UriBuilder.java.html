@@ -19,6 +19,7 @@ import groovy.lang.GString;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -44,7 +45,7 @@ import static java.util.Collections.singletonList;
  *
  * Generally, this class is not instantiated directly, but created by the {@link HttpConfig} instance and modified.
  */
-<span class="fc" id="L47">public abstract class UriBuilder {</span>
+<span class="fc" id="L48">public abstract class UriBuilder {</span>
 
     public static final int DEFAULT_PORT = -1;
 
@@ -163,7 +164,25 @@ import static java.util.Collections.singletonList;
      * @return a reference to the builder
      */
     public UriBuilder setPath(final String str) {
-<span class="fc" id="L166">        return setPath(new GStringImpl(EMPTY, new String[]{str}));</span>
+<span class="fc" id="L167">        return setPath(new GStringImpl(EMPTY, new String[]{str}));</span>
+    }
+
+    public URI forCookie(final HttpCookie cookie) {
+        try {
+<span class="fc" id="L172">            final String scheme = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getScheme(), Traverser::notNull);</span>
+<span class="fc" id="L173">            final Integer port = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPort(), notValue(DEFAULT_PORT));</span>
+<span class="fc" id="L174">            final String host = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getHost(), Traverser::notNull);</span>
+<span class="fc" id="L175">            final String path = cookie.getPath();</span>
+<span class="fc" id="L176">            final String query = null;</span>
+<span class="fc" id="L177">            final String fragment = null;</span>
+<span class="fc" id="L178">            final String userInfo = null;</span>
+
+<span class="pc bpc" id="L180" title="2 of 4 branches missed.">            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);</span>
+            
+        }
+<span class="nc" id="L183">        catch(URISyntaxException e) {</span>
+<span class="nc" id="L184">            throw new RuntimeException(e);</span>
+        }
     }
 
     /**
@@ -173,63 +192,63 @@ import static java.util.Collections.singletonList;
      */
     public URI toURI() {
         try {
-<span class="fc" id="L176">            final String scheme = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getScheme(), Traverser::notNull);</span>
-<span class="fc" id="L177">            final Integer port = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPort(), notValue(DEFAULT_PORT));</span>
-<span class="fc" id="L178">            final String host = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getHost(), Traverser::notNull);</span>
-<span class="fc" id="L179">            final GString path = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPath(), Traverser::notNull);</span>
-<span class="fc" id="L180">            final String query = populateQueryString(traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getQuery(), Traverser::nonEmptyMap));</span>
-<span class="fc" id="L181">            final String fragment = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getFragment(), Traverser::notNull);</span>
-<span class="fc" id="L182">            final String userInfo = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getUserInfo(), Traverser::notNull);</span>
+<span class="fc" id="L195">            final String scheme = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getScheme(), Traverser::notNull);</span>
+<span class="fc" id="L196">            final Integer port = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPort(), notValue(DEFAULT_PORT));</span>
+<span class="fc" id="L197">            final String host = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getHost(), Traverser::notNull);</span>
+<span class="fc" id="L198">            final GString path = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPath(), Traverser::notNull);</span>
+<span class="fc" id="L199">            final String query = populateQueryString(traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getQuery(), Traverser::nonEmptyMap));</span>
+<span class="fc" id="L200">            final String fragment = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getFragment(), Traverser::notNull);</span>
+<span class="fc" id="L201">            final String userInfo = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getUserInfo(), Traverser::notNull);</span>
 
-<span class="fc bfc" id="L184" title="All 4 branches covered.">            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);</span>
+<span class="fc bfc" id="L203" title="All 4 branches covered.">            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);</span>
 
-<span class="nc" id="L186">        } catch (URISyntaxException e) {</span>
-<span class="nc" id="L187">            throw new RuntimeException(e);</span>
+<span class="nc" id="L205">        } catch (URISyntaxException e) {</span>
+<span class="nc" id="L206">            throw new RuntimeException(e);</span>
         }
     }
 
-<span class="fc" id="L191">    private static final Object[] EMPTY = new Object[0];</span>
+<span class="fc" id="L210">    private static final Object[] EMPTY = new Object[0];</span>
 
     private static String populateQueryString(final Map&lt;String, ?&gt; queryMap) {
-<span class="pc bpc" id="L194" title="1 of 4 branches missed.">        if (queryMap == null || queryMap.isEmpty()) {</span>
-<span class="fc" id="L195">            return null;</span>
+<span class="pc bpc" id="L213" title="1 of 4 branches missed.">        if (queryMap == null || queryMap.isEmpty()) {</span>
+<span class="fc" id="L214">            return null;</span>
 
         } else {
-<span class="fc" id="L198">            final List&lt;String&gt; nvps = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L217">            final List&lt;String&gt; nvps = new LinkedList&lt;&gt;();</span>
 
-<span class="fc" id="L200">            queryMap.entrySet().forEach((Consumer&lt;Map.Entry&lt;String, ?&gt;&gt;) entry -&gt; {</span>
-<span class="fc bfc" id="L201" title="All 2 branches covered.">                final Collection&lt;?&gt; values = entry.getValue() instanceof Collection ? (Collection&lt;?&gt;) entry.getValue() : singletonList(entry.getValue().toString());</span>
-<span class="fc" id="L202">                values.forEach(value -&gt; {</span>
-<span class="fc" id="L203">                    nvps.add(entry.getKey() + &quot;=&quot; + value);</span>
-<span class="fc" id="L204">                });</span>
-<span class="fc" id="L205">            });</span>
+<span class="fc" id="L219">            queryMap.entrySet().forEach((Consumer&lt;Map.Entry&lt;String, ?&gt;&gt;) entry -&gt; {</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">                final Collection&lt;?&gt; values = entry.getValue() instanceof Collection ? (Collection&lt;?&gt;) entry.getValue() : singletonList(entry.getValue().toString());</span>
+<span class="fc" id="L221">                values.forEach(value -&gt; {</span>
+<span class="fc" id="L222">                    nvps.add(entry.getKey() + &quot;=&quot; + value);</span>
+<span class="fc" id="L223">                });</span>
+<span class="fc" id="L224">            });</span>
 
-<span class="fc" id="L207">            return nvps.stream().collect(Collectors.joining(&quot;&amp;&quot;));</span>
+<span class="fc" id="L226">            return nvps.stream().collect(Collectors.joining(&quot;&amp;&quot;));</span>
         }
     }
 
     protected final void populateFrom(final URI uri) {
         try {
-<span class="fc" id="L213">            setScheme(uri.getScheme());</span>
-<span class="fc" id="L214">            setPort(uri.getPort());</span>
-<span class="fc" id="L215">            setHost(uri.getHost());</span>
+<span class="fc" id="L232">            setScheme(uri.getScheme());</span>
+<span class="fc" id="L233">            setPort(uri.getPort());</span>
+<span class="fc" id="L234">            setHost(uri.getHost());</span>
 
-<span class="fc" id="L217">            final String path = uri.getPath();</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">            if (path != null) {</span>
-<span class="fc" id="L219">                setPath(new GStringImpl(EMPTY, new String[]{path}));</span>
+<span class="fc" id="L236">            final String path = uri.getPath();</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">            if (path != null) {</span>
+<span class="fc" id="L238">                setPath(new GStringImpl(EMPTY, new String[]{path}));</span>
             }
 
-<span class="fc" id="L222">            final String rawQuery = uri.getQuery();</span>
-<span class="fc bfc" id="L223" title="All 2 branches covered.">            if (rawQuery != null) {</span>
-<span class="fc" id="L224">                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));</span>
+<span class="fc" id="L241">            final String rawQuery = uri.getQuery();</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">            if (rawQuery != null) {</span>
+<span class="fc" id="L243">                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));</span>
             }
 
-<span class="fc" id="L227">            setFragment(uri.getFragment());</span>
-<span class="fc" id="L228">            setUserInfo(uri.getUserInfo());</span>
-<span class="nc" id="L229">        } catch (IOException e) {</span>
-<span class="nc" id="L230">            throw new RuntimeException(e);</span>
-<span class="fc" id="L231">        }</span>
-<span class="fc" id="L232">    }</span>
+<span class="fc" id="L246">            setFragment(uri.getFragment());</span>
+<span class="fc" id="L247">            setUserInfo(uri.getUserInfo());</span>
+<span class="nc" id="L248">        } catch (IOException e) {</span>
+<span class="nc" id="L249">            throw new RuntimeException(e);</span>
+<span class="fc" id="L250">        }</span>
+<span class="fc" id="L251">    }</span>
 
     /**
      * Sets the full URI (all parts) as a String.
@@ -240,9 +259,9 @@ import static java.util.Collections.singletonList;
      */
     public final UriBuilder setFull(final String str) {
         try {
-<span class="fc" id="L243">            return setFull(new URI(str));</span>
-<span class="nc" id="L244">        } catch (URISyntaxException ex) {</span>
-<span class="nc" id="L245">            throw new IllegalArgumentException(ex.getMessage());</span>
+<span class="fc" id="L262">            return setFull(new URI(str));</span>
+<span class="nc" id="L263">        } catch (URISyntaxException ex) {</span>
+<span class="nc" id="L264">            throw new IllegalArgumentException(ex.getMessage());</span>
         }
     }
 
@@ -253,8 +272,8 @@ import static java.util.Collections.singletonList;
      * @return a reference to the builder
      */
     public final UriBuilder setFull(final URI uri) {
-<span class="fc" id="L256">        populateFrom(uri);</span>
-<span class="fc" id="L257">        return this;</span>
+<span class="fc" id="L275">        populateFrom(uri);</span>
+<span class="fc" id="L276">        return this;</span>
     }
 
     /**
@@ -274,7 +293,7 @@ import static java.util.Collections.singletonList;
      * @return the created `UriBuilder`
      */
     public static UriBuilder basic(final UriBuilder parent) {
-<span class="fc" id="L277">        return new Basic(parent);</span>
+<span class="fc" id="L296">        return new Basic(parent);</span>
     }
 
     /**
@@ -294,191 +313,191 @@ import static java.util.Collections.singletonList;
      * @return the created `UriBuilder`
      */
     public static UriBuilder threadSafe(final UriBuilder parent) {
-<span class="fc" id="L297">        return new ThreadSafe(parent);</span>
+<span class="fc" id="L316">        return new ThreadSafe(parent);</span>
     }
 
     public static UriBuilder root() {
-<span class="fc" id="L301">        return new ThreadSafe(null);</span>
+<span class="fc" id="L320">        return new ThreadSafe(null);</span>
     }
 
     private static final class Basic extends UriBuilder {
         private String scheme;
 
         public UriBuilder setScheme(String val) {
-<span class="fc" id="L308">            scheme = val;</span>
-<span class="fc" id="L309">            return this;</span>
+<span class="fc" id="L327">            scheme = val;</span>
+<span class="fc" id="L328">            return this;</span>
         }
 
         public String getScheme() {
-<span class="fc" id="L313">            return scheme;</span>
+<span class="fc" id="L332">            return scheme;</span>
         }
 
-<span class="fc" id="L316">        private int port = DEFAULT_PORT;</span>
+<span class="fc" id="L335">        private int port = DEFAULT_PORT;</span>
 
         public UriBuilder setPort(int val) {
-<span class="fc" id="L319">            port = val;</span>
-<span class="fc" id="L320">            return this;</span>
+<span class="fc" id="L338">            port = val;</span>
+<span class="fc" id="L339">            return this;</span>
         }
 
         public int getPort() {
-<span class="fc" id="L324">            return port;</span>
+<span class="fc" id="L343">            return port;</span>
         }
 
         private String host;
 
         public UriBuilder setHost(String val) {
-<span class="fc" id="L330">            host = val;</span>
-<span class="fc" id="L331">            return this;</span>
+<span class="fc" id="L349">            host = val;</span>
+<span class="fc" id="L350">            return this;</span>
         }
 
         public String getHost() {
-<span class="fc" id="L335">            return host;</span>
+<span class="fc" id="L354">            return host;</span>
         }
 
         private GString path;
 
         public UriBuilder setPath(GString val) {
-<span class="fc" id="L341">            path = val;</span>
-<span class="fc" id="L342">            return this;</span>
+<span class="fc" id="L360">            path = val;</span>
+<span class="fc" id="L361">            return this;</span>
         }
 
         public GString getPath() {
-<span class="fc" id="L346">            return path;</span>
+<span class="fc" id="L365">            return path;</span>
         }
 
-<span class="fc" id="L349">        private Map&lt;String, Object&gt; query = new LinkedHashMap&lt;&gt;(1);</span>
+<span class="fc" id="L368">        private Map&lt;String, Object&gt; query = new LinkedHashMap&lt;&gt;(1);</span>
 
         public UriBuilder setQuery(final Map&lt;String, ?&gt; val) {
-<span class="fc bfc" id="L352" title="All 2 branches covered.">            if(val != null) {</span>
-<span class="fc" id="L353">                query.putAll(val);</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">            if(val != null) {</span>
+<span class="fc" id="L372">                query.putAll(val);</span>
             }
-<span class="fc" id="L355">            return this;</span>
+<span class="fc" id="L374">            return this;</span>
         }
 
         public Map&lt;String, Object&gt; getQuery() {
-<span class="fc" id="L359">            return query;</span>
+<span class="fc" id="L378">            return query;</span>
         }
 
         private String fragment;
 
         public UriBuilder setFragment(String val) {
-<span class="fc" id="L365">            fragment = val;</span>
-<span class="fc" id="L366">            return this;</span>
+<span class="fc" id="L384">            fragment = val;</span>
+<span class="fc" id="L385">            return this;</span>
         }
 
         public String getFragment() {
-<span class="fc" id="L370">            return fragment;</span>
+<span class="fc" id="L389">            return fragment;</span>
         }
 
         private String userInfo;
 
         public UriBuilder setUserInfo(String val) {
-<span class="fc" id="L376">            userInfo = val;</span>
-<span class="fc" id="L377">            return this;</span>
+<span class="fc" id="L395">            userInfo = val;</span>
+<span class="fc" id="L396">            return this;</span>
         }
 
         public String getUserInfo() {
-<span class="fc" id="L381">            return userInfo;</span>
+<span class="fc" id="L400">            return userInfo;</span>
         }
 
         private final UriBuilder parent;
 
         public UriBuilder getParent() {
-<span class="fc" id="L387">            return parent;</span>
+<span class="fc" id="L406">            return parent;</span>
         }
 
-<span class="fc" id="L390">        public Basic(final UriBuilder parent) {</span>
-<span class="fc" id="L391">            this.parent = parent;</span>
-<span class="fc" id="L392">        }</span>
+<span class="fc" id="L409">        public Basic(final UriBuilder parent) {</span>
+<span class="fc" id="L410">            this.parent = parent;</span>
+<span class="fc" id="L411">        }</span>
     }
 
     private static final class ThreadSafe extends UriBuilder {
         private volatile String scheme;
 
         public UriBuilder setScheme(String val) {
-<span class="fc" id="L399">            scheme = val;</span>
-<span class="fc" id="L400">            return this;</span>
+<span class="fc" id="L418">            scheme = val;</span>
+<span class="fc" id="L419">            return this;</span>
         }
 
         public String getScheme() {
-<span class="fc" id="L404">            return scheme;</span>
+<span class="fc" id="L423">            return scheme;</span>
         }
 
-<span class="fc" id="L407">        private volatile int port = DEFAULT_PORT;</span>
+<span class="fc" id="L426">        private volatile int port = DEFAULT_PORT;</span>
 
         public UriBuilder setPort(int val) {
-<span class="fc" id="L410">            port = val;</span>
-<span class="fc" id="L411">            return this;</span>
+<span class="fc" id="L429">            port = val;</span>
+<span class="fc" id="L430">            return this;</span>
         }
 
         public int getPort() {
-<span class="fc" id="L415">            return port;</span>
+<span class="fc" id="L434">            return port;</span>
         }
 
         private volatile String host;
 
         public UriBuilder setHost(String val) {
-<span class="fc" id="L421">            host = val;</span>
-<span class="fc" id="L422">            return this;</span>
+<span class="fc" id="L440">            host = val;</span>
+<span class="fc" id="L441">            return this;</span>
         }
 
         public String getHost() {
-<span class="fc" id="L426">            return host;</span>
+<span class="fc" id="L445">            return host;</span>
         }
 
         private volatile GString path;
 
         public UriBuilder setPath(GString val) {
-<span class="fc" id="L432">            path = val;</span>
-<span class="fc" id="L433">            return this;</span>
+<span class="fc" id="L451">            path = val;</span>
+<span class="fc" id="L452">            return this;</span>
         }
 
         public GString getPath() {
-<span class="fc" id="L437">            return path;</span>
+<span class="fc" id="L456">            return path;</span>
         }
 
-<span class="fc" id="L440">        private Map&lt;String, Object&gt; query = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L459">        private Map&lt;String, Object&gt; query = new ConcurrentHashMap&lt;&gt;();</span>
 
         public UriBuilder setQuery(Map&lt;String, ?&gt; val) {
-<span class="fc" id="L443">            query.putAll(val);</span>
-<span class="fc" id="L444">            return this;</span>
+<span class="fc" id="L462">            query.putAll(val);</span>
+<span class="fc" id="L463">            return this;</span>
         }
 
         public Map&lt;String, ?&gt; getQuery() {
-<span class="fc" id="L448">            return query;</span>
+<span class="fc" id="L467">            return query;</span>
         }
 
         private volatile String fragment;
 
         public UriBuilder setFragment(String val) {
-<span class="fc" id="L454">            fragment = val;</span>
-<span class="fc" id="L455">            return this;</span>
+<span class="fc" id="L473">            fragment = val;</span>
+<span class="fc" id="L474">            return this;</span>
         }
 
         public String getFragment() {
-<span class="fc" id="L459">            return fragment;</span>
+<span class="fc" id="L478">            return fragment;</span>
         }
 
         private volatile String userInfo;
 
         public UriBuilder setUserInfo(String val) {
-<span class="fc" id="L465">            userInfo = val;</span>
-<span class="fc" id="L466">            return this;</span>
+<span class="fc" id="L484">            userInfo = val;</span>
+<span class="fc" id="L485">            return this;</span>
         }
 
         public String getUserInfo() {
-<span class="fc" id="L470">            return userInfo;</span>
+<span class="fc" id="L489">            return userInfo;</span>
         }
 
         private final UriBuilder parent;
 
         public UriBuilder getParent() {
-<span class="fc" id="L476">            return parent;</span>
+<span class="fc" id="L495">            return parent;</span>
         }
 
-<span class="fc" id="L479">        public ThreadSafe(final UriBuilder parent) {</span>
-<span class="fc" id="L480">            this.parent = parent;</span>
-<span class="fc" id="L481">        }</span>
+<span class="fc" id="L498">        public ThreadSafe(final UriBuilder parent) {</span>
+<span class="fc" id="L499">            this.parent = parent;</span>
+<span class="fc" id="L500">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>Http Builder NG Users Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.14.1,</span>
+<span id="revnumber">version 0.14.2,</span>
 <span id="revdate">March 2017</span>
 </div>
 <div id="toc" class="toc2">
@@ -781,7 +781,7 @@ we could request the time with the following code:</p>
 <span class="predefined-type">Date</span> date = HttpBuilder.configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://localhost:1234/currenttime</span><span class="delimiter">'</span></span>
 }.get(<span class="predefined-type">Date</span>){
-    response.parser(<span class="string"><span class="delimiter">'</span><span class="content">text/date-time</span><span class="delimiter">'</span></span>){ ChainedHttpConfig cfg, FromServer fs, <span class="predefined-type">Object</span> obj-&gt;
+    response.parser(<span class="string"><span class="delimiter">'</span><span class="content">text/date-time</span><span class="delimiter">'</span></span>){ ChainedHttpConfig cfg, FromServer fs -&gt;
         <span class="predefined-type">Date</span>.parse(<span class="string"><span class="delimiter">'</span><span class="content">MM/dd/yyyy HH:mm:ss</span><span class="delimiter">'</span></span>, fs.inputStream.text)
     }
 }</code></pre>
@@ -1349,8 +1349,8 @@ of a multipart content object must be specified beforehand.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.14.1<br>
-Last updated 2017-03-22 07:01:10 -05:00
+Version 0.14.2<br>
+Last updated 2017-03-29 02:56:21 -05:00
 </div>
 </div>
 </body>

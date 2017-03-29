@@ -31,7 +31,7 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>2851 lines of code analyzed,
+<p>2869 lines of code analyzed,
             in 88 classes,
             in 4 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
@@ -43,27 +43,27 @@
 <tr class="tablerow0">
 <td>High Priority Warnings</td>
 <td align="right">5</td>
-<td align="right">1.75</td>
+<td align="right">1.74</td>
 </tr>
 <tr class="tablerow1">
 <td>Medium Priority Warnings</td>
 <td align="right">8</td>
-<td align="right">2.81</td>
+<td align="right">2.79</td>
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">9</td>
-<td align="right">3.16</td>
+<td align="right">13</td>
+<td align="right">4.53</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>22</b>
+<b>26</b>
 </td>
 <td align="right">
-<b>7.72</b>
+<b>9.06</b>
 </td>
 </tr>
 </table>
@@ -108,20 +108,20 @@
 <td>
 <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
 </td>
-<td align="right">5</td>
+<td align="right">6</td>
 </tr>
 <tr class="tablerow1">
 <td>
 <a href="#Warnings_STYLE">Dodgy code Warnings</a>
 </td>
-<td align="right">5</td>
+<td align="right">8</td>
 </tr>
 <tr class="tablerow0">
 <td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>22</b>
+<b>26</b>
 </td>
 </tr>
 </table>
@@ -381,6 +381,19 @@
 </tr>
 <tr class="tablerow1">
 <td width="20%" valign="top">
+<a href="#DM_STRING_TOSTRING">Method invokes toString() method on a String</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>groovyx.net.http.UriBuilder.forCookie(HttpCookie) invokes toString() method on a String<br/>
+<br/>
+<br/>In file UriBuilder.java,
+                        
+                                line 180<br/>In class groovyx.net.http.UriBuilder<br/>In method groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>At UriBuilder.java:[line 180]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
 <a href="#UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
 </td>
 <td width="10%" valign="top">Low</td>
@@ -393,7 +406,7 @@
                                 to 244<br/>In class groovyx.net.http.NonBlockingCookieStore<br/>In method groovyx.net.http.NonBlockingCookieStore.makeURI(String)<br/>At NonBlockingCookieStore.java:[lines 241-244]</p>
 </td>
 </tr>
-<tr class="tablerow0">
+<tr class="tablerow1">
 <td width="20%" valign="top">
 <a href="#URF_UNREAD_FIELD">Unread field</a>
 </td>
@@ -406,7 +419,7 @@
                                 line 36<br/>In class groovyx.net.http.CharSequenceInputStream<br/>Field groovyx.net.http.CharSequenceInputStream.charset<br/>At CharSequenceInputStream.java:[line 36]</p>
 </td>
 </tr>
-<tr class="tablerow1">
+<tr class="tablerow0">
 <td width="20%" valign="top">
 <a href="#URF_UNREAD_FIELD">Unread field</a>
 </td>
@@ -487,6 +500,45 @@
 </tr>
 <tr class="tablerow1">
 <td width="20%" valign="top">
+<a href="#NP_LOAD_OF_KNOWN_NULL_VALUE">Load of known null value</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Load of known null value in groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>
+<br/>
+<br/>In file UriBuilder.java,
+                        
+                                line 180<br/>In class groovyx.net.http.UriBuilder<br/>In method groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>Value loaded from fragment<br/>At UriBuilder.java:[line 180]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_LOAD_OF_KNOWN_NULL_VALUE">Load of known null value</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Load of known null value in groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>
+<br/>
+<br/>In file UriBuilder.java,
+                        
+                                line 180<br/>In class groovyx.net.http.UriBuilder<br/>In method groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>Value loaded from query<br/>At UriBuilder.java:[line 180]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_LOAD_OF_KNOWN_NULL_VALUE">Load of known null value</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Load of known null value in groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>
+<br/>
+<br/>In file UriBuilder.java,
+                        
+                                line 180<br/>In class groovyx.net.http.UriBuilder<br/>In method groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>Value loaded from userInfo<br/>At UriBuilder.java:[line 180]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
 <a href="#XFB_XML_FACTORY_BYPASS">Method directly allocates a specific implementation of xml interfaces</a>
 </td>
 <td width="10%" valign="top">Low</td>
@@ -561,6 +613,18 @@ there is no easy way to eliminate these false positives.
 <br/>
 </p>
 <h2>
+<a name="DM_STRING_TOSTRING">Method invokes toString() method on a String</a>
+</h2>
+
+  <p> Calling <code>String.toString()</code> is just a redundant operation.
+  Just use the String.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
 <a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
 </h2>
 
@@ -592,6 +656,21 @@ could be changed by malicious code or
 </h2>
 
   <p> The referenced methods have names that differ only by capitalization.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_LOAD_OF_KNOWN_NULL_VALUE">Load of known null value</a>
+</h2>
+
+  <p> The variable referenced at this point is known to be null due to an earlier
+   check against null. Although this is valid, it might be a mistake (perhaps you
+intended to refer to a different variable, or perhaps the earlier check to see if the
+variable is null should have been a check to see if it was non-null).
+</p>
 
     
 <p>
