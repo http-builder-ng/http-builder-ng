@@ -182,6 +182,78 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         ]
     }
 
+    def 'cookies are only set once'() {
+        setup:
+        ersatzServer.expectations {
+            get('/multicookie1').cookie('foo', 'bar').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+            get('/multicookie2').cookie('foo', 'bar').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+            get('/lots/of/path/elements/multicookie3').cookie('foo', 'bar').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+        
+        def http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            request.cookie 'foo', 'bar'
+        }
+
+        when:
+        http.get { request.uri.path = '/multicookie1' };
+        http.get { request.uri.path = '/multicookie2' };
+        http.get { request.uri.path = '/lots/of/path/elements/multicookie3' };
+        
+        then:
+        http.cookieManager.cookieStore.all.values().size() == 2;
+        ersatzServer.verify();
+    }
+
+    def 'server set cookies are honored'() {
+        setup:
+        ersatzServer.expectations {
+            get('/setkermit').called(2).responder {
+                content(OK_TEXT, TEXT_PLAIN)
+                cookie('kermit', 'frog; path=/showkermit')
+            }
+
+            get('/showkermit').cookie('kermit', 'frog').called(1).responder {
+                content(OK_TEXT, TEXT_PLAIN)
+                cookie('miss', 'piggy; path=/')
+                cookie('fozzy', 'bear; path=/some/deep/path')
+            }
+
+            get('/some/deep/path').cookie('miss', 'piggy').cookie('fozzy', 'bear').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        when:
+        def http = httpBuilder { request.uri = ersatzServer.httpUrl; }
+
+        then:
+        http.cookieManager.cookieStore.all.size() == 0;
+
+        when:
+        http.get { request.uri.path = '/setkermit'; }
+
+        then:
+        http.cookieManager.cookieStore.all.size() == 1;
+
+        when:
+        http.get { request.uri.path = '/showkermit'; }
+
+        then:
+        http.cookieManager.cookieStore.all.size() == 3;
+
+        when:
+        http.get { request.uri.path = '/some/deep/path'; }
+
+        then:
+        http.cookieManager.cookieStore.all.size() == 3;
+
+        when:
+        http.get { request.uri.path = '/setkermit'; } //verify that duplicate cookies are not created
+
+        then:
+        http.cookieManager.cookieStore.all.size() == 3;
+        ersatzServer.verify();
+    }
+
     @Unroll 'get(Class,Consumer): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {

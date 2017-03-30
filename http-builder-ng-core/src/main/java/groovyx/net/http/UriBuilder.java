@@ -19,6 +19,7 @@ import groovy.lang.GString;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -164,6 +165,24 @@ public abstract class UriBuilder {
      */
     public UriBuilder setPath(final String str) {
         return setPath(new GStringImpl(EMPTY, new String[]{str}));
+    }
+
+    public URI forCookie(final HttpCookie cookie) {
+        try {
+            final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
+            final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
+            final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
+            final String path = cookie.getPath();
+            final String query = null;
+            final String fragment = null;
+            final String userInfo = null;
+
+            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+            
+        }
+        catch(URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
