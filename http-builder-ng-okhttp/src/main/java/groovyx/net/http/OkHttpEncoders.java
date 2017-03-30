@@ -22,6 +22,7 @@ import okio.Buffer;
 import java.io.IOException;
 
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA;
+import static groovyx.net.http.ContentTypes.MULTIPART_MIXED;
 import static groovyx.net.http.EmbeddedEncoder.encode;
 import static okhttp3.MediaType.parse;
 import static okhttp3.RequestBody.create;
@@ -50,7 +51,7 @@ public class OkHttpEncoders {
             }
 
             final String contentType = request.actualContentType();
-            if (!contentType.equals(MULTIPART_FORMDATA.getAt(0))) {
+            if (!(contentType.equals(MULTIPART_FORMDATA.getAt(0)) || contentType.equals(MULTIPART_MIXED.getAt(0)))) {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 

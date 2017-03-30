@@ -68,5 +68,4 @@ class JavaHttpPostSpec extends HttpPostTestKit implements UsesJavaClient {
         where:
         proto << ['HTTP', 'HTTPS']
     }
-
 }

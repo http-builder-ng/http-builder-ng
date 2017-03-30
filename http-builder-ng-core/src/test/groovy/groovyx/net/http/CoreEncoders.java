@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package groovyx.net.http;
 
 import javax.activation.DataHandler;
@@ -7,6 +22,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import java.io.*;
 
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA;
+import static groovyx.net.http.ContentTypes.MULTIPART_MIXED;
 import static java.lang.String.format;
 
 /**
@@ -16,8 +33,6 @@ import static java.lang.String.format;
  * See the {@link MultipartContent} class documentation for more configuration details.
  */
 public class CoreEncoders {
-
-    // TODO: test this encoder on Apache and OkHttp as an alternate encoder
 
     /**
      * Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class. Individual parts will be
@@ -36,7 +51,7 @@ public class CoreEncoders {
             }
 
             final String contentType = request.actualContentType();
-            if (!contentType.equals(ContentTypes.MULTIPART_FORMDATA.getAt(0))) {
+            if (!(contentType.equals(MULTIPART_FORMDATA.getAt(0)) || contentType.equals(MULTIPART_MIXED.getAt(0)))) {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 
