@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -278,7 +279,15 @@ public class OkHttpBuilder extends HttpBuilder {
 
         private List<Header<?>> populateHeaders() {
             final Headers headers = response.headers();
-            return headers.names().stream().map((Function<String, Header<?>>) name -> keyValue(name, headers.get(name))).collect(toList());
+            List<Header<?>> ret = new ArrayList<>();
+            for(String name : headers.names()) {
+                List<String> values = headers.values(name);
+                for(String value : values) {
+                    ret.add(keyValue(name, value));
+                }
+            }
+
+            return ret;
         }
 
         @Override

@@ -144,10 +144,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
 
             this.headers = new ArrayList<>(response.getAllHeaders().length);
-            addCookieStore(uri, headers);
             for (org.apache.http.Header header : response.getAllHeaders()) {
                 headers.add(Header.keyValue(header.getName(), header.getValue()));
             }
+
+            addCookieStore(uri, headers);
         }
 
         public InputStream getInputStream() {
