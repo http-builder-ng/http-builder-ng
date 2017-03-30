@@ -218,6 +218,24 @@ response content from the server). The displayed result will be something like:
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
 
+== HTTP Request Headers
+
+Custom HTTP request headers may be configured directly using the `request.headers` map in either the `configure` or request verb configuration closure,
+such as:
+
+[source,groovy]
+----
+import static groovyx.net.http.HttpBuilder.configure
+
+configure {
+    request.headers['Global-Header'] = 'header-for-all'
+}.post {
+    request.headers['Custom-Header'] = 'some-custom-value'
+}
+----
+
+These configured headers will be appended to the default request headers sent by the request (somewhat client-specific).
+
 == HTTP Response Headers
 
 HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into

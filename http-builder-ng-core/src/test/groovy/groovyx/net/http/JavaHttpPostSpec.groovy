@@ -15,9 +15,58 @@
  */
 package groovyx.net.http
 
+import com.stehno.ersatz.ContentType
+import com.stehno.ersatz.Decoders
+import com.stehno.ersatz.MultipartRequestContent
 import groovyx.net.http.tk.HttpPostTestKit
+import spock.lang.Unroll
+
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
+import static groovyx.net.http.MultipartContent.multipart
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 class JavaHttpPostSpec extends HttpPostTestKit implements UsesJavaClient {
 
-    // TODO: support and test multipart requests in Core client
+    @Unroll 'multipart request #proto'() {
+        setup:
+        ersatzServer.expectations {
+            post('/upload') {
+                decoder ContentType.MULTIPART_MIXED, Decoders.multipart
+                decoder TEXT_PLAIN, Decoders.utf8String
+
+                called(2)
+                protocol(proto)
+                body MultipartRequestContent.multipart {
+                    part 'alpha', 'some data'
+                    part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
+                }, ContentType.MULTIPART_MIXED
+                responds().content(OK_TEXT, TEXT_PLAIN)
+            }
+        }
+
+        def http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = "${serverUri(proto)}/upload"
+            request.contentType = MULTIPART_FORMDATA[0]
+            request.body = multipart {
+                field 'alpha', 'some data'
+                part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
+            }
+            request.encoder(MULTIPART_FORMDATA, CoreEncoders.&multipart)
+        }
+
+        expect:
+        http.post() == OK_TEXT
+
+        and:
+        http.postAsync().get() == OK_TEXT
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        proto << ['HTTP', 'HTTPS']
+    }
+
 }
