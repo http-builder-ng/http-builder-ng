@@ -25,6 +25,7 @@ import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
 
+import static com.stehno.ersatz.NoCookiesMatcher.noCookies
 import static groovyx.net.http.HttpVerb.HEAD
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
@@ -105,7 +106,7 @@ abstract class HttpHeadTestKit extends HttpMethodTestKit {
     @Unroll 'head(Consumer): #cookies'() {
         setup:
         ersatzServer.expectations {
-            head('/alpha').cookies(cookies).called(2).responder {
+            head('/alpha').cookies(cookies == null ? noCookies() : cookies).called(2).responder {
                 code 200
                 header 'X-Something', 'Testing'
             }
