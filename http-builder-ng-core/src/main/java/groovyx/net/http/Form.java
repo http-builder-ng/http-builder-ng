@@ -64,7 +64,7 @@ public class Form {
             return decode(tlBuffers.get().builder, charset);
         }
         catch(IOException e) {
-            throw new RuntimeException("Error in decoding form", e);
+            throw new TransportingException("Error in decoding form", e);
         }
     }
 
@@ -128,7 +128,7 @@ public class Form {
             return builder.substring(0, builder.length() -1);
         }
         catch(UnsupportedEncodingException e) {
-            throw new RuntimeException("Error in encoding form", e);
+            throw new TransportingException("Error in encoding form", e);
         }
     }
 }

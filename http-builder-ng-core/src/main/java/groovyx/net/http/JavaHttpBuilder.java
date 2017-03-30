@@ -46,22 +46,19 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
-
-        public Action(final ChainedHttpConfig requestConfig, final String verb) {
-            try {
-                this.requestConfig = requestConfig;
-                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-                this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
-                this.connection.setRequestMethod(verb);
-
-                if (cr.actualBody() != null) {
-                    this.connection.setDoOutput(true);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        boolean failed = false;
+        
+        public Action(final ChainedHttpConfig requestConfig, final String verb) throws IOException {
+            this.requestConfig = requestConfig;
+            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+            this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
+            this.connection.setRequestMethod(verb);
+            
+            if (cr.actualBody() != null) {
+                this.connection.setDoOutput(true);
             }
         }
-
+        
         private void addHeaders() {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
@@ -299,25 +296,38 @@ public class JavaHttpBuilder extends HttpBuilder {
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
+    
+    private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
+        try {
+            Action action = new Action(config, verb);
+            return action.execute();
+        }
+        catch(IOException ioe) {
+            return new TransportingException(ioe);
+        }
+        catch(TransportingException te) {
+            return te;
+        }
+    }
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "GET").execute();
+        return createAndExecute(requestConfig, "GET");
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "HEAD").execute();
+        return createAndExecute(requestConfig, "HEAD");
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "POST").execute();
+        return createAndExecute(requestConfig, "POST");
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "PUT").execute();
+        return createAndExecute(requestConfig, "PUT");
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "DELETE").execute();
+        return createAndExecute(requestConfig, "DELETE");
     }
 
     public Executor getExecutor() {

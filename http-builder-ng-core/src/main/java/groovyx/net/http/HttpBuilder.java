@@ -270,7 +270,7 @@ public abstract class HttpBuilder implements Closeable {
             }
         }
         catch(IOException ioe) {
-            throw new RuntimeException(ioe);
+            throw new TransportingException(ioe);
         }
 
         return tmp;

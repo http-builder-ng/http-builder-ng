@@ -46,8 +46,9 @@ class EmbeddedEncoder {
         public void toServer(final InputStream inputStream) {
             try {
                 bytes = IoUtils.streamToBytes(inputStream);
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to perform embedded encoding due to error: " + e.getMessage());
+            }
+            catch(IOException e) {
+                throw new TransportingException("Unable to perform embedded encoding", e);
             }
         }
 

@@ -526,7 +526,7 @@ public class HttpConfigs {
                 return this;
             }
             catch(IOException ioe) {
-                throw new RuntimeException();
+                throw new RuntimeException("Could not configure main engine", ioe);
             }
         }
 
