@@ -218,6 +218,24 @@ response content from the server). The displayed result will be something like:
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
 
+== HTTP Request Headers
+
+Custom HTTP request headers may be configured directly using the `request.headers` map in either the `configure` or request verb configuration closure,
+such as:
+
+[source,groovy]
+----
+import static groovyx.net.http.HttpBuilder.configure
+
+configure {
+    request.headers['Global-Header'] = 'header-for-all'
+}.post {
+    request.headers['Custom-Header'] = 'some-custom-value'
+}
+----
+
+These configured headers will be appended to the default request headers sent by the request (somewhat client-specific).
+
 == HTTP Response Headers
 
 HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into
@@ -568,7 +586,7 @@ Notice that the encoder is specific to the `OkHttpBuilder`, which we are using i
 
 The available multipart encoders:
 
-* `groovyx.net.http.MultipartEncoder` - a generic minimalistic multipart encoder for use with the core Java client or any of the others.
+* `groovyx.net.http.CoreEncoders::multipart` - a generic minimalistic multipart encoder for use with the core Java client or any of the others (requires the JavaMail API).
 * `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
 * `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
 

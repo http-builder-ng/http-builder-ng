@@ -52,14 +52,16 @@ subprojects {
             'org.codehaus.groovy:groovy-all:2.4.8',
             'org.jsoup:jsoup:1.9.2',
             'net.sourceforge.nekohtml:nekohtml:1.9.22',
-            'com.fasterxml.jackson.core:jackson-databind:2.8.1'
+            'com.fasterxml.jackson.core:jackson-databind:2.8.1',
+            'javax.mail:javax.mail-api:1.5.6',
+            'com.sun.mail:javax.mail:1.5.6'
         ].each { opt ->
             compileOnly(opt)
             testCompile(opt)
         }
 
         testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-        testCompile 'com.stehno.ersatz:ersatz:1.1.0'
+        testCompile 'com.stehno.ersatz:ersatz:1.2.0'
         testCompile 'com.stehno.vanilla:vanilla-core:0.5.1'
 
         asciidoclet 'org.asciidoctor:asciidoclet:1.+'

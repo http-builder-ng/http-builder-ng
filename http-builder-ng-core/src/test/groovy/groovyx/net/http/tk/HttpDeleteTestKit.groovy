@@ -27,6 +27,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.*
+import static com.stehno.ersatz.NoCookiesMatcher.noCookies
 import static groovyx.net.http.HttpVerb.DELETE
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
@@ -144,7 +145,7 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
     @Unroll 'delete(Class,Closure): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {
-            delete('/delta').cookies(cookies).called(2).responder {
+            delete('/delta').cookies(cookies == null ? noCookies() : cookies).called(2).responder {
                 encoder 'text/date', String, Encoders.text
                 content('2016.08.25 14:43', 'text/date')
             }
@@ -185,7 +186,7 @@ abstract class HttpDeleteTestKit extends HttpMethodTestKit {
     @Unroll 'delete(Class,Consumer): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {
-            delete('/delta').cookies(cookies).called(2).responder {
+            delete('/delta').cookies(cookies == null ? noCookies() : cookies).called(2).responder {
                 encoder 'text/date', String, Encoders.text
                 content('2016.08.25 14:43', 'text/date')
             }

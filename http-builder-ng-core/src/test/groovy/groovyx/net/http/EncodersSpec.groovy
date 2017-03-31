@@ -24,8 +24,10 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
+import static com.stehno.ersatz.ContentType.MULTIPART_MIXED
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
+import static groovyx.net.http.ContentTypes.MULTIPART_MIXED
 import static groovyx.net.http.ContentTypes.TEXT
 import static org.hamcrest.Matchers.equalTo
 
@@ -38,18 +40,18 @@ class EncodersSpec extends Specification {
     def 'multipart'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
+            request.encoder(MULTIPART_FORMDATA, CoreEncoders.&multipart)
             request.contentType = MULTIPART_FORMDATA[0]
         }
 
         ersatzServer.expectations {
             post('/multi') {
-                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder ContentType.MULTIPART_MIXED, Decoders.multipart
                 decoder TEXT_PLAIN, Decoders.utf8String
                 body MultipartRequestContent.multipart {
                     part 'alpha', 'one'
                     part 'bravo', 'two'
-                }, ContentType.MULTIPART_FORMDATA
+                }, ContentType.MULTIPART_MIXED
                 called 1
                 responds().content('ok', TEXT_PLAIN)
             }
@@ -71,8 +73,8 @@ class EncodersSpec extends Specification {
     def 'multipart: file (path)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
-            request.contentType = MULTIPART_FORMDATA[0]
+            request.encoder(MULTIPART_MIXED, CoreEncoders.&multipart)
+            request.contentType = MULTIPART_MIXED[0]
         }
 
         def (File fileA, File fileB) = setupMultipartFileExpectations()
@@ -93,8 +95,8 @@ class EncodersSpec extends Specification {
     def 'multipart: file (bytes)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
-            request.contentType = MULTIPART_FORMDATA[0]
+            request.encoder(MULTIPART_MIXED, CoreEncoders.&multipart)
+            request.contentType = MULTIPART_MIXED[0]
         }
 
         def (File fileA, File fileB) = setupMultipartFileExpectations()
@@ -115,8 +117,8 @@ class EncodersSpec extends Specification {
     def 'multipart: file (string)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
-            request.contentType = MULTIPART_FORMDATA[0]
+            request.encoder(MULTIPART_MIXED, CoreEncoders.&multipart)
+            request.contentType = MULTIPART_MIXED[0]
         }
 
         def (File fileA, File fileB) = setupMultipartFileExpectations()
@@ -137,8 +139,8 @@ class EncodersSpec extends Specification {
     def 'multipart: file (stream)'() {
         setup:
         http = JavaHttpBuilder.configure {
-            request.encoder(MULTIPART_FORMDATA, new MultipartEncoder())
-            request.contentType = MULTIPART_FORMDATA[0]
+            request.encoder(MULTIPART_MIXED, CoreEncoders.&multipart)
+            request.contentType = MULTIPART_MIXED[0]
         }
 
         def (File fileA, File fileB) = setupMultipartFileExpectations()
@@ -165,12 +167,12 @@ class EncodersSpec extends Specification {
 
         ersatzServer.expectations {
             post('/multi') {
-                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                decoder ContentType.MULTIPART_MIXED, Decoders.multipart
                 decoder TEXT_PLAIN, Decoders.utf8String
                 body MultipartRequestContent.multipart {
                     part 'filea', 'file-a.txt', TEXT_PLAIN, 'some-a-content'
                     part 'fileb', 'file-b.xtx', TEXT_PLAIN, 'some-b-content'
-                }, ContentType.MULTIPART_FORMDATA
+                }, ContentType.MULTIPART_MIXED
                 called equalTo(1)
                 responds().content('ok', TEXT_PLAIN)
             }
