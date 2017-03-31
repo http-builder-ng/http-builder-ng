@@ -21,6 +21,7 @@ import groovyx.net.http.ChainedHttpConfig;
 import groovyx.net.http.FromServer;
 import groovyx.net.http.HttpConfig;
 import groovyx.net.http.ToServer;
+import groovyx.net.http.TransportingException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -100,7 +101,7 @@ public class Csv {
             final Csv.Context ctx = (Csv.Context) config.actualContext(fromServer.getContentType(), Csv.Context.ID);
             return ctx.makeReader(fromServer.getReader()).readAll();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TransportingException(e);
         }
     }
 

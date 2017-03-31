@@ -38,6 +38,7 @@ import java.net.CookieStore;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.singletonList;
@@ -252,7 +253,7 @@ public abstract class HttpBuilder implements Closeable {
         return cookieManager;
     }
 
-    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
+    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
         Map<String,String> tmp = new HashMap<>();
 
         try {

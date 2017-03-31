@@ -73,8 +73,9 @@ public class MultipartEncoder implements BiConsumer<ChainedHttpConfig, ToServer>
 
             buffer.write(string(BOUNDARY_MARK, content.boundary(), BOUNDARY_MARK));
 
-        } catch (IOException e) {
-            throw new RuntimeException("Problem while encoding multipart content: " + e.getMessage());
+        }
+        catch (IOException e) {
+            throw new TransportingException("Problem while encoding multipart content: " + e.getMessage(), e);
         }
 
         return new ByteArrayInputStream(buffer.toByteArray());

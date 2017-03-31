@@ -19,6 +19,7 @@ import groovyx.net.http.ChainedHttpConfig;
 import groovyx.net.http.ContentTypes;
 import groovyx.net.http.FromServer;
 import groovyx.net.http.HttpConfig;
+import groovyx.net.http.TransportingException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -65,8 +66,9 @@ public class Download {
     public static void toTempFile(final HttpConfig config, final String contentType) {
         try {
             toFile(config, contentType, File.createTempFile("tmp", ".tmp"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        }
+        catch(IOException ioe) {
+            throw new TransportingException(ioe);
         }
     }
 
@@ -120,7 +122,7 @@ public class Download {
             transfer(fs.getInputStream(), new FileOutputStream(file), true);
             return file;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TransportingException(e);
         }
     }
 

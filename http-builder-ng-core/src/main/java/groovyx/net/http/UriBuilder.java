@@ -167,22 +167,16 @@ public abstract class UriBuilder {
         return setPath(new GStringImpl(EMPTY, new String[]{str}));
     }
 
-    public URI forCookie(final HttpCookie cookie) {
-        try {
-            final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
-            final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
-            final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
-            final String path = cookie.getPath();
-            final String query = null;
-            final String fragment = null;
-            final String userInfo = null;
+    public URI forCookie(final HttpCookie cookie) throws URISyntaxException {
+        final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
+        final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
+        final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
+        final String path = cookie.getPath();
+        final String query = null;
+        final String fragment = null;
+        final String userInfo = null;
 
-            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
-            
-        }
-        catch(URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
     }
 
     /**
@@ -190,21 +184,16 @@ public abstract class UriBuilder {
      *
      * @return the generated `URI` representing the parts contained in the builder
      */
-    public URI toURI() {
-        try {
-            final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
-            final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
-            final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
-            final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
-            final String query = populateQueryString(traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::nonEmptyMap));
-            final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
-            final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
-
-            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
-
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+    public URI toURI() throws URISyntaxException {
+        final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
+        final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
+        final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
+        final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
+        final String query = populateQueryString(traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::nonEmptyMap));
+        final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
+        final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
+        
+        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
     }
 
     private static final Object[] EMPTY = new Object[0];
@@ -245,7 +234,10 @@ public abstract class UriBuilder {
 
             setFragment(uri.getFragment());
             setUserInfo(uri.getUserInfo());
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
+            //this seems o.k. to just convert to a runtime exception,
+            //we started with a valid URI, so this should never happen.
             throw new RuntimeException(e);
         }
     }
