@@ -617,11 +617,13 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         boolean caughtIt;
+        boolean caughtCorrectType;
         
         HttpBuilder http = httpBuilder {
             request.uri = ersatzServer.httpUrl;
             
             response.exception { t ->
+                caughtCorrectType = (t instanceof IOException)
                 caughtIt = true;
                 return null;
             }
@@ -640,6 +642,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         then:
         caughtIt;
+        caughtCorrectType;
         noExceptionThrown();
     }
 
@@ -650,6 +653,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         boolean caughtIt;
+        boolean caughtCorrectType;
         
         HttpBuilder http = httpBuilder {
             request.uri = ersatzServer.httpUrl;
@@ -657,6 +661,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             response.exception(new Function<Throwable,Object>() {
                                    @Override public Object apply(Throwable t) {
                                        caughtIt = true;
+                                       caughtCorrectType = (t instanceof IOException);
                                        return null;
                                    }
                                });
@@ -675,6 +680,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         then:
         caughtIt;
+        caughtCorrectType;
         noExceptionThrown();
     }
 
@@ -714,6 +720,51 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         then:
         requestCaughtIt;
         !globalCaughtIt;
+        noExceptionThrown();
+    }
+
+    def 'handles basic errors'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        when:
+        boolean handledCorrectly = false;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            request.uri.host = 'www.mkdfiwiejglejrligjsldkflwngunwfnkwemfiwefdsf.com'
+            
+            response.exception { t ->
+                handledCorrectly = (t instanceof java.net.UnknownHostException);
+                return null;
+            }
+        }
+
+        http.get();
+
+        then:
+        handledCorrectly;
+        noExceptionThrown();
+
+        when:
+        handledCorrectly = false;
+        
+        http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            request.uri.host = 'www.g o o g l e.com'
+            
+            response.exception { t ->
+                handledCorrectly = (t instanceof java.net.URISyntaxException);
+                return null;
+            }
+        }
+
+        http.get();
+
+        then:
+        handledCorrectly;
         noExceptionThrown();
     }
 }

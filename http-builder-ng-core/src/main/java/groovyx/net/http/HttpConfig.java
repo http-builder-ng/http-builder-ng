@@ -795,10 +795,73 @@ public interface HttpConfig {
          */
         void failure(BiFunction<FromServer, Object, ?> function);
 
+        /**
+         * Configures the execution of the provided closure to handle exceptions during request/response processing. This is
+         * different from a failure condition because there is no response, no status code, no headers, etc. The `closure` will be called with
+         * the best guess as to what was the original exception. Some attempts will be made to unwrap exceptions that are of type
+         * {@link groovyx.net.http.TransportingException} or {@link java.lang.reflect.UndeclaredThrowableException}. The `closure`
+         * should have a single {@link java.lang.Throwable} argument.
+         *
+         * The value returned from the closure will be used as the result value of the request. Since there is no response
+         * body for the closure to process, this usually means that the closure should do one of three things: re-throw the exception or 
+         * throw a wrapped version of the exception, return null, or return a predefined empty value.
+         *
+         * [source,groovy]
+         * ----
+         * def http = HttpBuilder.configure {
+         *      request.uri = 'http://localhost:10101'
+         * }
+         *
+         * http.get {
+         *      request.uri.path = '/foo'
+         *      response.exception { Throwable t ->
+         *          t.printStackTrace();
+         *          throw new RuntimeException(t);
+         *      }
+         * }
+         * ----
+         *
+         * The default exception method wraps the exception in a {@link java.lang.RuntimeException} (if it is
+         * not already of that type) and rethrows.
+         *
+         * @param closure the closure to be executed
+         */
         default void exception(Closure<?> closure) {
             exception(new ClosureFunction<>(closure));
         }
 
+        /**
+         * Configures the execution of the provided `function` to handle exceptions during request/response processing. This is
+         * different from a failure condition because there is no response, no status code, no headers, etc. The `function` will be called with
+         * the best guess as to what was the original exception. Some attempts will be made to unwrap exceptions that are of type
+         * {@link groovyx.net.http.TransportingException} or {@link java.lang.reflect.UndeclaredThrowableException}.
+         *
+         * The value returned from the function will be used as the result value of the request. Since there is no response
+         * body for the function to process, this usually means that the function should do one of three things: re-throw the exception or 
+         * throw a wrapped version of the exception, return null, or return a predefined empty value.
+
+         * This method is generally used for Java-specific configuration.
+         *
+         * [source,java]
+         * ----
+         * HttpBuilder http = HttpBuilder.configure(config -> {
+         *     config.getRequest().setUri("http://localhost:10101");
+         * });
+         * http.get( config -> {
+         *     config.getRequest().getUri().setPath("/foo");
+         *     config.getResponse().exception((t) -> {
+         *          t.printStackTrace();
+         *          throw new RuntimeException(t);
+         *     });
+         * });
+
+         * ----
+         *
+         * The built in exception method wraps the exception in a {@link java.lang.RuntimeException} (if it is
+         * not already of that type) and rethrows.
+         *
+         * @param function the function to be executed
+         */
         void exception(Function<Throwable,?> function);
         
         /**

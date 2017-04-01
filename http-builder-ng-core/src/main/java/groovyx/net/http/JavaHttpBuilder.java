@@ -298,11 +298,8 @@ public class JavaHttpBuilder extends HttpBuilder {
             Action action = new Action(config, verb);
             return action.execute();
         }
-        catch(TransportingException te) {
-            return config.getChainedResponse().actualException().apply(te.getCause());
-        }
         catch(Exception e) {
-            return config.getChainedResponse().actualException().apply(e);
+            return handleException(config.getChainedResponse(), e);
         }
     }
 

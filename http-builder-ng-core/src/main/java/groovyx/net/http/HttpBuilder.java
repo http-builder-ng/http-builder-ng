@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import org.codehaus.groovy.runtime.MethodClosure;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -1533,6 +1534,28 @@ public abstract class HttpBuilder implements Closeable {
         configuration.accept(myConfig);
         myConfig.getChainedResponse().setType(type);
         return myConfig;
+    }
+
+    public static Throwable findCause(final Exception e) {
+        if(e instanceof TransportingException) {
+            return e.getCause();
+        }
+        else if(e instanceof UndeclaredThrowableException) {
+            final UndeclaredThrowableException ute = (UndeclaredThrowableException) e;
+            if(ute.getCause() != null) {
+                return ute.getCause();
+            }
+            else {
+                return e;
+            }
+        }
+        else {
+            return e;
+        }
+    }
+    
+    protected Object handleException(final ChainedHttpConfig.ChainedResponse cr, final Exception e) {
+        return cr.actualException().apply(findCause(e));
     }
 
     protected static class ResponseHandlerFunction implements BiFunction<ChainedHttpConfig, FromServer, Object> {

@@ -241,11 +241,8 @@ public class OkHttpBuilder extends HttpBuilder {
                 throw ioe; //re-throw, close has happened
             }
         }
-        catch(TransportingException te) {
-            return chainedConfig.getChainedResponse().actualException().apply(te.getCause());
-        }
         catch(Exception e) {
-            return chainedConfig.getChainedResponse().actualException().apply(e);
+            return handleException(chainedConfig.getChainedResponse(), e);
         }
     }
 

@@ -360,11 +360,8 @@ public class ApacheHttpBuilder extends HttpBuilder {
             
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
         }
-        catch(TransportingException te) {
-            return requestConfig.getChainedResponse().actualException().apply(te.getCause());
-        }
         catch(Exception e) {
-            return requestConfig.getChainedResponse().actualException().apply(e);
+            return handleException(requestConfig.getChainedResponse(), e);
         }
     }
 
