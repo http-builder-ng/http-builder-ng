@@ -25,6 +25,7 @@ import okhttp3.*;
 import okio.BufferedSink;
 
 import javax.net.ssl.SSLContext;
+import java.net.URISyntaxException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -152,61 +153,29 @@ public class OkHttpBuilder extends HttpBuilder {
 
     @Override
     protected Object doGet(final ChainedHttpConfig chainedConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        final Request.Builder requestBuilder = new Request.Builder().get().url(HttpUrl.get(cr.getUri().toURI()));
-
-        applyHeaders(requestBuilder, cr);
-        applyAuth(requestBuilder, chainedConfig);
-
-        return execute(requestBuilder, chainedConfig);
+        return execute((url) -> new Request.Builder().get().url(url), chainedConfig);
     }
 
     @Override
     protected Object doHead(final ChainedHttpConfig chainedConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        final Request.Builder requestBuilder = new Request.Builder().head().url(HttpUrl.get(cr.getUri().toURI()));
-
-        applyHeaders(requestBuilder, cr);
-        applyAuth(requestBuilder, chainedConfig);
-
-        return execute(requestBuilder, chainedConfig);
+        return execute((url) -> new Request.Builder().head().url(url), chainedConfig);
     }
 
     @Override
     protected Object doPost(final ChainedHttpConfig chainedConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        final Request.Builder requestBuilder = new Request.Builder();
-
-        requestBuilder.post(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
-
-        applyHeaders(requestBuilder, cr);
-        applyAuth(requestBuilder, chainedConfig);
-
-        return execute(requestBuilder, chainedConfig);
+        return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),
+                       chainedConfig);
     }
 
     @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        final Request.Builder requestBuilder = new Request.Builder();
-
-        requestBuilder.put(resolveRequestBody(chainedConfig, cr)).url(HttpUrl.get(cr.getUri().toURI()));
-
-        applyHeaders(requestBuilder, cr);
-        applyAuth(requestBuilder, chainedConfig);
-
-        return execute(requestBuilder, chainedConfig);
+        return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),
+                       chainedConfig);
     }
 
     @Override
     protected Object doDelete(final ChainedHttpConfig chainedConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        final Request.Builder requestBuilder = new Request.Builder().delete().url(HttpUrl.get(cr.getUri().toURI()));
-
-        applyHeaders(requestBuilder, cr);
-        applyAuth(requestBuilder, chainedConfig);
-
-        return execute(requestBuilder, chainedConfig);
+        return execute((url) -> new Request.Builder().delete().url(url), chainedConfig);
     }
 
     @Override
@@ -214,7 +183,8 @@ public class OkHttpBuilder extends HttpBuilder {
         // does nothing
     }
 
-    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig, ChainedHttpConfig.ChainedRequest cr) {
+    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig) {
+        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
         RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), "");
         if (cr.actualBody() != null) {
             final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);
@@ -225,7 +195,7 @@ public class OkHttpBuilder extends HttpBuilder {
         return body;
     }
 
-    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) {
+    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
         }
@@ -253,14 +223,29 @@ public class OkHttpBuilder extends HttpBuilder {
         }
     }
 
-    private Object execute(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
-        try (Response response = client.newCall(requestBuilder.build()).execute()) {
-            return HANDLER_FUNCTION.apply(
-                chainedConfig,
-                new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response)
-            );
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+    private Object execute(final Function<HttpUrl,Request.Builder> makeBuilder, final ChainedHttpConfig chainedConfig) {
+        try {
+            final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
+            final URI uri = cr.getUri().toURI();
+            final HttpUrl httpUrl = HttpUrl.get(uri);
+            final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);
+            
+            applyHeaders(requestBuilder, cr);
+            applyAuth(requestBuilder, chainedConfig);
+            
+            try(Response response = client.newCall(requestBuilder.build()).execute()) {
+                return HANDLER_FUNCTION.apply(chainedConfig,
+                                              new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
+            }
+            catch(IOException ioe) {
+                throw ioe; //re-throw, close has happened
+            }
+        }
+        catch(TransportingException te) {
+            return chainedConfig.getChainedResponse().actualException().apply(te.getCause());
+        }
+        catch(Exception e) {
+            return chainedConfig.getChainedResponse().actualException().apply(e);
         }
     }
 

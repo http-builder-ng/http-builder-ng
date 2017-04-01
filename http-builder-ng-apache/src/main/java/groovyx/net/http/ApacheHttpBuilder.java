@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -238,13 +239,15 @@ public class ApacheHttpBuilder extends HttpBuilder {
     private class Handler implements ResponseHandler<Object> {
 
         private final ChainedHttpConfig requestConfig;
-
-        public Handler(final ChainedHttpConfig config) {
-            this.requestConfig = config;
+        private final URI theUri;
+        
+        public Handler(final ChainedHttpConfig requestConfig) throws URISyntaxException {
+            this.requestConfig = requestConfig;
+            this.theUri = requestConfig.getChainedRequest().getUri().toURI();
         }
 
         public Object handleResponse(final HttpResponse response) {
-            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(requestConfig.getChainedRequest().getUri().toURI(), response));
+            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(theUri, response));
         }
     }
 
@@ -324,7 +327,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         basicAuth(c, auth, uri);
     }
 
-    private HttpClientContext context(final ChainedHttpConfig requestConfig) {
+    private HttpClientContext context(final ChainedHttpConfig requestConfig) throws URISyntaxException {
         final HttpClientContext c = HttpClientContext.create();
         final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
         final HttpConfig.Auth auth = cr.actualAuth();
@@ -341,11 +344,27 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return c;
     }
 
-    private Object exec(final HttpUriRequest request, final ChainedHttpConfig requestConfig) {
+    private <T extends HttpUriRequest> Object exec(final ChainedHttpConfig requestConfig,
+                                                   final Function<URI, T> constructor) {
+        
         try {
+            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+            final URI theUri = cr.getUri().toURI();
+            final T request = constructor.apply(theUri);
+            addHeaders(cr, request);
+            if((request instanceof HttpEntityEnclosingRequest) && cr.actualBody() != null) {
+                final HttpEntity entity = entity(requestConfig);
+                ((HttpEntityEnclosingRequest) request).setEntity(entity);
+                request.setHeader(entity.getContentType());
+            }
+            
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+        }
+        catch(TransportingException te) {
+            return requestConfig.getChainedResponse().actualException().apply(te.getCause());
+        }
+        catch(Exception e) {
+            return requestConfig.getChainedResponse().actualException().apply(e);
         }
     }
 
@@ -355,7 +374,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return ats;
     }
 
-    private <T extends HttpUriRequest> T addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) {
+    private <T extends HttpUriRequest> void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
         }
@@ -368,46 +387,25 @@ public class ApacheHttpBuilder extends HttpBuilder {
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
             message.addHeader(e.getKey(), e.getValue());
         }
-
-        return message;
     }
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        return exec(addHeaders(cr, new HttpGet(cr.getUri().toURI())), requestConfig);
+        return exec(requestConfig, HttpGet::new);
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        return exec(addHeaders(cr, new HttpHead(cr.getUri().toURI())), requestConfig);
+        return exec(requestConfig, HttpHead::new);
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        final HttpPost post = addHeaders(cr, new HttpPost(cr.getUri().toURI()));
-        if (cr.actualBody() != null) {
-            final HttpEntity entity = entity(requestConfig);
-            post.setEntity(entity);
-            post.setHeader(entity.getContentType());
-        }
-
-        return exec(post, requestConfig);
+        return exec(requestConfig, HttpPost::new);
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        final HttpPut put = addHeaders(cr, new HttpPut(cr.getUri().toURI()));
-        if (cr.actualBody() != null) {
-            final HttpEntity entity = entity(requestConfig);
-            put.setEntity(entity);
-            put.setHeader(entity.getContentType());
-        }
-
-        return exec(put, requestConfig);
+        return exec(requestConfig, HttpPut::new);
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-        return exec(addHeaders(cr, new HttpDelete(cr.getUri().toURI())), requestConfig);
+        return exec(requestConfig, HttpDelete::new);
     }
 }
