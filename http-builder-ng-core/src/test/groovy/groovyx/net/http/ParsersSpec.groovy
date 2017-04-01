@@ -22,6 +22,10 @@ import com.stehno.ersatz.MultipartResponseContent
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
+import javax.mail.BodyPart
+import javax.mail.internet.MimeMultipart
+import javax.mail.util.ByteArrayDataSource
+
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static com.stehno.ersatz.MultipartResponseContent.multipart
 import static groovyx.net.http.ContentTypes.MULTIPART_MIXED
@@ -73,5 +77,45 @@ class ParsersSpec extends Specification {
             This is some text content
             --abc123--
             '''.stripIndent().trim().readLines()
+    }
+
+    def 'multipart with JavaMail'() {
+        setup:
+        ersatzServer.expectations {
+            get('/download') {
+                responder {
+                    encoder ContentType.MULTIPART_MIXED, MultipartResponseContent, Encoders.multipart
+                    content multipart {
+                        boundary 'abc123'
+                        encoder TEXT_PLAIN, String, { o -> o as String }
+                        field 'alpha', 'bravo'
+                        part 'charlie', 'charlie.txt', TEXT_PLAIN, 'This is some text content'
+                    }
+                }
+            }
+        }.start()
+
+        when:
+        MimeMultipart mimeMultipart = JavaHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.get(MimeMultipart){
+            request.uri.path = '/download'
+            response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->
+                new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+            }
+        }
+
+        then:
+        mimeMultipart.count == 2
+
+        BodyPart part0 = mimeMultipart.getBodyPart(0)
+        part0.contentType == 'text/plain'
+        part0.getHeader('Content-Disposition')[0] == 'form-data; name="alpha"'
+        part0.content == 'bravo'
+
+        BodyPart part1 = mimeMultipart.getBodyPart(1)
+        part1.contentType == 'text/plain'
+        part1.getHeader('Content-Disposition')[0] == 'form-data; name="charlie"; filename="charlie.txt"'
+        part1.content == 'This is some text content'
     }
 }
