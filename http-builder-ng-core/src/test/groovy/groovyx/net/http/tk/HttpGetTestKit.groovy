@@ -609,4 +609,111 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         and:
         ersatzServer.verify()
     }
+
+    def 'exception handler works with closure'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean caughtIt;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            
+            response.exception { t ->
+                caughtIt = true;
+                return null;
+            }
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        caughtIt;
+        noExceptionThrown();
+    }
+
+    def 'exception handler works with function'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean caughtIt;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+
+            response.exception(new Function<Throwable,Object>() {
+                                   @Override public Object apply(Throwable t) {
+                                       caughtIt = true;
+                                       return null;
+                                   }
+                               });
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        caughtIt;
+        noExceptionThrown();
+    }
+
+    def 'exception handler chain works correctly'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean globalCaughtIt, requestCaughtIt;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            
+            response.exception { t ->
+                globalCaughtIt = true;
+                return null;
+            }
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+
+            response.exception { t ->
+                requestCaughtIt = true;
+                return null;
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        requestCaughtIt;
+        !globalCaughtIt;
+        noExceptionThrown();
+    }
 }

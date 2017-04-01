@@ -71,14 +71,17 @@ public class NativeHandlers {
     }
     
     /**
-     * Default exception handler. Throws a Throwable.
+     * Default exception handler. Throws a RuntimeException.
      *
      * @param thrown       The original thrown exception
      * @return Nothing will be returned, the return type is Object for interface consistency
-     * @throws Throwable
+     * @throws RuntimeException
      */
-    public static Object exception(final Throwable thrown) throws Throwable{
-        throw thrown;
+    public static Object exception(final Throwable thrown) {
+        final RuntimeException rethrow = ((thrown instanceof RuntimeException) ?
+                                          (RuntimeException) thrown :
+                                          new RuntimeException(thrown));
+        throw rethrow;
     }
 
     protected static class Expanding {
