@@ -20,6 +20,7 @@ import groovyx.net.http.ChainedHttpConfig;
 import groovyx.net.http.FromServer;
 import groovyx.net.http.NativeHandlers;
 import groovyx.net.http.ToServer;
+import groovyx.net.http.TransportingException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.xml.sax.SAXException;
@@ -58,7 +59,7 @@ public class Html {
             p.setEntityResolver(NativeHandlers.Parsers.catalogResolver);
             return new XmlSlurper(p).parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
         } catch (IOException | SAXException ex) {
-            throw new RuntimeException(ex);
+            throw new TransportingException(ex);
         }
     }
 
@@ -73,7 +74,7 @@ public class Html {
         try {
             return Jsoup.parse(fromServer.getInputStream(), fromServer.getCharset().name(), fromServer.getUri().toString());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TransportingException(e);
         }
     }
 

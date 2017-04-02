@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import static groovyx.net.http.ChainedHttpConfig.*;
 import static groovyx.net.http.Safe.ifClassIsLoaded;
@@ -392,6 +393,7 @@ public class HttpConfigs {
         private final Map<Integer,BiFunction<FromServer, Object, ?>> byCode = new LinkedHashMap<>();
         private BiFunction<FromServer, Object, ?> successHandler;
         private BiFunction<FromServer, Object, ?> failureHandler;
+        private Function<Throwable,?> exceptionHandler;
         private final Map<String,BiFunction<ChainedHttpConfig,FromServer,Object>> parserMap = new LinkedHashMap<>();
         private Class<?> type = Object.class;
         
@@ -415,12 +417,20 @@ public class HttpConfigs {
             return failureHandler;
         }
 
+        public Function<Throwable,?> getException() {
+            return exceptionHandler;
+        }
+
         public void success(final BiFunction<FromServer, Object, ?> val) {
             successHandler = val;
         }
 
         public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
+        }
+
+        public void exception(final Function<Throwable,?> val) {
+            exceptionHandler = val;
         }
 
         public Class<?> getType() {
@@ -438,6 +448,7 @@ public class HttpConfigs {
         private final ConcurrentMap<Integer,BiFunction<FromServer, Object, ?>> byCode = new ConcurrentHashMap<>();
         private volatile BiFunction<FromServer, Object, ?> successHandler;
         private volatile BiFunction<FromServer, Object, ?> failureHandler;
+        private volatile Function<Throwable,?> exceptionHandler;
         private volatile Class<?> type = Object.class;
 
         public ThreadSafeResponse(final ChainedResponse parent) {
@@ -460,12 +471,20 @@ public class HttpConfigs {
             return failureHandler;
         }
 
+        public Function<Throwable,?> getException() {
+            return exceptionHandler;
+        }
+
         public void success(final BiFunction<FromServer, Object, ?> val) {
             successHandler = val;
         }
 
         public void failure(final BiFunction<FromServer, Object, ?> val) {
             failureHandler = val;
+        }
+
+        public void exception(final Function<Throwable,?> val) {
+            this.exceptionHandler = val;
         }
 
         public Class<?> getType() {
@@ -507,7 +526,7 @@ public class HttpConfigs {
                 return this;
             }
             catch(IOException ioe) {
-                throw new RuntimeException();
+                throw new RuntimeException("Could not configure main engine", ioe);
             }
         }
 

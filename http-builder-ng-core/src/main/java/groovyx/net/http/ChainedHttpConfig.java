@@ -96,8 +96,14 @@ public interface ChainedHttpConfig extends HttpConfig {
 
         Class<?> getType();
 
+        Function<Throwable,?> getException();
+
         default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
             return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
+        }
+
+        default Function<Throwable,?> actualException() {
+            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getException(), Traverser::notNull);
         }
 
         default BiFunction<ChainedHttpConfig, FromServer, Object> actualParser(final String contentType) {

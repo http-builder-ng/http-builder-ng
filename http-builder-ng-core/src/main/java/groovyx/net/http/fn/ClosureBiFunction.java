@@ -30,7 +30,7 @@ import java.util.function.BiFunction;
  */
 public class ClosureBiFunction<IN_0, IN_1, OUT> implements BiFunction<IN_0, IN_1, OUT> {
 
-    private Closure<OUT> closure;
+    private final Closure<OUT> closure;
 
     public ClosureBiFunction(final Closure<OUT> closure) {
         this.closure = closure;

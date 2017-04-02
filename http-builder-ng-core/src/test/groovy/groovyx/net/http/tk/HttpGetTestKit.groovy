@@ -609,4 +609,162 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         and:
         ersatzServer.verify()
     }
+
+    def 'exception handler works with closure'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean caughtIt;
+        boolean caughtCorrectType;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            
+            response.exception { t ->
+                caughtCorrectType = (t instanceof IOException)
+                caughtIt = true;
+                return null;
+            }
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        caughtIt;
+        caughtCorrectType;
+        noExceptionThrown();
+    }
+
+    def 'exception handler works with function'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean caughtIt;
+        boolean caughtCorrectType;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+
+            response.exception(new Function<Throwable,Object>() {
+                                   @Override public Object apply(Throwable t) {
+                                       caughtIt = true;
+                                       caughtCorrectType = (t instanceof IOException);
+                                       return null;
+                                   }
+                               });
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        caughtIt;
+        caughtCorrectType;
+        noExceptionThrown();
+    }
+
+    def 'exception handler chain works correctly'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        boolean globalCaughtIt, requestCaughtIt;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            
+            response.exception { t ->
+                globalCaughtIt = true;
+                return null;
+            }
+        }
+        
+        def config = {
+            request.uri.path = '/exceptionally'
+
+            response.parser('text/plain') { config, fromServer ->
+                throw new IOException("couldn't parse it");
+            }
+
+            response.exception { t ->
+                requestCaughtIt = true;
+                return null;
+            }
+        }
+
+        when:
+        http.get(config);
+
+        then:
+        requestCaughtIt;
+        !globalCaughtIt;
+        noExceptionThrown();
+    }
+
+    def 'handles basic errors'() {
+        setup:
+        ersatzServer.expectations {
+            get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
+        }
+
+        when:
+        boolean handledCorrectly = false;
+        
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            request.uri.host = 'www.mkdfiwiejglejrligjsldkflwngunwfnkwemfiwefdsf.com'
+            
+            response.exception { t ->
+                handledCorrectly = (t instanceof java.net.UnknownHostException);
+                return null;
+            }
+        }
+
+        http.get();
+
+        then:
+        handledCorrectly;
+        noExceptionThrown();
+
+        when:
+        handledCorrectly = false;
+        
+        http = httpBuilder {
+            request.uri = ersatzServer.httpUrl;
+            request.uri.host = 'www.g o o g l e.com'
+            
+            response.exception { t ->
+                handledCorrectly = (t instanceof java.net.URISyntaxException);
+                return null;
+            }
+        }
+
+        http.get();
+
+        then:
+        handledCorrectly;
+        noExceptionThrown();
+    }
 }

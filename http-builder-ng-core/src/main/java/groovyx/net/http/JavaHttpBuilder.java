@@ -25,6 +25,7 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -46,23 +47,22 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
-
-        public Action(final ChainedHttpConfig requestConfig, final String verb) {
-            try {
-                this.requestConfig = requestConfig;
-                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-                this.connection = (HttpURLConnection) cr.getUri().toURI().toURL().openConnection();
-                this.connection.setRequestMethod(verb);
-
-                if (cr.actualBody() != null) {
-                    this.connection.setDoOutput(true);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        private final URI theUri;
+        boolean failed = false;
+        
+        public Action(final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
+            this.requestConfig = requestConfig;
+            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+            this.theUri = cr.getUri().toURI();
+            this.connection = (HttpURLConnection) theUri.toURL().openConnection();
+            this.connection.setRequestMethod(verb);
+            
+            if (cr.actualBody() != null) {
+                this.connection.setDoOutput(true);
             }
         }
-
-        private void addHeaders() {
+        
+        private void addHeaders() throws URISyntaxException {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
                 connection.addRequestProperty(entry.getKey(), entry.getValue());
@@ -92,16 +92,15 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
         }
 
-        private Object handleFromServer() {
-            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(requestConfig.getChainedRequest().getUri().toURI()));
+        private Object handleFromServer() throws IOException {
+            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(theUri));
         }
 
-        public Object execute() {
-            try {
-                return ThreadLocalAuth.with(getAuthInfo(), () -> {
+        public Object execute() throws Exception {
+            return ThreadLocalAuth.with(getAuthInfo(), () -> {
                     if (sslContext != null && connection instanceof HttpsURLConnection) {
                         HttpsURLConnection https = (HttpsURLConnection) connection;
-
+                        
                         if (hostnameVerifier != null) {
                             https.setHostnameVerifier(hostnameVerifier);
                         }
@@ -127,9 +126,6 @@ public class JavaHttpBuilder extends HttpBuilder {
 
                     return handleFromServer();
                 });
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         }
 
         protected class JavaToServer implements ToServer {
@@ -140,37 +136,42 @@ public class JavaHttpBuilder extends HttpBuilder {
                 this.inputStream = inputStream;
             }
 
-            void transfer() {
-                try {
-                    NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            void transfer() throws IOException {
+                NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);
             }
         }
 
         protected class JavaFromServer implements FromServer {
 
-            private InputStream is;
-            private boolean hasBody;
-            private List<Header<?>> headers;
-            private URI uri;
+            private final InputStream is;
+            private final List<Header<?>> headers;
+            private final URI uri;
+            private final int statusCode;
+            private final String message;
 
-            public JavaFromServer(final URI originalUri) {
+            public JavaFromServer(final URI originalUri) throws IOException {
                 this.uri = originalUri;
-                //TODO: detect non success and read from error stream instead
-                try {
-                    headers = populateHeaders();
-                    addCookieStore(uri, headers);
-                    BufferedInputStream bis = new BufferedInputStream(correctInputStream());
-                    bis.mark(0);
-                    hasBody = bis.read() != -1;
+                headers = populateHeaders();
+                addCookieStore(uri, headers);
+                statusCode = connection.getResponseCode();
+                message = connection.getResponseMessage();
+                BufferedInputStream bis = buffered(correctInputStream());
+                is = (bis == null) ? null : handleEncoding(bis);
+            }
+
+            private BufferedInputStream buffered(final InputStream is) throws IOException {
+                if(is == null) {
+                    return null;
+                }
+                
+                final BufferedInputStream bis = new BufferedInputStream(is);
+                bis.mark(0);
+                if(bis.read() == -1) {
+                    return null;
+                }
+                else {
                     bis.reset();
-                    is = handleEncoding(bis);
-                } catch (IOException e) {
-                    //swallow, no body is present?
-                    is = null;
-                    hasBody = false;
+                    return bis;
                 }
             }
 
@@ -227,27 +228,19 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             public final int getStatusCode() {
-                try {
-                    return connection.getResponseCode();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return statusCode;
             }
 
             public String getMessage() {
-                try {
-                    return connection.getResponseMessage();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                return message;
             }
-
+            
             public List<Header<?>> getHeaders() {
                 return headers;
             }
 
             public boolean getHasBody() {
-                return hasBody;
+                return is != null;
             }
 
             public URI getUri() {
@@ -299,25 +292,35 @@ public class JavaHttpBuilder extends HttpBuilder {
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
+    
+    private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
+        try {
+            Action action = new Action(config, verb);
+            return action.execute();
+        }
+        catch(Exception e) {
+            return handleException(config.getChainedResponse(), e);
+        }
+    }
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "GET").execute();
+        return createAndExecute(requestConfig, "GET");
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "HEAD").execute();
+        return createAndExecute(requestConfig, "HEAD");
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "POST").execute();
+        return createAndExecute(requestConfig, "POST");
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "PUT").execute();
+        return createAndExecute(requestConfig, "PUT");
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-        return new Action(requestConfig, "DELETE").execute();
+        return createAndExecute(requestConfig, "DELETE");
     }
 
     public Executor getExecutor() {
@@ -325,6 +328,6 @@ public class JavaHttpBuilder extends HttpBuilder {
     }
 
     public void close() {
-        throw new UnsupportedOperationException();
+        //do nothing, not needed
     }
 }
