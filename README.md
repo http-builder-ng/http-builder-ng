@@ -112,18 +112,20 @@ When ready to release a new version of the project, perform the following steps 
 
 Once the pull request has been merged into `master`, checkout the `master` branch and:
 
-1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site. You will need to provide (or have configured in your `HOME/.gradle/gradle.properties` file):
-  * `user` - the Bintray username
-  * `key` - the Bintray key/password
-  * `sonotypeUser` - the Sonotype username (from API key)
-  * `sonotypePass` - the Sonotype password (from API key) 
+1. Run `./gradlew release` which will check the documented project version against the project version, publish the artifact and the documentation web site. 
+   * You will need to provide (or have configured in your `HOME/.gradle/gradle.properties` file):
+     * `user` - the Bintray username
+     * `key` - the Bintray key/password
+     * `sonotypeUser` - the Sonotype username (from API key)
+     * `sonotypePass` - the Sonotype password (from API key)
+   * This step may take some time (on the order of a minute or two depending on server response times).
 2. Manually confirm the publication of the new artifact on the Bintray web site (or the publication will expire) - this step may no longer be needed, but verify anyway.
 3. Run `./gradlew verifyRelease`  to ensure that the artifacts and site have been published (optional but recommended).
 4. A Git tag should be created for the released version.
 
 The `development` branch may now be used for the next round of development work.
 
-> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task. This requirement may no longer be in place - TBD.
+> NOTE: Since the artifacts must be confirmed and the site may need some installation time, the `verifyRelease` task cannot be combined with the `release` task.
 
 ## Version Updates
 
