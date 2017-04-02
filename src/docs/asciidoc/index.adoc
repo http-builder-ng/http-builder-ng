@@ -218,7 +218,40 @@ response content from the server). The displayed result will be something like:
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
 
-== HTTP Request Headers
+== Exception Handling
+
+The main strategy for handling exceptions in the library, client implementations, or in the server response is:
+
+1. By default allow exceptions to propagate.
+2. If 1 is not feasible (because of interface restrictions, lambda restrictions, or too inconvenient), then exceptions should be wrapped in a `TransportingException` and re-thrown. The `TransportingException` is a signal to unwrap the exception before calling the exception handler.
+3. In the Builders wrap all request/response executions inside a try/catch block. In the catch block(s) call `HttpBuilder.handleException()` to handle the exception and use the value returned from that method as the return value for the request/response.
+
+This should ensure that the original exception thrown makes it to the exception handler. Handlers may be chained in a manner similar to the success/failure handlers.
+
+Exception handlers are configured on the `HttpConfig` configuration object using the `exception(Closure)` or `exception(Function<Throwable,?>)` method
+The value returned from the handler will be used as the result value of the request. Since there is no response body for the function to process, this
+usually means that the function should do one of three things: re-throw the exception or throw a wrapped version of the exception, return null, or
+return a predefined empty value.
+
+[source,java]
+----
+HttpBuilder http = HttpBuilder.configure(config -> {
+    config.getRequest().setUri("http://localhost:10101");
+});
+http.get( config -> {
+    config.getRequest().getUri().setPath("/foo");
+    config.getResponse().exception((t) -> {
+         t.printStackTrace();
+         throw new RuntimeException(t);
+    });
+});
+----
+
+The built in exception method wraps the exception in a `java.lang.RuntimeException (if it is not already of that type) and rethrows.
+
+== HTTP Headers
+
+=== Request
 
 Custom HTTP request headers may be configured directly using the `request.headers` map in either the `configure` or request verb configuration closure,
 such as:
@@ -236,7 +269,7 @@ configure {
 
 These configured headers will be appended to the default request headers sent by the request (somewhat client-specific).
 
-== HTTP Response Headers
+=== Response
 
 HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into
 more useful types, for example:
@@ -293,6 +326,79 @@ The parsing is provided using registered header implementations by header name. 
 * `X-Frame-Options`-> ValueOnly
 
 All headers not explicitly typed are simply `ValueOnly`. The definitive list is in the source code of the `groovyx.net.http.FromServer.Header` class.
+
+== Multipart Support
+
+=== Request
+
+HttpBuilder-NG supports multipart request content such as file uploads, with either the generic `MultipartEncoder` or one of the client-specific
+encoders. For example, the `OkHttpBuilder` may use the `OkHttpEncoders.&multipart` encoder:
+
+[source,groovy]
+----
+import groovyx.net.http.OkHttpBuilder
+import groovyx.net.http.*
+
+File someFile = // ...
+
+OkHttpBuilder.configure {
+    request.uri = 'http://example.com'
+}.post {
+    request.uri.path = '/upload'
+    request.contentType = 'multipart/form-data'
+    request.body = multipart {
+        field 'name', 'This is my file'
+        part 'file', 'myfile.txt', 'text/plain', someFile
+    }
+    request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
+}
+----
+
+which would `POST` the content of the file, `someFile` along with the specified `name` field to the server as a `multipart/form-data` request. The
+important parts of the example are the `multipart` DSL extension, which is provided by the `MultipartContent` class and aids in creating the upload
+content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
+Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
+
+The available multipart encoders:
+
+* `groovyx.net.http.CoreEncoders::multipart` - a generic minimalistic multipart encoder for use with the core Java client or any of the others (requires the JavaMail API).
+* `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
+* `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
+
+The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
+of a multipart content object must be specified beforehand.
+
+=== Response
+
+While multipart responses are not supported by browsers, there is no restriction on sending them from a server and likewise the underlying HTTP clients
+have no problem handling them. HttpBuilder-NG does not provide a built-in multipart response decoder; however, using the JavaMail API, it is quite
+simple to implement one:
+
+[source,groovy]
+----
+import javax.mail.BodyPart
+import javax.mail.internet.MimeMultipart
+import javax.mail.util.ByteArrayDataSource
+import groovy.net.http.JavaHttpBuilder
+
+MimeMultipart mimeMultipart = JavaHttpBuilder.configure {
+    request.uri = // your server url
+}.get(MimeMultipart){
+    request.uri.path = '/download'
+    response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->
+        new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+    }
+}
+----
+
+where the line:
+
+    new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+
+is where the JavaMail `MimeMultipart` class is used to parse the response content.
+
+The JavaMail API support is optional, and requires that the JavaMail API library be on the classpath. Take a look at the `ParsersSpec.groovy` test
+case for the full implementation and an alternate implementation without using the JavaMail API.
 
 == Client Library Integration
 
@@ -553,74 +659,3 @@ HttpBuilder.configure {
 
 which would `POST` the specified body data map as urlencoded data to the server. The key here is the use of the `NativeHandlers.Encoders.&form`
 encoder, which converts the provided map data into the encoded message before sending it to the server.
-
-=== Sending Multipart Data (POST)
-
-`HttpBuilder` supports multipart request content such as file uploads, with either the generic `MultipartEncoder` or one of the client-specific
-encoders. For example, the `OkHttpBuilder` could use the `OkHttpEncoders.&multipart` encoder:
-
-[source,groovy]
-----
-import groovyx.net.http.OkHttpBuilder
-import groovyx.net.http.*
-
-File someFile = // ...
-
-OkHttpBuilder.configure {
-    request.uri = 'http://example.com'
-}.post {
-    request.uri.path = '/upload'
-    request.contentType = 'multipart/form-data'
-    request.body = multipart {
-        field 'name', 'This is my file'
-        part 'file', 'myfile.txt', 'text/plain', someFile
-    }
-    request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
-}
-----
-
-which would `POST` the content of the file, `someFile` along with the specified `name` field to the server as a `multipart/form-data` request. The
-important parts of the example are the `multipart` DSL extension, which is provided by the `MultipartContent` class and aids in creating the upload
-content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
-Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
-
-The available multipart encoders:
-
-* `groovyx.net.http.CoreEncoders::multipart` - a generic minimalistic multipart encoder for use with the core Java client or any of the others (requires the JavaMail API).
-* `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
-* `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
-
-The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
-of a multipart content object must be specified beforehand.
-
-=== Decoding Multipart Response Data (GET)
-
-While multipart responses are not supported by browsers, there is no restriction on sending them from a server and likewise the underlying HTTP clients
-have no problem handling them. HttpBuilder-NG does not provide a built-in multipart response decoder; however, using the JavaMail API, it is quite
-simple to implement one:
-
-[source,groovy]
-----
-import javax.mail.BodyPart
-import javax.mail.internet.MimeMultipart
-import javax.mail.util.ByteArrayDataSource
-import groovy.net.http.JavaHttpBuilder
-
-MimeMultipart mimeMultipart = JavaHttpBuilder.configure {
-    request.uri = // your server url
-}.get(MimeMultipart){
-    request.uri.path = '/download'
-    response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->
-        new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
-    }
-}
-----
-
-where the line:
-
-    new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
-
-is where the JavaMail `MimeMultipart` class is used to parse the response content.
-
-The JavaMail API support is optional, and requires that the JavaMail API library be on the classpath. Take a look at the `ParsersSpec.groovy` test
-case for the full implementation and an alternate implementation without using the JavaMail API.

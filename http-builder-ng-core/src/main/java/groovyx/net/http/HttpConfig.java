@@ -854,7 +854,6 @@ public interface HttpConfig {
          *          throw new RuntimeException(t);
          *     });
          * });
-
          * ----
          *
          * The built in exception method wraps the exception in a {@link java.lang.RuntimeException} (if it is
