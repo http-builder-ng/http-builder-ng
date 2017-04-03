@@ -1,4 +1,4 @@
-# HttpBuilder NG, The Easy HTTP Client for Groovy (and Java)
+# HttpBuilder-NG: Easy HTTP Client for Groovy (and Java)
 
 [![Bintray - Core](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-core/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-core "Core Library")
 [![Bintray - Apache](https://api.bintray.com/packages/http-builder-ng/dclark/httpbuilder-ng-apache/images/download.svg)](https://bintray.com/http-builder-ng/dclark/httpbuilder-ng-apache "Apache Library")
@@ -16,9 +16,9 @@
 ## Quick Links for the Impatient
 
 * Site: https://http-builder-ng.github.io/http-builder-ng/
+* User Guide: https://http-builder-ng.github.io/http-builder-ng/asciidoc/html5/
+* JavaDocs: https://http-builder-ng.github.io/http-builder-ng/docs/javadoc/
 * Project: https://github.com/http-builder-ng/http-builder-ng
-* JavaDocs: https://http-builder-ng.github.io/http-builder-ng/javadoc/
-* User Guide: https://http-builder-ng.github.io/http-builder-ng/guide/html5/
 * Twitter: [@HttpBuilderNG](https://twitter.com/HttpBuilderNG)
 * StackOverflow: [httpbuilder-ng](http://stackoverflow.com/questions/tagged/httpbuilder-ng)
 
@@ -71,32 +71,47 @@ where `CLIENT` is replaced with the client library name (`core`, `apache`, or `o
 
 ## Build Instructions
 
-Http Builder NG is built using [gradle](https://gradle.org). To perform a complete build and install it locally use the following incantation:
+HttpBuilder-NG is built using [gradle](https://gradle.org). To perform a complete build run the following:
 
-`$ ./gradlew clean build install`
+    `./gradlew clean build`
 
-Test reports are not automatically generated; if you need a generated test report, add the `aggregateCoverage` task - it will be generated in the 
-root `build` directory.
+Test reports are not automatically generated; if you need a generated test report (aggregated or per-project) use:
+
+    `./gradlew clean build jacocoTestReport aggregateCoverage`
+    
+Note that the `aggregateCoverage` task may be dropped if the aggregated report is not desired. The reports will be generated in their respective `build/reports` directories, with the aggregated report being in the `build` directory of the project root.
 
 You can also generate the documentation using one of the following commands:
 
-    ./gradlew javadoc
-    ./gradlew asciidoctor
+* For the aggregated JavaDocs: `./gradlew aggregateJavaDoc`
+* For the project User Guide: `./gradlew asciidoctor`
 
-which will generate the API Documentation and User Guide respectively.
+Overall project documentation may also be generated as the project web site, using the `site` task, discussed in the next section.
 
-## Documentation Site
+## Documentation
 
-The project provides a unified documentation web site. You can build the documentation site with:
+The documentation for the project consists of:
+
+* [Web site](https://http-builder-ng.github.io/http-builder-ng/) - landing page and general introduction (`src/site` directory).
+* [User Guide](https://http-builder-ng.github.io/http-builder-ng/asciidoc/html5/) - getting started, examples and detailed usage information (`src/docs/asciidoc` directory).
+* [JavaDocs](https://http-builder-ng.github.io/http-builder-ng/docs/javadoc) - unified API documentation (throughout the codebase).
+* [Test](https://http-builder-ng.github.io/http-builder-ng/reports/allTests), [Coverage](https://http-builder-ng.github.io/http-builder-ng/reports/jacoco/aggregateCoverage/html) & Quality reports - misc build and quality reports
+
+The documentation is provided by a unified documentation web site, which can be generated using:
 
     ./gradlew site
-
-Once it is built, you can verify the generated content by running a local server:
+    
+This task uses the [com.stehno.gradle.site](http://cjstehno.github.io/gradle-site/) plugin to aggregate all the documentation sources and generate the project web site. Once it is built, you can verify the generated content by running a local server:
 
     ./gradlew startPreview
     
-which will start a preview server on a random port copied to your clipboard. Run `./gradlew stopPreview` to stop the server. Once you are ready to 
-publish your site, simply run the following task:
+which will start a preview server (see [com.stehno.gradle.webpreview](http://cjstehno.github.io/gradle-webpreview-plugin/)) on a random port copied to your clipboard. 
+
+To stop the preview server run:
+
+    ./gradlew stopPreview`
+
+Once you are ready to publish your site, simply run the following task:
 
     ./gradlew publishSite
     
