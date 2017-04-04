@@ -1,63 +1,6 @@
 
 == Request
 
-TODO: this section should have per-verb simple examples
-TODO: this section should have detailed descriptions of the request object and its components
-
-=== Headers
-
-Custom HTTP request headers may be configured directly using the `request.headers` map in either the `configure` or request verb configuration closure,
-such as:
-
-[source,groovy]
-----
-import static groovyx.net.http.HttpBuilder.configure
-
-configure {
-    request.headers['Global-Header'] = 'header-for-all'
-}.post {
-    request.headers['Custom-Header'] = 'some-custom-value'
-}
-----
-
-These configured headers will be appended to the default request headers sent by the request (somewhat client-specific).
-
-TODO: add information about custom header class usage (from response header section)
-
-=== Encoders
-
-Content encoders are used to convert request body content to a different format before handing off to the underlying HTTP client. An encoder is implemented as a
-`java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the provided implementation of the `ToServer` provides the data. See the `toServer(InputStream)`
-method.
-
-Encoders are provided in the request configuration (`HttpConfig.Request.encoder(String,BiConsumer<ChainedHttpConfig,ToServer>)`) mapped to a content type that they should be
-used to handle. Say we wanted to be able to send `Date` objects to the server in a specific format as the request body:
-
-[source,groovy]
-----
-import groovyx.net.http.HttpBuilder
-
-HttpBuilder.configure {
-    request.uri = 'http://locahost:1234/schedule'
-    request.body = new Date()
-    request.contentType = 'text/date-time'
-    request.encoder('text/date-time'){ ChainedHttpConfig config, ToServer req->
-        req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes))
-    }
-}.post()
-----
-
-Notice that a Groovy `Closure` is usable as a `BiConsumer` function. The `Date` object in the request is formatted as String, converted to bytes and pushed to the request
-`InputStream`.
-
-Some default encoders are provided:
-
-* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
-* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
-* TEXT (with no additional libraries required)
-* XML (without any additional libraries)
-
-Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
 
 === Multipart
 
