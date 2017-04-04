@@ -1,0 +1,176 @@
+
+== Configuration
+
+TODO: make sure this section describes the standard Java usage
+TODO: this section should have the basic request structure (point 1 from issue)
+
+The specific configuration options are discussed in the JavaDocs for the `https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpBuilder.html[HttpBuilder]`,
+`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpConfig.html[HttpConfig]` and
+`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpObjectConfig.html[HttpObjectConfig]` interfaces.
+
+There are three underlying client implementations, the default "core" implementation based on the core Java `HttpURLConnection` class, an implementation
+ based on the http://hc.apache.org/httpcomponents-client-ga/[Apache HttpComponents] client, and an implementation based on the http://square.github.io/okhttp/[OkHttp]
+ client library.
+
+The selection of a client implementation is specified using a factory function when configuring your `HttpBuilder` instance. For the default `HttpURLConnection`
+-based implementation use the `configure` methods without a factory `Function` or specify the desired client function, for example:
+
+[source,groovy]
+----
+HttpBuilder.configure()
+----
+
+or
+
+[source,groovy]
+----
+HttpBuilder.configure({ c -> new JavaHttpBuilder(c) })
+----
+
+For the Apache-based builder, you would use the `ApacheHttpBuilder` in the factory, as:
+
+[source,groovy]
+----
+HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
+----
+
+Assuming, of course, that you have configured the `http-builder-ng-apache` dependency in your project.
+
+Alternately, each of the client implementations provides their own `configure` methods using themselves as the factory, for the Apache client, you
+would use:
+
+[source,groovy]
+----
+HttpBuilder http = ApacheHttpBuilder.configure {
+    // configuration...
+}
+----
+
+Notice that the `configure` method is called on the `ApacheHttpBuilder` rather than the core `HttpBuilder` class. This allows a simpler configuration
+of the client factory to be used.
+
+=== Authentication
+
+There are two methods of authentication supported: BASIC and DIGEST.
+
+==== BASIC
+
+https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC Authentication] is supported via the `HttpConfig.Request.Auth` interface:
+
+[source,groovy]
+----
+import groovyx.net.http.HttpBuilder
+
+def http = HttpBuilder.configure {
+    request.uri = 'http://localhost:10101'
+    request.auth.basic 'admin', 'myp@$$w0rd'
+}
+----
+
+There is nothing more to do on the client side.
+
+==== DIGEST
+
+https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST Authentication] is supported via the `HttpConfig.Request.Auth` interface:
+
+[source,groovy]
+----
+import groovyx.net.http.HttpBuilder
+
+def http = HttpBuilder.configure {
+    request.uri = 'http://localhost:10101'
+    request.auth.digest 'admin', 'myp@$$w0rd'
+}
+----
+
+There is nothing more to do on the client side.
+
+WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure()` method, not in the individual verb configuration
+closures - this is due to how the client configures DIGEST support internally.
+
+=== Interceptors
+
+The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response
+interceptors, which can perform operations before and after every request/response on the client. For example,
+if you wanted to make a POST request and return only the time elapsed during the request/response handling, you
+could do something like the following:
+
+[source,groovy]
+----
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.HttpVerb.GET
+
+long elapsed = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+    execution.interceptor(GET) { cfg, fx ->
+        long started = System.currentTimeMillis()
+        fx.apply(cfg)
+        System.currentTimeMillis() - started
+    }
+}.get(Long, NO_OP)
+
+println "Elapsed time for request: $elapsed ms"
+----
+
+This interceptor on the GET requests will calculate the time spent in the actual request handling (the
+call to `fx.apply(cfg)` and return the elapsed time as the result of the request (ignoring the actual
+response content from the server). The displayed result will be something like:
+
+    Elapsed time for request: 865 ms
+
+Using interceptors you can also modify the data before and after the `apply()` method is called.
+
+=== Exception Handling
+
+The main strategy for handling exceptions in the library, client implementations, or in the server response is:
+
+1. By default allow exceptions to propagate.
+2. If 1 is not feasible (because of interface restrictions, lambda restrictions, or too inconvenient), then exceptions should be wrapped in a `TransportingException` and re-thrown. The `TransportingException` is a signal to unwrap the exception before calling the exception handler.
+3. In the Builders wrap all request/response executions inside a try/catch block. In the catch block(s) call `HttpBuilder.handleException()` to handle the exception and use the value returned from that method as the return value for the request/response.
+
+This should ensure that the original exception thrown makes it to the exception handler. Handlers may be chained in a manner similar to the success/failure handlers.
+
+Exception handlers are configured on the `HttpConfig` configuration object using the `exception(Closure)` or `exception(Function<Throwable,?>)` method
+The value returned from the handler will be used as the result value of the request. Since there is no response body for the function to process, this
+usually means that the function should do one of three things: re-throw the exception or throw a wrapped version of the exception, return null, or
+return a predefined empty value.
+
+[source,java]
+----
+HttpBuilder http = HttpBuilder.configure(config -> {
+    config.getRequest().setUri("http://localhost:10101");
+});
+http.get( config -> {
+    config.getRequest().getUri().setPath("/foo");
+    config.getResponse().exception((t) -> {
+         t.printStackTrace();
+         throw new RuntimeException(t);
+    });
+});
+----
+
+The built in exception method wraps the exception in a `java.lang.RuntimeException (if it is not already of that type) and rethrows.
+
+=== Ignoring SSL Issues
+
+During testing or debugging of HTTPS endpoints it is often useful to ignore SSL certificate errors. HttpBuilder-NG provides two methods of ignoring
+these issues. The first is via the configuration DSL using the `groovyx.net.http.util.SslUtils::ignoreSslIssues(final HttpObjectConfig.Execution)`
+method.
+
+[source,groovy]
+----
+import groovyx.net.http.JavaHttpBuilder
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
+
+def http = JavaHttpBuilder.configure {
+    ignoreSslIssues execution
+    // other config...
+}
+----
+
+Applying this configuration helper will set an `SSLContext` and `HostnameVerifier` which will allow/trust all HTTP connections and ignore issues.
+While this approach is useful, you may also need to toggle this feature at times when you do not, or cannot, change the DSL code itself; this is
+why the second approach exists.
+
+If the `groovyx.net.http.ignore-ssl-issues` system property is specified in the system properties with a value of `true`, the `ignoreSslIssues`
+functionality will be applied by default.

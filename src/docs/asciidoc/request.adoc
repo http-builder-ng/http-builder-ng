@@ -1,0 +1,99 @@
+
+== Request
+
+TODO: this section should have per-verb simple examples
+TODO: this section should have detailed descriptions of the request object and its components
+
+=== Headers
+
+Custom HTTP request headers may be configured directly using the `request.headers` map in either the `configure` or request verb configuration closure,
+such as:
+
+[source,groovy]
+----
+import static groovyx.net.http.HttpBuilder.configure
+
+configure {
+    request.headers['Global-Header'] = 'header-for-all'
+}.post {
+    request.headers['Custom-Header'] = 'some-custom-value'
+}
+----
+
+These configured headers will be appended to the default request headers sent by the request (somewhat client-specific).
+
+TODO: add information about custom header class usage (from response header section)
+
+=== Encoders
+
+Content encoders are used to convert request body content to a different format before handing off to the underlying HTTP client. An encoder is implemented as a
+`java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the provided implementation of the `ToServer` provides the data. See the `toServer(InputStream)`
+method.
+
+Encoders are provided in the request configuration (`HttpConfig.Request.encoder(String,BiConsumer<ChainedHttpConfig,ToServer>)`) mapped to a content type that they should be
+used to handle. Say we wanted to be able to send `Date` objects to the server in a specific format as the request body:
+
+[source,groovy]
+----
+import groovyx.net.http.HttpBuilder
+
+HttpBuilder.configure {
+    request.uri = 'http://locahost:1234/schedule'
+    request.body = new Date()
+    request.contentType = 'text/date-time'
+    request.encoder('text/date-time'){ ChainedHttpConfig config, ToServer req->
+        req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes))
+    }
+}.post()
+----
+
+Notice that a Groovy `Closure` is usable as a `BiConsumer` function. The `Date` object in the request is formatted as String, converted to bytes and pushed to the request
+`InputStream`.
+
+Some default encoders are provided:
+
+* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
+* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
+* TEXT (with no additional libraries required)
+* XML (without any additional libraries)
+
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
+
+=== Multipart
+
+HttpBuilder-NG supports multipart request content such as file uploads, with either the generic `MultipartEncoder` or one of the client-specific
+encoders. For example, the `OkHttpBuilder` may use the `OkHttpEncoders.&multipart` encoder:
+
+[source,groovy]
+----
+import groovyx.net.http.OkHttpBuilder
+import groovyx.net.http.*
+
+File someFile = // ...
+
+OkHttpBuilder.configure {
+    request.uri = 'http://example.com'
+}.post {
+    request.uri.path = '/upload'
+    request.contentType = 'multipart/form-data'
+    request.body = multipart {
+        field 'name', 'This is my file'
+        part 'file', 'myfile.txt', 'text/plain', someFile
+    }
+    request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
+}
+----
+
+which would `POST` the content of the file, `someFile` along with the specified `name` field to the server as a `multipart/form-data` request. The
+important parts of the example are the `multipart` DSL extension, which is provided by the `MultipartContent` class and aids in creating the upload
+content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
+Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
+
+The available multipart encoders:
+
+* `groovyx.net.http.CoreEncoders::multipart` - a generic minimalistic multipart encoder for use with the core Java client or any of the others (requires the JavaMail API).
+* `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
+* `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
+
+The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
+of a multipart content object must be specified beforehand.

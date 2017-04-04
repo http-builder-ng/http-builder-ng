@@ -1,0 +1,126 @@
+
+== Response
+
+TODO: this section should have detailed descriptions of the response object and its components
+
+=== Headers
+
+HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into
+more useful types, for example:
+
+[source,groovy]
+----
+headers.find { h-> h.key == 'Last-Modified' }.parse()   // ZonedDateTime
+headers.find { h-> h.key == 'Allow' }.parse()           // List<String>
+headers.find { h-> h.key == 'Refresh' }.parse()         // Map<String,String>
+----
+
+The parsing is provided using registered header implementations by header name. Currently, you cannot register your own and the supported header types are:
+
+* `Access-Control-Allow-Origin`-> ValueOnly
+* `Accept-Patch`-> CombinedMap
+* `Accept-Ranges`-> ValueOnly
+* `Age`-> SingleLong
+* `Allow`-> CsvList
+* `Alt-Svc`-> MapPairs
+* `Cache-Control`-> MapPairs
+* `Connection`-> ValueOnly
+* `Content-Disposition`-> CombinedMap
+* `Content-Encoding`-> ValueOnly
+* `Content-Language`-> ValueOnly
+* `Content-Length`-> SingleLong
+* `Content-Location`-> ValueOnly
+* `Content-MD5`-> ValueOnly
+* `Content-Range`-> ValueOnly
+* `Content-Type`-> CombinedMap
+* `Date`-> HttpDate
+* `ETag`-> ValueOnly
+* `Expires`-> HttpDate
+* `Last-Modified`-> HttpDate
+* `Link`-> CombinedMap
+* `Location`-> ValueOnly
+* `P3P`-> MapPairs
+* `Pragma`-> ValueOnly
+* `Proxy-Authenticate`-> ValueOnly
+* `Public-Key-Pins`-> MapPairs
+* `Refresh`-> CombinedMap
+* `Retry-After`-> HttpDate
+* `Server`-> ValueOnly
+* `Set-Cookie`-> MapPairs
+* `Status`-> ValueOnly
+* `Strict-Transport-Security`-> MapPairs
+* `Trailer`-> ValueOnly
+* `Transfer-Encoding`-> ValueOnly
+* `TSV`-> ValueOnly
+* `Upgrade`-> CsvList
+* `Vary`-> ValueOnly
+* `Via`-> CsvList
+* `Warning`-> ValueOnly
+* `WWW-Authenticate`-> ValueOnly
+* `X-Frame-Options`-> ValueOnly
+
+All headers not explicitly typed are simply `ValueOnly`. The definitive list is in the source code of the `groovyx.net.http.FromServer.Header` class.
+
+=== Parsers
+
+The response body content resulting form a request is parsed based on the response content type. Content parsers may be configured using the
+`HttpConfig.Response.parser(String, BiFunction<ChainedHttpConfig, FromServer, Object>)` method, which takes a `BiFunction` and the response content type it is mapped to. The function (or Closure)
+accepts a `ChainedHttpConfig` object, and a `FromServer` instance and returns the parsed `Object`. If we had a server providing the current time as a response like `DATE-TIME: MM/dd/yyyy HH:mm:ss`
+we could request the time with the following code:
+
+[source,groovy]
+----
+import groovyx.net.http.*
+
+Date date = HttpBuilder.configure {
+    request.uri = 'http://localhost:1234/currenttime'
+}.get(Date){
+    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs ->
+        Date.parse('MM/dd/yyyy HH:mm:ss', fs.inputStream.text)
+    }
+}
+----
+
+which would parse the incoming response and convert it to a `Date` object.
+
+Some default parsers are provided:
+
+* HTML (when either the 'org.jsoup:jsoup:' or 'net.sourceforge.nekohtml:nekohtml:' library is on the classpath),
+* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
+* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
+* XML (without any additional libraries)
+* TEXT (without any additional libraries)
+
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
+
+=== Multipart
+
+While multipart responses are not supported by browsers, there is no restriction on sending them from a server and likewise the underlying HTTP clients
+have no problem handling them. HttpBuilder-NG does not provide a built-in multipart response decoder; however, using the JavaMail API, it is quite
+simple to implement one:
+
+[source,groovy]
+----
+import javax.mail.BodyPart
+import javax.mail.internet.MimeMultipart
+import javax.mail.util.ByteArrayDataSource
+import groovy.net.http.JavaHttpBuilder
+
+MimeMultipart mimeMultipart = JavaHttpBuilder.configure {
+    request.uri = // your server url
+}.get(MimeMultipart){
+    request.uri.path = '/download'
+    response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->
+        new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+    }
+}
+----
+
+where the line:
+
+    new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+
+is where the JavaMail `MimeMultipart` class is used to parse the response content.
+
+The JavaMail API support is optional, and requires that the JavaMail API library be on the classpath. Take a look at the `ParsersSpec.groovy` test
+case for the full implementation and an alternate implementation without using the JavaMail API.
