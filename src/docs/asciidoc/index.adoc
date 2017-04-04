@@ -1,24 +1,27 @@
 = HttpBuilder-NG Users Guide
 David Clark & Christopher J. Stehno
-v0.14.2, March 2017
+v0.14.2, April 2017
 :toc: left
 :toclevels: 3
 
 == Introduction
 
-The https://http-builder-ng.github.io/http-builder-ng/[HttpBuilder-NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
-Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
-version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
+The https://http-builder-ng.github.io/http-builder-ng/[HttpBuilder-NG] project is a modern Groovy DSL for making HTTP
+requests. It is usable with both Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built
+against Groovy 2.4.x, but it doesn't make any assumptions about which version of Groovy you are using. The main goal of
+HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
 
 == History
 
 HttpBuilder-NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
-https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years.
+https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years, though it seems to have grown
+stagnate.
 
-The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
-was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
-typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HttpBuilder-NG
-is basically a complete re-write and re-architecture.
+The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project.
+The slight enhancement was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to
+update the original code to have a more modern typesafe DSL while preserving backwards compatibility. I decided to just make
+a clean break and give the project a new name to make it clear that HttpBuilder-NG is basically a complete re-write and
+re-architecture.
 
 == License
 
@@ -30,6 +33,7 @@ Copyright 2017 David Clark
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
 http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 ----
 
@@ -41,11 +45,13 @@ include::response.adoc[]
 
 == Client Library Integration
 
-Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the `HttpURLConnection` class, another based on the Apache Http
-Components and the third based on OkHttp; however, there is no reason other HTTP clients could not be used, perhaps the
-https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
+Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the `HttpURLConnection` class
+(called the "core" or "java" implementation), another based on the Apache Http Components (called the "apache"
+implementation) and the third based on OkHttp (the "okhttp" implementation); however, there is no reason other HTTP clients
+could not be used, perhaps the https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
 
-A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract methods for the handling the HTTP verbs:
+A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract
+methods for the handling the HTTP verbs:
 
 [source,groovy]
 ----
@@ -63,14 +69,16 @@ There is also an abstract method for retrieving the client configuration, though
 protected abstract ChainedHttpConfig getObjectConfig();
 ----
 
-And finally a method to retrieve the threading interface, again this is generally a getter for the configured thread executor.
+And finally a method to retrieve the threading interface, again this is generally a getter for the configured thread
+executor.
 
 [source,groovy]
 ----
 public abstract Executor getExecutor();
 ----
 
-Once the abstract contract is satisfied, you can use the new client just as the others, with your client in the factory function:
+Once the abstract contract is satisfied, you can use the new client just as the others, with your client in the factory
+function:
 
 [source,groovy]
 ----
@@ -79,21 +87,24 @@ HttpBuilder.configure({ c -> new GoogleHttpBuilder(c); } as Function){
 }
 ----
 
-The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients to have code and dependency
-isolation from other implementations and minimizes unused dependencies in projects using the library.
+The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients
+to have code and dependency isolation from other implementations and minimizes unused dependencies in projects using the
+library.
 
-If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
+If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the
+project.
 
 == Examples
 
-This section contains some stand-alone script examples of how you can use `HttpBuilder`. You can copy them and run them in the Groovy Shell
-or there are unit test versions for most of these examples in the `ExamplesSpec.groovy` file.
+This section contains some stand-alone script examples of how you can use `HttpBuilder`. You can copy them and run them in
+the Groovy Shell or there are unit test versions for most of these examples in the `ExamplesSpec.groovy` file.
 
 === Resource Last Modified (HEAD)
 
-Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing the correct date, you can
-use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works nicely for this, since you don't care about the actual
-file content at this time, you just want the header information. HttpBuilder-NG makes this easy:
+Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing
+the correct date, you can use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works
+nicely for this, since you don't care about the actual file content at this time, you just want the header information.
+HttpBuilder-NG makes this easy:
 
 [source,groovy]
 .resource_last_modified.groovy
@@ -122,8 +133,9 @@ Date lastModified = configure {
 println "Groovy 2.4.7 last modified ${lastModified.format('MM/dd/yyyy HH:mm')}"
 ----
 
-In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a `HEAD` request on it and extract the
-`Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up with a resulting output line something like:
+In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a `HEAD` request on
+it and extract the `Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up
+with a resulting output line something like:
 
     Groovy 2.4.7 last modified 06/07/2016 03:38
 
@@ -156,8 +168,8 @@ which yields the same results, just with a cleaner conversion of the header data
 
 === Scraping Web Content (GET)
 
-Scraping content from web sites doesn't seem to be a prevalent as it was years ago, but it's a lot easier than it used to be. By default, `text/html`
-content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
+Scraping content from web sites doesn't seem to be a prevalent as it was years ago, but it's a lot easier than it used to be.
+By default, `text/html` content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
 
 [source,groovy]
 .web_scraping.groovy
@@ -177,16 +189,17 @@ String license = page.select('span.b.lic').collect { it.text() }.join(', ')
 println "Groovy is licensed under: ${license}"
 ----
 
-In the example we make a `GET` request to the a secondary Maven repository to fetch the main entry page for the `groovy-all` artifact, which has the
-license information on it. The page is returned and parsed into a JSoup `Document` which we can then run a CSS selection query on to extract the
-license information and display it. You will end up with:
+In the example we make a `GET` request to the a secondary Maven repository to fetch the main entry page for the `groovy-all`
+artifact, which has the license information on it. The page is returned and parsed into a JSoup `Document` which we can then
+run a CSS selection query on to extract the license information and display it. You will end up with:
 
     Groovy is licensed under: Apache 2.0
 
 === Sending/Receiving JSON Data (POST)
 
-Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful interfaces. You can do this by creating
-a POST request with a "Content-Type" of `application/json` and a custom response parser:
+Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful
+interfaces. You can do this by creating a POST request with a "Content-Type" of `application/json` and a custom response
+parser:
 
 [source,groovy]
 .sending_receiving_post.groovy
@@ -217,34 +230,45 @@ ItemScore itemScore = configure {
 println "Your score for item (${itemScore.item}) was (${itemScore.score})."
 ----
 
-The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the `application/json` response
-content type will be parsed to a JSON object (lazy map); however, in this case we want the response to be an instance of the `ItemScore` class. The example
-simply posts an `ItemScore` object (as a JSON string) to the server, which responds with the JSON string that it was provided.
+The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the
+`application/json` response content type will be parsed to a JSON object (lazy map); however, in this case we want the
+response to be an instance of the `ItemScore` class. The example simply posts an `ItemScore` object (as a JSON string) to the
+server, which responds with the JSON string that it was provided.
 
-The additional `.json` property call on the parsed data is to extract the JSON data from the response envelope - the site provides other useful information about
-the request. The end result is the following display:
+The additional `.json` property call on the parsed data is to extract the JSON data from the response envelope - the site
+provides other useful information about the request. The end result is the following display:
 
     Your score for item (ASDFASEACV235) was (90786).
 
 === Sending Form Data (POST)
 
-TODO: make this one post to httpbin or something so that it can be a script
-
 Posting HTML form data is a common `POST` operation, and it is supported by `HttpBuilder` with a custom encoder, such as:
 
 [source,groovy]
 ----
-import groovyx.net.http.HttpBuilder
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
 
-HttpBuilder.configure {
-    request.uri = 'http://example.com'
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.ContentTypes.JSON
+import groovyx.net.http.*
+import static groovy.json.JsonOutput.prettyPrint
+
+def result = configure {
+    request.uri = 'http://httpbin.org'
+    request.contentType = JSON[0]
 }.post {
-    request.uri.path = '/some/form'
+    request.uri.path = '/post'
     request.body = [id: '234545', label: 'something interesting']
     request.contentType = 'application/x-www-form-urlencoded'
     request.encoder 'application/x-www-form-urlencoded', NativeHandlers.Encoders.&form
 }
+
+println "You submitted: id=${result.form.id} and label=${result.form.id}"
 ----
 
-which would `POST` the specified body data map as urlencoded data to the server. The key here is the use of the `NativeHandlers.Encoders.&form`
-encoder, which converts the provided map data into the encoded message before sending it to the server.
+which posts the specified form data to the `http://httpbin.org/post` which replies with JSON content containing the posted
+form data (along with some other information). The default JSON decoder is used to parse the JSON content into a multi-level
+Map, from which we can extract the data we sent.
+
+Note that the `NativeHandlers.Encoders.&form` encoder is used to convert the provided map data into the encoded message
+before sending it to the server.
