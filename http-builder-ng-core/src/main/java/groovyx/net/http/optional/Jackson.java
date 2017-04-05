@@ -43,7 +43,7 @@ public class Jackson {
             final ObjectMapper mapper = (ObjectMapper) config.actualContext(fromServer.getContentType(), OBJECT_MAPPER_ID);
             return mapper.readValue(fromServer.getReader(), config.getChainedResponse().getType());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TransportingException(e);
         }
     }
 
@@ -66,7 +66,7 @@ public class Jackson {
             mapper.writeValue(writer, request.actualBody());
             ts.toServer(new CharSequenceInputStream(writer.toString(), request.actualCharset()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new TransportingException(e);
         }
     }
 

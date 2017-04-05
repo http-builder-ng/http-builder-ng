@@ -69,6 +69,20 @@ public class NativeHandlers {
     public static Object failure(final FromServer fromServer, final Object data) {
         throw new HttpException(fromServer, data);
     }
+    
+    /**
+     * Default exception handler. Throws a RuntimeException.
+     *
+     * @param thrown       The original thrown exception
+     * @return Nothing will be returned, the return type is Object for interface consistency
+     * @throws RuntimeException
+     */
+    public static Object exception(final Throwable thrown) {
+        final RuntimeException rethrow = ((thrown instanceof RuntimeException) ?
+                                          (RuntimeException) thrown :
+                                          new RuntimeException(thrown));
+        throw rethrow;
+    }
 
     protected static class Expanding {
         CharBuffer charBuffer = CharBuffer.allocate(2048);
@@ -165,8 +179,9 @@ public class NativeHandlers {
                 } else {
                     return false;
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            }
+            catch(IOException e) {
+                throw new TransportingException(e);
             }
         }
 
@@ -340,14 +355,16 @@ public class NativeHandlers {
                 while ((read = istream.read(bytes)) != -1) {
                     ostream.write(bytes, 0, read);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
+            }
+            catch(IOException e) {
+                throw new TransportingException(e);
+            }
+            finally {
                 if (close) {
                     try {
                         ostream.close();
                     } catch (IOException ioe) {
-                        throw new RuntimeException(ioe);
+                        throw new TransportingException(ioe);
                     }
                 }
             }
@@ -384,8 +401,9 @@ public class NativeHandlers {
 
                 e.charBuffer.flip();
                 return e.charBuffer.toString();
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
+            }
+            catch(IOException ioe) {
+                throw new TransportingException(ioe);
             }
         }
 
@@ -412,8 +430,9 @@ public class NativeHandlers {
                 xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
                 xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                 return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
-            } catch (IOException | SAXException | ParserConfigurationException ex) {
-                throw new RuntimeException(ex);
+            }
+            catch(IOException | SAXException | ParserConfigurationException ex) {
+                throw new TransportingException(ex);
             }
         }
 

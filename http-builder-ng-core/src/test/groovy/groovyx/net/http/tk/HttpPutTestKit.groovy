@@ -16,6 +16,7 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.Encoders
+import com.stehno.ersatz.NoCookiesMatcher
 import groovyx.net.http.*
 import spock.lang.Unroll
 
@@ -24,6 +25,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.*
+import static com.stehno.ersatz.NoCookiesMatcher.noCookies
 import static groovyx.net.http.ContentTypes.URLENC
 import static groovyx.net.http.HttpVerb.PUT
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
@@ -148,7 +150,7 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
     @Unroll 'put(Class,Closure): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {
-            put('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies).called(2).responder {
+            put('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies == null ? noCookies() : cookies).called(2).responder {
                 encoder 'text/date', String, Encoders.text
                 content('2016.08.25 14:43', 'text/date')
             }
@@ -191,7 +193,7 @@ abstract class HttpPutTestKit extends HttpMethodTestKit {
     @Unroll 'put(Class,Consumer): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {
-            put('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies).called(2).responder {
+            put('/delta').body(REQUEST_BODY_JSON, APPLICATION_JSON).cookies(cookies == null ? noCookies() : cookies).called(2).responder {
                 encoder 'text/date', String, Encoders.text
                 content('2016.08.25 14:43', 'text/date')
             }

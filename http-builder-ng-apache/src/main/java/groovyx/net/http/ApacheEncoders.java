@@ -20,6 +20,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.IOException;
 
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA;
+import static groovyx.net.http.ContentTypes.MULTIPART_MIXED;
 import static org.apache.http.entity.ContentType.parse;
 import static groovyx.net.http.util.Misc.randomString;
 /**
@@ -46,7 +48,7 @@ public class ApacheEncoders {
             }
 
             final String contentType = request.actualContentType();
-            if (!contentType.equals(ContentTypes.MULTIPART_FORMDATA.getAt(0))) {
+            if (!(contentType.equals(MULTIPART_FORMDATA.getAt(0)) || contentType.equals(MULTIPART_MIXED.getAt(0)))) {
                 throw new IllegalArgumentException("Multipart body content must be multipart/form-data.");
             }
 

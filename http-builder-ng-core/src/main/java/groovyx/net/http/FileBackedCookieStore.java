@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 class FileBackedCookieStore extends NonBlockingCookieStore {
 
@@ -45,10 +46,12 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
     private final File directory;
     private final Object[] locks;
     private final Executor executor;
-
-    private volatile boolean live = true;
+    private final Consumer<Throwable> onException;
     
-    public FileBackedCookieStore(final File directory, final Executor executor) {
+    private volatile boolean live = true;
+
+    public FileBackedCookieStore(final File directory, final Executor executor, final Consumer<Throwable> onException) {
+        this.onException = onException;
         ensureUniqueControl(directory);
         this.directory = directory;
         this.locks = new Object[NUM_LOCKS];
@@ -58,6 +61,10 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
 
         this.executor = executor;
         readAll();
+    }
+    
+    public FileBackedCookieStore(final File directory, final Executor executor) {
+        this(directory, executor, (t) -> {});
     }
 
     private static void ensureUniqueControl(final File directory) {
@@ -150,7 +157,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
                 toProperties(key, cookie).store(fw, "");
             }
             catch(IOException ioe) {
-                throw new RuntimeException(ioe);
+                onException.accept(ioe);
             } };
         
         executor.execute(() -> withLock(key, runner));
@@ -183,14 +190,11 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
             futures.add(CompletableFuture.runAsync(loadFile, executor));
         }
 
-        for(CompletableFuture<Void> future : futures) {
-            try {
-                future.get();
-            }
-            catch(InterruptedException | ExecutionException e) {
-                //just swallow it, we can't do anything about it
-                //since we aren't going to be able to load the cookie
-            }
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get();
+        }
+        catch(InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
         }
     }
 

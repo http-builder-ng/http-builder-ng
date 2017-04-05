@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import org.codehaus.groovy.runtime.MethodClosure;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -38,13 +39,14 @@ import java.net.CookieStore;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.emptyMap;
 
 /**
- * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
+ * This class is the main entry point into the "HttpBuilder-NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
  * executed.
  *
  * The `HttpBuilder` is configured using one of the three static `configure` methods:
@@ -252,7 +254,7 @@ public abstract class HttpBuilder implements Closeable {
         return cookieManager;
     }
 
-    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) {
+    protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
         Map<String,String> tmp = new HashMap<>();
 
         try {
@@ -271,7 +273,7 @@ public abstract class HttpBuilder implements Closeable {
             }
         }
         catch(IOException ioe) {
-            throw new RuntimeException(ioe);
+            throw new TransportingException(ioe);
         }
 
         return tmp;
@@ -1532,6 +1534,28 @@ public abstract class HttpBuilder implements Closeable {
         configuration.accept(myConfig);
         myConfig.getChainedResponse().setType(type);
         return myConfig;
+    }
+
+    public static Throwable findCause(final Exception e) {
+        if(e instanceof TransportingException) {
+            return e.getCause();
+        }
+        else if(e instanceof UndeclaredThrowableException) {
+            final UndeclaredThrowableException ute = (UndeclaredThrowableException) e;
+            if(ute.getCause() != null) {
+                return ute.getCause();
+            }
+            else {
+                return e;
+            }
+        }
+        else {
+            return e;
+        }
+    }
+    
+    protected Object handleException(final ChainedHttpConfig.ChainedResponse cr, final Exception e) {
+        return cr.actualException().apply(findCause(e));
     }
 
     protected static class ResponseHandlerFunction implements BiFunction<ChainedHttpConfig, FromServer, Object> {

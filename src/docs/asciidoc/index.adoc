@@ -1,288 +1,107 @@
-= Http Builder NG Users Guide
+= HttpBuilder-NG User Guide
 David Clark & Christopher J. Stehno
-v0.14.2, March 2017
+v0.15.0, March 2017
 :toc: left
-:toclevels: 3
+:toclevels: 4
 
 == Introduction
 
 The https://http-builder-ng.github.io/http-builder-ng/[HttpBuilder-NG] project is a modern Groovy DSL for making HTTP requests. It is usable with both
-Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about which
-version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
+Groovy and Java, though it requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it doesn't make any assumptions about
+which version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make HTTP requests in a natural and readable way.
 
 == History
 
 HttpBuilder-NG was forked from the HTTPBuilder project originally developed by Thomas Nichols. It was later passed on to
-https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years.
+https://github.com/jgritman/httpbuilder[Jason Gritman] who maintained it for several years, though it seems to have grown stagnant.
 
 The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enhancement to the original HTTPBuilder project. The slight enhancement
 was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
-typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that HttpBuilder-NG
-is basically a complete re-write and re-architecture.
+typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that
+HttpBuilder-NG is basically a complete re-write and re-architecture.
 
-== License
+== Quick Start
 
-HttpBuilder-NG is licensed under the http://www.apache.org/licenses/LICENSE-2.0[Apache 2] open source license.
+If you are itching to get started, here's what you need to do to get up and running.
 
-----
-Copyright 2017 David Clark
+=== Add Library to Project
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+First, you need the library in your project. If you are using Gradle, add the following dependency to your `build.gradle` file `dependencies` closure:
 
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-----
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.14.2'
 
-== Configuration
+or, for Maven add the following to your `pom.xml` file:
 
-The specific configuration options are discussed in the JavaDocs for the `https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpBuilder.html[HttpBuilder]`,
-`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpConfig.html[HttpConfig]` and
-`https://http-builder-ng.github.io/http-builder-ng/core/javadoc/groovyx/net/http/HttpObjectConfig.html[HttpObjectConfig]` interfaces.
+    <dependency>
+      <groupId>io.github.http-builder-ng</groupId>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
+      <version>0.14.2</version>
+    </dependency>
 
-There are three underlying client implementations, the default "core" implementation based on the core Java `HttpURLConnection` class, an implementation
- based on the http://hc.apache.org/httpcomponents-client-ga/[Apache HttpComponents] client, and an implementation based on the http://square.github.io/okhttp/[OkHttp]
- client library.
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
 
-The selection of a client implementation is specified using a factory function when configuring your `HttpBuilder` instance. For the default `HttpURLConnection`
--based implementation use the `configure` methods without a factory `Function` or specify the desired client function, for example:
+=== Instantiate `HttpBuilder`
 
-[source,groovy]
-----
-HttpBuilder.configure()
-----
-
-or
-
-[source,groovy]
-----
-HttpBuilder.configure({ c -> new JavaHttpBuilder(c) })
-----
-
-For the Apache-based builder, you would use the `ApacheHttpBuilder` in the factory, as:
-
-[source,groovy]
-----
-HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
-----
-
-Assuming, of course, that you have configured the `http-builder-ng-apache` dependency in your project.
-
-Alternately, each of the client implementations provides their own `configure` methods using themselves as the factory, for the Apache client, you
-would use:
-
-[source,groovy]
-----
-HttpBuilder http = ApacheHttpBuilder.configure {
-    // configuration...
-}
-----
-
-Notice that the `configure` method is called on the `ApacheHttpBuilder` rather than the core `HttpBuilder` class. This allows a simpler configuration
-of the client factory to be used.
-
-=== Authentication
-
-There are two methods of authentication supported: BASIC and DIGEST.
-
-==== BASIC
-
-https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC Authentication] is supported via the `HttpConfig.Request.Auth` interface:
-
-[source,groovy]
-----
-import groovyx.net.http.HttpBuilder
-
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.auth.basic 'admin', 'myp@$$w0rd'
-}
-----
-
-There is nothing more to do on the client side.
-
-==== DIGEST
-
-https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST Authentication] is supported via the `HttpConfig.Request.Auth` interface:
-
-[source,groovy]
-----
-import groovyx.net.http.HttpBuilder
-
-def http = HttpBuilder.configure {
-    request.uri = 'http://localhost:10101'
-    request.auth.digest 'admin', 'myp@$$w0rd'
-}
-----
-
-There is nothing more to do on the client side.
-
-WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure()` method, not in the individual verb configuration
-closures - this is due to how the client configures DIGEST support internally.
-
-== Encoders
-
-Content encoders are used to convert request body content to a different format before handing off to the underlying HTTP client. An encoder is implemented as a
-`java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the provided implementation of the `ToServer` provides the data. See the `toServer(InputStream)`
-method.
-
-Encoders are provided in the request configuration (`HttpConfig.Request.encoder(String,BiConsumer<ChainedHttpConfig,ToServer>)`) mapped to a content type that they should be
-used to handle. Say we wanted to be able to send `Date` objects to the server in a specific format as the request body:
-
-[source,groovy]
-----
-import groovyx.net.http.HttpBuilder
-
-HttpBuilder.configure {
-    request.uri = 'http://locahost:1234/schedule'
-    request.body = new Date()
-    request.contentType = 'text/date-time'
-    request.encoder('text/date-time'){ ChainedHttpConfig config, ToServer req->
-        req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes))
-    }
-}.post()
-----
-
-Notice that a Groovy `Closure` is usable as a `BiConsumer` function. The `Date` object in the request is formatted as String, converted to bytes and pushed to the request
-`InputStream`.
-
-Some default encoders are provided:
-
-* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
-* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
-* TEXT (with no additional libraries required)
-* XML (without any additional libraries)
-
-Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
-
-== Parsers
-
-The response body content resulting form a request is parsed based on the response content type. Content parsers may be configured using the
-`HttpConfig.Response.parser(String, BiFunction<ChainedHttpConfig, FromServer, Object>)` method, which takes a `BiFunction` and the response content type it is mapped to. The function (or Closure)
-accepts a `ChainedHttpConfig` object, and a `FromServer` instance and returns the parsed `Object`. If we had a server providing the current time as a response like `DATE-TIME: MM/dd/yyyy HH:mm:ss`
-we could request the time with the following code:
-
-[source,groovy]
-----
-import groovyx.net.http.*
-
-Date date = HttpBuilder.configure {
-    request.uri = 'http://localhost:1234/currenttime'
-}.get(Date){
-    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs ->
-        Date.parse('MM/dd/yyyy HH:mm:ss', fs.inputStream.text)
-    }
-}
-----
-
-which would parse the incoming response and convert it to a `Date` object.
-
-Some default parsers are provided:
-
-* HTML (when either the 'org.jsoup:jsoup:' or 'net.sourceforge.nekohtml:nekohtml:' library is on the classpath),
-* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
-* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
-* XML (without any additional libraries)
-* TEXT (without any additional libraries)
-
-Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional dependency versions.
-
-== Interceptors
-
-The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response
-interceptors, which can perform operations before and after every request/response on the client. For example,
-if you wanted to make a POST request and return only the time elapsed during the request/response handling, you
-could do something like the following:
+Next, you need to instantiate an instance of `HttpBuilder` to make requests on. If you are using Groovy:
 
 [source,groovy]
 ----
 import static groovyx.net.http.HttpBuilder.configure
-import static groovyx.net.http.HttpVerb.GET
 
-long elapsed = configure {
-    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
-    execution.interceptor(GET) { cfg, fx ->
-        long started = System.currentTimeMillis()
-        fx.apply(cfg)
-        System.currentTimeMillis() - started
-    }
-}.get(Long, NO_OP)
-
-println "Elapsed time for request: $elapsed ms"
+def http = configure {
+    request.uri = 'http://localhost:9876'
+}
 ----
 
-This interceptor on the GET requests will calculate the time spent in the actual request handling (the
-call to `fx.apply(cfg)` and return the elapsed time as the result of the request (ignoring the actual
-response content from the server). The displayed result will be something like:
+or, if you are using Java:
 
-    Elapsed time for request: 865 ms
+[source,java]
+----
+import static groovyx.net.http.HttpBuilder.configure;
 
-Using interceptors you can also modify the data before and after the `apply()` method is called.
+def http = configure(config -> {
+    config.getRequeset().setUri("http://localhost:9876");
+});
+----
 
-== HTTP Response Headers
+A `request.uri` is the only required property, though other global and client configurations may be configured in the `configure` block.
 
-HTTP headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to parse themselves into
-more useful types, for example:
+The code shown will use the default client library based on the Java `HttpUrlConnection`; however, you can also use the Apache HttpComponents or the
+OkHttp client libraries. See the section on Client-Related Configuration for more details on switching client implementations.
+
+=== Make Requests
+
+Once you have the library and an instance of `HttpBuilder` you are ready to make requests. For Groovy:
 
 [source,groovy]
 ----
-headers.find { h-> h.key == 'Last-Modified' }.parse()   // ZonedDateTime
-headers.find { h-> h.key == 'Allow' }.parse()           // List<String>
-headers.find { h-> h.key == 'Refresh' }.parse()         // Map<String,String>
+String text = http.get(String){
+    request.uri.path = '/name'
+}
 ----
 
-The parsing is provided using registered header implementations by header name. Currently, you cannot register your own and the supported header types are:
+and for Java:
 
-* `Access-Control-Allow-Origin`-> ValueOnly
-* `Accept-Patch`-> CombinedMap
-* `Accept-Ranges`-> ValueOnly
-* `Age`-> SingleLong
-* `Allow`-> CsvList
-* `Alt-Svc`-> MapPairs
-* `Cache-Control`-> MapPairs
-* `Connection`-> ValueOnly
-* `Content-Disposition`-> CombinedMap
-* `Content-Encoding`-> ValueOnly
-* `Content-Language`-> ValueOnly
-* `Content-Length`-> SingleLong
-* `Content-Location`-> ValueOnly
-* `Content-MD5`-> ValueOnly
-* `Content-Range`-> ValueOnly
-* `Content-Type`-> CombinedMap
-* `Date`-> HttpDate
-* `ETag`-> ValueOnly
-* `Expires`-> HttpDate
-* `Last-Modified`-> HttpDate
-* `Link`-> CombinedMap
-* `Location`-> ValueOnly
-* `P3P`-> MapPairs
-* `Pragma`-> ValueOnly
-* `Proxy-Authenticate`-> ValueOnly
-* `Public-Key-Pins`-> MapPairs
-* `Refresh`-> CombinedMap
-* `Retry-After`-> HttpDate
-* `Server`-> ValueOnly
-* `Set-Cookie`-> MapPairs
-* `Status`-> ValueOnly
-* `Strict-Transport-Security`-> MapPairs
-* `Trailer`-> ValueOnly
-* `Transfer-Encoding`-> ValueOnly
-* `TSV`-> ValueOnly
-* `Upgrade`-> CsvList
-* `Vary`-> ValueOnly
-* `Via`-> CsvList
-* `Warning`-> ValueOnly
-* `WWW-Authenticate`-> ValueOnly
-* `X-Frame-Options`-> ValueOnly
+[source,java]
+----
+String text = http.get(String.class, cfg -> {
+    cfg.getRequest().getUri().setPath("/name");
+});
+----
 
-All headers not explicitly typed are simply `ValueOnly`. The definitive list is in the source code of the `groovyx.net.http.FromServer.Header` class.
+At the end of the User Guide there is an Examples section with some complete Groovy script examples.
+
+include::configuration.adoc[]
 
 == Client Library Integration
 
-Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the `HttpURLConnection` class, another based on the Apache Http
-Components and the third based on OkHttp; however, there is no reason other HTTP clients could not be used, perhaps the
+Currently the HttpBuilder-NG library has three HTTP client implementations, one based on the `HttpURLConnection` class (called the "core" or "java"
+implementation), another based on the Apache Http Components (called the "apache" implementation) and the third based on OkHttp (the "okhttp"
+implementation); however, there is no reason other HTTP clients could not be used, perhaps the
 https://github.com/google/google-http-java-client[Google HTTP Java Client] if needed.
 
-A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract methods for the handling the HTTP verbs:
+A client implementation is an extension of the abstract `HttpBuilder` class, which must implement a handful of abstract methods for the handling the
+HTTP verbs:
 
 [source,groovy]
 ----
@@ -316,238 +135,23 @@ HttpBuilder.configure({ c -> new GoogleHttpBuilder(c); } as Function){
 }
 ----
 
-The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients to have code and dependency
-isolation from other implementations and minimizes unused dependencies in projects using the library.
+The client extensions will reside in their own sub-projects that in turn depend on the core library. This allows the clients to have code and
+dependency isolation from other implementations and minimizes unused dependencies in projects using the library.
 
 If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
 
-== Standard Java Usage
+include::examples.adoc[]
 
-The `HttpBuilder` may also be used in standard Java 8 code with no required Groovy code. For example, extracting the HTTP headers from the result of a
-`HEAD` request would be something like:
+== License
 
-[source,java]
+HttpBuilder-NG is licensed under the http://www.apache.org/licenses/LICENSE-2.0[Apache 2] open source license.
+
 ----
-import groovyx.net.http.HttpBuilder
-import java.util.function.BiFunction
+Copyright 2017 David Clark
 
-HttpBuilder http = HttpBuilder.configure(config -> {
-    config.getRequest().setUri("http://localhost:9192");
-});
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
-List<FromServer.Header> headers = (List<FromServer.Header>) http.head(List.class, config -> {
-    config.getRequest().getUri().setPath("/foo");
-    config.getResponse().success(new BiFunction<FromServer, Object, Object>() {
-        @Override
-        public Object apply(final FromServer from, final Object o) {
-            assertFalse(from.getHasBody());
-            return from.getHeaders();
-        }
-    });
-});
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 ----
-
-Java 8 lambda expressions and function objects may be used interchangeably. All configuration and verb interfaces should be usable by both Groovy and Java code.
-
-== Ignoring SSL Issues
-
-During testing or debugging of HTTPS endpoints it is often useful to ignore SSL certificate errors. HttpBuilder-NG provides two methods of ignoring
-these issues. The first is via the configuration DSL using the `groovyx.net.http.util.SslUtils::ignoreSslIssues(final HttpObjectConfig.Execution)`
-method.
-
-[source,groovy]
-----
-import groovyx.net.http.JavaHttpBuilder
-import static groovyx.net.http.util.SslUtils.ignoreSslIssues
-
-def http = JavaHttpBuilder.configure {
-    ignoreSslIssues execution
-    // other config...
-}
-----
-
-Applying this configuration helper will set an `SSLContext` and `HostnameVerifier` which will allow/trust all HTTP connections and ignore issues.
-While this approach is useful, you may also need to toggle this feature at times when you do not, or cannot, change the DSL code itself; this is
-why the second approach exists.
-
-If the `groovyx.net.http.ignore-ssl-issues` system property is specified in the system properties with a value of `true`, the `ignoreSslIssues`
-functionality will be applied by default.
-
-== Examples
-
-This section contains some stand-alone examples of how you can use `HttpBuilder`. There are unit test versions for most of these examples. See the
-`ExamplesSpec.groovy` file for more details.
-
-=== Resource Last Modified (HEAD)
-
-Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing the correct date, you can
-use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works nicely for this, since you don't care about the actual
-file content at this time, you just want the header information. `HttpBuilder` makes this easy:
-
-[source,groovy]
-----
-import static groovyx.net.http.HttpBuilder.configure
-import groovyx.net.http.*
-
-String uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
-Date lastModified = configure {
-    request.uri = uri
-}.head(Date) {
-    response.success { FromServer resp ->
-        String value = FromServer.Header.find(
-            resp.headers,
-            'Last-Modified'
-        )?.value
-        value ? Date.parse(
-            'EEE, dd MMM yyyy  H:mm:ss zzz',
-            value
-        ) : null
-    }
-}
-
-println "Groovy 2.4.7 last modified ${lastModified.format('MM/dd/yyyy HH:mm')}"
-----
-
-In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a `HEAD` request on it and extract the
-`Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up with a resulting output line something like:
-
-    Groovy 2.4.7 last modified 06/07/2016 03:38
-
-Alternately, using header parsing along with the `java.time` API, you can simplify the header conversion:
-
-[source,groovy]
-----
-import static groovyx.net.http.HttpBuilder.configure
-import groovyx.net.http.*
-
-ZonedDateTime lastModified = configure {
-    request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
-}.head(ZonedDateTime) {
-    response.success { FromServer resp ->
-        resp.headers.find { h-> h.key == 'Last-Modified' }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
-    }
-}
-
-println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format(ofPattern('MM/dd/yyyy HH:mm'))}"
-----
-
-which yields the same results, just with a cleaner conversion of the header data.
-
-=== Scraping Web Content (GET)
-
-Scraping content from web sites doesn't seem to be a prevalent as it was years ago, but it's a lot easier than it used to be. By default, `text/html`
-content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
-
-[source,groovy]
-----
-import static groovyx.net.http.HttpBuilder.configure
-import org.jsoup.nodes.Document
-
-Document page = configure {
-    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
-}.get()
-
-String license = page.select('span.b.lic').collect { it.text() }.join(', ')
-
-println "Groovy is licensed under: ${license}"
-----
-
-In the example we make a `GET` request to the a secondary Maven repository to fetch the main entry page for the `groovy-all` artifact, which has the
-license information on it. The page is returned and parsed into a JSoup `Document` which we can then run a CSS selection query on to extract the
-license information and display it. You will end up with:
-
-    Groovy is licensed under: Apache 2.0
-
-=== Sending/Receiving JSON Data (POST)
-
-Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful interfaces. You can do this by creating
-a POST request with a "Content-Type" of `application/json` and a custom response parser:
-
-[source,groovy]
-----
-import static groovyx.net.http.HttpBuilder.configure
-import static groovyx.net.http.ContentTypes.JSON
-import groovyx.net.http.*
-
-ItemScore itemScore = configure {
-    request.uri = 'http://httpbin.org'
-    request.contentType = JSON[0]
-    response.parser(JSON[0]) { config, resp ->
-        new ItemScore(NativeHandlers.Parsers.json(config, resp).json)
-    }
-}.post(ItemScore) {
-    request.uri.path = '/post'
-    request.body = new ItemScore('ASDFASEACV235', 90786)
-}
-
-println "Your score for item (${itemScore.item}) was (${itemScore.score})."
-----
-
-The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the `application/json` response
-content type will be parsed to a JSON object (lazy map); however, in this case we want the response to be an instance of the `ItemScore` class. The example
-simply posts an `ItemScore` object (as a JSON string) to the server, which responds with the JSON string that it was provided.
-
-The additional `.json` property call on the parsed data is to extract the JSON data from the response envelope - the site provides other useful information about
-the request. The end result is the following display:
-
-    Your score for item (ASDFASEACV235) was (90786).
-
-=== Sending Form Data (POST)
-
-Posting HTML form data is a common `POST` operation, and it is supported by `HttpBuilder` with a custom encoder, such as:
-
-[source,groovy]
-----
-import groovyx.net.http.HttpBuilder
-
-HttpBuilder.configure {
-    request.uri = 'http://example.com'
-}.post {
-    request.uri.path = '/some/form'
-    request.body = [id: '234545', label: 'something interesting']
-    request.contentType = 'application/x-www-form-urlencoded'
-    request.encoder 'application/x-www-form-urlencoded', NativeHandlers.Encoders.&form
-}
-----
-
-which would `POST` the specified body data map as urlencoded data to the server. The key here is the use of the `NativeHandlers.Encoders.&form`
-encoder, which converts the provided map data into the encoded message before sending it to the server.
-
-=== Sending Multipart Data (POST)
-
-`HttpBuilder` supports multipart request content such as file uploads, with either the generic `MultipartEncoder` or one of the client-specific
-encoders. For example, the `OkHttpBuilder` could use the `OkHttpEncoders.&multipart` encoder:
-
-[source,groovy]
-----
-import groovyx.net.http.OkHttpBuilder
-import groovyx.net.http.*
-
-File someFile = // ...
-
-OkHttpBuilder.configure {
-    request.uri = 'http://example.com'
-}.post {
-    request.uri.path = '/upload'
-    request.contentType = 'multipart/form-data'
-    request.body = multipart {
-        field 'name', 'This is my file'
-        part 'file', 'myfile.txt', 'text/plain', someFile
-    }
-    request.encoder 'multipart/form-data', OkHttpEncoders.&multipart
-}
-----
-
-which would `POST` the content of the file, `someFile` along with the specified `name` field to the server as a `multipart/form-data` request. The
-important parts of the example are the `multipart` DSL extension, which is provided by the `MultipartContent` class and aids in creating the upload
-content in the correct format. The multipart encoder is used to convert the request content into the multipart message format expected by a server.
-Notice that the encoder is specific to the `OkHttpBuilder`, which we are using in this case.
-
-The available multipart encoders:
-
-* `groovyx.net.http.MultipartEncoder` - a generic minimalistic multipart encoder for use with the core Java client or any of the others.
-* `groovyx.net.http.OkHttpEncoders::multipart` - the encoder using OkHttp-specific multipart encoding.
-* `groovyx.net.http.ApacheEncoders::multipart` - the encoder using Apache client specific multipart encoding.
-
-The encoding of the parts is done using the encoders configured on the `HttpBuilder` executing the request. Any encoders required to encode the parts
-of a multipart content object must be specified beforehand.
