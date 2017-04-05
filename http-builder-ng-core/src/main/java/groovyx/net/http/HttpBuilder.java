@@ -46,7 +46,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.emptyMap;
 
 /**
- * This class is the main entry point into the "Http Builder NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
+ * This class is the main entry point into the "HttpBuilder-NG" API. It provides access to the HTTP Client configuration and the HTTP verbs to be
  * executed.
  *
  * The `HttpBuilder` is configured using one of the three static `configure` methods:
