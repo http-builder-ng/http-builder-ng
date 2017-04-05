@@ -129,8 +129,6 @@ Some default encoders are provided:
 Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional
 dependency versions.
 
-> TODO: should document each encoder/decoder type (in a separate section)
-
 ===== Authentication
 
 The `getAuth()` method of `HttpConfig.Request` provides configuration access to the two methods of authentication supported:
@@ -588,26 +586,14 @@ The `HttpBuilder` class has request-related configuration methods for each of th
 and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are the same. Only
 the synchronous versions are discussed below.
 
-.Request Verb Configuration Methods
-|===
-| *Return Type* | *Arguments* | *Description*
-| `Object` | _none_ | Executes a request with the verb equivalent of the method name. The configuration for the request will come fully from the client-configuration.
-| `Object` | `Closure config` | Executes a request with the verb equivalent of the method name. The configuration for the request will come from the merging of the client and request configurations.
-| `Object` | `Consumer<HttpConfig> config` | Executes a request with the verb equivalent of the method name. The configuration for the request will come from the merging of the client and request configurations.
-| `<T> T` | `Class<T> type, Closure config` | Executes a request with the verb equivalent of the method name. The configuration for the request will come from the merging of the client and request configurations. The resonse content will be cast as the specified `type`.
-| `<T> T` | `Class<T> type, Consumer<HttpConfig> config` | Executes a request with the verb equivalent of the method name. The configuration for the request will come from the merging of the client and request configurations. The resonse content will be cast as the specified `type`.
-|===
+Each of the request verbs share the same configuration method forms. The examples in the following sections are for `GET` requests; however, they are
+representative of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various
+common HTTP operations.
 
-In the table above, additional request-specific configuration may be applied as:
+==== Who is in Space? (`verb()`)
 
-* The `Closure` arguments which will delegate to an instance of `HttpConfig`.
-* The `Consumer<HttpConfig>` arguments which will have an instance of `HttpConfig` passed into them.
-
-Each of the request verbs share the same configuration method forms. The following examples are for `GET` requests; however, they are representative
-of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various common HTTP
-operations.
-
-==== Who is in Space? (`get()`)
+The no-argument method executes a request with the verb equivalent of the method name. The configuration for the request will come fully from the
+client-configuration. A simple `get()` example would be to determine who are the current astronauts in space:
 
 [source,groovy]
 ----
@@ -638,7 +624,11 @@ There are null astronauts in space right now.
  - Peggy Whitson (ISS)
 ----
 
-==== Where is the ISS? (`get(Closure)`)
+==== Where is the ISS? (`verb(Closure)`)
+
+The verb methods accepting a `Closure` or a `Consumer<HttpConfig>` executes a request with the verb equivalent of the method name. The configuration
+for the request will come from the merging of the client and request configurations. An example of a `get(Closure)` request would be to retrieve
+the current position if the ISS:
 
 [source,groovy]
 ----
@@ -678,7 +668,13 @@ String lon = iss.get("iss_position").get("longitude");
 System.out.println("The ISS is currently at lat:" + lat + ", lon:" + lon + ".");
 ----
 
-==== How many people are in Space? (`get(Class,Closure)`)
+==== How many people are in Space? (`verb(Class,Closure)`)
+
+The verb methods accepting a `Closure` or `Consumer<HttpConfig>` along with a `Class` executes a request with the verb equivalent of the method name.
+The configuration for the request will come from the merging of the client and request configurations. The response content will be cast as the
+specified `type` if possible - a response parser may be required to convert the response to an appropriate type.
+
+An example of this for a `get(Integer,Closure)` call would be to retrieve the number of people currently in space:
 
 [source,groovy]
 ----
