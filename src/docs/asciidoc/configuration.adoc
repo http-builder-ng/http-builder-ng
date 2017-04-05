@@ -12,29 +12,28 @@ def request = HttpBuilder.configure {
 }
 ----
 
-where in the example above, `get` could be replaced with any of the supported HTTP verbs (e.g. `get`, `head`, `post`, `put`,
-`delete`).
+where in the example above, `get` could be replaced with any of the supported HTTP verbs (e.g. `get`, `head`, `post`, `put`, `delete`).
 
-There are two primary configuration interfaces, `HttpConfig` and `HttpObjectConfig`. The former is used across all
-configuration methods, while the latter is used for the client-related configuration.
+There are two primary configuration interfaces, `HttpConfig` and `HttpObjectConfig`. The former is used across all configuration methods, while the
+latter is used for the client-related configuration.
 
 === `HttpConfig`
 
-The `HttpConfig` interface provides the public interface used for the `HttpBuilder` shared and per-verb configuration. It
-provides accessors for request and response configuration with the `getRequest()` and `getResponse()` methods.
+The `HttpConfig` interface provides the public interface used for the `HttpBuilder` shared and per-verb configuration. It provides accessors for
+request and response configuration with the `getRequest()` and `getResponse()` methods.
 
-TIP: Request and Response configuration configured in the `configure` method will be applied to all requests made on the
-`HttpBuilder` instance, unless the configuration is overridden in the request-specific configuration.
+TIP: Request and Response configuration configured in the `configure` method will be applied to all requests made on the `HttpBuilder` instance,
+unless the configuration is overridden in the request-specific configuration.
 
 ==== Request
 
-The `HttpConfig.getRequest()` method returns an instance of `HttpConfig.Request` which may be used to configure various
-properties of a request with either the Groovy DSL or a Java `Consumer`.
+The `HttpConfig.getRequest()` method returns an instance of `HttpConfig.Request` which may be used to configure various properties of a request with
+either the Groovy DSL or a Java `Consumer`.
 
 ===== URI
 
-The `setUri(String)` method of `HttpConfig.Request` is the only required configuration property of an `HttpBuilder` instance
-since it defines the target URI for the request.
+The `setUri(String)` method of `HttpConfig.Request` is the only required configuration property of an `HttpBuilder` instance since it defines the
+target URI for the request.
 
 [source,groovy]
 ----
@@ -43,9 +42,9 @@ HttpBuilder.configure {
 }
 ----
 
-The URI may be extended in the request-specific configuration using the `getUri()` method, which returns an instance of
-`groovyx.net.http.UriBuilder` populated with the URI information from the client configuration. This is useful to change the
-path or query string information of the URI for a specific request, while leaving the base URI in the global configuration:
+The URI may be extended in the request-specific configuration using the `getUri()` method, which returns an instance of `groovyx.net.http.UriBuilder`
+populated with the URI information from the client configuration. This is useful to change the path or query string information of the URI for a
+specific request, while leaving the base URI in the global configuration:
 
 [source,groovy]
 ----
@@ -59,8 +58,8 @@ HttpBuilder.configure {
 
 ===== Cookies
 
-https://en.wikipedia.org/wiki/HTTP_cookie[HTTP Cookies] may be configured on a request using one of the cookie configuration
-methods on the `HttpConfig.Request` interface:
+https://en.wikipedia.org/wiki/HTTP_cookie[HTTP Cookies] may be configured on a request using one of the cookie configuration methods on the
+`HttpConfig.Request` interface:
 
 * `cookie(String name, String value)` - Adds a cookie with the specified name and value to the request.
 * `cookie(String name, String value, Date expires)` - Adds a cookie with the specified name, value and expiration date to the request (as `Date`).
@@ -79,13 +78,13 @@ HttpBuilder.configure {
 
 ===== Encoders
 
-Content encoders are used to convert request body content to a different format before handing it off to the underlying HTTP
-client. An encoder is implemented as a `java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the
-provided implementation of the `ToServer` provides the data. See the `toServer(InputStream)` method.
+Content encoders are used to convert request body content to a different format before handing it off to the underlying HTTP client. An encoder is
+implemented as a `java.util.function.BiConsumer<ChainedHttpConfig,ToServer>` function where the provided implementation of the `ToServer` provides the
+data. See the `toServer(InputStream)` method.
 
-Encoders are configured in the request configuration using the `encoder(String, BiConsumer<ChainedHttpConfig,ToServer>)` or
-the `encoder(Iterable<String>, BiConsumer<ChainedHttpConfig,ToServer>)` method. The first parameter of each is the content
-type(s) that the encoder should be applied to, while the second parameter is the encoder function itself.
+Encoders are configured in the request configuration using the `encoder(String, BiConsumer<ChainedHttpConfig,ToServer>)` or the
+`encoder(Iterable<String>, BiConsumer<ChainedHttpConfig,ToServer>)` method. The first parameter of each is the content type(s) that the encoder should
+be applied to, while the second parameter is the encoder function itself.
 
 Say we wanted to be able to send `Date` objects to the server in a specific format as the request body:
 
@@ -127,17 +126,16 @@ Some default encoders are provided:
 * XML (without any additional libraries)
 * Multipart (with client-specific implementations or when the JavaMail library is on the classpath)
 
-Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for
-specific optional dependency versions.
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional
+dependency versions.
 
 > TODO: should document each encoder/decoder type (in a separate section)
 
 ===== Authentication
 
 The `getAuth()` method of `HttpConfig.Request` provides configuration access to the two methods of authentication supported:
-https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC] and
-https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST]. Each is configured in a similar manner with the
-username and password to be sent with the request.
+https://en.wikipedia.org/wiki/Basic_access_authentication[BASIC] and https://en.wikipedia.org/wiki/Digest_access_authentication[DIGEST]. Each is
+configured in a similar manner with the username and password to be sent with the request.
 
 For BASIC:
 
@@ -161,8 +159,8 @@ HttpBuilder.configure {
 
 There is nothing more to do on the client side.
 
-WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure` method, not in the
-request-specific configuration methods - this is due to how the client configures DIGEST support internally.
+WARNING: Currently, the OkHttp client will _only_ support DIGEST configuration in the `configure` method, not in the request-specific configuration
+methods - this is due to how the client configures DIGEST support internally.
 
 ===== Content
 
@@ -186,14 +184,13 @@ HttpBuilder.configure {
 }
 ----
 
-Note that the body content and content-type come into play when configuring the request encoders; be sure that you have an
-encoder configured to handle the type of content data you are providing and that it renders the data properly to the
-request output.
+Note that the body content and content-type come into play when configuring the request encoders; be sure that you have an encoder configured to
+handle the type of content data you are providing and that it renders the data properly to the request output.
 
 ===== Headers
 
-Custom HTTP request headers may be configured directly using the `getHeaders()` method of the `HttpConfig.Request` instance.
-A `Map<String,String>` is returned which may be used to add new headers or modify headers already configured on the request:
+Custom HTTP request headers may be configured directly using the `getHeaders()` method of the `HttpConfig.Request` instance. A `Map<String,String>` is
+returned which may be used to add new headers or modify headers already configured on the request:
 
 [source,groovy]
 ----
@@ -208,32 +205,183 @@ These configured headers will be appended to the default request headers sent by
 
 ==== Response
 
-The `HttpConfig.getResponse()` method returns an instance of `HttpConfig.Response` which may be used to configure various
-properties of a request.
+The `HttpConfig.getResponse()` method returns an instance of `HttpConfig.Response` which may be used to configure various properties of a request.
 
-- exception
-- failure
-- parser
-- success
-- when
+===== Status Handlers
 
-> TODO: fill in
+The `HttpConfig.Response` interface provides five types of response status handlers.
+
+The first three are the `when` methods. The `when` methods configure a handler (as a Groovy `Closure` or `BiFunction<FromServer,Object,?>`) to be
+called when the response status matches the specified status value (as a `String`, `Integer`, or `HttpConfig.Status` value). When the handler is
+called, it is executed and its return value is used as the return value for the request.
+
+[source,groovy]
+----
+HttpBuilder.configure {
+    request.uri = 'http://localhost:8181'
+}.head {
+    reponse.when(200){ FromServer fs ->
+        'ok'
+    }
+}
+----
+
+In this example, if the request responds with a `200` status, the resulting value from the `head` call will be the `String` "ok".
+
+The other two status handlers are the `success` and `failure` methods:
+
+* The `success` methods accept either a Groovy `Closure` or a `BiFunction<FromServer,Object,?>` as a handler. The handler is then configured as a `when` handler for response status code values less than 400.
+* The `failure` methods accept either a Groovy `Closure` or a `BiFunction<FromServer,Object,?>` as a handler, which is then configured as a `when` handler for response status code values greater than or equal to 400.
+
+[source,groovy]
+----
+HttpBuilder.configure {
+    request.uri = 'http://localhost:8181'
+}.head {
+    reponse.success { FromServer fs ->
+        'ok'
+    }
+}
+----
+
+This example performs the same operation as the previous example, but uses the `success` method instead of the `when` method.
+
+===== Exception Handlers
+
+The main strategy for handling exceptions in the library, client implementations, or in the server response is:
+
+1. By default allow exceptions to propagate.
+2. If 1 is not feasible (because of interface restrictions, lambda restrictions, or too inconvenient), then exceptions should be wrapped in a `TransportingException` and re-thrown. The `TransportingException` is a signal to unwrap the exception before calling the exception handler.
+3. In the Builders wrap all request/response executions inside a try/catch block. In the catch block(s) call `HttpBuilder.handleException()` to handle the exception and use the value returned from that method as the return value for the request/response.
+
+This should ensure that the original exception thrown makes it to the exception handler. Handlers may be chained in a manner similar to the
+success/failure handlers.
+
+Exception handlers are configured on the `HttpConfig` configuration object using the `exception(Closure)` or `exception(Function<Throwable,?>)` method
+The value returned from the handler will be used as the result value of the request. Since there is no response body for the function to process, this
+usually means that the function should do one of three things: re-throw the exception or throw a wrapped version of the exception, return null, or
+return a predefined empty value.
+
+[source,groovy]
+----
+HttpBuilder.configure {
+    request.uri = 'http://localhost:10101'
+}.get {
+    request.uri.path = '/foo'
+    response.exception { t->
+         t.printStackTrace()
+         throw new RuntimeException(t)
+    }
+}
+----
+
+The built-in exception method wraps the exception in a `java.lang.RuntimeException` (if it is not already of that type) and re-throws it.
+
+===== Parsers
+
+The response body content resulting form a request is parsed based on the response content-type. Content parsers may be configured using the
+`HttpConfig.Response.parser(String, BiFunction<ChainedHttpConfig, FromServer, Object>)` method, which takes a `BiFunction` and the response content
+type it is mapped to. The function (or Closure) accepts a `ChainedHttpConfig` object, and a `FromServer` instance and returns the parsed `Object`. If
+we had a server providing the current time as a response like `DATE-TIME: MM/dd/yyyy HH:mm:ss` we could request the time with the following code:
+
+[source,groovy]
+----
+Date date = HttpBuilder.configure {
+    request.uri = 'http://localhost:1234/currenttime'
+}.get(Date){
+    response.parser('text/date-time'){ ChainedHttpConfig cfg, FromServer fs ->
+        Date.parse('MM/dd/yyyy HH:mm:ss', fs.inputStream.text)
+    }
+}
+----
+
+which would parse the incoming response and convert it to a `Date` object.
+
+Some default parsers are provided:
+
+* HTML (when either the 'org.jsoup:jsoup:' or 'net.sourceforge.nekohtml:nekohtml:' library is on the classpath),
+* JSON (when either Groovy or the `com.fasterxml.jackson.core:jackson-databind:2.8.1` library is on the classpath)
+* CSV (when the `com.opencsv:opencsv:3.8` library is on the classpath)
+* XML (without any additional libraries)
+* TEXT (without any additional libraries)
+
+Specific dependency versions are as of the writing of this document, see the project `build.gradle` dependencies block for specific optional
+dependency versions.
+
+===== Headers
+
+HTTP response headers are retrieved from the response using the `FromServer.getHeaders()` method. Some common headers are enriched with the ability to
+parse themselves into more useful types, for example:
+
+[source,groovy]
+----
+headers.find { h-> h.key == 'Last-Modified' }.parse()   // ZonedDateTime
+headers.find { h-> h.key == 'Allow' }.parse()           // List<String>
+headers.find { h-> h.key == 'Refresh' }.parse()         // Map<String,String>
+----
+
+The parsing is provided using registered header implementations by header name. Currently, you cannot register your own and the supported header types
+are:
+
+* `Access-Control-Allow-Origin`-> ValueOnly
+* `Accept-Patch`-> CombinedMap
+* `Accept-Ranges`-> ValueOnly
+* `Age`-> SingleLong
+* `Allow`-> CsvList
+* `Alt-Svc`-> MapPairs
+* `Cache-Control`-> MapPairs
+* `Connection`-> ValueOnly
+* `Content-Disposition`-> CombinedMap
+* `Content-Encoding`-> ValueOnly
+* `Content-Language`-> ValueOnly
+* `Content-Length`-> SingleLong
+* `Content-Location`-> ValueOnly
+* `Content-MD5`-> ValueOnly
+* `Content-Range`-> ValueOnly
+* `Content-Type`-> CombinedMap
+* `Date`-> HttpDate
+* `ETag`-> ValueOnly
+* `Expires`-> HttpDate
+* `Last-Modified`-> HttpDate
+* `Link`-> CombinedMap
+* `Location`-> ValueOnly
+* `P3P`-> MapPairs
+* `Pragma`-> ValueOnly
+* `Proxy-Authenticate`-> ValueOnly
+* `Public-Key-Pins`-> MapPairs
+* `Refresh`-> CombinedMap
+* `Retry-After`-> HttpDate
+* `Server`-> ValueOnly
+* `Set-Cookie`-> MapPairs
+* `Status`-> ValueOnly
+* `Strict-Transport-Security`-> MapPairs
+* `Trailer`-> ValueOnly
+* `Transfer-Encoding`-> ValueOnly
+* `TSV`-> ValueOnly
+* `Upgrade`-> CsvList
+* `Vary`-> ValueOnly
+* `Via`-> CsvList
+* `Warning`-> ValueOnly
+* `WWW-Authenticate`-> ValueOnly
+* `X-Frame-Options`-> ValueOnly
+
+All headers not explicitly typed are simply `ValueOnly`. The definitive list is in the source code of the `groovyx.net.http.FromServer.Header` class.
 
 === `HttpObjectConfig`
 
-The `HttpObjectConfig` interface is an extension of the `HttpConfig` interface, which provides additional client-level
-configuration options. These options should be configured in the `HttpBuilder.configure` methods, rather than in the per-verb
-configuration methods.
+The `HttpObjectConfig` interface is an extension of the `HttpConfig` interface, which provides additional client-level configuration options. These
+options should be configured in the `HttpBuilder.configure` methods, rather than in the per-verb configuration methods.
 
 > TODO: client, execution
 
 === Client-Related
 
-The client configuration (the `configure` method) consists of five different methods. The first two methods
-`configure(Closure closure)` and `configure(Consumer<HttpObjectConfig> configuration)` instantiate and configure an
-`HttpBuilder` object using the default client implementation, based on which `HttpBuilder` implementation is used. The
-`HttpBuilder` and `JavaHttpBuilder` will use the core Java client, while the `ApacheHttpBuilder` and `OkHttpBuilder` classes
-will use the Apache and OkHttp client implementations respectively.
+> TODO: from here down is in flux...
+
+The client configuration (the `configure` method) consists of five different methods. The first two methods `configure(Closure closure)` and
+`configure(Consumer<HttpObjectConfig> configuration)` instantiate and configure an `HttpBuilder` object using the default client implementation, based
+on which `HttpBuilder` implementation is used. The `HttpBuilder` and `JavaHttpBuilder` will use the core Java client, while the `ApacheHttpBuilder`
+and `OkHttpBuilder` classes will use the Apache and OkHttp client implementations respectively.
 
 The configuration `Closure` will delegate to an instance of `HttpObjectConfig` which provides the configuration DSL:
 
@@ -255,10 +403,9 @@ HttpBuilder.configure(config -> {
 
 The other three methods `configure(Function<HttpObjectConfig,? extends HttpBuilder> factory)`,
 `configure(Function<HttpObjectConfig,? extends HttpBuilder> factory, Closure closure)`, and
-`configure(Function<HttpObjectConfig,? extends HttpBuilder> factory, Consumer<HttpObjectConfig> configuration)` have the same
-function as ther other two (mentioned above); however, they have an additional `factory` property which is used to provide
-the underlying HTTP client to be used. For the default `HttpURLConnection`-based implementation use the factory `Function`
-as:
+`configure(Function<HttpObjectConfig,? extends HttpBuilder> factory, Consumer<HttpObjectConfig> configuration)` have the same function as the other
+two (mentioned above); however, they have an additional `factory` property which is used to provide the underlying HTTP client to be used. For the
+default `HttpURLConnection`-based implementation use the factory `Function` as:
 
 [source,groovy]
 ----
@@ -272,15 +419,15 @@ For the Apache-based builder, you would use the `ApacheHttpBuilder` in the facto
 HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
 ----
 
-Using the `ApacheHttpBuilder` requires the `http-builder-ng-apache` dependency to be added to your project. The third client
-implementation, `OkHttpBuilder` can be specified in the same manner (requiring the `http-builder-ng-okhttp` dependency).
+Using the `ApacheHttpBuilder` requires the `http-builder-ng-apache` dependency to be added to your project. The third client implementation,
+`OkHttpBuilder` can be specified in the same manner (requiring the `http-builder-ng-okhttp` dependency).
 
 === Request-Related
 
-The `HttpBuilder` class has request-specific configuration methods for each of the supported request verbs, `GET`, `HEAD`,
-`DELETE`, `POST`, and `PUT`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions
-are suffixed with `Async`, (e.g. `headAsync`) and they return a `CompetableFuture` used to retrieve the eventual return value.
-Otherwise, the async methods are the same. Only the synchronous versions are discussed below.
+The `HttpBuilder` class has request-specific configuration methods for each of the supported request verbs, `GET`, `HEAD`, `DELETE`, `POST`, and
+`PUT`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with `Async`, (e.g. `headAsync`)
+and they return a `CompetableFuture` used to retrieve the eventual return value. Otherwise, the async methods are the same. Only the synchronous
+versions are discussed below.
 
 .Request Verb Configuration Methods
 |===
@@ -303,10 +450,9 @@ In the table above, additional request-specific configuration may be applied as:
 
 === Interceptors
 
-The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response
-interceptors, which can perform operations before and after every request/response on the client. For example,
-if you wanted to make a POST request and return only the time elapsed during the request/response handling, you
-could do something like the following:
+The `HttpObjectConfig` (used in the `configure()` method, allows the configuration of global request/response interceptors, which can perform
+operations before and after every request/response on the client. For example, if you wanted to make a POST request and return only the time elapsed
+during the request/response handling, you could do something like the following:
 
 [source,groovy]
 ----
@@ -332,37 +478,6 @@ response content from the server). The displayed result will be something like:
     Elapsed time for request: 865 ms
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
-
-=== Exception Handling
-
-The main strategy for handling exceptions in the library, client implementations, or in the server response is:
-
-1. By default allow exceptions to propagate.
-2. If 1 is not feasible (because of interface restrictions, lambda restrictions, or too inconvenient), then exceptions should be wrapped in a `TransportingException` and re-thrown. The `TransportingException` is a signal to unwrap the exception before calling the exception handler.
-3. In the Builders wrap all request/response executions inside a try/catch block. In the catch block(s) call `HttpBuilder.handleException()` to handle the exception and use the value returned from that method as the return value for the request/response.
-
-This should ensure that the original exception thrown makes it to the exception handler. Handlers may be chained in a manner similar to the success/failure handlers.
-
-Exception handlers are configured on the `HttpConfig` configuration object using the `exception(Closure)` or `exception(Function<Throwable,?>)` method
-The value returned from the handler will be used as the result value of the request. Since there is no response body for the function to process, this
-usually means that the function should do one of three things: re-throw the exception or throw a wrapped version of the exception, return null, or
-return a predefined empty value.
-
-[source,java]
-----
-HttpBuilder http = HttpBuilder.configure(config -> {
-    config.getRequest().setUri("http://localhost:10101");
-});
-http.get( config -> {
-    config.getRequest().getUri().setPath("/foo");
-    config.getResponse().exception((t) -> {
-         t.printStackTrace();
-         throw new RuntimeException(t);
-    });
-});
-----
-
-The built in exception method wraps the exception in a `java.lang.RuntimeException (if it is not already of that type) and rethrows.
 
 === Ignoring SSL Issues
 

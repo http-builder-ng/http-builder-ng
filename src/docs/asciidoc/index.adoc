@@ -25,7 +25,74 @@ re-architecture.
 
 == Quick Start
 
-> TODO: should add a quick start example and intro here
+If you are itching to get started, here's what you need to do to get up and running.
+
+=== Add Library to Project
+
+First, you need the library in your project. If you are using Gradle, add the following dependency to your `build.gradle` file `dependencies` closure:
+
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.14.2'
+
+or, for Maven add the following to your `pom.xml` file:
+
+    <dependency>
+      <groupId>io.github.http-builder-ng</groupId>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
+      <version>0.14.2</version>
+    </dependency>
+
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
+
+=== Instantiate `HttpBuilder`
+
+Next, you need to instantiate an instance of `HttpBuilder` to make requests on. If you are using Groovy:
+
+[source,groovy]
+----
+import static groovyx.net.http.HttpBuilder.configure
+
+def http = configure {
+    request.uri = 'http://localhost:9876'
+}
+----
+
+or, if you are using Java:
+
+[source,java]
+----
+import static groovyx.net.http.HttpBuilder.configure;
+
+def http = configure(config -> {
+    config.getRequeset().setUri("http://localhost:9876");
+});
+----
+
+A `request.uri` is the only required property, though other global and client configurations may be configured in the `configure` block.
+
+The code shown will use the default client library based on the Java `HttpUrlConnection`; however, you can also use the Apache HttpComponents or the
+OkHttp client libraries. See the section on Client-Related Configuration for more details on switching client implementations.
+
+=== Make Requests
+
+Once you have the library and an instance of `HttpBuilder` you are ready to make requests. For Groovy:
+
+[source,groovy]
+----
+String text = http.get(String){
+    request.uri.path = '/name'
+}
+----
+
+and for Java:
+
+[source,java]
+----
+String text = http.get(String.class, cfg -> {
+    cfg.getRequest().getUri().setPath("/name");
+});
+----
+
+At the end of the User Guide there is an Examples section with some complete Groovy script examples.
 
 include::configuration.adoc[]
 
