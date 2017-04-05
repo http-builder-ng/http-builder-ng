@@ -586,11 +586,24 @@ The `HttpBuilder` class has request-related configuration methods for each of th
 and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are the same. Only
 the synchronous versions are discussed below.
 
+An example of an async request would be:
+
+[source,groovy]
+----
+CompletableFuture future = HttpBuilder.configure {
+    request.uri = 'http://localhost:1234/somthing'
+}.getAsync()
+
+Object result = future.get()
+----
+
+Note the difference being the `getAsync()` call and the return type of `CompletableFuture`.
+
 Each of the request verbs share the same configuration method forms. The examples in the following sections are for `GET` requests; however, they are
 representative of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various
 common HTTP operations.
 
-==== Who is in Space? (`verb()`)
+==== `verb()`
 
 The no-argument method executes a request with the verb equivalent of the method name. The configuration for the request will come fully from the
 client-configuration. A simple `get()` example would be to determine who are the current astronauts in space:
@@ -624,7 +637,7 @@ There are null astronauts in space right now.
  - Peggy Whitson (ISS)
 ----
 
-==== Where is the ISS? (`verb(Closure)`)
+==== `verb(Closure)`
 
 The verb methods accepting a `Closure` or a `Consumer<HttpConfig>` executes a request with the verb equivalent of the method name. The configuration
 for the request will come from the merging of the client and request configurations. An example of a `get(Closure)` request would be to retrieve
@@ -668,7 +681,7 @@ String lon = iss.get("iss_position").get("longitude");
 System.out.println("The ISS is currently at lat:" + lat + ", lon:" + lon + ".");
 ----
 
-==== How many people are in Space? (`verb(Class,Closure)`)
+==== `verb(Class,Closure)`
 
 The verb methods accepting a `Closure` or `Consumer<HttpConfig>` along with a `Class` executes a request with the verb equivalent of the method name.
 The configuration for the request will come from the merging of the client and request configurations. The response content will be cast as the
