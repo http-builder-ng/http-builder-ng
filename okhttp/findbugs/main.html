@@ -31,7 +31,7 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>195 lines of code analyzed,
+<p>188 lines of code analyzed,
             in 5 classes,
             in 1 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
@@ -52,18 +52,18 @@
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">1</td>
-<td align="right">5.13</td>
+<td align="right">2</td>
+<td align="right">10.64</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>1</b>
+<b>2</b>
 </td>
 <td align="right">
-<b>5.13</b>
+<b>10.64</b>
 </td>
 </tr>
 </table>
@@ -88,10 +88,16 @@
 </tr>
 <tr class="tablerow1">
 <td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow0">
+<td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>1</b>
+<b>2</b>
 </td>
 </tr>
 </table>
@@ -121,8 +127,35 @@
 <br/>
 <br/>In file OkHttpBuilder.java,
                         
-                                lines 267
-                                to 330<br/>In class groovyx.net.http.OkHttpBuilder$OkHttpFromServer<br/>At OkHttpBuilder.java:[lines 267-330]</p>
+                                lines 249
+                                to 312<br/>In class groovyx.net.http.OkHttpBuilder$OkHttpFromServer<br/>At OkHttpBuilder.java:[lines 249-312]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#REC_CATCH_EXCEPTION">Exception is caught when Exception is not thrown</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Exception is caught when Exception is not thrown in groovyx.net.http.OkHttpBuilder.execute(Function, ChainedHttpConfig)<br/>
+<br/>
+<br/>In file OkHttpBuilder.java,
+                        
+                                line 244<br/>In class groovyx.net.http.OkHttpBuilder<br/>In method groovyx.net.http.OkHttpBuilder.execute(Function, ChainedHttpConfig)<br/>At OkHttpBuilder.java:[line 244]</p>
 </td>
 </tr>
 </table>
@@ -137,6 +170,33 @@
 <h1>
 <a name="Details">Warning Types</a>
 </h1>
+<h2>
+<a name="REC_CATCH_EXCEPTION">Exception is caught when Exception is not thrown</a>
+</h2>
+  
+  <p>
+  This method uses a try-catch block that catches Exception objects, but Exception is not
+  thrown within the try block, and RuntimeException is not explicitly caught.  It is a common bug pattern to
+  say try { ... } catch (Exception e) { something } as a shorthand for catching a number of types of exception
+  each of whose catch blocks is identical, but this construct also accidentally catches RuntimeException as well,
+  masking potential bugs.
+  </p>
+  <p>A better approach is to either explicitly catch the specific exceptions that are thrown,
+  or to explicitly catch RuntimeException exception, rethrow it, and then catch all non-Runtime Exceptions, as shown below:</p>
+  <pre>
+  try {
+    ...
+  } catch (RuntimeException e) {
+    throw e;
+  } catch (Exception e) {
+    ... deal with all non-runtime exceptions ...
+  }</pre>
+  
+     
+<p>
+<br/>
+<br/>
+</p>
 <h2>
 <a name="SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS">Could be refactored into a static inner class</a>
 </h2>

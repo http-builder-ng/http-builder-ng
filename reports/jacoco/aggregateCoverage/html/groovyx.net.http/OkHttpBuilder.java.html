@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OkHttpBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">OkHttpBuilder.java</span></div><h1>OkHttpBuilder.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
+import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
+import com.burgstaller.okhttp.digest.CachingAuthenticator;
+import com.burgstaller.okhttp.digest.DigestAuthenticator;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
+import okhttp3.*;
+import okio.BufferedSink;
+
+import javax.net.ssl.SSLContext;
+import java.net.URISyntaxException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import static groovyx.net.http.FromServer.Header.keyValue;
+import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
+import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
+import static java.util.stream.Collectors.toList;
+
+/**
+ * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
+ *
+ * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
+ * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
+ */
+public class OkHttpBuilder extends HttpBuilder {
+
+<span class="fc" id="L54">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; okFactory = OkHttpBuilder::new;</span>
+    private final ChainedHttpConfig config;
+    private final HttpObjectConfig.Client clientConfig;
+    private final Executor executor;
+    private final OkHttpClient client;
+
+    protected OkHttpBuilder(final HttpObjectConfig config) {
+<span class="fc" id="L61">        super(config);</span>
+
+<span class="fc" id="L63">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L64">        this.clientConfig = config.getClient();</span>
+<span class="fc" id="L65">        this.executor = config.getExecution().getExecutor();</span>
+
+<span class="fc" id="L67">        final OkHttpClient.Builder builder = new OkHttpClient.Builder();</span>
+
+<span class="fc" id="L69">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (sslContext != null) {</span>
+<span class="fc" id="L71">            builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);</span>
+<span class="fc" id="L72">            builder.hostnameVerifier(config.getExecution().getHostnameVerifier());</span>
+        }
+
+        // DIGEST support - defining this here only allows DIGEST config on the HttpBuilder configuration, not for individual methods.
+<span class="fc" id="L76">        final HttpConfig.Auth auth = config.getRequest().getAuth();</span>
+<span class="pc bpc" id="L77" title="1 of 4 branches missed.">        if (auth != null &amp;&amp; auth.getAuthType() == DIGEST) {</span>
+<span class="fc" id="L78">            Map&lt;String, CachingAuthenticator&gt; authCache = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L80">            builder.addInterceptor(new AuthenticationCacheInterceptor(authCache));</span>
+<span class="fc" id="L81">            builder.authenticator(new CachingAuthenticatorDecorator(</span>
+<span class="fc" id="L82">                new DigestAuthenticator(new com.burgstaller.okhttp.digest.Credentials(auth.getUser(), auth.getPassword())), authCache)</span>
+            );
+        }
+
+<span class="fc" id="L86">        this.client = builder.build();</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
+     *
+     * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
+     * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     * request.uri = 'http://localhost:10101'
+     * }
+     * ----
+     *
+     * @param closure the configuration closure (delegated to {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+<span class="fc" id="L107">        return configure(okFactory, closure);</span>
+    }
+
+    /**
+     * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
+     *
+     * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
+     * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
+     * configuration property details.
+     *
+     * This configuration method is generally meant for use with standard Java.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(new Consumer&lt;HttpObjectConfig&gt;() {
+     * public void accept(HttpObjectConfig config) {
+     * config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
+     * }
+     * });
+     * ----
+     *
+     * Or, using lambda expressions:
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder.configure(config -&gt; {
+     * config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
+     * });
+     * ----
+     *
+     * @param configuration the configuration function (accepting {@link HttpObjectConfig})
+     * @return the configured `HttpBuilder`
+     */
+    public static HttpBuilder configure(final Consumer&lt;HttpObjectConfig&gt; configuration) {
+<span class="nc" id="L141">        return configure(okFactory, configuration);</span>
+    }
+
+    @Override
+    protected ChainedHttpConfig getObjectConfig() {
+<span class="fc" id="L146">        return config;</span>
+    }
+
+    @Override
+    public Executor getExecutor() {
+<span class="fc" id="L151">        return executor;</span>
+    }
+
+    @Override
+    protected Object doGet(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L156">        return execute((url) -&gt; new Request.Builder().get().url(url), chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doHead(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L161">        return execute((url) -&gt; new Request.Builder().head().url(url), chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doPost(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L166">        return execute((url) -&gt; new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),</span>
+                       chainedConfig);
+    }
+
+    @Override
+    protected Object doPut(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L172">        return execute((url) -&gt; new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),</span>
+                       chainedConfig);
+    }
+
+    @Override
+    protected Object doDelete(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L178">        return execute((url) -&gt; new Request.Builder().delete().url(url), chainedConfig);</span>
+    }
+
+    @Override
+    public void close() throws IOException {
+        // does nothing
+<span class="nc" id="L184">    }</span>
+
+    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L187">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L188">        RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), &quot;&quot;);</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (cr.actualBody() != null) {</span>
+<span class="fc" id="L190">            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);</span>
+<span class="fc" id="L191">            chainedConfig.findEncoder().accept(chainedConfig, toServer);</span>
+
+<span class="fc" id="L193">            body = toServer;</span>
+        }
+<span class="fc" id="L195">        return body;</span>
+    }
+
+    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L200">            requestBuilder.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L201">        }</span>
+
+<span class="fc" id="L203">        final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (contentType != null) {</span>
+<span class="fc" id="L205">            requestBuilder.addHeader(&quot;Content-Type&quot;, contentType);</span>
+        }
+
+<span class="fc bfc" id="L208" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L209">            requestBuilder.addHeader(e.getKey(), e.getValue());</span>
+<span class="fc" id="L210">        }</span>
+<span class="fc" id="L211">    }</span>
+
+    private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L214">        final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">        if (auth != null) {</span>
+<span class="pc bfc" id="L216" title="All 2 branches covered.">            switch (auth.getAuthType()) {</span>
+                case BASIC:
+<span class="fc" id="L218">                    requestBuilder.addHeader(&quot;Authorization&quot;, Credentials.basic(auth.getUser(), auth.getPassword()));</span>
+<span class="fc" id="L219">                    break;</span>
+                case DIGEST:
+                    // supported in constructor with an interceptor
+            }
+        }
+<span class="fc" id="L224">    }</span>
+
+    private Object execute(final Function&lt;HttpUrl,Request.Builder&gt; makeBuilder, final ChainedHttpConfig chainedConfig) {
+        try {
+<span class="fc" id="L228">            final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L229">            final URI uri = cr.getUri().toURI();</span>
+<span class="fc" id="L230">            final HttpUrl httpUrl = HttpUrl.get(uri);</span>
+<span class="fc" id="L231">            final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);</span>
+            
+<span class="fc" id="L233">            applyHeaders(requestBuilder, cr);</span>
+<span class="fc" id="L234">            applyAuth(requestBuilder, chainedConfig);</span>
+            
+<span class="fc" id="L236">            try(Response response = client.newCall(requestBuilder.build()).execute()) {</span>
+<span class="fc" id="L237">                return HANDLER_FUNCTION.apply(chainedConfig,</span>
+<span class="fc" id="L238">                                              new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));</span>
+<span class="pc bpc" id="L239" title="4 of 8 branches missed.">            }</span>
+<span class="fc" id="L240">            catch(IOException ioe) {</span>
+<span class="fc" id="L241">                throw ioe; //re-throw, close has happened</span>
+            }
+        }
+<span class="fc" id="L244">        catch(Exception e) {</span>
+<span class="fc" id="L245">            return handleException(chainedConfig.getChainedResponse(), e);</span>
+        }
+    }
+
+    private class OkHttpFromServer implements FromServer {
+
+        private final URI uri;
+        private final Response response;
+        private List&lt;Header&lt;?&gt;&gt; headers;
+
+<span class="fc" id="L255">        private OkHttpFromServer(final URI uri, final Response response) {</span>
+<span class="fc" id="L256">            this.uri = uri;</span>
+<span class="fc" id="L257">            this.response = response;</span>
+<span class="fc" id="L258">            this.headers = populateHeaders();</span>
+<span class="fc" id="L259">            addCookieStore(uri, headers);</span>
+<span class="fc" id="L260">        }</span>
+
+        private List&lt;Header&lt;?&gt;&gt; populateHeaders() {
+<span class="fc" id="L263">            final Headers headers = response.headers();</span>
+<span class="fc" id="L264">            List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            for(String name : headers.names()) {</span>
+<span class="fc" id="L266">                List&lt;String&gt; values = headers.values(name);</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">                for(String value : values) {</span>
+<span class="fc" id="L268">                    ret.add(keyValue(name, value));</span>
+<span class="fc" id="L269">                }</span>
+<span class="fc" id="L270">            }</span>
+
+<span class="fc" id="L272">            return ret;</span>
+        }
+
+        @Override
+        public InputStream getInputStream() {
+<span class="fc" id="L277">            return response.body().byteStream();</span>
+        }
+
+        @Override
+        public int getStatusCode() {
+<span class="fc" id="L282">            return response.code();</span>
+        }
+
+        @Override
+        public String getMessage() {
+<span class="fc" id="L287">            return response.message();</span>
+        }
+
+        @Override
+        public List&lt;Header&lt;?&gt;&gt; getHeaders() {
+<span class="fc" id="L292">            return headers;</span>
+        }
+
+        @Override
+        public boolean getHasBody() {
+            try {
+<span class="fc bfc" id="L298" title="All 2 branches covered.">                return !response.body().source().exhausted();</span>
+<span class="nc" id="L299">            } catch (IOException e) {</span>
+<span class="nc" id="L300">                return false;</span>
+            }
+        }
+
+        @Override
+        public URI getUri() {
+<span class="fc" id="L306">            return uri;</span>
+        }
+
+        @Override
+        public void finish() {
+<span class="fc" id="L311">            response.close();</span>
+<span class="fc" id="L312">        }</span>
+    }
+
+    private static class OkHttpToServer extends RequestBody implements ToServer {
+
+        private ChainedHttpConfig config;
+        private InputStream inputStream;
+
+<span class="fc" id="L320">        private OkHttpToServer(final ChainedHttpConfig config) {</span>
+<span class="fc" id="L321">            this.config = config;</span>
+<span class="fc" id="L322">        }</span>
+
+        @Override
+        public void toServer(final InputStream inputStream) {
+<span class="fc" id="L326">            this.inputStream = inputStream;</span>
+<span class="fc" id="L327">        }</span>
+
+        @Override
+        public MediaType contentType() {
+<span class="fc" id="L331">            return MediaType.parse(config.findContentType());</span>
+        }
+
+        @Override
+        public void writeTo(final BufferedSink sink) throws IOException {
+            try {
+<span class="fc" id="L337">                int b = inputStream.read();</span>
+<span class="fc bfc" id="L338" title="All 2 branches covered.">                while (b != -1) {</span>
+<span class="fc" id="L339">                    sink.writeByte(b);</span>
+<span class="fc" id="L340">                    b = inputStream.read();</span>
+                }
+            } finally {
+<span class="pc" id="L343">                inputStream.close();</span>
+<span class="fc" id="L344">            }</span>
+<span class="fc" id="L345">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClosureFunction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http.fn</a> &gt; <span class="el_source">ClosureFunction.java</span></div><h1>ClosureFunction.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 David Clark
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http.fn;
+
+import groovy.lang.Closure;
+
+import java.util.function.Function;
+
+/**
+ * Utility `Function` implementation used to wrap a Groovy `Closure` in a Java `Function` interface.
+ *
+ * The wrapped closure must accept 1 argument, and should return the specified `OUT` type.
+ *
+ * @param &lt;IN_0&gt; the type of the input parameter
+ * @param &lt;OUT&gt; the type of the return value
+ */
+public class ClosureFunction&lt;IN_0, OUT&gt; implements Function&lt;IN_0, OUT&gt; {
+
+    private final Closure&lt;OUT&gt; closure;
+    private final int size;
+    
+<span class="fc" id="L35">    public ClosureFunction(final Closure&lt;OUT&gt; closure) {</span>
+<span class="fc" id="L36">        this.closure = closure;</span>
+<span class="fc" id="L37">        this.size = closure.getMaximumNumberOfParameters();</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if(size != 1) {</span>
+<span class="nc" id="L39">            throw new IllegalArgumentException(&quot;Closure needs to accept a single argument&quot;);</span>
+        }
+<span class="fc" id="L41">    }</span>
+
+    public Closure&lt;OUT&gt; getClosure() {
+<span class="nc" id="L44">        return closure;</span>
+    }
+
+    @Override
+    public OUT apply(final IN_0 in_0) {
+<span class="fc" id="L49">        return closure.call(in_0);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>
