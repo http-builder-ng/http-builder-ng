@@ -1,0 +1,178 @@
+== Examples
+
+This section contains some stand-alone script examples of how you can use `HttpBuilder`. You can copy them and run them in
+the Groovy Shell or there are unit test versions for most of these examples in the `ExamplesSpec.groovy` file.
+
+=== Resource Last Modified (HEAD)
+
+Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing
+the correct date, you can use the `Last-Modified` header for the resource to figure out the date. A `HEAD` request works
+nicely for this, since you don't care about the actual file content at this time, you just want the header information.
+HttpBuilder-NG makes this easy:
+
+[source,groovy]
+.resource_last_modified.groovy
+----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
+import static groovyx.net.http.HttpBuilder.configure
+import groovyx.net.http.*
+
+String uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
+Date lastModified = configure {
+    request.uri = uri
+}.head(Date) {
+    response.success { FromServer resp ->
+        String value = FromServer.Header.find(
+            resp.headers, 'Last-Modified'
+        )?.value
+
+        value ? Date.parse(
+            'EEE, dd MMM yyyy  H:mm:ss zzz',
+            value
+        ) : null
+    }
+}
+
+println "Groovy 2.4.7 last modified ${lastModified.format('MM/dd/yyyy HH:mm')}"
+----
+
+In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a `HEAD` request on
+it and extract the `Last-Modified` header and convert it to a `java.util.Date` object and return it as the result. We end up
+with a resulting output line something like:
+
+    Groovy 2.4.7 last modified 06/07/2016 03:38
+
+Alternately, using header parsing along with the `java.time` API, you can simplify the header conversion:
+
+[source,groovy]
+.resource_last_modified_alt.groovy
+----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
+import static groovyx.net.http.HttpBuilder.configure
+import static java.time.format.DateTimeFormatter.ofPattern
+import groovyx.net.http.*
+import java.time.*
+
+ZonedDateTime lastModified = configure {
+    request.uri = 'http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar'
+}.head(ZonedDateTime) {
+    response.success { FromServer resp ->
+        resp.headers.find { h->
+            h.key == 'Last-Modified'
+        }?.parse(ofPattern('EEE, dd MMM yyyy  H:mm:ss zzz'))
+    }
+}
+
+println "Groovy 2.4.7 (jar) was last modified on ${lastModified.format(ofPattern('MM/dd/yyyy HH:mm'))}"
+----
+
+which yields the same results, just with a cleaner conversion of the header data.
+
+=== Scraping Web Content (GET)
+
+Scraping content from web sites doesn't seem to be a prevalent as it was years ago, but it's a lot easier than it used to be.
+By default, `text/html` content is parsed with the https://jsoup.org/[JSoup] HTML parser into a `Document` object:
+
+[source,groovy]
+.web_scraping.groovy
+----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+@Grab('org.jsoup:jsoup:1.9.2')
+
+import static groovyx.net.http.HttpBuilder.configure
+import org.jsoup.nodes.Document
+
+Document page = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+}.get()
+
+String license = page.select('span.b.lic').collect { it.text() }.join(', ')
+
+println "Groovy is licensed under: ${license}"
+----
+
+In the example we make a `GET` request to the a secondary Maven repository to fetch the main entry page for the `groovy-all`
+artifact, which has the license information on it. The page is returned and parsed into a JSoup `Document` which we can then
+run a CSS selection query on to extract the license information and display it. You will end up with:
+
+    Groovy is licensed under: Apache 2.0
+
+=== Sending/Receiving JSON Data (POST)
+
+Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful
+interfaces. You can do this by creating a POST request with a "Content-Type" of `application/json` and a custom response
+parser:
+
+[source,groovy]
+.sending_receiving_post.groovy
+----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.ContentTypes.JSON
+import groovyx.net.http.*
+
+@groovy.transform.Canonical
+class ItemScore {
+    String item
+    Long score
+}
+
+ItemScore itemScore = configure {
+    request.uri = 'http://httpbin.org'
+    request.contentType = JSON[0]
+    response.parser(JSON[0]) { config, resp ->
+        new ItemScore(NativeHandlers.Parsers.json(config, resp).json)
+    }
+}.post(ItemScore) {
+    request.uri.path = '/post'
+    request.body = new ItemScore('ASDFASEACV235', 90786)
+}
+
+println "Your score for item (${itemScore.item}) was (${itemScore.score})."
+----
+
+The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the
+`application/json` response content type will be parsed to a JSON object (lazy map); however, in this case we want the
+response to be an instance of the `ItemScore` class. The example simply posts an `ItemScore` object (as a JSON string) to the
+server, which responds with the JSON string that it was provided.
+
+The additional `.json` property call on the parsed data is to extract the JSON data from the response envelope - the site
+provides other useful information about the request. The end result is the following display:
+
+    Your score for item (ASDFASEACV235) was (90786).
+
+=== Sending Form Data (POST)
+
+Posting HTML form data is a common `POST` operation, and it is supported by `HttpBuilder` with a custom encoder, such as:
+
+[source,groovy]
+----
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+
+import static groovyx.net.http.HttpBuilder.configure
+import static groovyx.net.http.ContentTypes.JSON
+import groovyx.net.http.*
+import static groovy.json.JsonOutput.prettyPrint
+
+def result = configure {
+    request.uri = 'http://httpbin.org'
+    request.contentType = JSON[0]
+}.post {
+    request.uri.path = '/post'
+    request.body = [id: '234545', label: 'something interesting']
+    request.contentType = 'application/x-www-form-urlencoded'
+    request.encoder 'application/x-www-form-urlencoded', NativeHandlers.Encoders.&form
+}
+
+println "You submitted: id=${result.form.id} and label=${result.form.id}"
+----
+
+which posts the specified form data to the `http://httpbin.org/post` which replies with JSON content containing the posted
+form data (along with some other information). The default JSON decoder is used to parse the JSON content into a multi-level
+Map, from which we can extract the data we sent.
+
+Note that the `NativeHandlers.Encoders.&form` encoder is used to convert the provided map data into the encoded message
+before sending it to the server.
