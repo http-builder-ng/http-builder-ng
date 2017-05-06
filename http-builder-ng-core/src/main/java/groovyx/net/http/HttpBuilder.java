@@ -1641,7 +1641,7 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
-     * Executes an asynchronous GET request on the configured URI (asynchronous alias to the `get(Closure)` method), with additional configuration
+     * Executes an asynchronous PATCH request on the configured URI (asynchronous alias to the `patch(Closure)` method), with additional configuration
      * provided by the configuration closure.
      *
      * [source,groovy]
@@ -1649,7 +1649,7 @@ public abstract class HttpBuilder implements Closeable {
      * def http = HttpBuilder.configure {
      *     request.uri = 'http://localhost:10101'
      * }
-     * CompletableFuture future = http.getAsync(){
+     * CompletableFuture future = http.patchAsync(){
      *     request.uri.path = '/something'
      * }
      * def result = future.get()
@@ -1691,7 +1691,7 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
-     * Executes asynchronous GET request on the configured URI (alias for the `patch(Class, Closure)` method), with additional configuration provided by
+     * Executes asynchronous PATCH request on the configured URI (alias for the `patch(Class, Closure)` method), with additional configuration provided by
      * the configuration closure. The result will be cast to the specified `type`.
      *
      * [source,groovy]
