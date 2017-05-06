@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2017 David Clark
+/*
+ * Copyright (C) 2017 Keith Suderman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-package groovyx.net.http;
+ */package groovyx.net.http
+
+import groovyx.net.http.tk.HttpPutTestKit
 
 /**
- * An enumeration of the supported HTTP verbs.
+ * @author Keith Suderman
  */
-public enum HttpVerb {
-    GET, POST, PUT, HEAD, DELETE, PATCH;
+class JavaHttpPatchSpec  extends HttpPutTestKit implements UsesJavaClient {
 }

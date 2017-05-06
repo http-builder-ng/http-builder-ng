@@ -323,6 +323,10 @@ public class JavaHttpBuilder extends HttpBuilder {
         return createAndExecute(requestConfig, "DELETE");
     }
 
+    protected Object doPatch(final ChainedHttpConfig requestConfig) {
+        return createAndExecute(requestConfig, "PATCH");
+    }
+
     public Executor getExecutor() {
         return executor;
     }

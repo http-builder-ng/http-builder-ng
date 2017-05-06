@@ -174,6 +174,12 @@ public class OkHttpBuilder extends HttpBuilder {
     }
 
     @Override
+    protected Object doPatch(final ChainedHttpConfig chainedConfig) {
+        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),
+                chainedConfig);
+    }
+
+    @Override
     protected Object doDelete(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().delete().url(url), chainedConfig);
     }

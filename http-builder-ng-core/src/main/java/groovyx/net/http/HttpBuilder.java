@@ -228,7 +228,7 @@ public abstract class HttpBuilder implements Closeable {
      * });
      * ----
      *
-     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.optional.ApacheHttpBuilder})
+     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.ApacheHttpBuilder})
      * @param configuration the configuration function (accepting {@link HttpObjectConfig})
      * @return the configured `HttpBuilder`
      */
@@ -1506,6 +1506,239 @@ public abstract class HttpBuilder implements Closeable {
         return delete(Object.class, configuration);
     }
 
+    /**
+     * Executes a PATCH request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
+     * have a target for the request.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.patch()
+     * ----
+     *
+     * @return the resulting content
+     */
+    public Object patch() {
+        return patch(NO_OP);
+    }
+
+    /**
+     * Executes a PATCH request on the configured URI, with additional configuration provided by the configuration closure.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * def result = http.patch(){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content
+     */
+    public Object patch(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return patch(Object.class, closure);
+    }
+
+    /**
+     * Executes a PATCH request on the configured URI, with additional configuration provided by the configuration function.
+     *
+     * This method is generally used for Java-specific configuration.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder http = HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri("http://localhost:10101");
+     * });
+     * http.patch(config -> {
+     *     config.getRequest().getUri().setPath("/foo");
+     * });
+     * ----
+     *
+     * The `configuration` function allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content
+     */
+    public Object patch(final Consumer<HttpConfig> configuration) {
+        return patch(Object.class, configuration);
+    }
+
+
+    /**
+     * Executes a PATCH request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast to
+     * the specified `type`.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * String result = http.patch(String){
+     *     request.uri.path = '/something'
+     * }
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param type the type of the response content
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content cast to the specified type
+     */
+    public <T> T patch(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, closure), this::doPatch));
+    }
+
+    /**
+     * Executes a PATCH request on the configured URI, with additional configuration provided by the configuration function. The result will be cast to
+     * the specified `type`.
+     *
+     * This method is generally used for Java-specific configuration.
+     *
+     * [source,groovy]
+     * ----
+     * HttpBuilder http = HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri("http://localhost:10101");
+     * });
+     * String result = http.patch(String.class, config -> {
+     *     config.getRequest().getUri().setPath("/foo");
+     * });
+     * ----
+     *
+     * The `configuration` {@link Consumer} allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param type the type of the response content
+     * @param configuration the additional configuration function (delegated to {@link HttpConfig})
+     * @return the resulting content cast to the specified type
+     */
+    public <T> T patch(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, configuration), this::doPatch));
+    }
+
+    /**
+     * Executes an asynchronous PATCH request on the configured URI (asynchronous alias to the `patch()` method. The `request.uri` property should be
+     * configured in the global client configuration in order to have a target for the request.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.patchAsync()
+     * def result = future.get()
+     * ----
+     *
+     * @return a {@link CompletableFuture} for retrieving the resulting content
+     */
+    public CompletableFuture<Object> patchAsync() {
+        return CompletableFuture.supplyAsync(() -> patch(), getExecutor());
+    }
+
+    /**
+     * Executes an asynchronous GET request on the configured URI (asynchronous alias to the `get(Closure)` method), with additional configuration
+     * provided by the configuration closure.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.getAsync(){
+     *     request.uri.path = '/something'
+     * }
+     * def result = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content
+     */
+    public CompletableFuture<Object> patchAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> patch(closure), getExecutor());
+    }
+
+    /**
+     * Executes an asynchronous PATCH request on the configured URI (asynchronous alias to `patch(Consumer)`), with additional configuration provided by the
+     * configuration function.
+     *
+     * This method is generally used for Java-specific configuration.
+     *
+     * [source,java]
+     * ----
+     * HttpBuilder http = HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri("http://localhost:10101");
+     * });
+     * CompletableFuture<Object> future = http.patchAsync(config -> {
+     *     config.getRequest().getUri().setPath("/foo");
+     * });
+     * Object result = future.get();
+     * ----
+     *
+     * The `configuration` function allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param configuration the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the resulting content wrapped in a {@link CompletableFuture}
+     */
+    public CompletableFuture<Object> patchAsync(final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> patch(configuration), getExecutor());
+    }
+
+    /**
+     * Executes asynchronous GET request on the configured URI (alias for the `patch(Class, Closure)` method), with additional configuration provided by
+     * the configuration closure. The result will be cast to the specified `type`.
+     *
+     * [source,groovy]
+     * ----
+     * def http = HttpBuilder.configure {
+     *     request.uri = 'http://localhost:10101'
+     * }
+     * CompletableFuture future = http.patchAsync(String){
+     *     request.uri.path = '/something'
+     * }
+     * String result = future.get()
+     * ----
+     *
+     * The configuration `closure` allows additional configuration for this request based on the {@link HttpConfig} interface.
+     *
+     * @param type the type of the response content
+     * @param closure the additional configuration closure (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} for the resulting content cast to the specified type
+     */
+    public <T> CompletableFuture<T> patchAsync(final Class<T> type, @DelegatesTo(HttpConfig.class) final Closure closure) {
+        return CompletableFuture.supplyAsync(() -> patch(type, closure), getExecutor());
+    }
+
+    /**
+     * Executes asynchronous PATCH request on the configured URI (alias for the `patch(Class, Consumer)` method), with additional configuration provided by
+     * the configuration function. The result will be cast to the specified `type`.
+     *
+     * This method is generally meant for use with standard Java.
+     *
+     * [source,groovy]
+     * ----
+     * HttpBuilder http = HttpBuilder.configure(config -> {
+     *     config.getRequest().setUri("http://localhost:10101");
+     * });
+     * String result = http.patch(String.class, config -> {
+     *     config.getRequest().getUri().setPath("/foo");
+     * });
+     * ----
+     *
+     * @param type the type of the response content
+     * @param configuration the additional configuration function (delegated to {@link HttpConfig})
+     * @return the {@link CompletableFuture} for the resulting content cast to the specified type
+     */
+    public <T> CompletableFuture<T> patchAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
+        return CompletableFuture.supplyAsync(() -> patch(type, configuration), getExecutor());
+    }
+
     protected abstract Object doGet(final ChainedHttpConfig config);
 
     protected abstract Object doHead(final ChainedHttpConfig config);
@@ -1515,6 +1748,9 @@ public abstract class HttpBuilder implements Closeable {
     protected abstract Object doPut(final ChainedHttpConfig config);
 
     protected abstract Object doDelete(final ChainedHttpConfig config);
+
+    // ksuderman
+    protected abstract Object doPatch(final  ChainedHttpConfig config);
 
     protected abstract ChainedHttpConfig getObjectConfig();
 
