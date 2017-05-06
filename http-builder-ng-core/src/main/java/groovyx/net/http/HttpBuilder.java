@@ -228,7 +228,7 @@ public abstract class HttpBuilder implements Closeable {
      * });
      * ----
      *
-     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.ApacheHttpBuilder})
+     * @param factory the {@link HttpObjectConfig} factory function ({@link JavaHttpBuilder} or {@link groovyx.net.http.optional.ApacheHttpBuilder})
      * @param configuration the configuration function (accepting {@link HttpObjectConfig})
      * @return the configured `HttpBuilder`
      */
@@ -1749,8 +1749,7 @@ public abstract class HttpBuilder implements Closeable {
 
     protected abstract Object doDelete(final ChainedHttpConfig config);
 
-    // ksuderman
-    protected abstract Object doPatch(final  ChainedHttpConfig config);
+    protected abstract Object doPatch(final ChainedHttpConfig config);
 
     protected abstract ChainedHttpConfig getObjectConfig();
 
