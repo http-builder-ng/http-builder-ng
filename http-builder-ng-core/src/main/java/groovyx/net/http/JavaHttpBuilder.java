@@ -295,11 +295,8 @@ public class JavaHttpBuilder extends HttpBuilder {
     
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
-            System.out.println("JavaHttpBuilder.createAndExecute");
             Action action = new Action(config, verb);
-            System.out.println("Action created");
             Object result = action.execute();
-            System.out.println("Executed the action.");
             return result;
         }
         catch(Exception e) {
