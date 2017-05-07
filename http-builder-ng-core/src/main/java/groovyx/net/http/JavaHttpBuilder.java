@@ -295,8 +295,12 @@ public class JavaHttpBuilder extends HttpBuilder {
     
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
+            System.out.println("JavaHttpBuilder.createAndExecute");
             Action action = new Action(config, verb);
-            return action.execute();
+            System.out.println("Action created");
+            Object result = action.execute();
+            System.out.println("Executed the action.");
+            return result;
         }
         catch(Exception e) {
             return handleException(config.getChainedResponse(), e);
@@ -324,6 +328,12 @@ public class JavaHttpBuilder extends HttpBuilder {
     }
 
     protected Object doPatch(final ChainedHttpConfig requestConfig) {
+        // TODO Fail fast here?
+        // We know that HttpURLConnection.setRequestMethod will throw an exception
+        // for the PATCH method.
+        // A hack-around is to set header "X-HTTP-Method-Override=PATCH" and
+        // send a POST message instead.  It looks like this would be done around
+        // line 58 above.
         return createAndExecute(requestConfig, "PATCH");
     }
 
