@@ -296,8 +296,7 @@ public class JavaHttpBuilder extends HttpBuilder {
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
             Action action = new Action(config, verb);
-            Object result = action.execute();
-            return result;
+            return action.execute();
         }
         catch(Exception e) {
             return handleException(config.getChainedResponse(), e);
