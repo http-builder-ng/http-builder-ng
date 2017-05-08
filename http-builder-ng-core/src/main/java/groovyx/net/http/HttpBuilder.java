@@ -1570,7 +1570,6 @@ public abstract class HttpBuilder implements Closeable {
         return patch(Object.class, configuration);
     }
 
-
     /**
      * Executes a PATCH request on the configured URI, with additional configuration provided by the configuration closure. The result will be cast to
      * the specified `type`.

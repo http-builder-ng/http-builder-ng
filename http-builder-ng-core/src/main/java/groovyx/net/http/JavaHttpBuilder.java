@@ -324,13 +324,10 @@ public class JavaHttpBuilder extends HttpBuilder {
     }
 
     protected Object doPatch(final ChainedHttpConfig requestConfig) {
-        // TODO Fail fast here?
-        // We know that HttpURLConnection.setRequestMethod will throw an exception
-        // for the PATCH method.
-        // A hack-around is to set header "X-HTTP-Method-Override=PATCH" and
-        // send a POST message instead.  It looks like this would be done around
-        // line 58 above.
-        return createAndExecute(requestConfig, "PATCH");
+        // The Java HttpURLConnection class only allows standard HTTP/1.1 verbs and will
+        // throw a ProtocolException if the user tries to specified PATCH as the HTTP method.
+        // See https://docs.oracle.com/javase/8/docs/api/java/net/HttpURLConnection.html#setRequestMethod-java.lang.String-
+        throw new UnsupportedOperationException("java.net.HttpURLConnection does not support the PATCH method. Use the Apache or OkHttp providers instead.");
     }
 
     public Executor getExecutor() {
