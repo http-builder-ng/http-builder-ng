@@ -19,5 +19,5 @@ package groovyx.net.http;
  * An enumeration of the supported HTTP verbs.
  */
 public enum HttpVerb {
-    GET, POST, PUT, HEAD, DELETE;
+    GET, POST, PUT, HEAD, DELETE, PATCH;
 }

@@ -402,6 +402,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return exec(requestConfig, HttpPut::new);
     }
 
+    protected Object doPatch(final ChainedHttpConfig requestConfig) {
+        return exec(requestConfig, HttpPatch::new);
+    }
+
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
         return exec(requestConfig, HttpDelete::new);
     }
