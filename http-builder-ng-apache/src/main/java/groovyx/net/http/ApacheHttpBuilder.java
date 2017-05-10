@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 David Clark
+ * Copyright (C) 2017 HttpBuilder-NG Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,6 +400,10 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
         return exec(requestConfig, HttpPut::new);
+    }
+
+    protected Object doPatch(final ChainedHttpConfig requestConfig) {
+        return exec(requestConfig, HttpPatch::new);
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {

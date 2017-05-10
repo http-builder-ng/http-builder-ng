@@ -18,7 +18,8 @@ package groovyx.net.http
 import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.MultipartRequestContent
-import groovyx.net.http.tk.HttpPutTestKit
+import groovyx.net.http.tk.HttpPatchTestKit
+import org.apache.http.client.methods.HttpPatch
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
@@ -26,12 +27,12 @@ import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.MultipartContent.multipart
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
-class ApacheHttpPutSpec extends HttpPutTestKit implements UsesApacheClient {
+class ApacheHttpPatchSpec extends HttpPatchTestKit implements UsesApacheClient {
 
     @Unroll 'multipart request #proto'() {
         setup:
         ersatzServer.expectations {
-            put('/upload') {
+            patch('/upload') {
                 decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
                 decoder TEXT_PLAIN, Decoders.utf8String
                 called(2)
@@ -56,10 +57,10 @@ class ApacheHttpPutSpec extends HttpPutTestKit implements UsesApacheClient {
         }
 
         expect:
-        http.put() == OK_TEXT
+        http.patch() == OK_TEXT
 
         and:
-        http.putAsync().get() == OK_TEXT
+        http.patchAsync().get() == OK_TEXT
 
         and:
         ersatzServer.verify()

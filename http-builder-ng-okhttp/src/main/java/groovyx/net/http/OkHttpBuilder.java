@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 David Clark
+ * Copyright (C) 2017 HttpBuilder-NG Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,12 @@ public class OkHttpBuilder extends HttpBuilder {
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),
                        chainedConfig);
+    }
+
+    @Override
+    protected Object doPatch(final ChainedHttpConfig chainedConfig) {
+        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),
+                chainedConfig);
     }
 
     @Override

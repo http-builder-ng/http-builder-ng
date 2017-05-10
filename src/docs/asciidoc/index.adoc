@@ -1,6 +1,6 @@
 = HttpBuilder-NG User Guide
 David Clark & Christopher J. Stehno
-v0.15.0, April 2017
+v0.16.0, April 2017
 :toc: left
 :toclevels: 4
 
@@ -19,6 +19,16 @@ The original intent of HttpBuilder-NG was to fix a few bugs and add a slight enh
 was to make HTTPBuilder conform to more modern Groovy DSL designs; however, it was not possible to update the original code to have a more modern
 typesafe DSL while preserving backwards compatibility. I decided to just make a clean break and give the project a new name to make it clear that
 HttpBuilder-NG is basically a complete re-write and re-architecture.
+
+== Articles & Presentations
+
+People are talking about HttpBuilder-NG:
+
+* https://twitter.com/noamtenne[Noam Tenne] did a great presentation at Greach 2017: "https://www.youtube.com/watch?v=HoPSS5TEqS8&feature=youtu.be[Back from The Dead: HTTP Builder NG]"
+* http://stehno.com[Chris Stehno] wrote a blog post: http://coffeaelectronica.com/blog/2016/httpbuilder-ng-demo.html[HttpBuilder-NG Demo]
+* The https://groovypodcast.podbean.com/[Groovy Podcast] has discussed the project a few times
+* You can follow the project on Twitter: https://twitter.com/HttpBuilderNG[@HttpBuilderNG]
+* You can ask questions about issues you are having on StackOverflow using the http://stackoverflow.com/questions/tagged/httpbuilder-ng[httpbuilder-ng tag]
 
 == Quick Start
 
@@ -142,12 +152,30 @@ If you come up with something generally useful, feel free to create a pull reque
 
 include::examples.adoc[]
 
+== Unsupported Features
+
+* The `core` library implementation does not support the `PATCH` request method due to limitations of the underlying client library.
+
+== Contributors
+
+=== Owners
+
+* https://github.com/dwclark[David Clark] (lead developer)
+* https://github.com/cjstehno[Christopher J. Stehno] (developer)
+
+=== Community
+
+* https://github.com/noamt[Noam Tenne] - group presentation and documentation overhaul suggestions
+* https://github.com/ksuderman[Keith Suderman] - support for the PATCH request method
+
+_(If you have contributed recently and are not on this list, let us know, we want to give credit where credit is due!)_
+
 == License
 
 HttpBuilder-NG is licensed under the http://www.apache.org/licenses/LICENSE-2.0[Apache 2] open source license.
 
 ----
-Copyright 2017 David Clark
+Copyright 2017 HttpBuilder-NG Project
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 

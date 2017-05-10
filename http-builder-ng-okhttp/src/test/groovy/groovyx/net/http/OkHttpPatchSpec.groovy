@@ -18,7 +18,7 @@ package groovyx.net.http
 import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.MultipartRequestContent
-import groovyx.net.http.tk.HttpPutTestKit
+import groovyx.net.http.tk.HttpPatchTestKit
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
@@ -26,23 +26,23 @@ import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.MultipartContent.multipart
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
-class ApacheHttpPutSpec extends HttpPutTestKit implements UsesApacheClient {
+class OkHttpPatchSpec extends HttpPatchTestKit implements UsesOkClient {
 
     @Unroll 'multipart request #proto'() {
         setup:
         ersatzServer.expectations {
-            put('/upload') {
-                decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
-                decoder TEXT_PLAIN, Decoders.utf8String
-                called(2)
-                protocol(proto)
+            patch('/upload') {
                 body MultipartRequestContent.multipart {
+                    decoder ContentType.MULTIPART_FORMDATA, Decoders.multipart
+                    decoder ContentType.TEXT_PLAIN, Decoders.utf8String
+                    called(2)
+                    protocol(proto)
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
                 responds().content(OK_TEXT, TEXT_PLAIN)
             }
-        }
+        }.start()
 
         def http = httpBuilder {
             ignoreSslIssues execution
@@ -52,14 +52,14 @@ class ApacheHttpPutSpec extends HttpPutTestKit implements UsesApacheClient {
                 field 'alpha', 'some data'
                 part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
             }
-            request.encoder(MULTIPART_FORMDATA, ApacheEncoders.&multipart)
+            request.encoder(MULTIPART_FORMDATA, OkHttpEncoders.&multipart)
         }
 
         expect:
-        http.put() == OK_TEXT
+        http.patch() == OK_TEXT
 
         and:
-        http.putAsync().get() == OK_TEXT
+        http.patchAsync().get() == OK_TEXT
 
         and:
         ersatzServer.verify()
