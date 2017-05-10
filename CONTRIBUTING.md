@@ -1,4 +1,4 @@
-# Contributing to HTTP Builder NG
+# Contributing to HttpBuilder-NG
 
 ## Did you find a bug?
 
@@ -11,6 +11,10 @@ You have a few options:
 ## Do you have a feature suggestion?
 
 See above.
+
+## Having problems using HttpBuilder?
+
+The best place to get help with HTTP Builder NG is via [StackOverflow](http://stackoverflow.com/) with the tag `httpbuilder-ng` - be careful there is a lot of information out there about the old version of the code and the solutions will most likely _not_ work. You can also try to contact us directly, but that is not recommended.
 
 ## Submitting an Issue
 
@@ -25,7 +29,9 @@ If you fix a bug or implement a new feature and want to get it into the main rep
 A couple general rules. If you add or modify code:
 
 * Provide Spock unit tests for it (don't decrease the code coverage).
-* Add or update relevant documentation (User Guide, JavaDocs, Readme, etc). 
+* Add or update relevant documentation (User Guide, JavaDocs, Readme, etc).
+* Use our standard copyright header (or run `./gradlew licenseFormat` to have it applied)
+* Do not add `@author` tags to your contributions - we prefer to use `git blame` for authorship tracking
 
 As far as branches go, we will generally have a `development` branch off of `master` which will be the branching off point for small development tasks which will be released together. With that in mind:
 
@@ -34,6 +40,4 @@ As far as branches go, we will generally have a `development` branch off of `mas
 
 We are pretty flexible and there are always exceptions, just think about what you are doing and everything will be ok.
 
-## Having problems using HttpBuilder?
-
-The best place to get help with HTTP Builder NG is via [StackOverflow](http://stackoverflow.com/) with the tag `httpbuilder-ng` - be careful there is a lot of information out there about the old version of the code and the solutions will most likely _not_ work. You can also try to contact us directly, but that is not recommended.
+When/if we accept your contributions, we will add your name and GitHub profile link to the "Contributions" section of the User Guide.
