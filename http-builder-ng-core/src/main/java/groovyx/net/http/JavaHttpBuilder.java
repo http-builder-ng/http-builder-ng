@@ -169,7 +169,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             void transfer() throws IOException {
-                NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);
+                IoUtils.transfer(inputStream, connection.getOutputStream(), true);
             }
 
             public String content() {

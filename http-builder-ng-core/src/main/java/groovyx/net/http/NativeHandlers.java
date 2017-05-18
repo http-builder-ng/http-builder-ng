@@ -23,6 +23,7 @@ import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
+import groovyx.net.http.util.IoUtils;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
@@ -38,7 +39,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -354,29 +354,6 @@ public class NativeHandlers {
             }
         }
 
-        // FIXME: this should be moved to IoUtils
-        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
-            try {
-                final byte[] bytes = new byte[2_048];
-                int read;
-                while ((read = istream.read(bytes)) != -1) {
-                    ostream.write(bytes, 0, read);
-                }
-            }
-            catch(IOException e) {
-                throw new TransportingException(e);
-            }
-            finally {
-                if (close) {
-                    try {
-                        ostream.close();
-                    } catch (IOException ioe) {
-                        throw new TransportingException(ioe);
-                    }
-                }
-            }
-        }
-
         /**
          * Standard parser for raw bytes.
          *
@@ -385,7 +362,7 @@ public class NativeHandlers {
          */
         public static byte[] streamToBytes(final ChainedHttpConfig config, final FromServer fromServer) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            transfer(fromServer.getInputStream(), baos, true);
+            IoUtils.transfer(fromServer.getInputStream(), baos, true);
             return baos.toByteArray();
         }
 
