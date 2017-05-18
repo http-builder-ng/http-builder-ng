@@ -31,7 +31,15 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -40,8 +48,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class NativeHandlers {
@@ -348,6 +354,7 @@ public class NativeHandlers {
             }
         }
 
+        // FIXME: this should be moved to IoUtils
         public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
             try {
                 final byte[] bytes = new byte[2_048];

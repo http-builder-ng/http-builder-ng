@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
  */
 package groovyx.net.http.util;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,10 @@ public class IoUtils {
      * @throws IOException if there is a problem reading the stream
      */
     public static byte[] streamToBytes(final InputStream inputStream) throws IOException {
+        return streamToBytes(inputStream, true);
+    }
+
+    public static byte[] streamToBytes(final InputStream inputStream, boolean close) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             final byte[] bytes = new byte[2_048];
 
@@ -43,7 +48,23 @@ public class IoUtils {
             return outputStream.toByteArray();
 
         } finally {
-            inputStream.close();
+            if (close) inputStream.close();
+        }
+    }
+
+    // FIXME: document
+    public static String copyAsString(final BufferedInputStream inputStream) throws IOException, IllegalStateException {
+        if (inputStream == null ) return null;
+
+        try {
+            inputStream.mark(Integer.MAX_VALUE);
+            return new String(streamToBytes(inputStream, false));
+        } finally {
+            try {
+                inputStream.reset();
+            } catch (IOException ioe) {
+                throw new IllegalStateException("Unable to reset stream - original stream content may be corrupted");
+            }
         }
     }
 }
