@@ -168,15 +168,15 @@ public abstract class UriBuilder {
     }
 
     public URI forCookie(final HttpCookie cookie) throws URISyntaxException {
-        final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
-        final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
-        final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
+        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
+        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
         final String path = cookie.getPath();
         final String query = null;
         final String fragment = null;
         final String userInfo = null;
 
-        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+        return new URI(scheme, userInfo, host, (port == null ? -1 : port), path, query, fragment);
     }
 
     /**
@@ -185,13 +185,13 @@ public abstract class UriBuilder {
      * @return the generated `URI` representing the parts contained in the builder
      */
     public URI toURI() throws URISyntaxException {
-        final String scheme = traverse(this, (u) -> u.getParent(), (u) -> u.getScheme(), Traverser::notNull);
-        final Integer port = traverse(this, (u) -> u.getParent(), (u) -> u.getPort(), notValue(DEFAULT_PORT));
-        final String host = traverse(this, (u) -> u.getParent(), (u) -> u.getHost(), Traverser::notNull);
-        final GString path = traverse(this, (u) -> u.getParent(), (u) -> u.getPath(), Traverser::notNull);
-        final String query = populateQueryString(traverse(this, (u) -> u.getParent(), (u) -> u.getQuery(), Traverser::nonEmptyMap));
-        final String fragment = traverse(this, (u) -> u.getParent(), (u) -> u.getFragment(), Traverser::notNull);
-        final String userInfo = traverse(this, (u) -> u.getParent(), (u) -> u.getUserInfo(), Traverser::notNull);
+        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
+        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
+        final GString path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);
+        final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
+        final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
+        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
         
         return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
     }

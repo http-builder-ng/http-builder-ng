@@ -95,7 +95,9 @@ HttpBuilder.configure {
     request.body = new Date()
     request.contentType = 'text/date-time'
     request.encoder('text/date-time'){ ChainedHttpConfig config, ToServer req->
-        req.toServer(new ByteArrayInputStream("DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes))
+        req.toServer(new ByteArrayInputStream(
+            "DATE-TIME: ${config.request.body.format('yyyyMMdd.HHmm')}".bytes
+        ))
     }
 }.post()
 ----
@@ -111,8 +113,12 @@ HttpBuilder.configure(config -> {
     config.setContentType("text/date-time")
     config.getRequest().encoder("text/date-time", new BiConsumer<ChainedHttpConfig,ToServer>(){
         public void accept(ChainedHttpConfig cfg, ToServer ts){
-            String converted = new SimpleDateFormat("yyyyMMdd.HHmm").format(config.getRequest().getBody());
-            ts.toServer(new ByteArrayInputStream(("DATE-TIME: " + converted).getBytes()));
+            String converted = new SimpleDateFormat("yyyyMMdd.HHmm")
+                .format(config.getRequest().getBody());
+
+            ts.toServer(new ByteArrayInputStream(
+                ("DATE-TIME: " + converted).getBytes()
+            ));
         }
     });
 }).post();
@@ -423,7 +429,9 @@ MimeMultipart mimeMultipart = JavaHttpBuilder.configure {
 }.get(MimeMultipart){
     request.uri.path = '/download'
     response.parser(MULTIPART_MIXED[0]) { ChainedHttpConfig config, FromServer fs ->
-        new MimeMultipart(new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType))
+        new MimeMultipart(
+            new ByteArrayDataSource(fs.inputStream.bytes, fs.contentType)
+        )
     }
 }
 ----
@@ -581,10 +589,10 @@ Using the `ApacheHttpBuilder` requires the `http-builder-ng-apache` dependency t
 
 === Request-Related
 
-The `HttpBuilder` class has request-related configuration methods for each of the supported request verbs, `GET`, `HEAD`, `DELETE`, `POST`, and
-`PUT`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with `Async`, (e.g. `headAsync`)
-and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are the same. Only
-the synchronous versions are discussed below.
+The `HttpBuilder` class has request-related configuration methods for each of the supported request verbs, `GET`, `HEAD`, `DELETE`, `PATCH`, `POST`,
+and `PUT`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with `Async`, (e.g.
+`headAsync`) and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are
+the same. Only the synchronous versions are discussed below.
 
 An example of an async request would be:
 
@@ -610,7 +618,7 @@ client-configuration. A simple `get()` example would be to determine who are the
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -645,7 +653,7 @@ the current position if the ISS:
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -691,7 +699,7 @@ An example of this for a `get(Integer,Closure)` call would be to retrieve the nu
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.14.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import groovy.json.JsonSlurper

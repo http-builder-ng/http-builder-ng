@@ -15,17 +15,17 @@
  */
 package groovyx.net.http;
 
+import groovyx.net.http.util.IoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -36,12 +36,16 @@ import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCT
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- *
+ * <p>
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
  */
 public class JavaHttpBuilder extends HttpBuilder {
+
+    private static final Logger log = LoggerFactory.getLogger(JavaHttpBuilder.class);
+    private static final Logger contentLog = LoggerFactory.getLogger("groovy.net.http.JavaHttpBuilder.content");
+    private static final Logger headerLog = LoggerFactory.getLogger("groovy.net.http.JavaHttpBuilder.headers");
 
     protected class Action {
 
@@ -49,19 +53,19 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
         boolean failed = false;
-        
+
         public Action(final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
             this.requestConfig = requestConfig;
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             this.theUri = cr.getUri().toURI();
             this.connection = (HttpURLConnection) theUri.toURL().openConnection();
             this.connection.setRequestMethod(verb);
-            
+
             if (cr.actualBody() != null) {
                 this.connection.setDoOutput(true);
             }
         }
-        
+
         private void addHeaders() throws URISyntaxException {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
@@ -74,8 +78,13 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
+
             for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
                 connection.addRequestProperty(e.getKey(), e.getValue());
+            }
+
+            if (headerLog.isDebugEnabled()) {
+                connection.getRequestProperties().forEach((name, values) -> headerLog.debug("Request-Header: {} -> {}", name, values));
             }
         }
 
@@ -92,58 +101,88 @@ public class JavaHttpBuilder extends HttpBuilder {
             }
         }
 
-        private Object handleFromServer() throws IOException {
-            return HANDLER_FUNCTION.apply(requestConfig, new JavaFromServer(theUri));
-        }
-
         public Object execute() throws Exception {
             return ThreadLocalAuth.with(getAuthInfo(), () -> {
-                    if (sslContext != null && connection instanceof HttpsURLConnection) {
-                        HttpsURLConnection https = (HttpsURLConnection) connection;
-                        
-                        if (hostnameVerifier != null) {
-                            https.setHostnameVerifier(hostnameVerifier);
-                        }
+                if (sslContext != null && connection instanceof HttpsURLConnection) {
+                    HttpsURLConnection https = (HttpsURLConnection) connection;
 
-                        https.setSSLSocketFactory(sslContext.getSocketFactory());
+                    if (hostnameVerifier != null) {
+                        https.setHostnameVerifier(hostnameVerifier);
                     }
 
-                    final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+                    https.setSSLSocketFactory(sslContext.getSocketFactory());
+                }
 
-                    JavaToServer j2s = null;
-                    if (cr.actualBody() != null) {
-                        j2s = new JavaToServer();
-                        requestConfig.findEncoder().accept(requestConfig, j2s);
+                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
+
+                JavaToServer j2s = null;
+                if (cr.actualBody() != null) {
+                    j2s = new JavaToServer();
+                    requestConfig.findEncoder().accept(requestConfig, j2s);
+                }
+
+                if (log.isDebugEnabled()) {
+                    log.debug("Request-URI: {}", theUri);
+                }
+
+                addHeaders();
+
+                connection.connect();
+
+                if (j2s != null) {
+                    if (contentLog.isDebugEnabled()) {
+                        contentLog.debug("Request-Body: {}", j2s.content());
                     }
 
-                    addHeaders();
+                    j2s.transfer();
 
-                    connection.connect();
+                }
 
-                    if (j2s != null) {
-                        j2s.transfer();
-                    }
+                final JavaFromServer fromServer = new JavaFromServer(theUri);
 
-                    return handleFromServer();
-                });
+                if (contentLog.isDebugEnabled()) {
+                    contentLog.debug("Response-Body: {}", fromServer.content());
+                }
+
+                if (headerLog.isDebugEnabled()) {
+                    fromServer.getHeaders().forEach(header -> headerLog.debug("Response-Header: {} -> {}", header.getKey(), header.getValue()));
+                }
+
+                return HANDLER_FUNCTION.apply(requestConfig, fromServer);
+            });
         }
 
         protected class JavaToServer implements ToServer {
 
-            private InputStream inputStream;
+            private BufferedInputStream inputStream;
 
             public void toServer(final InputStream inputStream) {
-                this.inputStream = inputStream;
+                this.inputStream = inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream : new BufferedInputStream(inputStream);
             }
 
             void transfer() throws IOException {
-                NativeHandlers.Parsers.transfer(inputStream, connection.getOutputStream(), true);
+                IoUtils.transfer(inputStream, connection.getOutputStream(), true);
+            }
+
+            public String content() {
+                try {
+                    return IoUtils.copyAsString(inputStream);
+                } catch (IOException ioe) {
+                    if (log.isWarnEnabled()) {
+                        log.warn("Unable to render request stream due to error (may not affect actual content)", ioe);
+                    }
+                } catch (IllegalStateException ise) {
+                    if (log.isErrorEnabled()) {
+                        log.error("Unable to reset request stream - actual content may be corrupted (consider disabling content logging)", ise);
+                    }
+                }
+                return "<no-information>";
             }
         }
 
         protected class JavaFromServer implements FromServer {
 
-            private final InputStream is;
+            private final BufferedInputStream is;
             private final List<Header<?>> headers;
             private final URI uri;
             private final int statusCode;
@@ -159,38 +198,47 @@ public class JavaHttpBuilder extends HttpBuilder {
                 is = (bis == null) ? null : handleEncoding(bis);
             }
 
+            String content() {
+                try {
+                    return IoUtils.copyAsString(is);
+                } catch (IOException ioe) {
+                    log.warn("Unable to render response stream due to error (may not affect actual content)", ioe);
+                } catch (IllegalStateException ise) {
+                    log.error("Unable to reset response stream - actual content may be corrupted (consider disabling content logging)", ise);
+                }
+                return "<no-information>";
+            }
+
             private BufferedInputStream buffered(final InputStream is) throws IOException {
-                if(is == null) {
+                if (is == null) {
                     return null;
                 }
-                
+
                 final BufferedInputStream bis = new BufferedInputStream(is);
                 bis.mark(0);
-                if(bis.read() == -1) {
+                if (bis.read() == -1) {
                     return null;
-                }
-                else {
+                } else {
                     bis.reset();
                     return bis;
                 }
             }
 
             private InputStream correctInputStream() throws IOException {
-                if(getStatusCode() < 400) {
+                if (getStatusCode() < 400) {
                     return connection.getInputStream();
-                }
-                else {
+                } else {
                     return connection.getErrorStream();
                 }
             }
 
-            private InputStream handleEncoding(final InputStream is) throws IOException {
+            private BufferedInputStream handleEncoding(final BufferedInputStream is) throws IOException {
                 Header<?> encodingHeader = Header.find(headers, "Content-Encoding");
                 if (encodingHeader != null) {
                     if (encodingHeader.getValue().equals("gzip")) {
-                        return new GZIPInputStream(is);
+                        return new BufferedInputStream(new GZIPInputStream(is));
                     } else if (encodingHeader.getValue().equals("deflate")) {
-                        return new InflaterInputStream(is);
+                        return new BufferedInputStream(new InflaterInputStream(is));
                     }
                 }
 
@@ -234,7 +282,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public String getMessage() {
                 return message;
             }
-            
+
             public List<Header<?>> getHeaders() {
                 return headers;
             }
@@ -242,7 +290,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public boolean getHasBody() {
                 return is != null;
             }
-
+            
             public URI getUri() {
                 return uri;
             }
@@ -292,13 +340,12 @@ public class JavaHttpBuilder extends HttpBuilder {
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
-    
+
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
             Action action = new Action(config, verb);
             return action.execute();
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             return handleException(config.getChainedResponse(), e);
         }
     }
