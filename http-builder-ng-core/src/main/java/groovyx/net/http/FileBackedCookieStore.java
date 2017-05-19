@@ -81,6 +81,7 @@ class FileBackedCookieStore extends NonBlockingCookieStore {
         }
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void deleteFile(final Key key) {
         final File file = new File(directory, fileName(key));
         if(file.exists()) {

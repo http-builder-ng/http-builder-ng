@@ -290,7 +290,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public boolean getHasBody() {
                 return is != null;
             }
-
+            
             public URI getUri() {
                 return uri;
             }
