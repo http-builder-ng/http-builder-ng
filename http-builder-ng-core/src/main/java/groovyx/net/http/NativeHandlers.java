@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,14 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -75,18 +68,18 @@ public class NativeHandlers {
     public static Object failure(final FromServer fromServer, final Object data) {
         throw new HttpException(fromServer, data);
     }
-    
+
     /**
      * Default exception handler. Throws a RuntimeException.
      *
-     * @param thrown       The original thrown exception
+     * @param thrown The original thrown exception
      * @return Nothing will be returned, the return type is Object for interface consistency
      * @throws RuntimeException
      */
     public static Object exception(final Throwable thrown) {
         final RuntimeException rethrow = ((thrown instanceof RuntimeException) ?
-                                          (RuntimeException) thrown :
-                                          new RuntimeException(thrown));
+            (RuntimeException) thrown :
+            new RuntimeException(thrown));
         throw rethrow;
     }
 
@@ -185,8 +178,7 @@ public class NativeHandlers {
                 } else {
                     return false;
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new TransportingException(e);
             }
         }
@@ -270,7 +262,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with an xml body.
-         *
+         * <p>
          * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to xml using Groovy's {@link StreamingMarkupBuilder}.
@@ -299,7 +291,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with a json body.
-         *
+         * <p>
          * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to json using Groovy's {@link JsonBuilder}.
@@ -385,8 +377,7 @@ public class NativeHandlers {
 
                 e.charBuffer.flip();
                 return e.charBuffer.toString();
-            }
-            catch(IOException ioe) {
+            } catch (IOException ioe) {
                 throw new TransportingException(ioe);
             }
         }
@@ -414,8 +405,7 @@ public class NativeHandlers {
                 xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
                 xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                 return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
-            }
-            catch(IOException | SAXException | ParserConfigurationException ex) {
+            } catch (IOException | SAXException | ParserConfigurationException ex) {
                 throw new TransportingException(ex);
             }
         }
@@ -428,6 +418,19 @@ public class NativeHandlers {
          */
         public static Object json(final ChainedHttpConfig config, final FromServer fromServer) {
             return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
+        }
+
+        /**
+         * Transfers the contents of the {@link InputStream} into the {@link OutputStream}, optionally closing the stream.
+         *
+         * @param istream the input stream
+         * @param ostream the output stream
+         * @param close   whether or not to close the output stream
+         * @deprecated Use the version in {@link IoUtils} instead - this one just delegates to it
+         */
+        @Deprecated
+        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+            IoUtils.transfer(istream, ostream, close);
         }
     }
 }

@@ -33,4 +33,31 @@ class IoUtilsSpec extends Specification {
             random(forByteArray(10000..10000))
         ]
     }
+
+    @SuppressWarnings('GrDeprecatedAPIUsage')
+    def 'copyAsString'() {
+        expect:
+        IoUtils.copyAsString(stream) == string
+
+        and: 'make sure stream is still readable'
+        stream?.text == string
+
+        where:
+        stream                                                            || string
+        new BufferedInputStream(new StringBufferInputStream('something')) || 'something'
+        new BufferedInputStream(new StringBufferInputStream(''))          || ''
+        null                                                              || null
+    }
+
+    def 'transfer'() {
+        setup:
+        InputStream inputStream = new ByteArrayInputStream('something interesting'.bytes)
+        OutputStream outputStream = new ByteArrayOutputStream()
+
+        when:
+        IoUtils.transfer(inputStream, outputStream, true)
+
+        then:
+        outputStream.toByteArray() == 'something interesting'.bytes
+    }
 }
