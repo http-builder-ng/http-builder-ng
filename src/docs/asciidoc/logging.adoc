@@ -1,0 +1,81 @@
+== Logging
+
+Since HttpBuilder-NG is a library, we make every effort to minimize required dependencies, as such, there is no provided logging implementation; however, the core and alternate client implementations
+do provide logging, though in a somewhat client-specific manner.
+
+NOTE: The examples in the sections below use https://logback.qos.ch[Logback Classic] as their logging implementation; however, you can use any logging
+framework supported by the underlying client and https://www.slf4j.org/[Slf4j].
+
+=== Core Java
+
+The core library and core Java client implementation provides logging using the https://www.slf4j.org/[Slf4j] interfaces. You can use an implementation such as
+https://logback.qos.ch[Logback Classic] to provide logging configuration and support.
+
+The client provides two interesting logging categories:
+
+* `groovy.net.http.JavaHttpBuilder.content` - which will log all request and response content at the `DEBUG` level.
+* `groovy.net.http.JavaHttpBuilder.headers` - which will log all request and response headers at the `DEBUG` level.
+
+Using the Logback Classic Groovy configuration, you could have something like the following (taken from the tests):
+
+[source,groovy]
+.logback.groovy
+----
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.core.status.OnConsoleStatusListener
+
+// always a good idea to add an on console status listener
+statusListener(OnConsoleStatusListener)
+
+appender('CONSOLE', ConsoleAppender) {
+    encoder(PatternLayoutEncoder) {
+        pattern = '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+    }
+}
+
+logger 'groovy.net.http.JavaHttpBuilder', DEBUG
+logger 'groovy.net.http.JavaHttpBuilder.content', DEBUG
+logger 'groovy.net.http.JavaHttpBuilder.headers', DEBUG
+
+root INFO, ['CONSOLE']
+----
+
+which would dump a lot of request and response information to the logs. In general these logging categories should be turned off by default since they generate a lot of log data and may affect
+overall performance.
+
+=== Apache
+
+The Apache client implementation provides some detailed logging categories, which are discussed in the https://hc.apache.org/httpcomponents-client-4.5.x/logging.html[Apache HttpComponents: Logging]
+section of their documentation. Since they use the Apache Commons Logging interfaces, we can use https://logback.qos.ch[Logback Classic] as an example, but we will also need to bring in the "JCL-over-SLF4J"
+bridge library (`org.slf4j:jcl-over-slf4j:1.7.25`). From there we can configure very verbose client logging with something like the following Logback Groovy config file:
+
+[source,groovy]
+.logback.groovy
+----
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.core.status.OnConsoleStatusListener
+
+// always a good idea to add an on console status listener
+statusListener(OnConsoleStatusListener)
+
+appender('CONSOLE', ConsoleAppender) {
+    encoder(PatternLayoutEncoder) {
+        pattern = '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+    }
+}
+
+logger 'org.apache.http', INFO
+logger 'org.apache.http.headers', TRACE
+logger 'org.apache.http.wire', TRACE
+
+root DEBUG, ['CONSOLE']
+----
+
+which will dump out all of the request and response content and headers to the logs. Generally, you will want to have these enabled only for specific circumstances.
+
+=== OkHttp
+
+The OkHttp client does not have any of its own logging and the implementation wrapper does not add any at this time. It seems that you can add logging via the
+https://github.com/square/okhttp/wiki/Interceptors[Interceptor] mechanism, if desired.

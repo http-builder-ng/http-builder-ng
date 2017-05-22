@@ -1,6 +1,6 @@
 = HttpBuilder-NG User Guide
 David Clark & Christopher J. Stehno
-v0.16.0, April 2017
+v0.16.1, April 2017
 :toc: left
 :toclevels: 4
 
@@ -24,7 +24,7 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.
 
 People are talking about HttpBuilder-NG:
 
-* https://twitter.com/noamtenne[Noam Tenne] did a great presentation at Greach 2017: "https://www.youtube.com/watch?v=HoPSS5TEqS8&feature=youtu.be[Back from The Dead: HTTP Builder NG]"
+* https://twitter.com/noamtenne[Noam Tenne] did a great presentation at Greach 2017: https://www.youtube.com/watch?v=HoPSS5TEqS8&feature=youtu.be[Back from The Dead: HTTP Builder NG]
 * http://stehno.com[Chris Stehno] wrote a blog post: http://coffeaelectronica.com/blog/2016/httpbuilder-ng-demo.html[HttpBuilder-NG Demo]
 * The https://groovypodcast.podbean.com/[Groovy Podcast] has discussed the project a few times
 * You can follow the project on Twitter: https://twitter.com/HttpBuilderNG[@HttpBuilderNG]
@@ -38,14 +38,14 @@ If you are itching to get started, here's what you need to do to get up and runn
 
 First, you need the library in your project. If you are using Gradle, add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.14.2'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.16.1'
 
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.14.2</version>
+      <version>0.16.1</version>
     </dependency>
 
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
@@ -102,6 +102,16 @@ String text = http.get(String.class, cfg -> {
 At the end of the User Guide there is an Examples section with some complete Groovy script examples.
 
 include::configuration.adoc[]
+
+include::logging.adoc[]
+
+== Testing
+
+If you are using HttpBuilder-NG to access HTTP endpoints, how are you testing those interactions? Often, it's best to use integration testing with
+live servers to test HTTP integration points; however, it is sometimes useful to have unit tests around these services so that their functionality
+does not drift too far if your intgration tests don't get run as often as the unit test.
+
+For HttpBuilder-NG itself, we use, the http://stehno.com/ersatz[Ersatz] Mock Server library for all of our functional testing.
 
 == Client Library Integration
 

@@ -23,6 +23,7 @@ import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
+import groovyx.net.http.util.IoUtils;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
@@ -40,8 +41,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class NativeHandlers {
@@ -69,18 +68,18 @@ public class NativeHandlers {
     public static Object failure(final FromServer fromServer, final Object data) {
         throw new HttpException(fromServer, data);
     }
-    
+
     /**
      * Default exception handler. Throws a RuntimeException.
      *
-     * @param thrown       The original thrown exception
+     * @param thrown The original thrown exception
      * @return Nothing will be returned, the return type is Object for interface consistency
      * @throws RuntimeException
      */
     public static Object exception(final Throwable thrown) {
         final RuntimeException rethrow = ((thrown instanceof RuntimeException) ?
-                                          (RuntimeException) thrown :
-                                          new RuntimeException(thrown));
+            (RuntimeException) thrown :
+            new RuntimeException(thrown));
         throw rethrow;
     }
 
@@ -179,8 +178,7 @@ public class NativeHandlers {
                 } else {
                     return false;
                 }
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new TransportingException(e);
             }
         }
@@ -264,7 +262,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with an xml body.
-         *
+         * <p>
          * Accepts String and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to xml using Groovy's {@link StreamingMarkupBuilder}.
@@ -293,7 +291,7 @@ public class NativeHandlers {
 
         /**
          * Standard encoder for requests with a json body.
-         *
+         * <p>
          * Accepts String, {@link GString} and {@link Closure} types. If the body is a String type the method passes the body
          * to the ToServer parameter as is. If the body is a {@link Closure} then the closure is converted
          * to json using Groovy's {@link JsonBuilder}.
@@ -348,28 +346,6 @@ public class NativeHandlers {
             }
         }
 
-        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
-            try {
-                final byte[] bytes = new byte[2_048];
-                int read;
-                while ((read = istream.read(bytes)) != -1) {
-                    ostream.write(bytes, 0, read);
-                }
-            }
-            catch(IOException e) {
-                throw new TransportingException(e);
-            }
-            finally {
-                if (close) {
-                    try {
-                        ostream.close();
-                    } catch (IOException ioe) {
-                        throw new TransportingException(ioe);
-                    }
-                }
-            }
-        }
-
         /**
          * Standard parser for raw bytes.
          *
@@ -378,7 +354,7 @@ public class NativeHandlers {
          */
         public static byte[] streamToBytes(final ChainedHttpConfig config, final FromServer fromServer) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            transfer(fromServer.getInputStream(), baos, true);
+            IoUtils.transfer(fromServer.getInputStream(), baos, true);
             return baos.toByteArray();
         }
 
@@ -401,8 +377,7 @@ public class NativeHandlers {
 
                 e.charBuffer.flip();
                 return e.charBuffer.toString();
-            }
-            catch(IOException ioe) {
+            } catch (IOException ioe) {
                 throw new TransportingException(ioe);
             }
         }
@@ -430,8 +405,7 @@ public class NativeHandlers {
                 xml.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
                 xml.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                 return xml.parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
-            }
-            catch(IOException | SAXException | ParserConfigurationException ex) {
+            } catch (IOException | SAXException | ParserConfigurationException ex) {
                 throw new TransportingException(ex);
             }
         }
@@ -444,6 +418,19 @@ public class NativeHandlers {
          */
         public static Object json(final ChainedHttpConfig config, final FromServer fromServer) {
             return new JsonSlurper().parse(new InputStreamReader(fromServer.getInputStream(), fromServer.getCharset()));
+        }
+
+        /**
+         * Transfers the contents of the {@link InputStream} into the {@link OutputStream}, optionally closing the stream.
+         *
+         * @param istream the input stream
+         * @param ostream the output stream
+         * @param close   whether or not to close the output stream
+         * @deprecated Use the version in {@link IoUtils} instead - this one just delegates to it
+         */
+        @Deprecated
+        public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+            IoUtils.transfer(istream, ostream, close);
         }
     }
 }

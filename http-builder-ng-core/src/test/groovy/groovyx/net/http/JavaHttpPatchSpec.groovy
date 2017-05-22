@@ -98,7 +98,7 @@ class JavaHttpPatchSpec extends HttpMethodTestKit {
         def thrownException = null
 
         when:
-        http.patchAsync(config)exceptionally { e ->
+        http.patchAsync(config).exceptionally { e ->
             thrownException = e.cause
         }
 

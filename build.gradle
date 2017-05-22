@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'io.github.http-builder-ng'
-version = '0.16.0'
+version = '0.16.1'
 
 repositories {
     jcenter()
@@ -63,6 +63,9 @@ subprojects {
         testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
         testCompile 'com.stehno.ersatz:ersatz:1.2.0'
         testCompile 'com.stehno.vanilla:vanilla-core:0.5.1'
+
+        testCompile 'org.slf4j:jcl-over-slf4j:1.7.25'
+        testCompile 'ch.qos.logback:logback-classic:1.2.3'
 
         asciidoclet 'org.asciidoctor:asciidoclet:1.+'
     }
@@ -189,6 +192,7 @@ site {
     assetDir( 'http-builder-ng-okhttp/build/reports', into:'okhttp', external:true )
 
     versionedFile 'src/docs/asciidoc/index.adoc'
+    versionedFile 'src/docs/asciidoc/configuration.adoc'
     versionedFile 'src/docs/asciidoc/examples.adoc'
 
     testedPath '/guide/html5/index.html'

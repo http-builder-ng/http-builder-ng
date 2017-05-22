@@ -35,7 +35,7 @@ public class SslUtils {
      * A `HostnameVerifier` that accepts any host name.
      */
     @SuppressWarnings("WeakerAccess")
-    public static HostnameVerifier ANY_HOSTNAME = (s, sslSession) -> true;
+    public static final HostnameVerifier ANY_HOSTNAME = (s, sslSession) -> true;
 
     // trust manager that trusts everything
     private static final TrustManager[] TRUST_MANAGERS = {new X509TrustManager() {
