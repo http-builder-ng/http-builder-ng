@@ -15,14 +15,18 @@
  */
 package groovyx.net.http.util;
 
+import groovyx.net.http.TransportingException;
+
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Shared IO utility operations.
  */
-<span class="nc" id="L25">public class IoUtils {</span>
+<span class="nc" id="L29">public class IoUtils {</span>
 
     /**
      * Reads all bytes from the stream into a byte array.
@@ -32,20 +36,75 @@ import java.io.InputStream;
      * @throws IOException if there is a problem reading the stream
      */
     public static byte[] streamToBytes(final InputStream inputStream) throws IOException {
-<span class="pc" id="L35">        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {</span>
-<span class="fc" id="L36">            final byte[] bytes = new byte[2_048];</span>
+<span class="fc" id="L39">        return streamToBytes(inputStream, true);</span>
+    }
+
+    public static byte[] streamToBytes(final InputStream inputStream, boolean close) throws IOException {
+<span class="pc" id="L43">        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {</span>
+<span class="fc" id="L44">            final byte[] bytes = new byte[2_048];</span>
 
             int read;
-<span class="fc bfc" id="L39" title="All 2 branches covered.">            while ((read = inputStream.read(bytes)) != -1) {</span>
-<span class="fc" id="L40">                outputStream.write(bytes, 0, read);</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">            while ((read = inputStream.read(bytes)) != -1) {</span>
+<span class="fc" id="L48">                outputStream.write(bytes, 0, read);</span>
             }
 
-<span class="fc" id="L43">            return outputStream.toByteArray();</span>
+<span class="fc" id="L51">            return outputStream.toByteArray();</span>
 
-<span class="pc bpc" id="L45" title="6 of 8 branches missed.">        } finally {</span>
-<span class="pc" id="L46">            inputStream.close();</span>
+<span class="pc bpc" id="L53" title="6 of 8 branches missed.">        } finally {</span>
+<span class="pc bpc" id="L54" title="2 of 4 branches missed.">            if (close) inputStream.close();</span>
         }
     }
+
+    /**
+     * Safely copies the contents of the {@link BufferedInputStream} to a {@link String} and resets the stream.
+     * This method is generally only useful for testing and logging purposes.
+     *
+     * @param inputStream the BufferedInputStream
+     * @return a String copy of the stream contents
+     * @throws IOException           if something goes wrong with the stream
+     * @throws IllegalStateException if the stream cannot be reset
+     */
+    public static String copyAsString(final BufferedInputStream inputStream) throws IOException, IllegalStateException {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (inputStream == null) return null;</span>
+
+        try {
+<span class="fc" id="L71">            inputStream.mark(Integer.MAX_VALUE);</span>
+<span class="fc" id="L72">            return new String(streamToBytes(inputStream, false));</span>
+        } finally {
+<span class="nc" id="L74">            try {</span>
+<span class="pc" id="L75">                inputStream.reset();</span>
+<span class="nc" id="L76">            } catch (IOException ioe) {</span>
+<span class="nc" id="L77">                throw new IllegalStateException(&quot;Unable to reset stream - original stream content may be corrupted&quot;);</span>
+<span class="pc" id="L78">            }</span>
+        }
+    }
+
+    /**
+     * Transfers the contents of the {@link InputStream} into the {@link OutputStream}, optionally closing the stream.
+     *
+     * @param istream the input stream
+     * @param ostream the output stream
+     * @param close   whether or not to close the output stream
+     */
+    public static void transfer(final InputStream istream, final OutputStream ostream, final boolean close) {
+        try {
+<span class="fc" id="L91">            final byte[] bytes = new byte[2_048];</span>
+            int read;
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            while ((read = istream.read(bytes)) != -1) {</span>
+<span class="fc" id="L94">                ostream.write(bytes, 0, read);</span>
+            }
+<span class="nc" id="L96">        } catch (IOException e) {</span>
+<span class="nc" id="L97">            throw new TransportingException(e);</span>
+        } finally {
+<span class="pc bpc" id="L99" title="2 of 4 branches missed.">            if (close) {</span>
+                try {
+<span class="pc" id="L101">                    ostream.close();</span>
+<span class="nc" id="L102">                } catch (IOException ioe) {</span>
+<span class="nc" id="L103">                    throw new TransportingException(ioe);</span>
+<span class="pc" id="L104">                }</span>
+            }
+        }
+<span class="fc" id="L107">    }</span>
 }
 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

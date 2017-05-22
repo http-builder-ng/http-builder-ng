@@ -168,15 +168,15 @@ import static java.util.Collections.singletonList;
     }
 
     public URI forCookie(final HttpCookie cookie) throws URISyntaxException {
-<span class="fc" id="L171">        final String scheme = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getScheme(), Traverser::notNull);</span>
-<span class="fc" id="L172">        final Integer port = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPort(), notValue(DEFAULT_PORT));</span>
-<span class="fc" id="L173">        final String host = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getHost(), Traverser::notNull);</span>
+<span class="fc" id="L171">        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);</span>
+<span class="fc" id="L172">        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));</span>
+<span class="fc" id="L173">        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);</span>
 <span class="fc" id="L174">        final String path = cookie.getPath();</span>
 <span class="fc" id="L175">        final String query = null;</span>
 <span class="fc" id="L176">        final String fragment = null;</span>
 <span class="fc" id="L177">        final String userInfo = null;</span>
 
-<span class="pc bpc" id="L179" title="2 of 4 branches missed.">        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);</span>
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        return new URI(scheme, userInfo, host, (port == null ? -1 : port), path, query, fragment);</span>
     }
 
     /**
@@ -185,13 +185,13 @@ import static java.util.Collections.singletonList;
      * @return the generated `URI` representing the parts contained in the builder
      */
     public URI toURI() throws URISyntaxException {
-<span class="fc" id="L188">        final String scheme = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getScheme(), Traverser::notNull);</span>
-<span class="fc" id="L189">        final Integer port = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPort(), notValue(DEFAULT_PORT));</span>
-<span class="fc" id="L190">        final String host = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getHost(), Traverser::notNull);</span>
-<span class="fc" id="L191">        final GString path = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getPath(), Traverser::notNull);</span>
-<span class="fc" id="L192">        final String query = populateQueryString(traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getQuery(), Traverser::nonEmptyMap));</span>
-<span class="fc" id="L193">        final String fragment = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getFragment(), Traverser::notNull);</span>
-<span class="fc" id="L194">        final String userInfo = traverse(this, (u) -&gt; u.getParent(), (u) -&gt; u.getUserInfo(), Traverser::notNull);</span>
+<span class="fc" id="L188">        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);</span>
+<span class="fc" id="L189">        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));</span>
+<span class="fc" id="L190">        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);</span>
+<span class="fc" id="L191">        final GString path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);</span>
+<span class="fc" id="L192">        final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));</span>
+<span class="fc" id="L193">        final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);</span>
+<span class="fc" id="L194">        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);</span>
         
 <span class="fc bfc" id="L196" title="All 4 branches covered.">        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);</span>
     }

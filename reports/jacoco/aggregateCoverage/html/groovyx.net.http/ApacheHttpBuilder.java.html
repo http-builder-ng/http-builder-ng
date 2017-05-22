@@ -53,7 +53,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
-import static groovyx.net.http.NativeHandlers.Parsers.transfer;
+import static groovyx.net.http.util.IoUtils.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].

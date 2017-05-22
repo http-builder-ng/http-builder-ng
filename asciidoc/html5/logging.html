@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.3">
-<title>Examples</title>
+<title>Logging</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,209 +513,114 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_examples">Examples</h2>
+<h2 id="_logging">Logging</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section contains some stand-alone script examples of how you can use <code>HttpBuilder</code>. You can copy them and run them in
-the Groovy Shell or there are unit test versions for most of these examples in the <code>ExamplesSpec.groovy</code> file.</p>
+<p>Since HttpBuilder-NG is a library, we make every effort to minimize required dependencies, as such, there is no provided logging implementation; however, the core and alternate client implementations
+do provide logging, though in a somewhat client-specific manner.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The examples in the sections below use <a href="https://logback.qos.ch">Logback Classic</a> as their logging implementation; however, you can use any logging
+framework supported by the underlying client and <a href="https://www.slf4j.org/">Slf4j</a>.
+</td>
+</tr>
+</table>
 </div>
 <div class="sect2">
-<h3 id="_resource_last_modified_head">Resource Last Modified (HEAD)</h3>
+<h3 id="_core_java">Core Java</h3>
 <div class="paragraph">
-<p>Suppose you want to see when the last time a jar in the public Maven repository was updated. Assuming the server is exposing
-the correct date, you can use the <code>Last-Modified</code> header for the resource to figure out the date. A <code>HEAD</code> request works
-nicely for this, since you don&#8217;t care about the actual file content at this time, you just want the header information.
-HttpBuilder-NG makes this easy:</p>
+<p>The core library and core Java client implementation provides logging using the <a href="https://www.slf4j.org/">Slf4j</a> interfaces. You can use an implementation such as
+<a href="https://logback.qos.ch">Logback Classic</a> to provide logging configuration and support.</p>
+</div>
+<div class="paragraph">
+<p>The client provides two interesting logging categories:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>groovy.net.http.JavaHttpBuilder.content</code> - which will log all request and response content at the <code>DEBUG</code> level.</p>
+</li>
+<li>
+<p><code>groovy.net.http.JavaHttpBuilder.headers</code> - which will log all request and response headers at the <code>DEBUG</code> level.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Using the Logback Classic Groovy configuration, you could have something like the following (taken from the tests):</p>
 </div>
 <div class="listingblock">
-<div class="title">resource_last_modified.groovy</div>
+<div class="title">logback.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">ch.qos.logback.classic.encoder.PatternLayoutEncoder</span>
+<span class="keyword">import</span> <span class="include">ch.qos.logback.core.ConsoleAppender</span>
+<span class="keyword">import</span> <span class="include">ch.qos.logback.core.status.OnConsoleStatusListener</span>
 
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
-<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
+<span class="comment">// always a good idea to add an on console status listener</span>
+statusListener(OnConsoleStatusListener)
 
-<span class="predefined-type">String</span> uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
-<span class="predefined-type">Date</span> lastModified = configure {
-    request.uri = uri
-}.head(<span class="predefined-type">Date</span>) {
-    response.success { FromServer resp -&gt;
-        <span class="predefined-type">String</span> value = FromServer.Header.find(
-            resp.headers, <span class="string"><span class="delimiter">'</span><span class="content">Last-Modified</span><span class="delimiter">'</span></span>
-        )?.value
-
-        value ? <span class="predefined-type">Date</span>.parse(
-            <span class="string"><span class="delimiter">'</span><span class="content">EEE, dd MMM yyyy  H:mm:ss zzz</span><span class="delimiter">'</span></span>,
-            value
-        ) : <span class="predefined-constant">null</span>
+appender(<span class="string"><span class="delimiter">'</span><span class="content">CONSOLE</span><span class="delimiter">'</span></span>, ConsoleAppender) {
+    encoder(PatternLayoutEncoder) {
+        pattern = <span class="string"><span class="delimiter">'</span><span class="content">%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</span><span class="delimiter">'</span></span>
     }
 }
 
-println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy 2.4.7 last modified </span><span class="inline"><span class="inline-delimiter">${</span>lastModified.format(<span class="string"><span class="delimiter">'</span><span class="content">MM/dd/yyyy HH:mm</span><span class="delimiter">'</span></span>)<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+logger <span class="string"><span class="delimiter">'</span><span class="content">groovy.net.http.JavaHttpBuilder</span><span class="delimiter">'</span></span>, DEBUG
+logger <span class="string"><span class="delimiter">'</span><span class="content">groovy.net.http.JavaHttpBuilder.content</span><span class="delimiter">'</span></span>, DEBUG
+logger <span class="string"><span class="delimiter">'</span><span class="content">groovy.net.http.JavaHttpBuilder.headers</span><span class="delimiter">'</span></span>, DEBUG
+
+root INFO, [<span class="string"><span class="delimiter">'</span><span class="content">CONSOLE</span><span class="delimiter">'</span></span>]</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>In the example we use the URL for the Groovy 2.4.7 jar file from the Maven Central Repository and execute a <code>HEAD</code> request on
-it and extract the <code>Last-Modified</code> header and convert it to a <code>java.util.Date</code> object and return it as the result. We end up
-with a resulting output line something like:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Groovy 2.4.7 last modified 06/07/2016 03:38</pre>
+<p>which would dump a lot of request and response information to the logs. In general these logging categories should be turned off by default since they generate a lot of log data and may affect
+overall performance.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_apache">Apache</h3>
 <div class="paragraph">
-<p>Alternately, using header parsing along with the <code>java.time</code> API, you can simplify the header conversion:</p>
+<p>The Apache client implementation provides some detailed logging categories, which are discussed in the <a href="https://hc.apache.org/httpcomponents-client-4.5.x/logging.html">Apache HttpComponents: Logging</a>
+section of their documentation. Since they use the Apache Commons Logging interfaces, we can use <a href="https://logback.qos.ch">Logback Classic</a> as an example, but we will also need to bring in the "JCL-over-SLF4J"
+bridge library (<code>org.slf4j:jcl-over-slf4j:1.7.25</code>). From there we can configure very verbose client logging with something like the following Logback Groovy config file:</p>
 </div>
 <div class="listingblock">
-<div class="title">resource_last_modified_alt.groovy</div>
+<div class="title">logback.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">ch.qos.logback.classic.encoder.PatternLayoutEncoder</span>
+<span class="keyword">import</span> <span class="include">ch.qos.logback.core.ConsoleAppender</span>
+<span class="keyword">import</span> <span class="include">ch.qos.logback.core.status.OnConsoleStatusListener</span>
 
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">java.time.format.DateTimeFormatter.ofPattern</span>
-<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
-<span class="keyword">import</span> <span class="include">java.time.*</span>
+<span class="comment">// always a good idea to add an on console status listener</span>
+statusListener(OnConsoleStatusListener)
 
-ZonedDateTime lastModified = configure {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://central.maven.org/maven2/org/codehaus/groovy/groovy-all/2.4.7/groovy-all-2.4.7.jar</span><span class="delimiter">'</span></span>
-}.head(ZonedDateTime) {
-    response.success { FromServer resp -&gt;
-        resp.headers.find { h-&gt;
-            h.key == <span class="string"><span class="delimiter">'</span><span class="content">Last-Modified</span><span class="delimiter">'</span></span>
-        }?.parse(ofPattern(<span class="string"><span class="delimiter">'</span><span class="content">EEE, dd MMM yyyy  H:mm:ss zzz</span><span class="delimiter">'</span></span>))
+appender(<span class="string"><span class="delimiter">'</span><span class="content">CONSOLE</span><span class="delimiter">'</span></span>, ConsoleAppender) {
+    encoder(PatternLayoutEncoder) {
+        pattern = <span class="string"><span class="delimiter">'</span><span class="content">%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</span><span class="delimiter">'</span></span>
     }
 }
 
-println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy 2.4.7 (jar) was last modified on </span><span class="inline"><span class="inline-delimiter">${</span>lastModified.format(ofPattern(<span class="string"><span class="delimiter">'</span><span class="content">MM/dd/yyyy HH:mm</span><span class="delimiter">'</span></span>))<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
+logger <span class="string"><span class="delimiter">'</span><span class="content">org.apache.http</span><span class="delimiter">'</span></span>, INFO
+logger <span class="string"><span class="delimiter">'</span><span class="content">org.apache.http.headers</span><span class="delimiter">'</span></span>, TRACE
+logger <span class="string"><span class="delimiter">'</span><span class="content">org.apache.http.wire</span><span class="delimiter">'</span></span>, TRACE
+
+root DEBUG, [<span class="string"><span class="delimiter">'</span><span class="content">CONSOLE</span><span class="delimiter">'</span></span>]</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>which yields the same results, just with a cleaner conversion of the header data.</p>
+<p>which will dump out all of the request and response content and headers to the logs. Generally, you will want to have these enabled only for specific circumstances.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scraping_web_content_get">Scraping Web Content (GET)</h3>
+<h3 id="_okhttp">OkHttp</h3>
 <div class="paragraph">
-<p>Scraping content from web sites doesn&#8217;t seem to be a prevalent as it was years ago, but it&#8217;s a lot easier than it used to be.
-By default, <code>text/html</code> content is parsed with the <a href="https://jsoup.org/">JSoup</a> HTML parser into a <code>Document</code> object:</p>
-</div>
-<div class="listingblock">
-<div class="title">web_scraping.groovy</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
-<span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.jsoup:jsoup:1.9.2</span><span class="delimiter">'</span></span>)
-
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
-<span class="keyword">import</span> <span class="include">org.jsoup.nodes.Document</span>
-
-<span class="predefined-type">Document</span> page = configure {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all</span><span class="delimiter">'</span></span>
-}.get()
-
-<span class="predefined-type">String</span> license = page.select(<span class="string"><span class="delimiter">'</span><span class="content">span.b.lic</span><span class="delimiter">'</span></span>).collect { <span class="local-variable">it</span>.text() }.join(<span class="string"><span class="delimiter">'</span><span class="content">, </span><span class="delimiter">'</span></span>)
-
-println <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy is licensed under: </span><span class="inline"><span class="inline-delimiter">${</span>license<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>In the example we make a <code>GET</code> request to the a secondary Maven repository to fetch the main entry page for the <code>groovy-all</code>
-artifact, which has the license information on it. The page is returned and parsed into a JSoup <code>Document</code> which we can then
-run a CSS selection query on to extract the license information and display it. You will end up with:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Groovy is licensed under: Apache 2.0</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_sending_receiving_json_data_post">Sending/Receiving JSON Data (POST)</h3>
-<div class="paragraph">
-<p>Posting JSON content to the server and parsing the response body to build an object from it is pretty common in RESTful
-interfaces. You can do this by creating a POST request with a "Content-Type" of <code>application/json</code> and a custom response
-parser:</p>
-</div>
-<div class="listingblock">
-<div class="title">sending_receiving_post.groovy</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
-
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
-<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
-
-<span class="annotation">@groovy</span>.transform.Canonical
-<span class="type">class</span> <span class="class">ItemScore</span> {
-    <span class="predefined-type">String</span> item
-    <span class="predefined-type">Long</span> score
-}
-
-ItemScore itemScore = configure {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://httpbin.org</span><span class="delimiter">'</span></span>
-    request.contentType = JSON[<span class="integer">0</span>]
-    response.parser(JSON[<span class="integer">0</span>]) { config, resp -&gt;
-        <span class="keyword">new</span> ItemScore(NativeHandlers.Parsers.json(config, resp).json)
-    }
-}.post(ItemScore) {
-    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/post</span><span class="delimiter">'</span></span>
-    request.body = <span class="keyword">new</span> ItemScore(<span class="string"><span class="delimiter">'</span><span class="content">ASDFASEACV235</span><span class="delimiter">'</span></span>, <span class="integer">90786</span>)
-}
-
-println <span class="string"><span class="delimiter">&quot;</span><span class="content">Your score for item (</span><span class="inline"><span class="inline-delimiter">${</span>itemScore.item<span class="inline-delimiter">}</span></span><span class="content">) was (</span><span class="inline"><span class="inline-delimiter">${</span>itemScore.score<span class="inline-delimiter">}</span></span><span class="content">).</span><span class="delimiter">&quot;</span></span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The custom response parser is needed to convert the parsed JSON data into your expected response data object. By default, the
-<code>application/json</code> response content type will be parsed to a JSON object (lazy map); however, in this case we want the
-response to be an instance of the <code>ItemScore</code> class. The example simply posts an <code>ItemScore</code> object (as a JSON string) to the
-server, which responds with the JSON string that it was provided.</p>
-</div>
-<div class="paragraph">
-<p>The additional <code>.json</code> property call on the parsed data is to extract the JSON data from the response envelope - the site
-provides other useful information about the request. The end result is the following display:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>Your score for item (ASDFASEACV235) was (90786).</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_sending_form_data_post">Sending Form Data (POST)</h3>
-<div class="paragraph">
-<p>Posting HTML form data is a common <code>POST</code> operation, and it is supported by <code>HttpBuilder</code> with a custom encoder, such as:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
-
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
-<span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
-<span class="keyword">import</span> <span class="include">static</span> <span class="include">groovy.json.JsonOutput.prettyPrint</span>
-
-<span class="keyword">def</span> result = configure {
-    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://httpbin.org</span><span class="delimiter">'</span></span>
-    request.contentType = JSON[<span class="integer">0</span>]
-}.post {
-    request.uri.path = <span class="string"><span class="delimiter">'</span><span class="content">/post</span><span class="delimiter">'</span></span>
-    request.body = [<span class="key">id</span>: <span class="string"><span class="delimiter">'</span><span class="content">234545</span><span class="delimiter">'</span></span>, <span class="key">label</span>: <span class="string"><span class="delimiter">'</span><span class="content">something interesting</span><span class="delimiter">'</span></span>]
-    request.contentType = <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>
-    request.encoder <span class="string"><span class="delimiter">'</span><span class="content">application/x-www-form-urlencoded</span><span class="delimiter">'</span></span>, NativeHandlers.Encoders.&amp;form
-}
-
-println <span class="string"><span class="delimiter">&quot;</span><span class="content">You submitted: id=</span><span class="inline"><span class="inline-delimiter">${</span>result.form.id<span class="inline-delimiter">}</span></span><span class="content"> and label=</span><span class="inline"><span class="inline-delimiter">${</span>result.form.id<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span></code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>which posts the specified form data to the <code><a href="http://httpbin.org/post" class="bare">http://httpbin.org/post</a></code> which replies with JSON content containing the posted
-form data (along with some other information). The default JSON decoder is used to parse the JSON content into a multi-level
-Map, from which we can extract the data we sent.</p>
-</div>
-<div class="paragraph">
-<p>Note that the <code>NativeHandlers.Encoders.&amp;form</code> encoder is used to convert the provided map data into the encoded message
-before sending it to the server.</p>
+<p>The OkHttp client does not have any of its own logging and the implementation wrapper does not add any at this time. It seems that you can add logging via the
+<a href="https://github.com/square/okhttp/wiki/Interceptors">Interceptor</a> mechanism, if desired.</p>
 </div>
 </div>
 </div>
@@ -723,7 +628,7 @@ before sending it to the server.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-05-22 13:03:54 -05:00
+Last updated 2017-05-22 13:02:57 -05:00
 </div>
 </div>
 </body>

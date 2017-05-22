@@ -31,7 +31,7 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>2920 lines of code analyzed,
+<p>2952 lines of code analyzed,
             in 88 classes,
             in 4 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
@@ -43,27 +43,27 @@
 <tr class="tablerow0">
 <td>High Priority Warnings</td>
 <td align="right">5</td>
-<td align="right">1.71</td>
+<td align="right">1.69</td>
 </tr>
 <tr class="tablerow1">
 <td>Medium Priority Warnings</td>
 <td align="right">9</td>
-<td align="right">3.08</td>
+<td align="right">3.05</td>
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">13</td>
-<td align="right">4.45</td>
+<td align="right">12</td>
+<td align="right">4.07</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>27</b>
+<b>26</b>
 </td>
 <td align="right">
-<b>9.25</b>
+<b>8.81</b>
 </td>
 </tr>
 </table>
@@ -96,19 +96,19 @@
 <td>
 <a href="#Warnings_I18N">Internationalization Warnings</a>
 </td>
-<td align="right">6</td>
+<td align="right">7</td>
 </tr>
 <tr class="tablerow1">
 <td>
 <a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
 </td>
-<td align="right">2</td>
+<td align="right">1</td>
 </tr>
 <tr class="tablerow0">
 <td>
 <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
 </td>
-<td align="right">7</td>
+<td align="right">6</td>
 </tr>
 <tr class="tablerow1">
 <td>
@@ -121,7 +121,7 @@
 <b>Total</b>
 </td>
 <td align="right">
-<b>27</b>
+<b>26</b>
 </td>
 </tr>
 </table>
@@ -151,7 +151,7 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 394<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 394]</p>
+                                line 370<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>In method groovyx.net.http.NativeHandlers$Parsers.textToString(ChainedHttpConfig, FromServer)<br/>Need to close java.io.Reader <br/>At NativeHandlers.java:[line 370]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -164,7 +164,7 @@
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 87<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.deleteFile(NonBlockingCookieStore$Key)<br/>Called method java.io.File.delete()<br/>At FileBackedCookieStore.java:[line 87]</p>
+                                line 88<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.deleteFile(NonBlockingCookieStore$Key)<br/>Called method java.io.File.delete()<br/>At FileBackedCookieStore.java:[line 88]</p>
 </td>
 </tr>
 <tr class="tablerow1">
@@ -177,7 +177,7 @@
 <br/>
 <br/>In file JavaHttpBuilder.java,
                         
-                                line 247<br/>In class groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer<br/>In method groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer.getUri()<br/>In class groovyx.net.http.NonBlockingCookieStore$UriKey<br/>In method groovyx.net.http.NonBlockingCookieStore$UriKey.getURI()<br/>At JavaHttpBuilder.java:[line 247]</p>
+                                line 295<br/>In class groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer<br/>In method groovyx.net.http.JavaHttpBuilder$Action$JavaFromServer.getUri()<br/>In class groovyx.net.http.NonBlockingCookieStore$UriKey<br/>In method groovyx.net.http.NonBlockingCookieStore$UriKey.getURI()<br/>At JavaHttpBuilder.java:[line 295]</p>
 </td>
 </tr>
 </table>
@@ -204,7 +204,7 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 165<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 165] is not discharged<br/>Path continues at NativeHandlers.java:[line 166]<br/>Remaining obligations: {InputStream x 1}</p>
+                                line 164<br/>In class groovyx.net.http.NativeHandlers$Encoders<br/>In method groovyx.net.http.NativeHandlers$Encoders.handleRawUpload(ChainedHttpConfig, ToServer)<br/>Reference type java.io.InputStream<br/>1 instances of obligation remaining<br/>Obligation to clean up resource created at NativeHandlers.java:[line 164] is not discharged<br/>Path continues at NativeHandlers.java:[line 165]<br/>Remaining obligations: {InputStream x 1}</p>
 </td>
 </tr>
 </table>
@@ -251,16 +251,29 @@
 <td width="20%" valign="top">
 <a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
 </td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.util.IoUtils.copyAsString(BufferedInputStream): new String(byte[])<br/>
+<br/>
+<br/>In file IoUtils.java,
+                        
+                                line 72<br/>In class groovyx.net.http.util.IoUtils<br/>In method groovyx.net.http.util.IoUtils.copyAsString(BufferedInputStream)<br/>Called method new String(byte[])<br/>At IoUtils.java:[line 72]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
 <td width="10%" valign="top">Low</td>
 <td width="70%">
 <p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File): new java.io.FileReader(File)<br/>
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 174<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>Called method new java.io.FileReader(File)<br/>At FileBackedCookieStore.java:[line 174]</p>
+                                line 175<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>Called method new java.io.FileReader(File)<br/>At FileBackedCookieStore.java:[line 175]</p>
 </td>
 </tr>
-<tr class="tablerow0">
+<tr class="tablerow1">
 <td width="20%" valign="top">
 <a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
 </td>
@@ -270,10 +283,10 @@
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 156<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie)<br/>Called method new java.io.FileWriter(File)<br/>At FileBackedCookieStore.java:[line 156]</p>
+                                line 157<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie)<br/>Called method new java.io.FileWriter(File)<br/>At FileBackedCookieStore.java:[line 157]</p>
 </td>
 </tr>
-<tr class="tablerow1">
+<tr class="tablerow0">
 <td width="20%" valign="top">
 <a href="#DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
 </td>
@@ -286,7 +299,7 @@
                                 line 125<br/>In class groovyx.net.http.NonBlockingCookieStore$Key<br/>In method groovyx.net.http.NonBlockingCookieStore$Key.forStorage(String)<br/>At NonBlockingCookieStore.java:[line 125]</p>
 </td>
 </tr>
-<tr class="tablerow0">
+<tr class="tablerow1">
 <td width="20%" valign="top">
 <a href="#DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
 </td>
@@ -323,20 +336,7 @@
 <br/>
 <br/>In file NativeHandlers.java,
                         
-                                line 342<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 342]</p>
-</td>
-</tr>
-<tr class="tablerow0">
-<td width="20%" valign="top">
-<a href="#MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
-</td>
-<td width="10%" valign="top">High</td>
-<td width="70%">
-<p>groovyx.net.http.util.SslUtils.ANY_HOSTNAME isn't final but should be<br/>
-<br/>
-<br/>In file SslUtils.java,
-                        
-                                line 38<br/>In class groovyx.net.http.util.SslUtils<br/>Field groovyx.net.http.util.SslUtils.ANY_HOSTNAME<br/>At SslUtils.java:[line 38]</p>
+                                line 340<br/>In class groovyx.net.http.NativeHandlers$Parsers<br/>Field groovyx.net.http.NativeHandlers$Parsers.catalogResolver<br/>At NativeHandlers.java:[line 340]</p>
 </td>
 </tr>
 </table>
@@ -363,7 +363,7 @@
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 271<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Called method Integer.intValue()<br/>Should call Integer.parseInt(String) instead<br/>At FileBackedCookieStore.java:[line 271]</p>
+                                line 272<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Called method Integer.intValue()<br/>Should call Integer.parseInt(String) instead<br/>At FileBackedCookieStore.java:[line 272]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -389,23 +389,10 @@
 <br/>
 <br/>In file JavaHttpBuilder.java,
                         
-                                line 51<br/>In class groovyx.net.http.JavaHttpBuilder$Action<br/>Field groovyx.net.http.JavaHttpBuilder$Action.failed<br/>At JavaHttpBuilder.java:[line 51]</p>
+                                line 55<br/>In class groovyx.net.http.JavaHttpBuilder$Action<br/>Field groovyx.net.http.JavaHttpBuilder$Action.failed<br/>At JavaHttpBuilder.java:[line 55]</p>
 </td>
 </tr>
 <tr class="tablerow0">
-<td width="20%" valign="top">
-<a href="#DM_STRING_TOSTRING">Method invokes toString() method on a String</a>
-</td>
-<td width="10%" valign="top">Low</td>
-<td width="70%">
-<p>groovyx.net.http.UriBuilder.forCookie(HttpCookie) invokes toString() method on a String<br/>
-<br/>
-<br/>In file UriBuilder.java,
-                        
-                                line 179<br/>In class groovyx.net.http.UriBuilder<br/>In method groovyx.net.http.UriBuilder.forCookie(HttpCookie)<br/>At UriBuilder.java:[line 179]</p>
-</td>
-</tr>
-<tr class="tablerow1">
 <td width="20%" valign="top">
 <a href="#UPM_UNCALLED_PRIVATE_METHOD">Private method is never called</a>
 </td>
@@ -419,7 +406,7 @@
                                 to 244<br/>In class groovyx.net.http.NonBlockingCookieStore<br/>In method groovyx.net.http.NonBlockingCookieStore.makeURI(String)<br/>At NonBlockingCookieStore.java:[lines 241-244]</p>
 </td>
 </tr>
-<tr class="tablerow0">
+<tr class="tablerow1">
 <td width="20%" valign="top">
 <a href="#URF_UNREAD_FIELD">Unread field</a>
 </td>
@@ -432,7 +419,7 @@
                                 line 36<br/>In class groovyx.net.http.CharSequenceInputStream<br/>Field groovyx.net.http.CharSequenceInputStream.charset<br/>At CharSequenceInputStream.java:[line 36]</p>
 </td>
 </tr>
-<tr class="tablerow1">
+<tr class="tablerow0">
 <td width="20%" valign="top">
 <a href="#URF_UNREAD_FIELD">Unread field</a>
 </td>
@@ -469,7 +456,7 @@
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 264<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Local variable named maxAge<br/>At FileBackedCookieStore.java:[line 264]</p>
+                                line 265<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.fromProperties(Properties)<br/>Local variable named maxAge<br/>At FileBackedCookieStore.java:[line 265]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -495,7 +482,7 @@
 <br/>
 <br/>In file FileBackedCookieStore.java,
                         
-                                line 170<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.readAll()<br/>Value loaded from e<br/>Dereferenced at FileBackedCookieStore.java:[line 170]<br/>Known null at FileBackedCookieStore.java:[line 170]</p>
+                                line 171<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.readAll()<br/>Value loaded from e<br/>Dereferenced at FileBackedCookieStore.java:[line 171]<br/>Known null at FileBackedCookieStore.java:[line 171]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -619,18 +606,6 @@ there is no easy way to eliminate these false positives.
     <li>String.toLowerCase( Locale l )</li>
     </ul>
       <p>versions instead.</p>
-
-    
-<p>
-<br/>
-<br/>
-</p>
-<h2>
-<a name="DM_STRING_TOSTRING">Method invokes toString() method on a String</a>
-</h2>
-
-  <p> Calling <code>String.toString()</code> is just a redundant operation.
-  Just use the String.</p>
 
     
 <p>

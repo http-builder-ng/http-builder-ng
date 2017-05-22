@@ -26,7 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static groovyx.net.http.NativeHandlers.Parsers.transfer;
+import static groovyx.net.http.util.IoUtils.transfer;
 
 /**
  * Helper methods used to assist in downloading remote content.
