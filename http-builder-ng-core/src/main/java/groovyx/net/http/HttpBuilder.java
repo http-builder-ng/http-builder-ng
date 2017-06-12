@@ -240,18 +240,35 @@ public abstract class HttpBuilder implements Closeable {
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
     private final CookieManager cookieManager;
-
+    
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
-        final File folder = objectConfig.getClient().getCookieFolder();
-        CookieStore cookieStore = (folder == null ?
-                                   new NonBlockingCookieStore() :
-                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
-        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+        this.cookieManager = new CookieManager(makeCookieStore(objectConfig), CookiePolicy.ACCEPT_ALL);
+    }
+
+    private CookieStore makeCookieStore(final HttpObjectConfig objectConfig) {
+        if(objectConfig.getClient().getCookiesEnabled()) {
+            final File folder = objectConfig.getClient().getCookieFolder();
+            return (folder == null ?
+                    new NonBlockingCookieStore() :
+                    new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
+        }
+        else {
+            return NullCookieStore.instance();
+        }
     }
 
     protected CookieManager getCookieManager() {
         return cookieManager;
+    }
+
+    /**
+     * Returns the cookie store used by this builder
+     * 
+     * @return the cookie store used by this builder
+     */
+    public CookieStore getCookieStore() {
+        return cookieManager.getCookieStore();
     }
 
     protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {

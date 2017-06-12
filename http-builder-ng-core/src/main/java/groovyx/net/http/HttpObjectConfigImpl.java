@@ -125,7 +125,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
     }
 
     private static class ClientConfig implements Client {
-
+        private boolean cookiesEnabled = true;
         private int cookieVersion = 0;
         private File cookieFolder;
 
@@ -147,6 +147,16 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         @Override
         public void setCookieFolder(final File val) {
             this.cookieFolder = val;
+        }
+
+        @Override
+        public boolean getCookiesEnabled() {
+            return cookiesEnabled;
+        }
+
+        @Override
+        public void setCookiesEnabled(final boolean val) {
+            cookiesEnabled = val;
         }
     }
 
