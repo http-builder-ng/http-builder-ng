@@ -15,13 +15,14 @@
  */
 package groovyx.net.http;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 import java.io.File;
+import java.net.CookieStore;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -182,6 +183,20 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return the folder containing persistent cookies, null if using an in memory store
          */
         File getCookieFolder();
+
+        /**
+         * Used to enable or disable cookies.
+         *
+         * @param version true if cookies are enabled, false if not enabled.
+         */
+        void setCookiesEnabled(boolean val);
+
+        /**
+         * Retrieves whether cookies are enabled or disabled
+         *
+         * @return true if cookies are enabled, false if not
+         */
+        boolean getCookiesEnabled();
     }
 
     ChainedHttpConfig getChainedConfig();
