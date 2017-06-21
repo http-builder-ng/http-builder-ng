@@ -20,6 +20,7 @@ import groovyx.net.http.ChainedHttpConfig
 import groovyx.net.http.FromServer
 import groovyx.net.http.HttpBuilder
 import groovyx.net.http.HttpConfig
+import groovyx.net.http.NullCookieStore
 import spock.lang.Unroll
 
 import java.util.function.BiFunction
@@ -227,32 +228,55 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         def http = httpBuilder { request.uri = ersatzServer.httpUrl; }
 
         then:
-        http.cookieManager.cookieStore.all.size() == 0;
+        http.cookieStore.all.size() == 0;
 
         when:
         http.get { request.uri.path = '/setkermit'; }
 
         then:
-        http.cookieManager.cookieStore.all.size() == 1;
+        http.cookieStore.all.size() == 1;
 
         when:
         http.get { request.uri.path = '/showkermit'; }
 
         then:
-        http.cookieManager.cookieStore.all.size() == 3;
+        http.cookieStore.all.size() == 3;
 
         when:
         http.get { request.uri.path = '/some/deep/path'; }
 
         then:
-        http.cookieManager.cookieStore.all.size() == 3;
+        http.cookieStore.all.size() == 3;
 
         when:
         http.get { request.uri.path = '/setkermit'; } //verify that duplicate cookies are not created
 
         then:
-        http.cookieManager.cookieStore.all.size() == 3;
+        http.cookieStore.all.size() == 3;
         ersatzServer.verify();
+    }
+
+    def 'cookies are not stored when disabled'() {
+        setup:
+        ersatzServer.expectations {
+            get('/showkermit').called(1).responder {
+                content(OK_TEXT, TEXT_PLAIN)
+                cookie('miss', 'piggy; path=/')
+                cookie('fozzy', 'bear; path=/some/deep/path')
+            }
+        }
+
+        when:
+        def http = httpBuilder {
+            client.cookiesEnabled = false;
+            request.uri = ersatzServer.httpUrl;
+        }
+        http.get { request.uri.path = '/showkermit'; }
+        
+        then:
+        http.cookieStore.cookies.size() == 0;
+        http.cookieStore.URIs.size() == 0;
+        http.cookieStore.is(NullCookieStore.instance());
     }
 
     @Unroll 'get(Class,Consumer): cookies -> #cookies'() {
