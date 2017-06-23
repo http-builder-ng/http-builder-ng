@@ -20,6 +20,9 @@ import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static java.util.concurrent.TimeUnit.MINUTES
+import static java.util.concurrent.TimeUnit.MINUTES
 
 class JavaHttpBuilderSpec extends Specification {
 
@@ -42,5 +45,31 @@ class JavaHttpBuilderSpec extends Specification {
 
         and:
         http instanceof JavaHttpBuilder
+    }
+
+    def 'access to client implementation unsupported'() {
+        setup:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        when:
+        http.clientImplementation
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def 'client customization unsupported'() {
+        when:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            client.customizeClient { obj ->
+                // not going to get here
+            }
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        then:
+        thrown(UnsupportedOperationException)
     }
 }

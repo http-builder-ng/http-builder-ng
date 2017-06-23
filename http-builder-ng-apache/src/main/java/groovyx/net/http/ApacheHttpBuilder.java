@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
@@ -240,7 +241,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        
+
         public Handler(final ChainedHttpConfig requestConfig) throws URISyntaxException {
             this.requestConfig = requestConfig;
             this.theUri = requestConfig.getChainedRequest().getUri().toURI();
@@ -256,6 +257,12 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
 
+    /**
+     * Creates a new `HttpBuilder` based on the Apache HTTP client. While it is acceptable to create a builder with this method, it is generally
+     * preferred to use one of the `static` `configure(...)` methods.
+     *
+     * @param config the configuration object
+     */
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
 
@@ -295,7 +302,21 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
         });
 
+        final Consumer<Object> clientCustomizer = clientConfig.getClientCustomizer();
+        if (clientCustomizer != null) {
+            clientCustomizer.accept(myBuilder);
+        }
+
         this.client = myBuilder.build();
+    }
+
+    /**
+     * Retrieves the internal client implementation as an {@link HttpClient} instance.
+     *
+     * @return the reference to the internal client implementation as an {@link HttpClient}
+     */
+    public Object getClientImplementation() {
+        return client;
     }
 
     protected ChainedHttpConfig getObjectConfig() {
@@ -346,21 +367,20 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     private <T extends HttpUriRequest> Object exec(final ChainedHttpConfig requestConfig,
                                                    final Function<URI, T> constructor) {
-        
+
         try {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             final URI theUri = cr.getUri().toURI();
             final T request = constructor.apply(theUri);
             addHeaders(cr, request);
-            if((request instanceof HttpEntityEnclosingRequest) && cr.actualBody() != null) {
+            if ((request instanceof HttpEntityEnclosingRequest) && cr.actualBody() != null) {
                 final HttpEntity entity = entity(requestConfig);
                 ((HttpEntityEnclosingRequest) request).setEntity(entity);
                 request.setHeader(entity.getContentType());
             }
-            
+
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             return handleException(requestConfig.getChainedResponse(), e);
         }
     }

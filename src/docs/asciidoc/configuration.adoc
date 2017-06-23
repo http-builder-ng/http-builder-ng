@@ -452,8 +452,8 @@ options should be configured in the `HttpBuilder.configure` methods, rather than
 
 ==== Client
 
-The `getClient()` method of the `HttpObjectConfig` interface provides a means of applying client-specific configuration. Currently, there are only two
-supported configuration properties:
+The `getClient()` method of the `HttpObjectConfig` interface provides a means of applying client-specific configuration. The supported configuration
+options are as follows:
 
 * `cookieVersion` - the supported HTTP Cookie version used by the underlying clients. All three `HttpBuilder` implementations will support Cookies at
 version 0 by default, which is what the Java Servlet API accepts by default. This can be modified, but care must be taken to ensure that your server
@@ -461,14 +461,43 @@ supports and accepts the configured version.
 * `cookieFolder` - the location for storing cookies that will persist after your application terminates. If no folder is specified an in memory
 cookie store and no cookies will be persisted after your application terminates. If cookies are found here then the cookies will be loaded prior to
 sending any requests to remote servers.
+* `cookiesEnabled` - allows cookie support to be enabled and disabled in the client.
 
 [source,groovy]
 ----
 HttpBuilder.configure {
     client.cookieVersion = 0
     client.cookieFolder = new File('/tmp/cookies')
+    client.cookiesEnabled = true
 }
 ----
+
+There is also a provision for applying customizations directly on the underlying client implementation, at configuration-time. The
+`customizeClient(Consumer<Object>)` method is used to allow additional client-specific configuration on an instance. Each client implementation
+provides its own "builder" object as the `Object` parameter into the `Consumer`:
+
+* The `core` Java client does not support this customization, and will throw an `UnsupportedOperationException` if it is attempted.
+* The `apache` client will pass in the `org.apache.http.impl.client.HttpClientBuilder` instance.
+* The `okhttp` client will pass in the `okhttp.OkHttpClient.Builder` instance.
+
+When a builder instance is available, it will have already been configured with all of the HttpBuilder-provided configuration. The provided
+customization will be applied on top of the existing configuration.
+
+As an example, setting the connection timeout on the `okhttp` client would look like the following:
+
+[source,groovy]
+----
+HttpBuilder http = OkHttpBuilder.configure {
+    client.customizeClient { OkHttpClient.Builder builder ->
+        builder.connectTimeout(5, MINUTES)
+    }
+}
+----
+
+Notice, that a Groovy `Closure` works as well as a Java `Consumer`.
+
+WARNING: This configuration method is considered a last resort and should only be used in cases where the configuration is needed and not available
+through the HttpBuilder interfaces.
 
 ==== Execution
 
@@ -586,6 +615,9 @@ HttpBuilder.configure({ c -> new ApacheHttpBuilder(c) })
 
 Using the `ApacheHttpBuilder` requires the `http-builder-ng-apache` dependency to be added to your project. The third client implementation,
 `OkHttpBuilder` can be specified in the same manner (requiring the `http-builder-ng-okhttp` dependency).
+
+A method is provided to access the underlying HTTP client implementation, the `getClientImplementation()` method. This will return a reference to the
+underlying configured client instance. Support for this method is optional, see the JavaDocs for the specific implementation for more details.
 
 === Request-Related
 

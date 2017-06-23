@@ -335,6 +335,18 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.clientConfig = config.getClient();
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
         this.sslContext = config.getExecution().getSslContext();
+
+        if( clientConfig.getClientCustomizer() != null ){
+            throw new UnsupportedOperationException("Client implementation configuration is not available for the core Java implementation.");
+        }
+    }
+
+    /**
+     * The core Java client implementation does not support direct client access. This method will throw an {@link UnsupportedOperationException}.
+     */
+    @Override
+    public Object getClientImplementation() {
+        throw new UnsupportedOperationException("The core Java implementation does not support direct client access.");
     }
 
     protected ChainedHttpConfig getObjectConfig() {

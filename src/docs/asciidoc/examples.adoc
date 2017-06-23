@@ -176,3 +176,40 @@ Map, from which we can extract the data we sent.
 
 Note that the `NativeHandlers.Encoders.&form` encoder is used to convert the provided map data into the encoded message
 before sending it to the server.
+
+=== Configuring Timeout
+
+You can provide additional configuration not directly supported by `HttpBuilder`, such as connection timeout, using the
+`customizeClient(Consumer<Object>)` method (supported by the `apache` and `okhttp` client implementations):
+
+For the `apache` client:
+
+[source,groovy]
+----
+HttpBuilder http = ApacheHttpBuilder.configure {
+    client.customizeClient { HttpClientBuilder builder ->
+        RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        requestBuilder.connectTimeout = 1234567
+        requestBuilder.connectionRequestTimeout = 98765
+
+        builder.defaultRequestConfig = requestBuilder.build()
+    }
+
+    // other config...
+}
+----
+
+and for the `okhttp` client:
+
+[source,groovy]
+----
+HttpBuilder http = OkHttpBuilder.configure {
+    client.customizeClient { OkHttpClient.Builder builder ->
+        builder.connectTimeout(5, MINUTES)
+    }
+
+    // other config...
+}
+----
+
+This additional custom configuration must be applied with care, as it is possible to undo the configuration provided by the `HttpBuilder` library.
