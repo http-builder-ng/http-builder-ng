@@ -264,7 +264,7 @@ called, it is executed and its return value is used as the return value for the 
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    reponse.when(200){ FromServer fs ->
+    response.when(200){ FromServer fs ->
         'ok'
     }
 }
@@ -282,7 +282,7 @@ The other two status handlers are the `success` and `failure` methods:
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    reponse.success { FromServer fs ->
+    response.success { FromServer fs ->
         'ok'
     }
 }
