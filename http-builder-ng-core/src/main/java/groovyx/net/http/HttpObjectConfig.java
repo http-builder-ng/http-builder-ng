@@ -15,15 +15,14 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import java.io.File;
-import java.net.CookieStore;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -211,7 +210,7 @@ public interface HttpObjectConfig extends HttpConfig {
          *
          * This operation is optional. If a client-implementation does not support it, an {@link UnsupportedOperationException} will be thrown.
          */
-        void customizeClient(Consumer<Object> customizer);
+        void clientCustomizer(Consumer<Object> customizer);
 
         /**
          * Used to retrieve the configured client implementation customizer `Consumer`, if there is one.

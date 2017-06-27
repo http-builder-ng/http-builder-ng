@@ -60,7 +60,7 @@ class ApacheHttpBuilderSpec extends Specification {
     def 'client customization'() {
         setup:
         HttpBuilder http = ApacheHttpBuilder.configure {
-            client.customizeClient { HttpClientBuilder builder ->
+            client.clientCustomizer { HttpClientBuilder builder ->
                 RequestConfig.Builder requestBuilder = RequestConfig.custom()
                 requestBuilder.connectTimeout = 1234567
                 requestBuilder.connectionRequestTimeout = 98765

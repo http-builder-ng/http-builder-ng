@@ -180,14 +180,14 @@ before sending it to the server.
 === Configuring Timeout
 
 You can provide additional configuration not directly supported by `HttpBuilder`, such as connection timeout, using the
-`customizeClient(Consumer<Object>)` method (supported by the `apache` and `okhttp` client implementations):
+`clientCustomizer(Consumer<Object>)` method (supported by all three client implementations):
 
 For the `apache` client:
 
 [source,groovy]
 ----
 HttpBuilder http = ApacheHttpBuilder.configure {
-    client.customizeClient { HttpClientBuilder builder ->
+    client.clientCustomizer { HttpClientBuilder builder ->
         RequestConfig.Builder requestBuilder = RequestConfig.custom()
         requestBuilder.connectTimeout = 1234567
         requestBuilder.connectionRequestTimeout = 98765
@@ -204,8 +204,21 @@ and for the `okhttp` client:
 [source,groovy]
 ----
 HttpBuilder http = OkHttpBuilder.configure {
-    client.customizeClient { OkHttpClient.Builder builder ->
+    client.clientCustomizer { OkHttpClient.Builder builder ->
         builder.connectTimeout(5, MINUTES)
+    }
+
+    // other config...
+}
+----
+
+and lastly, for the `core` client:
+
+[source,groovy]
+----
+HttpBuilder http = OkHttpBuilder.configure {
+    client.clientCustomizer { HttpURLConnection conn ->
+        connection.connectTimeout = 8675309
     }
 
     // other config...

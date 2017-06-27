@@ -162,7 +162,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         }
 
         @Override
-        public void customizeClient(final Consumer<Object> customizer) {
+        public void clientCustomizer(final Consumer<Object> customizer) {
             this.clientCustomizer = customizer;
         }
 

@@ -264,7 +264,7 @@ called, it is executed and its return value is used as the return value for the 
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    reponse.when(200){ FromServer fs ->
+    response.when(200){ FromServer fs ->
         'ok'
     }
 }
@@ -282,7 +282,7 @@ The other two status handlers are the `success` and `failure` methods:
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    reponse.success { FromServer fs ->
+    response.success { FromServer fs ->
         'ok'
     }
 }
@@ -473,10 +473,10 @@ HttpBuilder.configure {
 ----
 
 There is also a provision for applying customizations directly on the underlying client implementation, at configuration-time. The
-`customizeClient(Consumer<Object>)` method is used to allow additional client-specific configuration on an instance. Each client implementation
+`clientCustomizer(Consumer<Object>)` method is used to allow additional client-specific configuration on an instance. Each client implementation
 provides its own "builder" object as the `Object` parameter into the `Consumer`:
 
-* The `core` Java client does not support this customization, and will throw an `UnsupportedOperationException` if it is attempted.
+* The `core` client will pass in the `java.net.HttpURLConnection` instance.
 * The `apache` client will pass in the `org.apache.http.impl.client.HttpClientBuilder` instance.
 * The `okhttp` client will pass in the `okhttp.OkHttpClient.Builder` instance.
 
@@ -488,7 +488,7 @@ As an example, setting the connection timeout on the `okhttp` client would look 
 [source,groovy]
 ----
 HttpBuilder http = OkHttpBuilder.configure {
-    client.customizeClient { OkHttpClient.Builder builder ->
+    client.clientCustomizer { OkHttpClient.Builder builder ->
         builder.connectTimeout(5, MINUTES)
     }
 }

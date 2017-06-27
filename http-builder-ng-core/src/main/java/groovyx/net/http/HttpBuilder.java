@@ -1758,7 +1758,7 @@ public abstract class HttpBuilder implements Closeable {
     /**
      * Used to retrieve the instance of the internal client implementation. All client configuration will have been performed by the time this
      * method is accessible. If additional configuration is desired and not supported by HttpBuilder-NG directly, you should use the
-     * `HttpObjectConfig::Client::customizeClient(Consumer<Object>)` method.
+     * `HttpObjectConfig::Client::clientCustomizer(Consumer<Object>)` method.
      *
      * This functionality is optional and client-implementation-dependent. If access to the internal client is not supported, an
      * {@link UnsupportedOperationException} will be thrown.

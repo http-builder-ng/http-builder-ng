@@ -60,7 +60,7 @@ class OkHttpBuilderSpec extends Specification {
     def 'client customization'() {
         setup:
         HttpBuilder http = OkHttpBuilder.configure {
-            client.customizeClient { OkHttpClient.Builder builder ->
+            client.clientCustomizer { OkHttpClient.Builder builder ->
                 builder.connectTimeout(5, MINUTES)
             }
             request.uri = "${ersatzServer.httpUrl}/foo"
