@@ -25,12 +25,12 @@ import okhttp3.*;
 import okio.BufferedSink;
 
 import javax.net.ssl.SSLContext;
-import java.net.URISyntaxException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.LinkedHashMap;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +41,6 @@ import java.util.function.Function;
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
-import static java.util.stream.Collectors.toList;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
@@ -83,7 +82,21 @@ public class OkHttpBuilder extends HttpBuilder {
             );
         }
 
+        final Consumer<Object> clientCustomizer = clientConfig.getClientCustomizer();
+        if (clientCustomizer != null) {
+            clientCustomizer.accept(builder);
+        }
+
         this.client = builder.build();
+    }
+
+    /**
+     * Retrieves the internal client implementation as an {@link OkHttpClient} instance.
+     *
+     * @return the reference to the internal client implementation as an {@link OkHttpClient}
+     */
+    public Object getClientImplementation() {
+        return client;
     }
 
     /**
@@ -164,19 +177,19 @@ public class OkHttpBuilder extends HttpBuilder {
     @Override
     protected Object doPost(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),
-                       chainedConfig);
+            chainedConfig);
     }
 
     @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),
-                       chainedConfig);
+            chainedConfig);
     }
 
     @Override
     protected Object doPatch(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),
-                chainedConfig);
+            chainedConfig);
     }
 
     @Override
@@ -229,25 +242,23 @@ public class OkHttpBuilder extends HttpBuilder {
         }
     }
 
-    private Object execute(final Function<HttpUrl,Request.Builder> makeBuilder, final ChainedHttpConfig chainedConfig) {
+    private Object execute(final Function<HttpUrl, Request.Builder> makeBuilder, final ChainedHttpConfig chainedConfig) {
         try {
             final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
             final URI uri = cr.getUri().toURI();
             final HttpUrl httpUrl = HttpUrl.get(uri);
             final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);
-            
+
             applyHeaders(requestBuilder, cr);
             applyAuth(requestBuilder, chainedConfig);
-            
-            try(Response response = client.newCall(requestBuilder.build()).execute()) {
+
+            try (Response response = client.newCall(requestBuilder.build()).execute()) {
                 return HANDLER_FUNCTION.apply(chainedConfig,
-                                              new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
-            }
-            catch(IOException ioe) {
+                    new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
+            } catch (IOException ioe) {
                 throw ioe; //re-throw, close has happened
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             return handleException(chainedConfig.getChainedResponse(), e);
         }
     }
@@ -268,9 +279,9 @@ public class OkHttpBuilder extends HttpBuilder {
         private List<Header<?>> populateHeaders() {
             final Headers headers = response.headers();
             List<Header<?>> ret = new ArrayList<>();
-            for(String name : headers.names()) {
+            for (String name : headers.names()) {
                 List<String> values = headers.values(name);
-                for(String value : values) {
+                for (String value : values) {
                     ret.add(keyValue(name, value));
                 }
             }

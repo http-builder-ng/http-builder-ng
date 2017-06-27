@@ -16,10 +16,13 @@
 package groovyx.net.http
 
 import com.stehno.ersatz.ErsatzServer
+import okhttp3.OkHttpClient
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static java.util.concurrent.TimeUnit.MILLISECONDS
+import static java.util.concurrent.TimeUnit.MINUTES
 
 class OkHttpBuilderSpec extends Specification {
 
@@ -42,5 +45,31 @@ class OkHttpBuilderSpec extends Specification {
 
         and:
         http instanceof OkHttpBuilder
+    }
+
+    def 'access to client implementation'() {
+        setup:
+        HttpBuilder http = OkHttpBuilder.configure {
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        expect:
+        http.clientImplementation instanceof OkHttpClient
+    }
+
+    def 'client customization'() {
+        setup:
+        HttpBuilder http = OkHttpBuilder.configure {
+            client.clientCustomizer { OkHttpClient.Builder builder ->
+                builder.connectTimeout(5, MINUTES)
+            }
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        when:
+        OkHttpClient client = http.clientImplementation
+
+        then:
+        client.connectTimeoutMillis() == MILLISECONDS.convert(5, MINUTES)
     }
 }

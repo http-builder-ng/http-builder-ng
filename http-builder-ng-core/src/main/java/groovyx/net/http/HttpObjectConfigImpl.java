@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static groovyx.net.http.HttpConfigs.basic;
@@ -128,6 +129,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         private boolean cookiesEnabled = true;
         private int cookieVersion = 0;
         private File cookieFolder;
+        private Consumer<Object> clientCustomizer;
 
         @Override
         public void setCookieVersion(int version) {
@@ -157,6 +159,16 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         @Override
         public void setCookiesEnabled(final boolean val) {
             cookiesEnabled = val;
+        }
+
+        @Override
+        public void clientCustomizer(final Consumer<Object> customizer) {
+            this.clientCustomizer = customizer;
+        }
+
+        @Override
+        public Consumer<Object> getClientCustomizer() {
+            return clientCustomizer;
         }
     }
 

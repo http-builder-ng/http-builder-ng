@@ -15,14 +15,14 @@
  */
 package groovyx.net.http;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import java.io.File;
-import java.net.CookieStore;
 import java.util.EnumMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 /**
  * Extension of the {@link HttpConfig} interface, which provides additional client-level configuration options. These options should be configured in
@@ -187,7 +187,7 @@ public interface HttpObjectConfig extends HttpConfig {
         /**
          * Used to enable or disable cookies.
          *
-         * @param version true if cookies are enabled, false if not enabled.
+         * @param val true if cookies are enabled, false if not enabled.
          */
         void setCookiesEnabled(boolean val);
 
@@ -197,6 +197,27 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return true if cookies are enabled, false if not
          */
         boolean getCookiesEnabled();
+
+        /**
+         * A `Consumer<Object>` may be provided, which will have the internal client implementation reference passed into it to allow further
+         * client configuration beyond what it supported directly by HttpBuilder-NG. The `Object` passed in will be an instance of the internal client
+         * builder type, not necessarily the client itself.
+         *
+         * This configuration method should _only_ be used when the desire configuration is _not_ available directly through the `HttpBuilder`
+         * configuration interfaces. Configuring in this manner may override helpful configuration already applied by the library.
+         *
+         * Note that a Groovy closure may be used to replace the `Consumer` with no modification of functionality.
+         *
+         * This operation is optional. If a client-implementation does not support it, an {@link UnsupportedOperationException} will be thrown.
+         */
+        void clientCustomizer(Consumer<Object> customizer);
+
+        /**
+         * Used to retrieve the configured client implementation customizer `Consumer`, if there is one.
+         *
+         * @return the configured client customizer
+         */
+        Consumer<Object> getClientCustomizer();
     }
 
     ChainedHttpConfig getChainedConfig();

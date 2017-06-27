@@ -1755,6 +1755,18 @@ public abstract class HttpBuilder implements Closeable {
         return CompletableFuture.supplyAsync(() -> patch(type, configuration), getExecutor());
     }
 
+    /**
+     * Used to retrieve the instance of the internal client implementation. All client configuration will have been performed by the time this
+     * method is accessible. If additional configuration is desired and not supported by HttpBuilder-NG directly, you should use the
+     * `HttpObjectConfig::Client::clientCustomizer(Consumer<Object>)` method.
+     *
+     * This functionality is optional and client-implementation-dependent. If access to the internal client is not supported, an
+     * {@link UnsupportedOperationException} will be thrown.
+     *
+     * @return a reference to the internal client implementation used (or null if not supported)
+     */
+    public abstract Object getClientImplementation();
+
     protected abstract Object doGet(final ChainedHttpConfig config);
 
     protected abstract Object doHead(final ChainedHttpConfig config);

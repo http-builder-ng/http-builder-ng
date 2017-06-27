@@ -29,6 +29,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -36,7 +37,7 @@ import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCT
 
 /**
  * `HttpBuilder` implementation based on the {@link HttpURLConnection} class.
- * <p>
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via the
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function)` or
  * `groovyx.net.http.HttpBuilder.configure(java.util.function.Function, groovy.lang.Closure)` methods.
@@ -52,17 +53,22 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        boolean failed = false;
 
-        public Action(final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
+        public Action(final Consumer<Object> clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
             this.requestConfig = requestConfig;
+
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-            this.theUri = cr.getUri().toURI();
-            this.connection = (HttpURLConnection) theUri.toURL().openConnection();
-            this.connection.setRequestMethod(verb);
+            theUri = cr.getUri().toURI();
+
+            connection = (HttpURLConnection) theUri.toURL().openConnection();
+            connection.setRequestMethod(verb);
 
             if (cr.actualBody() != null) {
-                this.connection.setDoOutput(true);
+                connection.setDoOutput(true);
+            }
+
+            if( clientCustomizer != null ){
+                clientCustomizer.accept(connection);
             }
         }
 
@@ -322,12 +328,13 @@ public class JavaHttpBuilder extends HttpBuilder {
         Authenticator.setDefault(new ThreadLocalAuth());
     }
 
-    final private ChainedHttpConfig config;
-    final private Executor executor;
-    final private SSLContext sslContext;
-    final private HostnameVerifier hostnameVerifier;
-    final private HttpObjectConfig.Client clientConfig;
+    private final ChainedHttpConfig config;
+    private final Executor executor;
+    private final SSLContext sslContext;
+    private final HostnameVerifier hostnameVerifier;
+    private final HttpObjectConfig.Client clientConfig;
 
+    // TODO: this can probably be private or protected.
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
@@ -337,13 +344,21 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.sslContext = config.getExecution().getSslContext();
     }
 
+    /**
+     * The core Java client implementation does not support direct client access. This method will throw an {@link UnsupportedOperationException}.
+     */
+    @Override
+    public Object getClientImplementation() {
+        throw new UnsupportedOperationException("The core Java implementation does not support direct client access.");
+    }
+
     protected ChainedHttpConfig getObjectConfig() {
         return config;
     }
 
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
-            Action action = new Action(config, verb);
+            Action action = new Action(clientConfig.getClientCustomizer(), config, verb);
             return action.execute();
         } catch (Exception e) {
             return handleException(config.getChainedResponse(), e);
