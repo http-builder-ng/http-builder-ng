@@ -257,7 +257,8 @@ The `HttpConfig.Response` interface provides five types of response status handl
 
 The first three are the `when` methods. The `when` methods configure a handler (as a Groovy `Closure` or `BiFunction<FromServer,Object,?>`) to be
 called when the response status matches the specified status value (as a `String`, `Integer`, or `HttpConfig.Status` value). When the handler is
-called, it is executed and its return value is used as the return value for the request.
+called, it is executed and its return value is used as the return value for the request. The `Closure` or `BiFunction` passed into the `when` method
+will be called with the `FromServer` instance and an `Object` instance, which will be the response body if one is present.
 
 [source,groovy]
 ----
@@ -288,7 +289,8 @@ HttpBuilder.configure {
 }
 ----
 
-This example performs the same operation as the previous example, but uses the `success` method instead of the `when` method.
+This example performs the same operation as the previous example, but uses the `success` method instead of the `when` method. The `success` and
+`failure` methods, also have the second parameter (`Object` instance containing the body of the reponse, if there is one).
 
 ===== Exception Handlers
 
