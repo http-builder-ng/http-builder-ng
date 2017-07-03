@@ -1,0 +1,21 @@
+== Troubleshooting
+
+This section will discuss any recurring issues with simple non-code solutions.
+
+=== 'typecheckhttpconfig.groovy' was not found
+
+We have had a few issues reported related to the following error (https://github.com/http-builder-ng/http-builder-ng/issues/107[#107],
+https://github.com/http-builder-ng/http-builder-ng/issues/115[#115], https://github.com/http-builder-ng/http-builder-ng/issues/144[#144]):
+
+```
+Static type checking extension 'typecheckhttpconfig.groovy' was not found on the class path.
+```
+
+This seems to be related to the version of Tomcat being used (by itself, or embedded in Grails or Spring-Boot). You will get this error on Tomcat
+version 7.x (and possibly older versions), though Tomcat 8.x does not have this issue.
+
+In all three cases, the solution was just to upgrade the version of Tomcat being used; however, if this is _not_ an acceptable solution in your case,
+you can extract the `typecheckhttpconfig.groovy` and `59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy` files from the `http-builder-ng-core` jar and
+add them to the application's war root classpath.
+
+If neither of these solve the problem for you, please feel free to create an issue, but please provide a working example that we can test against.
