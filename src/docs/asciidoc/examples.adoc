@@ -177,6 +177,24 @@ Map, from which we can extract the data we sent.
 Note that the `NativeHandlers.Encoders.&form` encoder is used to convert the provided map data into the encoded message
 before sending it to the server.
 
+=== Download File (GET)
+
+HttpBuilder-NG provides a utility to aid in downloading files from HTTP endpoints. An example of this would be the case where your server has a file
+served up from the `/download` path - you could download this file with something like the following:
+
+[source,groovy]
+----
+File file = configure {
+    request.uri = "http://example.org/download"
+}.get {
+    Download.toFile(delegate, saved)
+}
+----
+
+Which uses the `groovyx.net.http.optional.Download` class `toFile(HttpConfig, File)` method to perform the downloading by providing a means of
+streaming the remote contents into the file. See the docs for the `Download` class for more options and details - the unit test, `DownloadSpec` also
+has some good usage examples for this functionality.
+
 === Configuring Timeout
 
 You can provide additional configuration not directly supported by `HttpBuilder`, such as connection timeout, using the
