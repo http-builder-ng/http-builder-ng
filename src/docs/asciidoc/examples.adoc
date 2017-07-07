@@ -13,7 +13,7 @@ HttpBuilder-NG makes this easy:
 [source,groovy]
 .resource_last_modified.groovy
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import groovyx.net.http.*
@@ -48,7 +48,7 @@ Alternately, using header parsing along with the `java.time` API, you can simpli
 [source,groovy]
 .resource_last_modified_alt.groovy
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import static java.time.format.DateTimeFormatter.ofPattern
@@ -78,7 +78,7 @@ By default, `text/html` content is parsed with the https://jsoup.org/[JSoup] HTM
 [source,groovy]
 .web_scraping.groovy
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
 @Grab('org.jsoup:jsoup:1.9.2')
 
 import static groovyx.net.http.HttpBuilder.configure
@@ -108,7 +108,7 @@ parser:
 [source,groovy]
 .sending_receiving_post.groovy
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import static groovyx.net.http.ContentTypes.JSON
@@ -150,7 +150,7 @@ Posting HTML form data is a common `POST` operation, and it is supported by `Htt
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.16.1')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import static groovyx.net.http.ContentTypes.JSON
@@ -176,3 +176,71 @@ Map, from which we can extract the data we sent.
 
 Note that the `NativeHandlers.Encoders.&form` encoder is used to convert the provided map data into the encoded message
 before sending it to the server.
+
+=== Download File (GET)
+
+HttpBuilder-NG provides a utility to aid in downloading files from HTTP endpoints. An example of this would be the case where your server has a file
+served up from the `/download` path - you could download this file with something like the following:
+
+[source,groovy]
+----
+File file = configure {
+    request.uri = "http://example.org/download"
+}.get {
+    Download.toFile(delegate, saved)
+}
+----
+
+Which uses the `groovyx.net.http.optional.Download` class `toFile(HttpConfig, File)` method to perform the downloading by providing a means of
+streaming the remote contents into the file. See the docs for the `Download` class for more options and details - the unit test, `DownloadSpec` also
+has some good usage examples for this functionality.
+
+=== Configuring Timeout
+
+You can provide additional configuration not directly supported by `HttpBuilder`, such as connection timeout, using the
+`clientCustomizer(Consumer<Object>)` method (supported by all three client implementations):
+
+For the `apache` client:
+
+[source,groovy]
+----
+HttpBuilder http = ApacheHttpBuilder.configure {
+    client.clientCustomizer { HttpClientBuilder builder ->
+        RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        requestBuilder.connectTimeout = 1234567
+        requestBuilder.connectionRequestTimeout = 98765
+
+        builder.defaultRequestConfig = requestBuilder.build()
+    }
+
+    // other config...
+}
+----
+
+and for the `okhttp` client:
+
+[source,groovy]
+----
+HttpBuilder http = OkHttpBuilder.configure {
+    client.clientCustomizer { OkHttpClient.Builder builder ->
+        builder.connectTimeout(5, MINUTES)
+    }
+
+    // other config...
+}
+----
+
+and lastly, for the `core` client:
+
+[source,groovy]
+----
+HttpBuilder http = OkHttpBuilder.configure {
+    client.clientCustomizer { HttpURLConnection conn ->
+        connection.connectTimeout = 8675309
+    }
+
+    // other config...
+}
+----
+
+This additional custom configuration must be applied with care, as it is possible to undo the configuration provided by the `HttpBuilder` library.

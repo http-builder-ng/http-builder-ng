@@ -476,7 +476,7 @@ public interface FromServer {
     }
 
     /**
-     * Retrieves the {@link InputStream} containing the response content.
+     * Retrieves the {@link InputStream} containing the response content (may have already been processed).
      *
      * @return the response content
      */
@@ -523,7 +523,7 @@ public interface FromServer {
     void finish();
 
     /**
-     * Retrieves a {@link Reader} for the response body content (if there is any).
+     * Retrieves a {@link Reader} for the response body content (if there is any). The content may have already been processed.
      *
      * @return a {@link Reader} for the response body content (may be empty)
      */

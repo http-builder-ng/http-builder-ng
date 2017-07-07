@@ -240,18 +240,35 @@ public abstract class HttpBuilder implements Closeable {
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
     private final CookieManager cookieManager;
-
+    
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
-        final File folder = objectConfig.getClient().getCookieFolder();
-        CookieStore cookieStore = (folder == null ?
-                                   new NonBlockingCookieStore() :
-                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
-        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);
+        this.cookieManager = new CookieManager(makeCookieStore(objectConfig), CookiePolicy.ACCEPT_ALL);
+    }
+
+    private CookieStore makeCookieStore(final HttpObjectConfig objectConfig) {
+        if(objectConfig.getClient().getCookiesEnabled()) {
+            final File folder = objectConfig.getClient().getCookieFolder();
+            return (folder == null ?
+                    new NonBlockingCookieStore() :
+                    new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));
+        }
+        else {
+            return NullCookieStore.instance();
+        }
     }
 
     protected CookieManager getCookieManager() {
         return cookieManager;
+    }
+
+    /**
+     * Returns the cookie store used by this builder
+     * 
+     * @return the cookie store used by this builder
+     */
+    public CookieStore getCookieStore() {
+        return cookieManager.getCookieStore();
     }
 
     protected Map<String,String> cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
@@ -1737,6 +1754,18 @@ public abstract class HttpBuilder implements Closeable {
     public <T> CompletableFuture<T> patchAsync(final Class<T> type, final Consumer<HttpConfig> configuration) {
         return CompletableFuture.supplyAsync(() -> patch(type, configuration), getExecutor());
     }
+
+    /**
+     * Used to retrieve the instance of the internal client implementation. All client configuration will have been performed by the time this
+     * method is accessible. If additional configuration is desired and not supported by HttpBuilder-NG directly, you should use the
+     * `HttpObjectConfig::Client::clientCustomizer(Consumer<Object>)` method.
+     *
+     * This functionality is optional and client-implementation-dependent. If access to the internal client is not supported, an
+     * {@link UnsupportedOperationException} will be thrown.
+     *
+     * @return a reference to the internal client implementation used (or null if not supported)
+     */
+    public abstract Object getClientImplementation();
 
     protected abstract Object doGet(final ChainedHttpConfig config);
 

@@ -43,4 +43,30 @@ class JavaHttpBuilderSpec extends Specification {
         and:
         http instanceof JavaHttpBuilder
     }
+
+    def 'access to client implementation unsupported'() {
+        setup:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        when:
+        http.clientImplementation
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def 'client customization unsupported'() {
+        when:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            client.clientCustomizer { HttpURLConnection connection ->
+                connection.connectTimeout = 8675309
+            }
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        then: 'just ensure no failure'
+        http
+    }
 }

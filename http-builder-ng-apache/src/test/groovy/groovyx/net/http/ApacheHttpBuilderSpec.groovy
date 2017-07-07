@@ -16,6 +16,9 @@
 package groovyx.net.http
 
 import com.stehno.ersatz.ErsatzServer
+import org.apache.http.client.HttpClient
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.impl.client.HttpClientBuilder
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
@@ -42,5 +45,36 @@ class ApacheHttpBuilderSpec extends Specification {
 
         and:
         http instanceof ApacheHttpBuilder
+    }
+
+    def 'access to client implementation'() {
+        setup:
+        HttpBuilder http = ApacheHttpBuilder.configure {
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        expect:
+        http.clientImplementation instanceof HttpClient
+    }
+
+    def 'client customization'() {
+        setup:
+        HttpBuilder http = ApacheHttpBuilder.configure {
+            client.clientCustomizer { HttpClientBuilder builder ->
+                RequestConfig.Builder requestBuilder = RequestConfig.custom()
+                requestBuilder.connectTimeout = 1234567
+                requestBuilder.connectionRequestTimeout = 98765
+
+                builder.defaultRequestConfig = requestBuilder.build()
+            }
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+
+        when:
+        HttpClient client = http.clientImplementation
+
+        then:
+        client.defaultConfig.connectTimeout == 1234567
+        client.defaultConfig.connectionRequestTimeout == 98765
     }
 }

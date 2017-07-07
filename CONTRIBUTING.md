@@ -22,6 +22,8 @@ If you have decided to [submit an issue](https://github.com/http-builder-ng/http
 
 Once your issue has been created, we will triage it and figure out how to proceed.
 
+Also, please be sure to check the [User Guide Troubleshooting](https://http-builder-ng.github.io/http-builder-ng/asciidoc/html5/#_troubleshooting) section for any known resolution to your problem. 
+
 ## Submitting a Pull Request
 
 If you fix a bug or implement a new feature and want to get it into the main repo, create a Pull Request. We are pretty low on process and code standards, so basically if you follow the general Java and Groovy coding standards you should be fine. We will review the request and figure out where to go with it from there.

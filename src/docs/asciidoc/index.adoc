@@ -1,6 +1,6 @@
 = HttpBuilder-NG User Guide
 David Clark & Christopher J. Stehno
-v0.16.1, April 2017
+v0.17.0, July 2017
 :toc: left
 :toclevels: 4
 
@@ -38,14 +38,14 @@ If you are itching to get started, here's what you need to do to get up and runn
 
 First, you need the library in your project. If you are using Gradle, add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.16.1'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.17.0'
 
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.16.1</version>
+      <version>0.17.0</version>
     </dependency>
 
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
@@ -100,6 +100,21 @@ String text = http.get(String.class, cfg -> {
 ----
 
 At the end of the User Guide there is an Examples section with some complete Groovy script examples.
+
+== Common Usages
+
+* If you want to deal with parsed content, do that in a link:#_status_handlers[`success`], link:#_status_handlers[`failure`], or
+link:#_status_handlers[`when`] handler. This is probably what you want to do 99% of the time as a user of the library. Being able to easily consume
+content as pre-parsed objects is one of the main selling points.
+* If you want to deal with the data streams, do that by implementing a link:#_parsers[content parser]. You can use either the input stream or the
+reader inside the `FromServer` interface (but not both). There is no need to worry about managing opening or closing the stream, the builders will do
+the right thing. You are also free to duplicate or "tee" the stream or reader and delegate to existing parsers.
+* If you want to do something out of band (such as logging or adding metrics), use an link:#_interceptors[`interceptor`] This is fairly easy to do
+because neither what is requested nor what is returned is changed by the interceptor.
+* If you want to change what is requested (before being sent) or change the object(s) returned from the content parser use an
+link:#_interceptors[`interceptor`]. This is probably the most difficult to do because the order of interceptor invocation is not guaranteed but the
+interceptor must still return to the user what is expected. If the user is expecting a `List` then the interceptor must make sure that the user gets that.
+* If you want to handle unexpected exceptions, implement an link:#_exception_handlers[`exception`] handler.
 
 include::configuration.adoc[]
 
@@ -161,6 +176,8 @@ dependency isolation from other implementations and minimizes unused dependencie
 If you come up with something generally useful, feel free to create a pull request and we may be able to bring it into the project.
 
 include::examples.adoc[]
+
+include::troubleshooting.adoc[]
 
 == Unsupported Features
 
