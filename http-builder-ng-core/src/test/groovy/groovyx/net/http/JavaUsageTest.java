@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
 /**
  * Demonstration (and test) of using {@link HttpBuilder} via standard Java.
  */
-@Ignore
 public class JavaUsageTest {
 
     private static final String CONTENT = "This is CONTENT!!!";
