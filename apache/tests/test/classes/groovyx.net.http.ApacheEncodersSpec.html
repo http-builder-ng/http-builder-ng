@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">2.867s</div>
+<div class="counter">0.301s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,27 +79,27 @@
 </thead>
 <tr>
 <td class="success">multipart: field</td>
-<td>2.720s</td>
+<td>0.221s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">multipart: file (bytes)</td>
-<td>0.035s</td>
+<td>0.017s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">multipart: file (path)</td>
-<td>0.047s</td>
+<td>0.033s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">multipart: file (stream)</td>
-<td>0.030s</td>
+<td>0.014s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">multipart: file (string)</td>
-<td>0.035s</td>
+<td>0.016s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -107,439 +107,421 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>13:04:48.075 [Test worker] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
-13:04:48.097 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@7ac1b181
-13:04:48.112 [Test worker] INFO org.xnio - XNIO version 3.3.6.Final
-13:04:48.139 [Test worker] INFO org.xnio.nio - XNIO NIO Implementation Version 3.3.6.Final
-13:04:48.199 [XNIO-1 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-2', selector sun.nio.ch.EPollSelectorImpl@5e2c3d63
-13:04:48.199 [XNIO-1 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-3', selector sun.nio.ch.EPollSelectorImpl@44badd6e
-13:04:48.200 [XNIO-1 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-7', selector sun.nio.ch.EPollSelectorImpl@53511290
-13:04:48.199 [XNIO-1 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-1', selector sun.nio.ch.EPollSelectorImpl@7ebfb0ed
-13:04:48.199 [XNIO-1 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-4', selector sun.nio.ch.EPollSelectorImpl@380cd340
-13:04:48.199 [XNIO-1 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-5', selector sun.nio.ch.EPollSelectorImpl@2f900b29
-13:04:48.200 [XNIO-1 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-6', selector sun.nio.ch.EPollSelectorImpl@7ca8fd2d
-13:04:48.215 [XNIO-1 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 I/O-8', selector sun.nio.ch.EPollSelectorImpl@7468788f
-13:04:48.216 [XNIO-1 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-1 Accept', selector sun.nio.ch.EPollSelectorImpl@7cd8b252
-13:04:48.219 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.350 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.364 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.367 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:37051][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.384 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 0][route: {}-&gt;http://localhost:37051][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.386 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:37051
-13:04:48.389 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:37051
-13:04:48.391 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:60692&lt;-&gt;127.0.0.1:37051
-13:04:48.392 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
-13:04:48.392 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.393 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.395 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; POST /multi HTTP/1.1
-13:04:48.395 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; Content-Type: multipart/form-data; boundary=m5rJ8EbIHM
-13:04:48.396 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; Transfer-Encoding: chunked
-13:04:48.398 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; Host: localhost:37051
-13:04:48.398 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; Connection: Keep-Alive
-13:04:48.398 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.398 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=m5rJ8EbIHM[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Host: localhost:37051[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;134[\r][\n]&quot;
-13:04:48.399 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;--m5rJ8EbIHM[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;alpha&quot;[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Type: text/plain; charset=ISO-8859-1[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Transfer-Encoding: 8bit[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;one[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;--m5rJ8EbIHM[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;bravo&quot;[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Type: text/plain; charset=ISO-8859-1[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;Content-Transfer-Encoding: 8bit[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;two[\r][\n]&quot;
-13:04:48.400 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;--m5rJ8EbIHM--[\r][\n]&quot;
-13:04:48.401 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.401 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;0[\r][\n]&quot;
-13:04:48.401 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.453 [XNIO-1 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=m5rJ8EbIHM], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:37051]}, cookies=[:]): --m5rJ8EbIHM
+<pre>08:27:19.395 [XNIO-42 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6151bcd3
+08:27:19.395 [XNIO-42 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-2', selector sun.nio.ch.EPollSelectorImpl@48a29317
+08:27:19.395 [XNIO-42 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-3', selector sun.nio.ch.EPollSelectorImpl@552d5a3d
+08:27:19.395 [XNIO-42 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-4', selector sun.nio.ch.EPollSelectorImpl@3a2120f6
+08:27:19.395 [XNIO-42 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-5', selector sun.nio.ch.EPollSelectorImpl@a1149dd
+08:27:19.395 [XNIO-42 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-7', selector sun.nio.ch.EPollSelectorImpl@7ae73acd
+08:27:19.395 [XNIO-42 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-6', selector sun.nio.ch.EPollSelectorImpl@44fedbca
+08:27:19.395 [XNIO-42 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 I/O-8', selector sun.nio.ch.EPollSelectorImpl@78a24de1
+08:27:19.395 [XNIO-42 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-42 Accept', selector sun.nio.ch.EPollSelectorImpl@51224222
+08:27:19.425 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.425 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:46667][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 41][route: {}-&gt;http://localhost:46667][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:46667
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:46667
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:54110&lt;-&gt;127.0.0.1:46667
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.425 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; POST /multi HTTP/1.1
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; Content-Type: multipart/form-data; boundary=lDuEshkHFk
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; Transfer-Encoding: chunked
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; Host: localhost:46667
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; Connection: Keep-Alive
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.426 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=lDuEshkHFk[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Host: localhost:46667[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;134[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;--lDuEshkHFk[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;alpha&quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Type: text/plain; charset=ISO-8859-1[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Transfer-Encoding: 8bit[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;one[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;--lDuEshkHFk[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;bravo&quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Type: text/plain; charset=ISO-8859-1[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;Content-Transfer-Encoding: 8bit[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;two[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;--lDuEshkHFk--[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;0[\r][\n]&quot;
+08:27:19.426 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.431 [XNIO-42 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=lDuEshkHFk], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:46667]}, cookies=[:]): --lDuEshkHFk
 Content-Disposition: form-data; name=&quot;alpha&quot;
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
 
 one
---m5rJ8EbIHM
+--lDuEshkHFk
 Content-Disposition: form-data; name=&quot;bravo&quot;
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
 
 two
---m5rJ8EbIHM--
+--lDuEshkHFk--
  }
-13:04:48.589 [XNIO-1 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.610 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.610 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.610 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.611 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.611 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.611 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.611 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.611 [Test worker] DEBUG org.apache.http.wire - http-outgoing-0 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.614 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; Content-Encoding: gzip
-13:04:48.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; Connection: keep-alive
-13:04:48.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; Content-Type: text/plain
-13:04:48.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; Content-Length: 22
-13:04:48.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-0 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.619 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.797 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 0][route: {}-&gt;http://localhost:37051] can be kept alive indefinitely
-13:04:48.798 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 0][route: {}-&gt;http://localhost:37051][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.810 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@7ac1b181
-13:04:48.827 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@17b38842
-13:04:48.829 [XNIO-2 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-1', selector sun.nio.ch.EPollSelectorImpl@75ad91c7
-13:04:48.829 [XNIO-2 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-3', selector sun.nio.ch.EPollSelectorImpl@296e07c1
-13:04:48.829 [XNIO-2 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-2', selector sun.nio.ch.EPollSelectorImpl@18294f49
-13:04:48.831 [XNIO-2 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-5', selector sun.nio.ch.EPollSelectorImpl@3ee9f57b
-13:04:48.832 [XNIO-2 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-6', selector sun.nio.ch.EPollSelectorImpl@6d67d107
-13:04:48.831 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.832 [XNIO-2 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-8', selector sun.nio.ch.EPollSelectorImpl@4bcc82cf
-13:04:48.832 [XNIO-2 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 Accept', selector sun.nio.ch.EPollSelectorImpl@1ca8badc
-13:04:48.831 [XNIO-2 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-7', selector sun.nio.ch.EPollSelectorImpl@109a119f
-13:04:48.831 [XNIO-2 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-2 I/O-4', selector sun.nio.ch.EPollSelectorImpl@7182e006
-13:04:48.849 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.849 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.849 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:35147][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.849 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 1][route: {}-&gt;http://localhost:35147][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:35147
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:35147
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:40996&lt;-&gt;127.0.0.1:35147
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.850 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; POST /multi HTTP/1.1
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; Content-Type: multipart/form-data; boundary=Ua7vefiqiU
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; Transfer-Encoding: chunked
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; Host: localhost:35147
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; Connection: Keep-Alive
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.850 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=Ua7vefiqiU[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Host: localhost:35147[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;154[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;--Ua7vefiqiU[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;--Ua7vefiqiU[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;--Ua7vefiqiU--[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.851 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;0[\r][\n]&quot;
-13:04:48.852 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.852 [XNIO-2 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=Ua7vefiqiU], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:35147]}, cookies=[:]): --Ua7vefiqiU
+08:27:19.510 [XNIO-42 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.515 [Test worker] DEBUG org.apache.http.wire - http-outgoing-41 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; Content-Encoding: gzip
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; Connection: keep-alive
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; Content-Type: text/plain
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; Content-Length: 22
+08:27:19.516 [Test worker] DEBUG org.apache.http.headers - http-outgoing-41 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.518 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.566 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 41][route: {}-&gt;http://localhost:46667] can be kept alive indefinitely
+08:27:19.566 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 41][route: {}-&gt;http://localhost:46667][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.581 [XNIO-43 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-2', selector sun.nio.ch.EPollSelectorImpl@166423ff
+08:27:19.581 [XNIO-43 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-3', selector sun.nio.ch.EPollSelectorImpl@6115fe55
+08:27:19.582 [XNIO-43 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-5', selector sun.nio.ch.EPollSelectorImpl@64d13bc6
+08:27:19.581 [XNIO-43 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6e9f7c90
+08:27:19.582 [XNIO-43 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-6', selector sun.nio.ch.EPollSelectorImpl@20500328
+08:27:19.581 [XNIO-43 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-4', selector sun.nio.ch.EPollSelectorImpl@dc29213
+08:27:19.582 [XNIO-43 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-7', selector sun.nio.ch.EPollSelectorImpl@743262f8
+08:27:19.582 [XNIO-43 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 I/O-8', selector sun.nio.ch.EPollSelectorImpl@48593a95
+08:27:19.585 [XNIO-43 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-43 Accept', selector sun.nio.ch.EPollSelectorImpl@49115ee2
+08:27:19.596 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.596 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.596 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:37425][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 42][route: {}-&gt;http://localhost:37425][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:37425
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:37425
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:34470&lt;-&gt;127.0.0.1:37425
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.597 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; POST /multi HTTP/1.1
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; Content-Type: multipart/form-data; boundary=IF2IW77OzW
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; Transfer-Encoding: chunked
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; Host: localhost:37425
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; Connection: Keep-Alive
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.597 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=IF2IW77OzW[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Host: localhost:37425[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;154[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;--IF2IW77OzW[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;--IF2IW77OzW[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;--IF2IW77OzW--[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;0[\r][\n]&quot;
+08:27:19.597 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.597 [XNIO-43 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=IF2IW77OzW], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:37425]}, cookies=[:]): --IF2IW77OzW
 Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-a-content
---Ua7vefiqiU
+--IF2IW77OzW
 Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-b-content
---Ua7vefiqiU--
+--IF2IW77OzW--
  }
-13:04:48.856 [XNIO-2 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.wire - http-outgoing-1 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.857 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.857 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; Content-Encoding: gzip
-13:04:48.857 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; Connection: keep-alive
-13:04:48.858 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; Content-Type: text/plain
-13:04:48.858 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; Content-Length: 22
-13:04:48.858 [Test worker] DEBUG org.apache.http.headers - http-outgoing-1 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.858 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.858 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 1][route: {}-&gt;http://localhost:35147] can be kept alive indefinitely
-13:04:48.858 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 1][route: {}-&gt;http://localhost:35147][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.859 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@17b38842
-13:04:48.868 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@4b36e550
-13:04:48.870 [XNIO-3 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-2', selector sun.nio.ch.EPollSelectorImpl@6345dc92
-13:04:48.871 [XNIO-3 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-6', selector sun.nio.ch.EPollSelectorImpl@215325f6
-13:04:48.871 [XNIO-3 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-8', selector sun.nio.ch.EPollSelectorImpl@34a6985c
-13:04:48.871 [XNIO-3 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 Accept', selector sun.nio.ch.EPollSelectorImpl@4a0cb26e
-13:04:48.870 [XNIO-3 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-3', selector sun.nio.ch.EPollSelectorImpl@31c6bacc
-13:04:48.870 [XNIO-3 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-1', selector sun.nio.ch.EPollSelectorImpl@418b6a8b
-13:04:48.870 [XNIO-3 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-4', selector sun.nio.ch.EPollSelectorImpl@37a89072
-13:04:48.870 [XNIO-3 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-5', selector sun.nio.ch.EPollSelectorImpl@56da7073
-13:04:48.871 [XNIO-3 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-3 I/O-7', selector sun.nio.ch.EPollSelectorImpl@5c154097
-13:04:48.871 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.879 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.879 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.879 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:41725][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 2][route: {}-&gt;http://localhost:41725][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:41725
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:41725
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:55482&lt;-&gt;127.0.0.1:41725
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.880 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; POST /multi HTTP/1.1
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; Content-Type: multipart/form-data; boundary=Cbkw6JXqYi
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; Transfer-Encoding: chunked
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; Host: localhost:41725
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; Connection: Keep-Alive
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.881 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=Cbkw6JXqYi[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Host: localhost:41725[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.881 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;154[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;--Cbkw6JXqYi[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;--Cbkw6JXqYi[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;--Cbkw6JXqYi--[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;0[\r][\n]&quot;
-13:04:48.882 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.885 [XNIO-3 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=Cbkw6JXqYi], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:41725]}, cookies=[:]): --Cbkw6JXqYi
+08:27:19.599 [XNIO-43 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.wire - http-outgoing-42 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; Content-Encoding: gzip
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; Connection: keep-alive
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; Content-Type: text/plain
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; Content-Length: 22
+08:27:19.600 [Test worker] DEBUG org.apache.http.headers - http-outgoing-42 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.600 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.600 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 42][route: {}-&gt;http://localhost:37425] can be kept alive indefinitely
+08:27:19.600 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 42][route: {}-&gt;http://localhost:37425][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.606 [XNIO-44 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-2', selector sun.nio.ch.EPollSelectorImpl@2163fd84
+08:27:19.608 [XNIO-44 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-3', selector sun.nio.ch.EPollSelectorImpl@5c26dabd
+08:27:19.606 [XNIO-44 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-1', selector sun.nio.ch.EPollSelectorImpl@5eadda57
+08:27:19.608 [XNIO-44 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-4', selector sun.nio.ch.EPollSelectorImpl@77e03e6f
+08:27:19.609 [XNIO-44 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-5', selector sun.nio.ch.EPollSelectorImpl@7e30b1d3
+08:27:19.609 [XNIO-44 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-6', selector sun.nio.ch.EPollSelectorImpl@5a0f3241
+08:27:19.609 [XNIO-44 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-7', selector sun.nio.ch.EPollSelectorImpl@5b744170
+08:27:19.609 [XNIO-44 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 I/O-8', selector sun.nio.ch.EPollSelectorImpl@7a39b955
+08:27:19.609 [XNIO-44 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-44 Accept', selector sun.nio.ch.EPollSelectorImpl@1cb73f10
+08:27:19.614 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.614 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.614 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:44445][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.614 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 43][route: {}-&gt;http://localhost:44445][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.614 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:44445
+08:27:19.614 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:44445
+08:27:19.615 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:60638&lt;-&gt;127.0.0.1:44445
+08:27:19.615 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
+08:27:19.615 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.615 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; POST /multi HTTP/1.1
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; Content-Type: multipart/form-data; boundary=1QJ56fYCX0
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; Transfer-Encoding: chunked
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; Host: localhost:44445
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; Connection: Keep-Alive
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.615 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=1QJ56fYCX0[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Host: localhost:44445[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;154[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;--1QJ56fYCX0[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;--1QJ56fYCX0[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;--1QJ56fYCX0--[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;0[\r][\n]&quot;
+08:27:19.615 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.615 [XNIO-44 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=1QJ56fYCX0], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:44445]}, cookies=[:]): --1QJ56fYCX0
 Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-a-content
---Cbkw6JXqYi
+--1QJ56fYCX0
 Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-b-content
---Cbkw6JXqYi--
+--1QJ56fYCX0--
  }
-13:04:48.889 [XNIO-3 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.889 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.890 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.890 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.890 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.891 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.891 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.891 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.891 [Test worker] DEBUG org.apache.http.wire - http-outgoing-2 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.892 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.892 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; Content-Encoding: gzip
-13:04:48.892 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; Connection: keep-alive
-13:04:48.892 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; Content-Type: text/plain
-13:04:48.893 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; Content-Length: 22
-13:04:48.893 [Test worker] DEBUG org.apache.http.headers - http-outgoing-2 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.893 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.893 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 2][route: {}-&gt;http://localhost:41725] can be kept alive indefinitely
-13:04:48.894 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 2][route: {}-&gt;http://localhost:41725][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.894 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@4b36e550
-13:04:48.902 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@32bcad07
-13:04:48.904 [XNIO-4 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-1', selector sun.nio.ch.EPollSelectorImpl@2d4ed6b8
-13:04:48.904 [XNIO-4 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-2', selector sun.nio.ch.EPollSelectorImpl@65977351
-13:04:48.905 [XNIO-4 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-3', selector sun.nio.ch.EPollSelectorImpl@7a4c5c61
-13:04:48.904 [XNIO-4 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-5', selector sun.nio.ch.EPollSelectorImpl@5bce7538
-13:04:48.906 [XNIO-4 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-6', selector sun.nio.ch.EPollSelectorImpl@68bdb0cc
-13:04:48.904 [XNIO-4 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-4', selector sun.nio.ch.EPollSelectorImpl@11682836
-13:04:48.909 [XNIO-4 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-7', selector sun.nio.ch.EPollSelectorImpl@5ac5185d
-13:04:48.909 [XNIO-4 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 I/O-8', selector sun.nio.ch.EPollSelectorImpl@18f6622
-13:04:48.909 [XNIO-4 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-4 Accept', selector sun.nio.ch.EPollSelectorImpl@36554cf3
-13:04:48.909 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.918 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.918 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.918 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:38523][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.918 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 3][route: {}-&gt;http://localhost:38523][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.918 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:38523
-13:04:48.918 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:38523
-13:04:48.919 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:55546&lt;-&gt;127.0.0.1:38523
-13:04:48.919 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
-13:04:48.919 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.919 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; POST /multi HTTP/1.1
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; Content-Type: multipart/form-data; boundary=mliWU6iBOc
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; Transfer-Encoding: chunked
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; Host: localhost:38523
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; Connection: Keep-Alive
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.919 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.919 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
-13:04:48.919 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=mliWU6iBOc[\r][\n]&quot;
-13:04:48.921 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
-13:04:48.921 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Host: localhost:38523[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;154[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;--mliWU6iBOc[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;--mliWU6iBOc[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.922 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
-13:04:48.923 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;--mliWU6iBOc--[\r][\n]&quot;
-13:04:48.923 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.923 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;0[\r][\n]&quot;
-13:04:48.923 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.923 [XNIO-4 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=mliWU6iBOc], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:38523]}, cookies=[:]): --mliWU6iBOc
+08:27:19.617 [XNIO-44 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.wire - http-outgoing-43 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; Content-Encoding: gzip
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; Connection: keep-alive
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; Content-Type: text/plain
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; Content-Length: 22
+08:27:19.617 [Test worker] DEBUG org.apache.http.headers - http-outgoing-43 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.618 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.618 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 43][route: {}-&gt;http://localhost:44445] can be kept alive indefinitely
+08:27:19.618 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 43][route: {}-&gt;http://localhost:44445][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.623 [XNIO-45 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-1', selector sun.nio.ch.EPollSelectorImpl@1b17b27
+08:27:19.623 [XNIO-45 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 Accept', selector sun.nio.ch.EPollSelectorImpl@4733384b
+08:27:19.623 [XNIO-45 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-8', selector sun.nio.ch.EPollSelectorImpl@1d52e877
+08:27:19.623 [XNIO-45 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-5', selector sun.nio.ch.EPollSelectorImpl@11c9bfa8
+08:27:19.623 [XNIO-45 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-4', selector sun.nio.ch.EPollSelectorImpl@79a2bb2f
+08:27:19.623 [XNIO-45 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-7', selector sun.nio.ch.EPollSelectorImpl@2ac6cf64
+08:27:19.623 [XNIO-45 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-3', selector sun.nio.ch.EPollSelectorImpl@714c171d
+08:27:19.623 [XNIO-45 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-2', selector sun.nio.ch.EPollSelectorImpl@27f6844c
+08:27:19.623 [XNIO-45 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-45 I/O-6', selector sun.nio.ch.EPollSelectorImpl@69ab81a0
+08:27:19.630 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.630 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:46115][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 44][route: {}-&gt;http://localhost:46115][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:46115
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:46115
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:35164&lt;-&gt;127.0.0.1:46115
+08:27:19.630 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
+08:27:19.631 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.631 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; POST /multi HTTP/1.1
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; Content-Type: multipart/form-data; boundary=DqjcB00Xiy
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; Transfer-Encoding: chunked
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; Host: localhost:46115
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; Connection: Keep-Alive
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.631 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=DqjcB00Xiy[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Host: localhost:46115[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;154[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;--DqjcB00Xiy[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;--DqjcB00Xiy[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;--DqjcB00Xiy--[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;0[\r][\n]&quot;
+08:27:19.631 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.631 [XNIO-45 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=DqjcB00Xiy], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:46115]}, cookies=[:]): --DqjcB00Xiy
 Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-a-content
---mliWU6iBOc
+--DqjcB00Xiy
 Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-b-content
---mliWU6iBOc--
+--DqjcB00Xiy--
  }
-13:04:48.927 [XNIO-4 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.927 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.927 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.927 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.927 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.927 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.928 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.928 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.928 [Test worker] DEBUG org.apache.http.wire - http-outgoing-3 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; Content-Encoding: gzip
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; Connection: keep-alive
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; Content-Type: text/plain
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; Content-Length: 22
-13:04:48.928 [Test worker] DEBUG org.apache.http.headers - http-outgoing-3 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.929 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.929 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 3][route: {}-&gt;http://localhost:38523] can be kept alive indefinitely
-13:04:48.929 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 3][route: {}-&gt;http://localhost:38523][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.930 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@32bcad07
-13:04:48.936 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@3091f369
-13:04:48.938 [XNIO-5 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-2', selector sun.nio.ch.EPollSelectorImpl@6217b712
-13:04:48.938 [XNIO-5 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-3', selector sun.nio.ch.EPollSelectorImpl@7c2b1f87
-13:04:48.938 [XNIO-5 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-1', selector sun.nio.ch.EPollSelectorImpl@3444d0b3
-13:04:48.939 [XNIO-5 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-6', selector sun.nio.ch.EPollSelectorImpl@6620fa93
-13:04:48.939 [XNIO-5 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-8', selector sun.nio.ch.EPollSelectorImpl@35428914
-13:04:48.939 [XNIO-5 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 Accept', selector sun.nio.ch.EPollSelectorImpl@36deef43
-13:04:48.938 [XNIO-5 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-4', selector sun.nio.ch.EPollSelectorImpl@245dcce4
-13:04:48.939 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.939 [XNIO-5 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-7', selector sun.nio.ch.EPollSelectorImpl@73b46cab
-13:04:48.939 [XNIO-5 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-5 I/O-5', selector sun.nio.ch.EPollSelectorImpl@3a1dc28
-13:04:48.950 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.950 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.950 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:45831][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.950 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 4][route: {}-&gt;http://localhost:45831][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.950 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:45831
-13:04:48.950 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:45831
-13:04:48.951 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:40892&lt;-&gt;127.0.0.1:45831
-13:04:48.951 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
-13:04:48.951 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.951 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; POST /multi HTTP/1.1
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; Content-Type: multipart/form-data; boundary=8lunvo1ANa
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; Transfer-Encoding: chunked
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; Host: localhost:45831
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; Connection: Keep-Alive
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.951 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.951 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
-13:04:48.951 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=8lunvo1ANa[\r][\n]&quot;
-13:04:48.951 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
-13:04:48.951 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Host: localhost:45831[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;154[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;--8lunvo1ANa[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;--8lunvo1ANa[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.952 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;--8lunvo1ANa--[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;0[\r][\n]&quot;
-13:04:48.953 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.954 [XNIO-5 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=8lunvo1ANa], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:45831]}, cookies=[:]): --8lunvo1ANa
+08:27:19.633 [XNIO-45 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.wire - http-outgoing-44 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; Content-Encoding: gzip
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; Connection: keep-alive
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; Content-Type: text/plain
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; Content-Length: 22
+08:27:19.634 [Test worker] DEBUG org.apache.http.headers - http-outgoing-44 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.634 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.634 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 44][route: {}-&gt;http://localhost:46115] can be kept alive indefinitely
+08:27:19.634 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 44][route: {}-&gt;http://localhost:46115][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.639 [XNIO-46 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-2', selector sun.nio.ch.EPollSelectorImpl@5d806127
+08:27:19.639 [XNIO-46 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-1', selector sun.nio.ch.EPollSelectorImpl@4741a59f
+08:27:19.639 [XNIO-46 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-3', selector sun.nio.ch.EPollSelectorImpl@3c03f72
+08:27:19.640 [XNIO-46 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-6', selector sun.nio.ch.EPollSelectorImpl@288ec42f
+08:27:19.640 [XNIO-46 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-7', selector sun.nio.ch.EPollSelectorImpl@1c349a3e
+08:27:19.639 [XNIO-46 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-4', selector sun.nio.ch.EPollSelectorImpl@47c571e8
+08:27:19.640 [XNIO-46 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 Accept', selector sun.nio.ch.EPollSelectorImpl@8ed5579
+08:27:19.640 [XNIO-46 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-5', selector sun.nio.ch.EPollSelectorImpl@27ec66b3
+08:27:19.640 [XNIO-46 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-46 I/O-8', selector sun.nio.ch.EPollSelectorImpl@7aab4425
+08:27:19.645 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.645 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.645 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:33719][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.645 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 45][route: {}-&gt;http://localhost:33719][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.645 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:33719
+08:27:19.646 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:33719
+08:27:19.646 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:46338&lt;-&gt;127.0.0.1:33719
+08:27:19.646 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request POST /multi HTTP/1.1
+08:27:19.646 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.646 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; POST /multi HTTP/1.1
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; Content-Type: multipart/form-data; boundary=Wdi8M190GQ
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; Transfer-Encoding: chunked
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; Host: localhost:33719
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; Connection: Keep-Alive
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.646 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;POST /multi HTTP/1.1[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Type: multipart/form-data; boundary=Wdi8M190GQ[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Transfer-Encoding: chunked[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Host: localhost:33719[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;154[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;--Wdi8M190GQ[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;some-a-content[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;--Wdi8M190GQ[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;Content-Transfer-Encoding: binary[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;some-b-content[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;--Wdi8M190GQ--[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;0[\r][\n]&quot;
+08:27:19.646 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.646 [XNIO-46 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { POST /multi (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], Transfer-Encoding=[chunked], Content-Type=[multipart/form-data; boundary=Wdi8M190GQ], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:33719]}, cookies=[:]): --Wdi8M190GQ
 Content-Disposition: form-data; name=&quot;filea&quot;; filename=&quot;file-a.txt&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-a-content
---8lunvo1ANa
+--Wdi8M190GQ
 Content-Disposition: form-data; name=&quot;fileb&quot;; filename=&quot;file-b.xtx&quot;
 Content-Type: text/plain
 Content-Transfer-Encoding: binary
 
 some-b-content
---8lunvo1ANa--
+--Wdi8M190GQ--
  }
-13:04:48.957 [XNIO-5 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.wire - http-outgoing-4 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; Content-Encoding: gzip
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; Connection: keep-alive
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; Content-Type: text/plain
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; Content-Length: 22
-13:04:48.958 [Test worker] DEBUG org.apache.http.headers - http-outgoing-4 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.959 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.959 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 4][route: {}-&gt;http://localhost:45831] can be kept alive indefinitely
-13:04:48.959 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 4][route: {}-&gt;http://localhost:45831][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.960 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@3091f369
+08:27:19.648 [XNIO-46 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.wire - http-outgoing-45 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; Content-Encoding: gzip
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; Connection: keep-alive
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; Content-Type: text/plain
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; Content-Length: 22
+08:27:19.648 [Test worker] DEBUG org.apache.http.headers - http-outgoing-45 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.648 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.649 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 45][route: {}-&gt;http://localhost:33719] can be kept alive indefinitely
+08:27:19.649 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 45][route: {}-&gt;http://localhost:33719][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
 </pre>
 </span>
 </div>
@@ -551,7 +533,7 @@ some-b-content
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 3.5</a> at May 22, 2017 1:04:56 PM</p>
+<a href="http://www.gradle.org">Gradle 4.0</a> at Jul 7, 2017 8:27:25 AM</p>
 </div>
 </div>
 </body>

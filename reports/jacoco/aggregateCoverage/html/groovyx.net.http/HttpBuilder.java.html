@@ -198,7 +198,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Consumer&lt;HttpObjectConfig&gt; configuration) {
-<span class="nc" id="L201">        return configure(factory, configuration);</span>
+<span class="fc" id="L201">        return configure(factory, configuration);</span>
     }
 
     /**
@@ -233,73 +233,90 @@ public abstract class HttpBuilder implements Closeable {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; factory, final Consumer&lt;HttpObjectConfig&gt; configuration) {
-<span class="nc" id="L236">        HttpObjectConfig impl = new HttpObjectConfigImpl();</span>
-<span class="nc" id="L237">        configuration.accept(impl);</span>
-<span class="nc" id="L238">        return factory.apply(impl);</span>
+<span class="fc" id="L236">        HttpObjectConfig impl = new HttpObjectConfigImpl();</span>
+<span class="fc" id="L237">        configuration.accept(impl);</span>
+<span class="fc" id="L238">        return factory.apply(impl);</span>
     }
 
     private final EnumMap&lt;HttpVerb, BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt;&gt; interceptors;
     private final CookieManager cookieManager;
-
+    
 <span class="fc" id="L244">    protected HttpBuilder(final HttpObjectConfig objectConfig) {</span>
 <span class="fc" id="L245">        this.interceptors = new EnumMap&lt;&gt;(objectConfig.getExecution().getInterceptors());</span>
-<span class="fc" id="L246">        final File folder = objectConfig.getClient().getCookieFolder();</span>
-<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        CookieStore cookieStore = (folder == null ?</span>
-                                   new NonBlockingCookieStore() :
-<span class="pc" id="L249">                                   new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));</span>
-<span class="fc" id="L250">        this.cookieManager = new CookieManager(cookieStore, CookiePolicy.ACCEPT_ALL);</span>
-<span class="fc" id="L251">    }</span>
+<span class="fc" id="L246">        this.cookieManager = new CookieManager(makeCookieStore(objectConfig), CookiePolicy.ACCEPT_ALL);</span>
+<span class="fc" id="L247">    }</span>
+
+    private CookieStore makeCookieStore(final HttpObjectConfig objectConfig) {
+<span class="fc bfc" id="L250" title="All 2 branches covered.">        if(objectConfig.getClient().getCookiesEnabled()) {</span>
+<span class="fc" id="L251">            final File folder = objectConfig.getClient().getCookieFolder();</span>
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">            return (folder == null ?</span>
+                    new NonBlockingCookieStore() :
+<span class="nc" id="L254">                    new FileBackedCookieStore(folder, objectConfig.getExecution().getExecutor()));</span>
+        }
+        else {
+<span class="fc" id="L257">            return NullCookieStore.instance();</span>
+        }
+    }
 
     protected CookieManager getCookieManager() {
-<span class="fc" id="L254">        return cookieManager;</span>
+<span class="fc" id="L262">        return cookieManager;</span>
+    }
+
+    /**
+     * Returns the cookie store used by this builder
+     * 
+     * @return the cookie store used by this builder
+     */
+    public CookieStore getCookieStore() {
+<span class="fc" id="L271">        return cookieManager.getCookieStore();</span>
     }
 
     protected Map&lt;String,String&gt; cookiesToAdd(final HttpObjectConfig.Client clientConfig, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
-<span class="fc" id="L258">        Map&lt;String,String&gt; tmp = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L275">        Map&lt;String,String&gt; tmp = new HashMap&lt;&gt;();</span>
 
         try {
-<span class="fc" id="L261">            final URI uri = cr.getUri().toURI();</span>
-<span class="fc bfc" id="L262" title="All 2 branches covered.">            for(HttpCookie cookie : cr.actualCookies(new ArrayList&lt;&gt;())) {</span>
-<span class="pc bpc" id="L263" title="1 of 2 branches missed.">                final String keyName = clientConfig.getCookieVersion() == 0 ? &quot;Set-Cookie&quot; : &quot;Set-Cookie2&quot;;</span>
-<span class="fc" id="L264">                final Map&lt;String,List&lt;String&gt;&gt; toPut = singletonMap(keyName, singletonList(cookie.toString()));</span>
-<span class="fc" id="L265">                cookieManager.put(cr.getUri().forCookie(cookie), toPut);</span>
-<span class="fc" id="L266">            }</span>
+<span class="fc" id="L278">            final URI uri = cr.getUri().toURI();</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">            for(HttpCookie cookie : cr.actualCookies(new ArrayList&lt;&gt;())) {</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">                final String keyName = clientConfig.getCookieVersion() == 0 ? &quot;Set-Cookie&quot; : &quot;Set-Cookie2&quot;;</span>
+<span class="fc" id="L281">                final Map&lt;String,List&lt;String&gt;&gt; toPut = singletonMap(keyName, singletonList(cookie.toString()));</span>
+<span class="fc" id="L282">                cookieManager.put(cr.getUri().forCookie(cookie), toPut);</span>
+<span class="fc" id="L283">            }</span>
 
-<span class="fc" id="L268">            Map&lt;String, List&lt;String&gt;&gt; found = cookieManager.get(uri, emptyMap());</span>
-<span class="fc bfc" id="L269" title="All 2 branches covered.">            for(Map.Entry&lt;String,List&lt;String&gt;&gt; e : found.entrySet()) {</span>
-<span class="pc bpc" id="L270" title="1 of 4 branches missed.">                if(e.getValue() != null &amp;&amp; !e.getValue().isEmpty()) {</span>
-<span class="fc" id="L271">                    tmp.put(e.getKey(), String.join(&quot;; &quot;, e.getValue()));</span>
+<span class="fc" id="L285">            Map&lt;String, List&lt;String&gt;&gt; found = cookieManager.get(uri, emptyMap());</span>
+<span class="fc bfc" id="L286" title="All 2 branches covered.">            for(Map.Entry&lt;String,List&lt;String&gt;&gt; e : found.entrySet()) {</span>
+<span class="pc bpc" id="L287" title="1 of 4 branches missed.">                if(e.getValue() != null &amp;&amp; !e.getValue().isEmpty()) {</span>
+<span class="fc" id="L288">                    tmp.put(e.getKey(), String.join(&quot;; &quot;, e.getValue()));</span>
                 }
-<span class="fc" id="L273">            }</span>
+<span class="fc" id="L290">            }</span>
         }
-<span class="nc" id="L275">        catch(IOException ioe) {</span>
-<span class="nc" id="L276">            throw new TransportingException(ioe);</span>
-<span class="fc" id="L277">        }</span>
+<span class="nc" id="L292">        catch(IOException ioe) {</span>
+<span class="nc" id="L293">            throw new TransportingException(ioe);</span>
+<span class="fc" id="L294">        }</span>
 
-<span class="fc" id="L279">        return tmp;</span>
+<span class="fc" id="L296">        return tmp;</span>
     }
 
     public static List&lt;HttpCookie&gt; cookies(final List&lt;FromServer.Header&lt;?&gt;&gt; headers) {
-<span class="fc" id="L283">        final List&lt;HttpCookie&gt; cookies = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L284" title="All 2 branches covered.">        for(FromServer.Header&lt;?&gt; header : headers) {</span>
-<span class="fc bfc" id="L285" title="All 2 branches covered.">            if(header.getKey().equalsIgnoreCase(&quot;Set-Cookie&quot;) ||</span>
-<span class="pc bpc" id="L286" title="1 of 2 branches missed.">               header.getKey().equalsIgnoreCase(&quot;Set-Cookie2&quot;)) {</span>
-<span class="fc" id="L287">                final List&lt;?&gt; found = (List&lt;?&gt;) header.getParsed();</span>
-<span class="fc bfc" id="L288" title="All 2 branches covered.">                for(Object o : found) {</span>
-<span class="fc" id="L289">                    cookies.add((HttpCookie) o);</span>
-<span class="fc" id="L290">                }</span>
+<span class="fc" id="L300">        final List&lt;HttpCookie&gt; cookies = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        for(FromServer.Header&lt;?&gt; header : headers) {</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            if(header.getKey().equalsIgnoreCase(&quot;Set-Cookie&quot;) ||</span>
+<span class="pc bpc" id="L303" title="1 of 2 branches missed.">               header.getKey().equalsIgnoreCase(&quot;Set-Cookie2&quot;)) {</span>
+<span class="fc" id="L304">                final List&lt;?&gt; found = (List&lt;?&gt;) header.getParsed();</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">                for(Object o : found) {</span>
+<span class="fc" id="L306">                    cookies.add((HttpCookie) o);</span>
+<span class="fc" id="L307">                }</span>
             }
-<span class="fc" id="L292">        }</span>
+<span class="fc" id="L309">        }</span>
 
-<span class="fc" id="L294">        return Collections.unmodifiableList(cookies);</span>
+<span class="fc" id="L311">        return Collections.unmodifiableList(cookies);</span>
 
     }
 
     protected void addCookieStore(final URI uri, final List&lt;FromServer.Header&lt;?&gt;&gt; headers) {
-<span class="fc bfc" id="L299" title="All 2 branches covered.">        for(HttpCookie cookie : cookies(headers)) {</span>
-<span class="fc" id="L300">            cookieManager.getCookieStore().add(uri, cookie);</span>
-<span class="fc" id="L301">        }</span>
-<span class="fc" id="L302">    }</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">        for(HttpCookie cookie : cookies(headers)) {</span>
+<span class="fc" id="L317">            cookieManager.getCookieStore().add(uri, cookie);</span>
+<span class="fc" id="L318">        }</span>
+<span class="fc" id="L319">    }</span>
 
     /**
      * Executes a GET request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
@@ -316,7 +333,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get() {
-<span class="fc" id="L319">        return get(NO_OP);</span>
+<span class="fc" id="L336">        return get(NO_OP);</span>
     }
 
     /**
@@ -340,7 +357,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T get(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L343">        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, closure), this::doGet));</span>
+<span class="fc" id="L360">        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, closure), this::doGet));</span>
     }
 
     /**
@@ -366,7 +383,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T get(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L369">        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, configuration), this::doGet));</span>
+<span class="fc" id="L386">        return type.cast(interceptors.get(HttpVerb.GET).apply(configureRequest(type, configuration), this::doGet));</span>
     }
 
     /**
@@ -385,7 +402,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a {@link CompletableFuture} for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; getAsync() {
-<span class="fc" id="L388">        return CompletableFuture.supplyAsync(() -&gt; get(), getExecutor());</span>
+<span class="fc" id="L405">        return CompletableFuture.supplyAsync(() -&gt; get(), getExecutor());</span>
     }
 
     /**
@@ -409,7 +426,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public CompletableFuture&lt;Object&gt; getAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L412">        return CompletableFuture.supplyAsync(() -&gt; get(closure), getExecutor());</span>
+<span class="fc" id="L429">        return CompletableFuture.supplyAsync(() -&gt; get(closure), getExecutor());</span>
     }
 
     /**
@@ -435,7 +452,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
     public CompletableFuture&lt;Object&gt; getAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L438">        return CompletableFuture.supplyAsync(() -&gt; get(configuration), getExecutor());</span>
+<span class="fc" id="L455">        return CompletableFuture.supplyAsync(() -&gt; get(configuration), getExecutor());</span>
     }
 
     /**
@@ -460,7 +477,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; getAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L463">        return CompletableFuture.supplyAsync(() -&gt; get(type, closure), getExecutor());</span>
+<span class="fc" id="L480">        return CompletableFuture.supplyAsync(() -&gt; get(type, closure), getExecutor());</span>
     }
 
     /**
@@ -484,7 +501,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; getAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L487">        return CompletableFuture.supplyAsync(() -&gt; get(type, configuration), getExecutor());</span>
+<span class="fc" id="L504">        return CompletableFuture.supplyAsync(() -&gt; get(type, configuration), getExecutor());</span>
     }
 
     /**
@@ -502,7 +519,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content - which should always be `null` for this method
      */
     public Object head() {
-<span class="fc" id="L505">        return head(NO_OP);</span>
+<span class="fc" id="L522">        return head(NO_OP);</span>
     }
 
     /**
@@ -529,7 +546,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T head(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L532">        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, closure), this::doHead));</span>
+<span class="fc" id="L549">        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, closure), this::doHead));</span>
     }
 
     /**
@@ -555,7 +572,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T head(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L558">        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, configuration), this::doHead));</span>
+<span class="fc" id="L575">        return type.cast(interceptors.get(HttpVerb.HEAD).apply(configureRequest(type, configuration), this::doHead));</span>
     }
 
     /**
@@ -575,7 +592,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a {@link CompletableFuture} for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; headAsync() {
-<span class="fc" id="L578">        return CompletableFuture.supplyAsync(() -&gt; head(), getExecutor());</span>
+<span class="fc" id="L595">        return CompletableFuture.supplyAsync(() -&gt; head(), getExecutor());</span>
     }
 
     /**
@@ -600,7 +617,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public CompletableFuture&lt;Object&gt; headAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L603">        return CompletableFuture.supplyAsync(() -&gt; head(closure), getExecutor());</span>
+<span class="fc" id="L620">        return CompletableFuture.supplyAsync(() -&gt; head(closure), getExecutor());</span>
     }
 
     /**
@@ -626,7 +643,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
     public CompletableFuture&lt;Object&gt; headAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L629">        return CompletableFuture.supplyAsync(() -&gt; head(configuration), getExecutor());</span>
+<span class="fc" id="L646">        return CompletableFuture.supplyAsync(() -&gt; head(configuration), getExecutor());</span>
     }
 
     /**
@@ -654,7 +671,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a {@link CompletableFuture} which may be used to access the resulting content (if present)
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; headAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L657">        return CompletableFuture.supplyAsync(() -&gt; head(type, closure), getExecutor());</span>
+<span class="fc" id="L674">        return CompletableFuture.supplyAsync(() -&gt; head(type, closure), getExecutor());</span>
     }
 
     /**
@@ -680,7 +697,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type wrapped in a {@link CompletableFuture}
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; headAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L683">        return CompletableFuture.supplyAsync(() -&gt; head(type, configuration), getExecutor());</span>
+<span class="fc" id="L700">        return CompletableFuture.supplyAsync(() -&gt; head(type, configuration), getExecutor());</span>
     }
 
     /**
@@ -698,7 +715,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post() {
-<span class="fc" id="L701">        return post(NO_OP);</span>
+<span class="fc" id="L718">        return post(NO_OP);</span>
     }
 
     /**
@@ -726,7 +743,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T post(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L729">        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, closure), this::doPost));</span>
+<span class="fc" id="L746">        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, closure), this::doPost));</span>
     }
 
     /**
@@ -752,7 +769,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T post(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L755">        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, configuration), this::doPost));</span>
+<span class="fc" id="L772">        return type.cast(interceptors.get(HttpVerb.POST).apply(configureRequest(type, configuration), this::doPost));</span>
     }
 
     /**
@@ -771,7 +788,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; postAsync() {
-<span class="fc" id="L774">        return CompletableFuture.supplyAsync(() -&gt; post(NO_OP), getExecutor());</span>
+<span class="fc" id="L791">        return CompletableFuture.supplyAsync(() -&gt; post(NO_OP), getExecutor());</span>
     }
 
     /**
@@ -796,7 +813,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future result data
      */
     public CompletableFuture&lt;Object&gt; postAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L799">        return CompletableFuture.supplyAsync(() -&gt; post(closure), getExecutor());</span>
+<span class="fc" id="L816">        return CompletableFuture.supplyAsync(() -&gt; post(closure), getExecutor());</span>
     }
 
     /**
@@ -822,7 +839,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
     public CompletableFuture&lt;Object&gt; postAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L825">        return CompletableFuture.supplyAsync(() -&gt; post(configuration), getExecutor());</span>
+<span class="fc" id="L842">        return CompletableFuture.supplyAsync(() -&gt; post(configuration), getExecutor());</span>
     }
 
     /**
@@ -851,7 +868,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; postAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L854">        return CompletableFuture.supplyAsync(() -&gt; post(type, closure), getExecutor());</span>
+<span class="fc" id="L871">        return CompletableFuture.supplyAsync(() -&gt; post(type, closure), getExecutor());</span>
     }
 
     /**
@@ -878,7 +895,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type, wrapped in a {@link CompletableFuture}
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; postAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L881">        return CompletableFuture.supplyAsync(() -&gt; post(type, configuration), getExecutor());</span>
+<span class="fc" id="L898">        return CompletableFuture.supplyAsync(() -&gt; post(type, configuration), getExecutor());</span>
     }
 
     /**
@@ -896,7 +913,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put() {
-<span class="fc" id="L899">        return put(NO_OP);</span>
+<span class="fc" id="L916">        return put(NO_OP);</span>
     }
 
     /**
@@ -924,7 +941,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T put(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L927">        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, closure), this::doPut));</span>
+<span class="fc" id="L944">        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, closure), this::doPut));</span>
     }
 
     /**
@@ -950,7 +967,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T put(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L953">        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, configuration), this::doPut));</span>
+<span class="fc" id="L970">        return type.cast(interceptors.get(HttpVerb.PUT).apply(configureRequest(type, configuration), this::doPut));</span>
     }
 
     /**
@@ -969,7 +986,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; putAsync() {
-<span class="fc" id="L972">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
+<span class="fc" id="L989">        return CompletableFuture.supplyAsync(() -&gt; put(NO_OP), getExecutor());</span>
     }
 
     /**
@@ -994,7 +1011,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future result data
      */
     public CompletableFuture&lt;Object&gt; putAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L997">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
+<span class="fc" id="L1014">        return CompletableFuture.supplyAsync(() -&gt; put(closure), getExecutor());</span>
     }
 
     /**
@@ -1020,7 +1037,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
     public CompletableFuture&lt;Object&gt; putAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1023">        return CompletableFuture.supplyAsync(() -&gt; put(configuration), getExecutor());</span>
+<span class="fc" id="L1040">        return CompletableFuture.supplyAsync(() -&gt; put(configuration), getExecutor());</span>
     }
 
     /**
@@ -1049,7 +1066,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; putAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1052">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
+<span class="fc" id="L1069">        return CompletableFuture.supplyAsync(() -&gt; put(type, closure), getExecutor());</span>
     }
 
     /**
@@ -1076,7 +1093,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type, wrapped in a {@link CompletableFuture}
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; putAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1079">        return CompletableFuture.supplyAsync(() -&gt; put(type, configuration), getExecutor());</span>
+<span class="fc" id="L1096">        return CompletableFuture.supplyAsync(() -&gt; put(type, configuration), getExecutor());</span>
     }
 
     /**
@@ -1094,7 +1111,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete() {
-<span class="fc" id="L1097">        return delete(NO_OP);</span>
+<span class="fc" id="L1114">        return delete(NO_OP);</span>
     }
 
     /**
@@ -1120,7 +1137,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the result of the request cast to the specified type
      */
     public &lt;T&gt; T delete(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1123">        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, closure), this::doDelete));</span>
+<span class="fc" id="L1140">        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, closure), this::doDelete));</span>
     }
 
     /**
@@ -1146,7 +1163,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T delete(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1149">        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, configuration), this::doDelete));</span>
+<span class="fc" id="L1166">        return type.cast(interceptors.get(HttpVerb.DELETE).apply(configureRequest(type, configuration), this::doDelete));</span>
     }
 
     /**
@@ -1165,7 +1182,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future access to the response
      */
     public CompletableFuture&lt;Object&gt; deleteAsync() {
-<span class="fc" id="L1168">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
+<span class="fc" id="L1185">        return CompletableFuture.supplyAsync(() -&gt; delete(NO_OP), getExecutor());</span>
     }
 
     /**
@@ -1188,7 +1205,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the future result data
      */
     public CompletableFuture&lt;Object&gt; deleteAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1191">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
+<span class="fc" id="L1208">        return CompletableFuture.supplyAsync(() -&gt; delete(closure), getExecutor());</span>
     }
 
     /**
@@ -1214,7 +1231,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the result of the request
      */
     public CompletableFuture&lt;Object&gt; deleteAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1217">        return CompletableFuture.supplyAsync(() -&gt; delete(configuration), getExecutor());</span>
+<span class="fc" id="L1234">        return CompletableFuture.supplyAsync(() -&gt; delete(configuration), getExecutor());</span>
     }
 
     /**
@@ -1242,7 +1259,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; deleteAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1245">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
+<span class="fc" id="L1262">        return CompletableFuture.supplyAsync(() -&gt; delete(type, closure), getExecutor());</span>
     }
 
     /**
@@ -1269,7 +1286,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} containing the result of the request
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; deleteAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1272">        return CompletableFuture.supplyAsync(() -&gt; delete(type, configuration), getExecutor());</span>
+<span class="fc" id="L1289">        return CompletableFuture.supplyAsync(() -&gt; delete(type, configuration), getExecutor());</span>
     }
 
     /**
@@ -1291,7 +1308,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1294">        return get(Object.class, closure);</span>
+<span class="fc" id="L1311">        return get(Object.class, closure);</span>
     }
 
     /**
@@ -1315,7 +1332,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object get(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1318">        return get(Object.class, configuration);</span>
+<span class="fc" id="L1335">        return get(Object.class, configuration);</span>
     }
 
     /**
@@ -1337,7 +1354,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content - which will be `null` unless provided by a `request.when()` closure
      */
     public Object head(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1340">        return head(Object.class, closure);</span>
+<span class="fc" id="L1357">        return head(Object.class, closure);</span>
     }
 
     /**
@@ -1361,7 +1378,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object head(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1364">        return head(Object.class, configuration);</span>
+<span class="fc" id="L1381">        return head(Object.class, configuration);</span>
     }
 
     /**
@@ -1385,7 +1402,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1388">        return post(Object.class, closure);</span>
+<span class="fc" id="L1405">        return post(Object.class, closure);</span>
     }
 
     /**
@@ -1409,7 +1426,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object post(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1412">        return post(Object.class, configuration);</span>
+<span class="fc" id="L1429">        return post(Object.class, configuration);</span>
     }
 
     /**
@@ -1433,7 +1450,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1436">        return put(Object.class, closure);</span>
+<span class="fc" id="L1453">        return put(Object.class, closure);</span>
     }
 
     /**
@@ -1457,7 +1474,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object put(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1460">        return put(Object.class, configuration);</span>
+<span class="fc" id="L1477">        return put(Object.class, configuration);</span>
     }
 
     /**
@@ -1479,7 +1496,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1482">        return delete(Object.class, closure);</span>
+<span class="fc" id="L1499">        return delete(Object.class, closure);</span>
     }
 
     /**
@@ -1503,7 +1520,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object delete(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1506">        return delete(Object.class, configuration);</span>
+<span class="fc" id="L1523">        return delete(Object.class, configuration);</span>
     }
 
     /**
@@ -1521,7 +1538,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object patch() {
-<span class="fc" id="L1524">        return patch(NO_OP);</span>
+<span class="fc" id="L1541">        return patch(NO_OP);</span>
     }
 
     /**
@@ -1543,7 +1560,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object patch(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1546">        return patch(Object.class, closure);</span>
+<span class="fc" id="L1563">        return patch(Object.class, closure);</span>
     }
 
     /**
@@ -1567,7 +1584,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public Object patch(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1570">        return patch(Object.class, configuration);</span>
+<span class="fc" id="L1587">        return patch(Object.class, configuration);</span>
     }
 
     /**
@@ -1591,7 +1608,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T patch(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1594">        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, closure), this::doPatch));</span>
+<span class="fc" id="L1611">        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, closure), this::doPatch));</span>
     }
 
     /**
@@ -1617,7 +1634,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content cast to the specified type
      */
     public &lt;T&gt; T patch(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1620">        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, configuration), this::doPatch));</span>
+<span class="fc" id="L1637">        return type.cast(interceptors.get(HttpVerb.PATCH).apply(configureRequest(type, configuration), this::doPatch));</span>
     }
 
     /**
@@ -1636,7 +1653,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return a {@link CompletableFuture} for retrieving the resulting content
      */
     public CompletableFuture&lt;Object&gt; patchAsync() {
-<span class="fc" id="L1639">        return CompletableFuture.supplyAsync(() -&gt; patch(), getExecutor());</span>
+<span class="fc" id="L1656">        return CompletableFuture.supplyAsync(() -&gt; patch(), getExecutor());</span>
     }
 
     /**
@@ -1660,7 +1677,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content
      */
     public CompletableFuture&lt;Object&gt; patchAsync(@DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1663">        return CompletableFuture.supplyAsync(() -&gt; patch(closure), getExecutor());</span>
+<span class="fc" id="L1680">        return CompletableFuture.supplyAsync(() -&gt; patch(closure), getExecutor());</span>
     }
 
     /**
@@ -1686,7 +1703,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the resulting content wrapped in a {@link CompletableFuture}
      */
     public CompletableFuture&lt;Object&gt; patchAsync(final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1689">        return CompletableFuture.supplyAsync(() -&gt; patch(configuration), getExecutor());</span>
+<span class="fc" id="L1706">        return CompletableFuture.supplyAsync(() -&gt; patch(configuration), getExecutor());</span>
     }
 
     /**
@@ -1711,7 +1728,7 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; patchAsync(final Class&lt;T&gt; type, @DelegatesTo(HttpConfig.class) final Closure closure) {
-<span class="fc" id="L1714">        return CompletableFuture.supplyAsync(() -&gt; patch(type, closure), getExecutor());</span>
+<span class="fc" id="L1731">        return CompletableFuture.supplyAsync(() -&gt; patch(type, closure), getExecutor());</span>
     }
 
     /**
@@ -1735,8 +1752,20 @@ public abstract class HttpBuilder implements Closeable {
      * @return the {@link CompletableFuture} for the resulting content cast to the specified type
      */
     public &lt;T&gt; CompletableFuture&lt;T&gt; patchAsync(final Class&lt;T&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1738">        return CompletableFuture.supplyAsync(() -&gt; patch(type, configuration), getExecutor());</span>
+<span class="fc" id="L1755">        return CompletableFuture.supplyAsync(() -&gt; patch(type, configuration), getExecutor());</span>
     }
+
+    /**
+     * Used to retrieve the instance of the internal client implementation. All client configuration will have been performed by the time this
+     * method is accessible. If additional configuration is desired and not supported by HttpBuilder-NG directly, you should use the
+     * `HttpObjectConfig::Client::clientCustomizer(Consumer&lt;Object&gt;)` method.
+     *
+     * This functionality is optional and client-implementation-dependent. If access to the internal client is not supported, an
+     * {@link UnsupportedOperationException} will be thrown.
+     *
+     * @return a reference to the internal client implementation used (or null if not supported)
+     */
+    public abstract Object getClientImplementation();
 
     protected abstract Object doGet(final ChainedHttpConfig config);
 
@@ -1755,57 +1784,57 @@ public abstract class HttpBuilder implements Closeable {
     public abstract Executor getExecutor();
 
     private ChainedHttpConfig configureRequest(final Class&lt;?&gt; type, final Closure closure) {
-<span class="fc" id="L1758">        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
-<span class="fc" id="L1759">        closure.setDelegate(myConfig);</span>
-<span class="fc" id="L1760">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
-<span class="fc" id="L1761">        closure.call();</span>
-<span class="fc" id="L1762">        myConfig.getChainedResponse().setType(type);</span>
-<span class="fc" id="L1763">        return myConfig;</span>
+<span class="fc" id="L1787">        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
+<span class="fc" id="L1788">        closure.setDelegate(myConfig);</span>
+<span class="fc" id="L1789">        closure.setResolveStrategy(Closure.DELEGATE_FIRST);</span>
+<span class="fc" id="L1790">        closure.call();</span>
+<span class="fc" id="L1791">        myConfig.getChainedResponse().setType(type);</span>
+<span class="fc" id="L1792">        return myConfig;</span>
     }
 
     private ChainedHttpConfig configureRequest(final Class&lt;?&gt; type, final Consumer&lt;HttpConfig&gt; configuration) {
-<span class="fc" id="L1767">        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
-<span class="fc" id="L1768">        configuration.accept(myConfig);</span>
-<span class="fc" id="L1769">        myConfig.getChainedResponse().setType(type);</span>
-<span class="fc" id="L1770">        return myConfig;</span>
+<span class="fc" id="L1796">        final HttpConfigs.BasicHttpConfig myConfig = HttpConfigs.requestLevel(getObjectConfig());</span>
+<span class="fc" id="L1797">        configuration.accept(myConfig);</span>
+<span class="fc" id="L1798">        myConfig.getChainedResponse().setType(type);</span>
+<span class="fc" id="L1799">        return myConfig;</span>
     }
 
     public static Throwable findCause(final Exception e) {
-<span class="pc bpc" id="L1774" title="1 of 2 branches missed.">        if(e instanceof TransportingException) {</span>
-<span class="nc" id="L1775">            return e.getCause();</span>
+<span class="pc bpc" id="L1803" title="1 of 2 branches missed.">        if(e instanceof TransportingException) {</span>
+<span class="nc" id="L1804">            return e.getCause();</span>
         }
-<span class="fc bfc" id="L1777" title="All 2 branches covered.">        else if(e instanceof UndeclaredThrowableException) {</span>
-<span class="fc" id="L1778">            final UndeclaredThrowableException ute = (UndeclaredThrowableException) e;</span>
-<span class="pc bpc" id="L1779" title="1 of 2 branches missed.">            if(ute.getCause() != null) {</span>
-<span class="fc" id="L1780">                return ute.getCause();</span>
+<span class="fc bfc" id="L1806" title="All 2 branches covered.">        else if(e instanceof UndeclaredThrowableException) {</span>
+<span class="fc" id="L1807">            final UndeclaredThrowableException ute = (UndeclaredThrowableException) e;</span>
+<span class="pc bpc" id="L1808" title="1 of 2 branches missed.">            if(ute.getCause() != null) {</span>
+<span class="fc" id="L1809">                return ute.getCause();</span>
             }
             else {
-<span class="nc" id="L1783">                return e;</span>
+<span class="nc" id="L1812">                return e;</span>
             }
         }
         else {
-<span class="fc" id="L1787">            return e;</span>
+<span class="fc" id="L1816">            return e;</span>
         }
     }
     
     protected Object handleException(final ChainedHttpConfig.ChainedResponse cr, final Exception e) {
-<span class="fc" id="L1792">        return cr.actualException().apply(findCause(e));</span>
+<span class="fc" id="L1821">        return cr.actualException().apply(findCause(e));</span>
     }
 
-<span class="fc" id="L1795">    protected static class ResponseHandlerFunction implements BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; {</span>
+<span class="fc" id="L1824">    protected static class ResponseHandlerFunction implements BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; {</span>
 
-<span class="fc" id="L1797">        static final ResponseHandlerFunction HANDLER_FUNCTION = new ResponseHandlerFunction();</span>
+<span class="fc" id="L1826">        static final ResponseHandlerFunction HANDLER_FUNCTION = new ResponseHandlerFunction();</span>
 
         @Override
         public Object apply(ChainedHttpConfig requestConfig, FromServer fromServer) {
             try {
-<span class="fc" id="L1802">                final BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; parser = requestConfig.findParser(fromServer.getContentType());</span>
-<span class="fc" id="L1803">                final BiFunction&lt;FromServer, Object, ?&gt; action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());</span>
+<span class="fc" id="L1831">                final BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; parser = requestConfig.findParser(fromServer.getContentType());</span>
+<span class="fc" id="L1832">                final BiFunction&lt;FromServer, Object, ?&gt; action = requestConfig.getChainedResponse().actualAction(fromServer.getStatusCode());</span>
 
-<span class="fc bfc" id="L1805" title="All 2 branches covered.">                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);</span>
+<span class="fc bfc" id="L1834" title="All 2 branches covered.">                return action.apply(fromServer, fromServer.getHasBody() ? parser.apply(requestConfig, fromServer) : null);</span>
 
             } finally {
-<span class="fc" id="L1808">                fromServer.finish();</span>
+<span class="fc" id="L1837">                fromServer.finish();</span>
             }
         }
     }

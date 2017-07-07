@@ -23,7 +23,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">1</div>
+<div class="counter">3</div>
 <p>tests</p>
 </div>
 </td>
@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.027s</div>
+<div class="counter">0.043s</div>
 <p>duration</p>
 </div>
 </td>
@@ -78,8 +78,18 @@
 </tr>
 </thead>
 <tr>
+<td class="success">access to client implementation</td>
+<td>0.005s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">client customization</td>
+<td>0.026s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
 <td class="success">client-specific configuration</td>
-<td>0.027s</td>
+<td>0.012s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -87,58 +97,73 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>13:04:48.971 [Test worker] DEBUG io.undertow - starting undertow server io.undertow.Undertow@5154daf9
-13:04:48.973 [XNIO-6 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6dd8d94e
-13:04:48.974 [XNIO-6 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-4', selector sun.nio.ch.EPollSelectorImpl@6584e7e6
-13:04:48.974 [XNIO-6 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-5', selector sun.nio.ch.EPollSelectorImpl@7b84a1a
-13:04:48.977 [XNIO-6 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-6', selector sun.nio.ch.EPollSelectorImpl@668d89e2
-13:04:48.977 [XNIO-6 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-8', selector sun.nio.ch.EPollSelectorImpl@776c46f0
-13:04:48.977 [Test worker] DEBUG io.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
-13:04:48.974 [XNIO-6 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-3', selector sun.nio.ch.EPollSelectorImpl@4058171
-13:04:48.974 [XNIO-6 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-2', selector sun.nio.ch.EPollSelectorImpl@5e5e3cb2
-13:04:48.977 [XNIO-6 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 I/O-7', selector sun.nio.ch.EPollSelectorImpl@4b09f382
-13:04:48.977 [XNIO-6 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-6 Accept', selector sun.nio.ch.EPollSelectorImpl@45bb3370
-13:04:48.985 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
-13:04:48.986 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
-13:04:48.986 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:39177][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
-13:04:48.986 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 5][route: {}-&gt;http://localhost:39177][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.986 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:39177
-13:04:48.986 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:39177
-13:04:48.986 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:38882&lt;-&gt;127.0.0.1:39177
-13:04:48.987 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request GET /foo HTTP/1.1
-13:04:48.987 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
-13:04:48.987 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
-13:04:48.987 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &gt;&gt; GET /foo HTTP/1.1
-13:04:48.987 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &gt;&gt; Host: localhost:39177
-13:04:48.987 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &gt;&gt; Connection: Keep-Alive
-13:04:48.987 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)
-13:04:48.987 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &gt;&gt; Accept-Encoding: gzip,deflate
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;GET /foo HTTP/1.1[\r][\n]&quot;
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;Host: localhost:39177[\r][\n]&quot;
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_121)[\r][\n]&quot;
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
-13:04:48.987 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &gt;&gt; &quot;[\r][\n]&quot;
-13:04:48.988 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_121)], Host=[localhost:39177]}, cookies=[:]): &lt;empty&gt; }
-13:04:48.990 [XNIO-6 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
-13:04:48.990 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
-13:04:48.990 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
-13:04:48.990 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
-13:04:48.990 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
-13:04:48.991 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
-13:04:48.991 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;Date: Mon, 22 May 2017 18:04:48 GMT[\r][\n]&quot;
-13:04:48.991 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;[\r][\n]&quot;
-13:04:48.991 [Test worker] DEBUG org.apache.http.wire - http-outgoing-5 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; HTTP/1.1 200 OK
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; Content-Encoding: gzip
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; Connection: keep-alive
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; Content-Type: text/plain
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; Content-Length: 22
-13:04:48.991 [Test worker] DEBUG org.apache.http.headers - http-outgoing-5 &lt;&lt; Date: Mon, 22 May 2017 18:04:48 GMT
-13:04:48.991 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
-13:04:48.992 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 5][route: {}-&gt;http://localhost:39177] can be kept alive indefinitely
-13:04:48.992 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 5][route: {}-&gt;http://localhost:39177][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
-13:04:48.992 [Test worker] DEBUG io.undertow - stopping undertow server io.undertow.Undertow@5154daf9
+<pre>08:27:19.657 [XNIO-47 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-2', selector sun.nio.ch.EPollSelectorImpl@47df281e
+08:27:19.657 [XNIO-47 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-1', selector sun.nio.ch.EPollSelectorImpl@458c354
+08:27:19.657 [XNIO-47 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-3', selector sun.nio.ch.EPollSelectorImpl@22c513c0
+08:27:19.657 [XNIO-47 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-4', selector sun.nio.ch.EPollSelectorImpl@2630c175
+08:27:19.657 [XNIO-47 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-5', selector sun.nio.ch.EPollSelectorImpl@12d747ca
+08:27:19.657 [XNIO-47 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-8', selector sun.nio.ch.EPollSelectorImpl@1d4ec91a
+08:27:19.657 [XNIO-47 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-7', selector sun.nio.ch.EPollSelectorImpl@1bbdbca6
+08:27:19.657 [XNIO-47 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 I/O-6', selector sun.nio.ch.EPollSelectorImpl@2c76ed17
+08:27:19.657 [XNIO-47 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-47 Accept', selector sun.nio.ch.EPollSelectorImpl@3a615389
+08:27:19.663 [Test worker] DEBUG org.apache.http.client.protocol.RequestAddCookies - CookieSpec selected: default
+08:27:19.663 [Test worker] DEBUG org.apache.http.client.protocol.RequestAuthCache - Auth cache not set in the context
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection request: [route: {}-&gt;http://localhost:41973][total kept alive: 0; route allocated: 0 of 2; total allocated: 0 of 20]
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection leased: [id: 46][route: {}-&gt;http://localhost:41973][total kept alive: 0; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Opening connection {}-&gt;http://localhost:41973
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connecting to localhost/127.0.0.1:41973
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.conn.DefaultHttpClientConnectionOperator - Connection established 127.0.0.1:44042&lt;-&gt;127.0.0.1:41973
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Executing request GET /foo HTTP/1.1
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Target auth state: UNCHALLENGED
+08:27:19.663 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Proxy auth state: UNCHALLENGED
+08:27:19.663 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &gt;&gt; GET /foo HTTP/1.1
+08:27:19.663 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &gt;&gt; Host: localhost:41973
+08:27:19.663 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &gt;&gt; Connection: Keep-Alive
+08:27:19.663 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &gt;&gt; User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)
+08:27:19.663 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &gt;&gt; Accept-Encoding: gzip,deflate
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;GET /foo HTTP/1.1[\r][\n]&quot;
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;Host: localhost:41973[\r][\n]&quot;
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;Connection: Keep-Alive[\r][\n]&quot;
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;User-Agent: Apache-HttpClient/4.5.2 (Java/1.8.0_131)[\r][\n]&quot;
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;Accept-Encoding: gzip,deflate[\r][\n]&quot;
+08:27:19.663 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &gt;&gt; &quot;[\r][\n]&quot;
+08:27:19.664 [XNIO-47 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /foo (query=[:], headers={Connection=[Keep-Alive], Accept-Encoding=[gzip,deflate], User-Agent=[Apache-HttpClient/4.5.2 (Java/1.8.0_131)], Host=[localhost:41973]}, cookies=[:]): &lt;empty&gt; }
+08:27:19.664 [XNIO-47 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[text/plain]}): ok
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;HTTP/1.1 200 OK[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;Content-Encoding: gzip[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;Connection: keep-alive[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;Content-Type: text/plain[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;Content-Length: 22[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;Date: Fri, 07 Jul 2017 13:27:18 GMT[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;[\r][\n]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.wire - http-outgoing-46 &lt;&lt; &quot;[0x1f][0x8b][0x8][0x0][0x0][0x0][0x0][0x0][0x0][0x0][0xcb][0xcf][0x6][0x0]G[0xdd][0xdc]y[0x2][0x0][0x0][0x0]&quot;
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; HTTP/1.1 200 OK
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; Content-Encoding: gzip
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; Connection: keep-alive
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; Content-Type: text/plain
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; Content-Length: 22
+08:27:19.665 [Test worker] DEBUG org.apache.http.headers - http-outgoing-46 &lt;&lt; Date: Fri, 07 Jul 2017 13:27:18 GMT
+08:27:19.665 [Test worker] DEBUG org.apache.http.impl.execchain.MainClientExec - Connection can be kept alive indefinitely
+08:27:19.665 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection [id: 46][route: {}-&gt;http://localhost:41973] can be kept alive indefinitely
+08:27:19.665 [Test worker] DEBUG org.apache.http.impl.conn.PoolingHttpClientConnectionManager - Connection released: [id: 46][route: {}-&gt;http://localhost:41973][total kept alive: 1; route allocated: 1 of 2; total allocated: 1 of 20]
+08:27:19.667 [XNIO-48 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-7', selector sun.nio.ch.EPollSelectorImpl@29312ed5
+08:27:19.667 [XNIO-48 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-1', selector sun.nio.ch.EPollSelectorImpl@7826e324
+08:27:19.667 [XNIO-48 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-3', selector sun.nio.ch.EPollSelectorImpl@2ff081d3
+08:27:19.667 [XNIO-48 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-2', selector sun.nio.ch.EPollSelectorImpl@3295c13f
+08:27:19.667 [XNIO-48 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-5', selector sun.nio.ch.EPollSelectorImpl@649449c3
+08:27:19.667 [XNIO-48 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-6', selector sun.nio.ch.EPollSelectorImpl@4302401f
+08:27:19.667 [XNIO-48 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-8', selector sun.nio.ch.EPollSelectorImpl@5b1fd715
+08:27:19.667 [XNIO-48 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 I/O-4', selector sun.nio.ch.EPollSelectorImpl@7d9fdc49
+08:27:19.668 [XNIO-48 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-48 Accept', selector sun.nio.ch.EPollSelectorImpl@12248832
+08:27:19.673 [XNIO-49 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-5', selector sun.nio.ch.EPollSelectorImpl@337ea568
+08:27:19.673 [XNIO-49 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-2', selector sun.nio.ch.EPollSelectorImpl@2c27ad8c
+08:27:19.676 [XNIO-49 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-6', selector sun.nio.ch.EPollSelectorImpl@37c9aac1
+08:27:19.676 [XNIO-49 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-7', selector sun.nio.ch.EPollSelectorImpl@2631779
+08:27:19.673 [XNIO-49 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-4', selector sun.nio.ch.EPollSelectorImpl@433838b9
+08:27:19.673 [XNIO-49 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-3', selector sun.nio.ch.EPollSelectorImpl@3489e0b9
+08:27:19.673 [XNIO-49 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-1', selector sun.nio.ch.EPollSelectorImpl@6dfae24d
+08:27:19.676 [XNIO-49 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 Accept', selector sun.nio.ch.EPollSelectorImpl@6d9a0561
+08:27:19.676 [XNIO-49 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-49 I/O-8', selector sun.nio.ch.EPollSelectorImpl@16d2c36c
 </pre>
 </span>
 </div>
@@ -150,7 +175,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 3.5</a> at May 22, 2017 1:06:06 PM</p>
+<a href="http://www.gradle.org">Gradle 4.0</a> at Jul 7, 2017 8:28:39 AM</p>
 </div>
 </div>
 </body>

@@ -22,6 +22,7 @@ import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
@@ -63,8 +64,8 @@ import static groovyx.net.http.util.IoUtils.transfer;
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
-<span class="fc" id="L66">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; apacheFactory = ApacheHttpBuilder::new;</span>
-<span class="fc" id="L67">    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);</span>
+<span class="fc" id="L67">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; apacheFactory = ApacheHttpBuilder::new;</span>
+<span class="fc" id="L68">    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);</span>
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
@@ -84,7 +85,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="fc" id="L87">        return configure(apacheFactory, closure);</span>
+<span class="fc" id="L88">        return configure(apacheFactory, closure);</span>
     }
 
     /**
@@ -118,7 +119,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Consumer&lt;HttpObjectConfig&gt; configuration) {
-<span class="nc" id="L121">        return configure(apacheFactory, configuration);</span>
+<span class="nc" id="L122">        return configure(apacheFactory, configuration);</span>
     }
 
     private class ApacheFromServer implements FromServer {
@@ -129,56 +130,56 @@ public class ApacheHttpBuilder extends HttpBuilder {
         private final InputStream inputStream;
         private final URI uri;
 
-<span class="fc" id="L132">        public ApacheFromServer(final URI originalUri, final HttpResponse response) {</span>
-<span class="fc" id="L133">            this.uri = originalUri;</span>
-<span class="fc" id="L134">            this.response = response;</span>
-<span class="fc" id="L135">            this.entity = response.getEntity();</span>
+<span class="fc" id="L133">        public ApacheFromServer(final URI originalUri, final HttpResponse response) {</span>
+<span class="fc" id="L134">            this.uri = originalUri;</span>
+<span class="fc" id="L135">            this.response = response;</span>
+<span class="fc" id="L136">            this.entity = response.getEntity();</span>
 
-<span class="fc bfc" id="L137" title="All 2 branches covered.">            if (entity != null) {</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">            if (entity != null) {</span>
                 try {
-<span class="fc" id="L139">                    this.inputStream = entity.getContent();</span>
-<span class="nc" id="L140">                } catch (IOException e) {</span>
-<span class="nc" id="L141">                    throw new RuntimeException(&quot;Could not get input stream from apache http client&quot;, e);</span>
-<span class="fc" id="L142">                }</span>
+<span class="fc" id="L140">                    this.inputStream = entity.getContent();</span>
+<span class="nc" id="L141">                } catch (IOException e) {</span>
+<span class="nc" id="L142">                    throw new RuntimeException(&quot;Could not get input stream from apache http client&quot;, e);</span>
+<span class="fc" id="L143">                }</span>
             } else {
-<span class="fc" id="L144">                this.inputStream = null;</span>
+<span class="fc" id="L145">                this.inputStream = null;</span>
             }
 
-<span class="fc" id="L147">            this.headers = new ArrayList&lt;&gt;(response.getAllHeaders().length);</span>
-<span class="fc bfc" id="L148" title="All 2 branches covered.">            for (org.apache.http.Header header : response.getAllHeaders()) {</span>
-<span class="fc" id="L149">                headers.add(Header.keyValue(header.getName(), header.getValue()));</span>
+<span class="fc" id="L148">            this.headers = new ArrayList&lt;&gt;(response.getAllHeaders().length);</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">            for (org.apache.http.Header header : response.getAllHeaders()) {</span>
+<span class="fc" id="L150">                headers.add(Header.keyValue(header.getName(), header.getValue()));</span>
             }
 
-<span class="fc" id="L152">            addCookieStore(uri, headers);</span>
-<span class="fc" id="L153">        }</span>
+<span class="fc" id="L153">            addCookieStore(uri, headers);</span>
+<span class="fc" id="L154">        }</span>
 
         public InputStream getInputStream() {
-<span class="fc" id="L156">            return inputStream;</span>
+<span class="fc" id="L157">            return inputStream;</span>
         }
 
         public boolean getHasBody() {
-<span class="fc bfc" id="L160" title="All 2 branches covered.">            return entity != null;</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">            return entity != null;</span>
         }
 
         public int getStatusCode() {
-<span class="fc" id="L164">            return response.getStatusLine().getStatusCode();</span>
+<span class="fc" id="L165">            return response.getStatusLine().getStatusCode();</span>
         }
 
         public String getMessage() {
-<span class="fc" id="L168">            return response.getStatusLine().getReasonPhrase();</span>
+<span class="fc" id="L169">            return response.getStatusLine().getReasonPhrase();</span>
         }
 
         public List&lt;Header&lt;?&gt;&gt; getHeaders() {
-<span class="fc" id="L172">            return headers;</span>
+<span class="fc" id="L173">            return headers;</span>
         }
 
         public URI getUri() {
-<span class="fc" id="L176">            return uri;</span>
+<span class="fc" id="L177">            return uri;</span>
         }
 
         public void finish() {
-<span class="fc" id="L180">            EntityUtils.consumeQuietly(response.getEntity());</span>
-<span class="fc" id="L181">        }</span>
+<span class="fc" id="L181">            EntityUtils.consumeQuietly(response.getEntity());</span>
+<span class="fc" id="L182">        }</span>
     }
 
     public static class ApacheToServer implements ToServer, HttpEntity {
@@ -186,68 +187,68 @@ public class ApacheHttpBuilder extends HttpBuilder {
         private ChainedHttpConfig config;
         private byte[] bytes;
 
-<span class="fc" id="L189">        public ApacheToServer(final ChainedHttpConfig config) {</span>
-<span class="fc" id="L190">            this.config = config;</span>
-<span class="fc" id="L191">        }</span>
+<span class="fc" id="L190">        public ApacheToServer(final ChainedHttpConfig config) {</span>
+<span class="fc" id="L191">            this.config = config;</span>
+<span class="fc" id="L192">        }</span>
 
         public void toServer(final InputStream inputStream) {
             try {
-<span class="fc" id="L195">                this.bytes = IoUtils.streamToBytes(inputStream);</span>
-<span class="nc" id="L196">            } catch (IOException e) {</span>
-<span class="nc" id="L197">                throw new RuntimeException(e);</span>
-<span class="fc" id="L198">            }</span>
-<span class="fc" id="L199">        }</span>
+<span class="fc" id="L196">                this.bytes = IoUtils.streamToBytes(inputStream);</span>
+<span class="nc" id="L197">            } catch (IOException e) {</span>
+<span class="nc" id="L198">                throw new RuntimeException(e);</span>
+<span class="fc" id="L199">            }</span>
+<span class="fc" id="L200">        }</span>
 
         public boolean isRepeatable() {
-<span class="fc" id="L202">            return true;</span>
+<span class="fc" id="L203">            return true;</span>
         }
 
         public boolean isChunked() {
-<span class="fc" id="L206">            return false;</span>
+<span class="fc" id="L207">            return false;</span>
         }
 
         public long getContentLength() {
-<span class="fc" id="L210">            return -1L;</span>
+<span class="fc" id="L211">            return -1L;</span>
         }
 
         public org.apache.http.Header getContentType() {
-<span class="fc" id="L214">            return new BasicHeader(&quot;Content-Type&quot;, config.findContentType());</span>
+<span class="fc" id="L215">            return new BasicHeader(&quot;Content-Type&quot;, config.findContentType());</span>
         }
 
         public org.apache.http.Header getContentEncoding() {
-<span class="fc" id="L218">            return null;</span>
+<span class="fc" id="L219">            return null;</span>
         }
 
         public InputStream getContent() {
-<span class="fc" id="L222">            return new ByteArrayInputStream(bytes);</span>
+<span class="fc" id="L223">            return new ByteArrayInputStream(bytes);</span>
         }
 
         public void writeTo(final OutputStream outputStream) {
-<span class="fc" id="L226">            transfer(getContent(), outputStream, false);</span>
-<span class="fc" id="L227">        }</span>
+<span class="fc" id="L227">            transfer(getContent(), outputStream, false);</span>
+<span class="fc" id="L228">        }</span>
 
         public boolean isStreaming() {
-<span class="nc" id="L230">            return true;</span>
+<span class="nc" id="L231">            return true;</span>
         }
 
         @SuppressWarnings(&quot;deprecation&quot;) //apache httpentity requires method
         public void consumeContent() throws IOException {
-<span class="nc" id="L235">            bytes = null;</span>
-<span class="nc" id="L236">        }</span>
+<span class="nc" id="L236">            bytes = null;</span>
+<span class="nc" id="L237">        }</span>
     }
 
     private class Handler implements ResponseHandler&lt;Object&gt; {
 
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        
-<span class="fc" id="L244">        public Handler(final ChainedHttpConfig requestConfig) throws URISyntaxException {</span>
-<span class="fc" id="L245">            this.requestConfig = requestConfig;</span>
-<span class="fc" id="L246">            this.theUri = requestConfig.getChainedRequest().getUri().toURI();</span>
-<span class="fc" id="L247">        }</span>
+
+<span class="fc" id="L245">        public Handler(final ChainedHttpConfig requestConfig) throws URISyntaxException {</span>
+<span class="fc" id="L246">            this.requestConfig = requestConfig;</span>
+<span class="fc" id="L247">            this.theUri = requestConfig.getChainedRequest().getUri().toURI();</span>
+<span class="fc" id="L248">        }</span>
 
         public Object handleResponse(final HttpResponse response) {
-<span class="fc" id="L250">            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(theUri, response));</span>
+<span class="fc" id="L251">            return HANDLER_FUNCTION.apply(requestConfig, new ApacheFromServer(theUri, response));</span>
         }
     }
 
@@ -256,158 +257,177 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
 
+    /**
+     * Creates a new `HttpBuilder` based on the Apache HTTP client. While it is acceptable to create a builder with this method, it is generally
+     * preferred to use one of the `static` `configure(...)` methods.
+     *
+     * @param config the configuration object
+     */
     public ApacheHttpBuilder(final HttpObjectConfig config) {
-<span class="fc" id="L260">        super(config);</span>
+<span class="fc" id="L267">        super(config);</span>
 
-<span class="fc" id="L262">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
-<span class="fc" id="L263">        this.executor = config.getExecution().getExecutor();</span>
-<span class="fc" id="L264">        this.clientConfig = config.getClient();</span>
+<span class="fc" id="L269">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L270">        this.executor = config.getExecution().getExecutor();</span>
+<span class="fc" id="L271">        this.clientConfig = config.getClient();</span>
 
-<span class="fc" id="L266">        final HttpClientBuilder myBuilder = HttpClients.custom();</span>
+<span class="fc" id="L273">        final HttpClientBuilder myBuilder = HttpClients.custom();</span>
 
-<span class="pc bpc" id="L268" title="1 of 2 branches missed.">        if (config.getExecution().getMaxThreads() &gt; 1) {</span>
-<span class="nc" id="L269">            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();</span>
-<span class="nc" id="L270">            cm.setMaxTotal(config.getExecution().getMaxThreads());</span>
-<span class="nc" id="L271">            cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (config.getExecution().getMaxThreads() &gt; 1) {</span>
+<span class="nc" id="L276">            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();</span>
+<span class="nc" id="L277">            cm.setMaxTotal(config.getExecution().getMaxThreads());</span>
+<span class="nc" id="L278">            cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());</span>
 
-<span class="nc" id="L273">            myBuilder.setConnectionManager(cm);</span>
+<span class="nc" id="L280">            myBuilder.setConnectionManager(cm);</span>
         }
 
-<span class="fc" id="L276">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
-<span class="fc bfc" id="L277" title="All 2 branches covered.">        if (sslContext != null) {</span>
-<span class="fc" id="L278">            myBuilder.setSSLContext(sslContext);</span>
-<span class="fc" id="L279">            myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, config.getExecution().getHostnameVerifier()));</span>
+<span class="fc" id="L283">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">        if (sslContext != null) {</span>
+<span class="fc" id="L285">            myBuilder.setSSLContext(sslContext);</span>
+<span class="fc" id="L286">            myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, config.getExecution().getHostnameVerifier()));</span>
         }
 
-<span class="fc" id="L282">        myBuilder.addInterceptorFirst((HttpResponseInterceptor) (response, context) -&gt; {</span>
-<span class="fc" id="L283">            HttpEntity entity = response.getEntity();</span>
-<span class="fc bfc" id="L284" title="All 2 branches covered.">            if (entity != null) {</span>
-<span class="fc" id="L285">                Header ceheader = entity.getContentEncoding();</span>
-<span class="fc bfc" id="L286" title="All 2 branches covered.">                if (ceheader != null) {</span>
-<span class="fc" id="L287">                    HeaderElement[] codecs = ceheader.getElements();</span>
-<span class="pc bpc" id="L288" title="1 of 2 branches missed.">                    for (HeaderElement codec : codecs) {</span>
-<span class="pc bpc" id="L289" title="1 of 2 branches missed.">                        if (codec.getName().equalsIgnoreCase(&quot;gzip&quot;)) {</span>
-<span class="fc" id="L290">                            response.setEntity(new GzipDecompressingEntity(response.getEntity()));</span>
-<span class="fc" id="L291">                            return;</span>
+<span class="fc" id="L289">        myBuilder.addInterceptorFirst((HttpResponseInterceptor) (response, context) -&gt; {</span>
+<span class="fc" id="L290">            HttpEntity entity = response.getEntity();</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">            if (entity != null) {</span>
+<span class="fc" id="L292">                Header ceheader = entity.getContentEncoding();</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">                if (ceheader != null) {</span>
+<span class="fc" id="L294">                    HeaderElement[] codecs = ceheader.getElements();</span>
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">                    for (HeaderElement codec : codecs) {</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">                        if (codec.getName().equalsIgnoreCase(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L297">                            response.setEntity(new GzipDecompressingEntity(response.getEntity()));</span>
+<span class="fc" id="L298">                            return;</span>
                         }
                     }
                 }
             }
-<span class="fc" id="L296">        });</span>
+<span class="fc" id="L303">        });</span>
 
-<span class="fc" id="L298">        this.client = myBuilder.build();</span>
-<span class="fc" id="L299">    }</span>
+<span class="fc" id="L305">        final Consumer&lt;Object&gt; clientCustomizer = clientConfig.getClientCustomizer();</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (clientCustomizer != null) {</span>
+<span class="fc" id="L307">            clientCustomizer.accept(myBuilder);</span>
+        }
+
+<span class="fc" id="L310">        this.client = myBuilder.build();</span>
+<span class="fc" id="L311">    }</span>
+
+    /**
+     * Retrieves the internal client implementation as an {@link HttpClient} instance.
+     *
+     * @return the reference to the internal client implementation as an {@link HttpClient}
+     */
+    public Object getClientImplementation() {
+<span class="fc" id="L319">        return client;</span>
+    }
 
     protected ChainedHttpConfig getObjectConfig() {
-<span class="fc" id="L302">        return config;</span>
+<span class="fc" id="L323">        return config;</span>
     }
 
     public Executor getExecutor() {
-<span class="fc" id="L306">        return executor;</span>
+<span class="fc" id="L327">        return executor;</span>
     }
 
     public void close() {
         try {
-<span class="nc" id="L311">            client.close();</span>
-<span class="nc" id="L312">        } catch (IOException ioe) {</span>
-<span class="nc bnc" id="L313" title="All 2 branches missed.">            if (log.isWarnEnabled()) {</span>
-<span class="nc" id="L314">                log.warn(&quot;Error in closing http client&quot;, ioe);</span>
+<span class="nc" id="L332">            client.close();</span>
+<span class="nc" id="L333">        } catch (IOException ioe) {</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            if (log.isWarnEnabled()) {</span>
+<span class="nc" id="L335">                log.warn(&quot;Error in closing http client&quot;, ioe);</span>
             }
-<span class="nc" id="L316">        }</span>
-<span class="nc" id="L317">    }</span>
+<span class="nc" id="L337">        }</span>
+<span class="nc" id="L338">    }</span>
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
-<span class="fc" id="L320">        CredentialsProvider provider = new BasicCredentialsProvider();</span>
-<span class="fc" id="L321">        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),</span>
-<span class="fc" id="L322">            new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));</span>
-<span class="fc" id="L323">        c.setCredentialsProvider(provider);</span>
-<span class="fc" id="L324">    }</span>
+<span class="fc" id="L341">        CredentialsProvider provider = new BasicCredentialsProvider();</span>
+<span class="fc" id="L342">        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),</span>
+<span class="fc" id="L343">            new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));</span>
+<span class="fc" id="L344">        c.setCredentialsProvider(provider);</span>
+<span class="fc" id="L345">    }</span>
 
     private void digestAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
-<span class="fc" id="L327">        basicAuth(c, auth, uri);</span>
-<span class="fc" id="L328">    }</span>
+<span class="fc" id="L348">        basicAuth(c, auth, uri);</span>
+<span class="fc" id="L349">    }</span>
 
     private HttpClientContext context(final ChainedHttpConfig requestConfig) throws URISyntaxException {
-<span class="fc" id="L331">        final HttpClientContext c = HttpClientContext.create();</span>
-<span class="fc" id="L332">        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L333">        final HttpConfig.Auth auth = cr.actualAuth();</span>
+<span class="fc" id="L352">        final HttpClientContext c = HttpClientContext.create();</span>
+<span class="fc" id="L353">        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L354">        final HttpConfig.Auth auth = cr.actualAuth();</span>
 
-<span class="fc bfc" id="L335" title="All 2 branches covered.">        if (auth != null) {</span>
-<span class="fc" id="L336">            final URI uri = requestConfig.getRequest().getUri().toURI();</span>
-<span class="fc bfc" id="L337" title="All 2 branches covered.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC) {</span>
-<span class="fc" id="L338">                basicAuth(c, auth, uri);</span>
-<span class="pc bpc" id="L339" title="1 of 2 branches missed.">            } else if (auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
-<span class="fc" id="L340">                digestAuth(c, auth, uri);</span>
+<span class="fc bfc" id="L356" title="All 2 branches covered.">        if (auth != null) {</span>
+<span class="fc" id="L357">            final URI uri = requestConfig.getRequest().getUri().toURI();</span>
+<span class="fc bfc" id="L358" title="All 2 branches covered.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC) {</span>
+<span class="fc" id="L359">                basicAuth(c, auth, uri);</span>
+<span class="pc bpc" id="L360" title="1 of 2 branches missed.">            } else if (auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
+<span class="fc" id="L361">                digestAuth(c, auth, uri);</span>
             }
         }
 
-<span class="fc" id="L344">        return c;</span>
+<span class="fc" id="L365">        return c;</span>
     }
 
     private &lt;T extends HttpUriRequest&gt; Object exec(final ChainedHttpConfig requestConfig,
                                                    final Function&lt;URI, T&gt; constructor) {
-        
+
         try {
-<span class="fc" id="L351">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L352">            final URI theUri = cr.getUri().toURI();</span>
-<span class="fc" id="L353">            final T request = constructor.apply(theUri);</span>
-<span class="fc" id="L354">            addHeaders(cr, request);</span>
-<span class="fc bfc" id="L355" title="All 4 branches covered.">            if((request instanceof HttpEntityEnclosingRequest) &amp;&amp; cr.actualBody() != null) {</span>
-<span class="fc" id="L356">                final HttpEntity entity = entity(requestConfig);</span>
-<span class="fc" id="L357">                ((HttpEntityEnclosingRequest) request).setEntity(entity);</span>
-<span class="fc" id="L358">                request.setHeader(entity.getContentType());</span>
+<span class="fc" id="L372">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L373">            final URI theUri = cr.getUri().toURI();</span>
+<span class="fc" id="L374">            final T request = constructor.apply(theUri);</span>
+<span class="fc" id="L375">            addHeaders(cr, request);</span>
+<span class="fc bfc" id="L376" title="All 4 branches covered.">            if ((request instanceof HttpEntityEnclosingRequest) &amp;&amp; cr.actualBody() != null) {</span>
+<span class="fc" id="L377">                final HttpEntity entity = entity(requestConfig);</span>
+<span class="fc" id="L378">                ((HttpEntityEnclosingRequest) request).setEntity(entity);</span>
+<span class="fc" id="L379">                request.setHeader(entity.getContentType());</span>
             }
-            
-<span class="fc" id="L361">            return client.execute(request, new Handler(requestConfig), context(requestConfig));</span>
-        }
-<span class="fc" id="L363">        catch(Exception e) {</span>
-<span class="fc" id="L364">            return handleException(requestConfig.getChainedResponse(), e);</span>
+
+<span class="fc" id="L382">            return client.execute(request, new Handler(requestConfig), context(requestConfig));</span>
+<span class="fc" id="L383">        } catch (Exception e) {</span>
+<span class="fc" id="L384">            return handleException(requestConfig.getChainedResponse(), e);</span>
         }
     }
 
     private HttpEntity entity(final ChainedHttpConfig config) {
-<span class="fc" id="L369">        final ApacheToServer ats = new ApacheToServer(config);</span>
-<span class="fc" id="L370">        config.findEncoder().accept(config, ats);</span>
-<span class="fc" id="L371">        return ats;</span>
+<span class="fc" id="L389">        final ApacheToServer ats = new ApacheToServer(config);</span>
+<span class="fc" id="L390">        config.findEncoder().accept(config, ats);</span>
+<span class="fc" id="L391">        return ats;</span>
     }
 
     private &lt;T extends HttpUriRequest&gt; void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
-<span class="fc bfc" id="L375" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L376">            message.addHeader(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L377">        }</span>
+<span class="fc bfc" id="L395" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L396">            message.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L397">        }</span>
 
-<span class="fc" id="L379">        final String contentType = cr.actualContentType();</span>
-<span class="fc bfc" id="L380" title="All 2 branches covered.">        if (contentType != null) {</span>
-<span class="fc" id="L381">            message.addHeader(&quot;Content-Type&quot;, contentType);</span>
+<span class="fc" id="L399">        final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L400" title="All 2 branches covered.">        if (contentType != null) {</span>
+<span class="fc" id="L401">            message.addHeader(&quot;Content-Type&quot;, contentType);</span>
         }
 
-<span class="fc bfc" id="L384" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
-<span class="fc" id="L385">            message.addHeader(e.getKey(), e.getValue());</span>
-<span class="fc" id="L386">        }</span>
-<span class="fc" id="L387">    }</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L405">            message.addHeader(e.getKey(), e.getValue());</span>
+<span class="fc" id="L406">        }</span>
+<span class="fc" id="L407">    }</span>
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L390">        return exec(requestConfig, HttpGet::new);</span>
+<span class="fc" id="L410">        return exec(requestConfig, HttpGet::new);</span>
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L394">        return exec(requestConfig, HttpHead::new);</span>
+<span class="fc" id="L414">        return exec(requestConfig, HttpHead::new);</span>
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L398">        return exec(requestConfig, HttpPost::new);</span>
+<span class="fc" id="L418">        return exec(requestConfig, HttpPost::new);</span>
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L402">        return exec(requestConfig, HttpPut::new);</span>
+<span class="fc" id="L422">        return exec(requestConfig, HttpPut::new);</span>
     }
 
     protected Object doPatch(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L406">        return exec(requestConfig, HttpPatch::new);</span>
+<span class="fc" id="L426">        return exec(requestConfig, HttpPatch::new);</span>
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L410">        return exec(requestConfig, HttpDelete::new);</span>
+<span class="fc" id="L430">        return exec(requestConfig, HttpDelete::new);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

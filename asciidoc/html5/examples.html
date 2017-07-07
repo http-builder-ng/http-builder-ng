@@ -530,7 +530,7 @@ HttpBuilder-NG makes this easy:</p>
 <div class="listingblock">
 <div class="title">resource_last_modified.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">groovyx.net.http.*</span>
@@ -570,7 +570,7 @@ with a resulting output line something like:</p>
 <div class="listingblock">
 <div class="title">resource_last_modified_alt.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">java.time.format.DateTimeFormatter.ofPattern</span>
@@ -603,7 +603,7 @@ By default, <code>text/html</code> content is parsed with the <a href="https://j
 <div class="listingblock">
 <div class="title">web_scraping.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.jsoup:jsoup:1.9.2</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
@@ -639,7 +639,7 @@ parser:</p>
 <div class="listingblock">
 <div class="title">sending_receiving_post.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -688,7 +688,7 @@ provides other useful information about the request. The end result is the follo
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.16.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -718,12 +718,89 @@ Map, from which we can extract the data we sent.</p>
 before sending it to the server.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_download_file_get">Download File (GET)</h3>
+<div class="paragraph">
+<p>HttpBuilder-NG provides a utility to aid in downloading files from HTTP endpoints. An example of this would be the case where your server has a file
+served up from the <code>/download</code> path - you could download this file with something like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="predefined-type">File</span> file = configure {
+    request.uri = <span class="string"><span class="delimiter">&quot;</span><span class="content">http://example.org/download</span><span class="delimiter">&quot;</span></span>
+}.get {
+    Download.toFile(delegate, saved)
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Which uses the <code>groovyx.net.http.optional.Download</code> class <code>toFile(HttpConfig, File)</code> method to perform the downloading by providing a means of
+streaming the remote contents into the file. See the docs for the <code>Download</code> class for more options and details - the unit test, <code>DownloadSpec</code> also
+has some good usage examples for this functionality.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuring_timeout">Configuring Timeout</h3>
+<div class="paragraph">
+<p>You can provide additional configuration not directly supported by <code>HttpBuilder</code>, such as connection timeout, using the
+<code>clientCustomizer(Consumer&lt;Object&gt;)</code> method (supported by all three client implementations):</p>
+</div>
+<div class="paragraph">
+<p>For the <code>apache</code> client:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder http = ApacheHttpBuilder.configure {
+    client.clientCustomizer { HttpClientBuilder builder -&gt;
+        RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        requestBuilder.connectTimeout = <span class="integer">1234567</span>
+        requestBuilder.connectionRequestTimeout = <span class="integer">98765</span>
+
+        builder.defaultRequestConfig = requestBuilder.build()
+    }
+
+    <span class="comment">// other config...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and for the <code>okhttp</code> client:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder http = OkHttpBuilder.configure {
+    client.clientCustomizer { OkHttpClient.Builder builder -&gt;
+        builder.connectTimeout(<span class="integer">5</span>, MINUTES)
+    }
+
+    <span class="comment">// other config...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and lastly, for the <code>core</code> client:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">HttpBuilder http = OkHttpBuilder.configure {
+    client.clientCustomizer { <span class="predefined-type">HttpURLConnection</span> conn -&gt;
+        connection.connectTimeout = <span class="integer">8675309</span>
+    }
+
+    <span class="comment">// other config...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This additional custom configuration must be applied with care, as it is possible to undo the configuration provided by the <code>HttpBuilder</code> library.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-05-22 13:03:54 -05:00
+Last updated 2017-07-07 08:14:58 -05:00
 </div>
 </div>
 </body>

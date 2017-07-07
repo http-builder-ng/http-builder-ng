@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.199s</div>
+<div class="counter">0.176s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">typed handlers should compile static</td>
-<td>0.199s</td>
+<td>0.176s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -87,9 +87,9 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>13:05:30.844 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://httpbin.org/
-13:05:30.845 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-13:05:30.959 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
+<pre>08:28:00.394 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://httpbin.org/
+08:28:00.394 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+08:28:00.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
   &lt;meta http-equiv='content-type' value='text/html;charset=utf8'&gt;
@@ -147,7 +147,7 @@
 
 &lt;div class='mp'&gt;
 &lt;h1&gt;httpbin(1): HTTP Request &amp;amp; Response Service&lt;/h1&gt;
-&lt;p&gt;Freely hosted in &lt;a href=&quot;http://httpbin.org&quot;&gt;HTTP&lt;/a&gt;, &lt;a href=&quot;https://httpbin.org&quot;&gt;HTTPS&lt;/a&gt;, &amp;amp; &lt;a href=&quot;http://eu.httpbin.org/&quot;&gt;EU&lt;/a&gt; flavors by &lt;a href=&quot;http://kennethreitz.org&quot;&gt;Kenneth Reitz&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://www.heroku.com/&quot;&gt;Heroku&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Freely hosted in &lt;a href=&quot;http://httpbin.org&quot;&gt;HTTP&lt;/a&gt;, &lt;a href=&quot;https://httpbin.org&quot;&gt;HTTPS&lt;/a&gt;, &amp;amp; &lt;a href=&quot;http://eu.httpbin.org/&quot;&gt;EU&lt;/a&gt; flavors by &lt;a href=&quot;http://kennethreitz.org&quot;&gt;Kenneth Reitz&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://www.runscope.com/&quot;&gt;Runscope&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;ENDPOINTS&quot;&gt;BONUSPOINTS&lt;/h2&gt;
 
@@ -167,27 +167,29 @@
 &lt;li&gt;&lt;code&gt;/patch&lt;/code&gt; Returns PATCH data.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;/put&lt;/code&gt; Returns PUT data.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;/delete&lt;/code&gt; Returns DELETE data&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/anything&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/anything&lt;/code&gt;&lt;/a&gt; Returns request data, including method used.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/anything/:anything&lt;/code&gt; Returns request data, including the URL.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/encoding/utf8&quot;&gt;&lt;code&gt;/encoding/utf8&lt;/code&gt;&lt;/a&gt; Returns page containing UTF-8 data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/gzip&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/gzip&lt;/code&gt;&lt;/a&gt; Returns gzip-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/deflate&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/deflate&lt;/code&gt;&lt;/a&gt; Returns deflate-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/brotli&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/brotli&lt;/code&gt;&lt;/a&gt; Returns brotli-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/status/418&quot;&gt;&lt;code&gt;/status/:code&lt;/code&gt;&lt;/a&gt; Returns given HTTP Status code.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/response-headers?Server=httpbin&amp;amp;Content-Type=text%2Fplain%3B+charset%3DUTF-8&quot;&gt;&lt;code&gt;/response-headers?key=val&lt;/code&gt;&lt;/a&gt; Returns given response headers.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/response-headers?Content-Type=text%2Fplain%3B+charset%3DUTF-8&amp;amp;Server=httpbin&quot;&gt;&lt;code&gt;/response-headers?key=val&lt;/code&gt;&lt;/a&gt; Returns given response headers.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/redirect/6&quot;&gt;&lt;code&gt;/redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/redirect-to?url=http%3A%2F%2Fexample.com%2F&quot;&gt;&lt;code&gt;/redirect-to?url=foo&lt;/code&gt;&lt;/a&gt; 302 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/redirect-to?url=http%3A%2F%2Fexample.com%2F&amp;amp;status_code=307&quot;&gt;&lt;code&gt;/redirect-to?url=foo&amp;status_code=307&lt;/code&gt;&lt;/a&gt; 307 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/redirect-to?status_code=307&amp;amp;url=http%3A%2F%2Fexample.com%2F&quot;&gt;&lt;code&gt;/redirect-to?url=foo&amp;status_code=307&lt;/code&gt;&lt;/a&gt; 307 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/relative-redirect/6&quot;&gt;&lt;code&gt;/relative-redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Relative redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/absolute-redirect/6&quot;&gt;&lt;code&gt;/absolute-redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Absolute redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/cookies&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/cookies&lt;/code&gt;&lt;/a&gt; Returns cookie data.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/cookies/set?k1=v1&amp;amp;k2=v2&quot;&gt;&lt;code&gt;/cookies/set?name=value&lt;/code&gt;&lt;/a&gt; Sets one or more simple cookies.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/cookies/delete?k1=&amp;amp;k2=&quot;&gt;&lt;code&gt;/cookies/delete?name&lt;/code&gt;&lt;/a&gt; Deletes one or more simple cookies.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/cookies/set?k2=v2&amp;amp;k1=v1&quot;&gt;&lt;code&gt;/cookies/set?name=value&lt;/code&gt;&lt;/a&gt; Sets one or more simple cookies.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/cookies/delete?k2=&amp;amp;k1=&quot;&gt;&lt;code&gt;/cookies/delete?name&lt;/code&gt;&lt;/a&gt; Deletes one or more simple cookies.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/basic-auth/user/passwd&quot;&gt;&lt;code&gt;/basic-auth/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTPBasic Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/hidden-basic-auth/user/passwd&quot;&gt;&lt;code&gt;/hidden-basic-auth/:user/:passwd&lt;/code&gt;&lt;/a&gt; 404'd BasicAuth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd/:algorithm&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/stream/20&quot;&gt;&lt;code&gt;/stream/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;min(n, 100)&lt;/em&gt; lines.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/delay/3&quot;&gt;&lt;code&gt;/delay/:n&lt;/code&gt;&lt;/a&gt; Delays responding for &lt;em&gt;min(n, 10)&lt;/em&gt; seconds.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/drip?code=200&amp;amp;duration=5&amp;amp;numbytes=5&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/drip?numbytes=5&amp;amp;duration=5&amp;amp;code=200&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/range/1024&quot;&gt;&lt;code&gt;/range/1024?duration=s&amp;amp;chunk_size=code&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; bytes, and allows specifying a &lt;em&gt;Range&lt;/em&gt; header to select a subset of the data. Accepts a &lt;em&gt;chunk_size&lt;/em&gt; and request &lt;em&gt;duration&lt;/em&gt; parameter.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/html&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/html&lt;/code&gt;&lt;/a&gt; Renders an HTML Page.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/robots.txt&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/robots.txt&lt;/code&gt;&lt;/a&gt; Returns some robots.txt rules.&lt;/li&gt;
@@ -196,7 +198,7 @@
 &lt;li&gt;&lt;a href=&quot;/etag/etag&quot;&gt;&lt;code&gt;/etag/:etag&lt;/code&gt;&lt;/a&gt; Assumes the resource has the given etag and responds to If-None-Match header with a 200 or 304 and If-Match with a 200 or 412 as appropriate.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/cache/60&quot;&gt;&lt;code&gt;/cache/:n&lt;/code&gt;&lt;/a&gt; Sets a Cache-Control header for &lt;em&gt;n&lt;/em&gt; seconds.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/bytes/1024&quot;&gt;&lt;code&gt;/bytes/:n&lt;/code&gt;&lt;/a&gt; Generates &lt;em&gt;n&lt;/em&gt; random bytes of binary data, accepts optional &lt;em&gt;seed&lt;/em&gt; integer parameter.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/stream-bytes/1024&quot;&gt;&lt;code&gt;/stream-bytes/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; random bytes of binary data, accepts optional &lt;em&gt;seed&lt;/em&gt; and &lt;em&gt;chunk_size&lt;/em&gt; integer parameters.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/stream-bytes/1024&quot;&gt;&lt;code&gt;/stream-bytes/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; random bytes of binary data in chunked encoding, accepts optional &lt;em&gt;seed&lt;/em&gt; and &lt;em&gt;chunk_size&lt;/em&gt; integer parameters.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/links/10&quot;&gt;&lt;code&gt;/links/:n&lt;/code&gt;&lt;/a&gt; Returns page containing &lt;em&gt;n&lt;/em&gt; HTML links.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/image&quot;&gt;&lt;code&gt;/image&lt;/code&gt;&lt;/a&gt; Returns page containing an image based on sent Accept header.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/image/png&quot;&gt;&lt;code&gt;/image/png&lt;/code&gt;&lt;/a&gt; Returns a PNG image.&lt;/li&gt;
@@ -330,19 +332,19 @@ $ gunicorn httpbin:app
 
 &lt;/body&gt;
 &lt;/html&gt;
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Mon, 22 May 2017 18:05:30 GMT
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 12563
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.00665688514709
-13:05:30.960 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
-13:05:30.970 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://httpbin.org/
-13:05:30.970 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-13:05:31.033 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 07 Jul 2017 13:27:59 GMT
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 12793
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.00623512268066
+08:28:00.499 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
+08:28:00.508 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://httpbin.org/
+08:28:00.508 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+08:28:00.562 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
   &lt;meta http-equiv='content-type' value='text/html;charset=utf8'&gt;
@@ -400,7 +402,7 @@ $ gunicorn httpbin:app
 
 &lt;div class='mp'&gt;
 &lt;h1&gt;httpbin(1): HTTP Request &amp;amp; Response Service&lt;/h1&gt;
-&lt;p&gt;Freely hosted in &lt;a href=&quot;http://httpbin.org&quot;&gt;HTTP&lt;/a&gt;, &lt;a href=&quot;https://httpbin.org&quot;&gt;HTTPS&lt;/a&gt;, &amp;amp; &lt;a href=&quot;http://eu.httpbin.org/&quot;&gt;EU&lt;/a&gt; flavors by &lt;a href=&quot;http://kennethreitz.org&quot;&gt;Kenneth Reitz&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://www.heroku.com/&quot;&gt;Heroku&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Freely hosted in &lt;a href=&quot;http://httpbin.org&quot;&gt;HTTP&lt;/a&gt;, &lt;a href=&quot;https://httpbin.org&quot;&gt;HTTPS&lt;/a&gt;, &amp;amp; &lt;a href=&quot;http://eu.httpbin.org/&quot;&gt;EU&lt;/a&gt; flavors by &lt;a href=&quot;http://kennethreitz.org&quot;&gt;Kenneth Reitz&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://www.runscope.com/&quot;&gt;Runscope&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;ENDPOINTS&quot;&gt;BONUSPOINTS&lt;/h2&gt;
 
@@ -420,27 +422,29 @@ $ gunicorn httpbin:app
 &lt;li&gt;&lt;code&gt;/patch&lt;/code&gt; Returns PATCH data.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;/put&lt;/code&gt; Returns PUT data.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;/delete&lt;/code&gt; Returns DELETE data&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/anything&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/anything&lt;/code&gt;&lt;/a&gt; Returns request data, including method used.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;/anything/:anything&lt;/code&gt; Returns request data, including the URL.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/encoding/utf8&quot;&gt;&lt;code&gt;/encoding/utf8&lt;/code&gt;&lt;/a&gt; Returns page containing UTF-8 data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/gzip&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/gzip&lt;/code&gt;&lt;/a&gt; Returns gzip-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/deflate&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/deflate&lt;/code&gt;&lt;/a&gt; Returns deflate-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/brotli&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/brotli&lt;/code&gt;&lt;/a&gt; Returns brotli-encoded data.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/status/418&quot;&gt;&lt;code&gt;/status/:code&lt;/code&gt;&lt;/a&gt; Returns given HTTP Status code.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/response-headers?Server=httpbin&amp;amp;Content-Type=text%2Fplain%3B+charset%3DUTF-8&quot;&gt;&lt;code&gt;/response-headers?key=val&lt;/code&gt;&lt;/a&gt; Returns given response headers.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/response-headers?Content-Type=text%2Fplain%3B+charset%3DUTF-8&amp;amp;Server=httpbin&quot;&gt;&lt;code&gt;/response-headers?key=val&lt;/code&gt;&lt;/a&gt; Returns given response headers.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/redirect/6&quot;&gt;&lt;code&gt;/redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/redirect-to?url=http%3A%2F%2Fexample.com%2F&quot;&gt;&lt;code&gt;/redirect-to?url=foo&lt;/code&gt;&lt;/a&gt; 302 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/redirect-to?url=http%3A%2F%2Fexample.com%2F&amp;amp;status_code=307&quot;&gt;&lt;code&gt;/redirect-to?url=foo&amp;status_code=307&lt;/code&gt;&lt;/a&gt; 307 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/redirect-to?status_code=307&amp;amp;url=http%3A%2F%2Fexample.com%2F&quot;&gt;&lt;code&gt;/redirect-to?url=foo&amp;status_code=307&lt;/code&gt;&lt;/a&gt; 307 Redirects to the &lt;em&gt;foo&lt;/em&gt; URL.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/relative-redirect/6&quot;&gt;&lt;code&gt;/relative-redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Relative redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/absolute-redirect/6&quot;&gt;&lt;code&gt;/absolute-redirect/:n&lt;/code&gt;&lt;/a&gt; 302 Absolute redirects &lt;em&gt;n&lt;/em&gt; times.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/cookies&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/cookies&lt;/code&gt;&lt;/a&gt; Returns cookie data.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/cookies/set?k1=v1&amp;amp;k2=v2&quot;&gt;&lt;code&gt;/cookies/set?name=value&lt;/code&gt;&lt;/a&gt; Sets one or more simple cookies.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/cookies/delete?k1=&amp;amp;k2=&quot;&gt;&lt;code&gt;/cookies/delete?name&lt;/code&gt;&lt;/a&gt; Deletes one or more simple cookies.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/cookies/set?k2=v2&amp;amp;k1=v1&quot;&gt;&lt;code&gt;/cookies/set?name=value&lt;/code&gt;&lt;/a&gt; Sets one or more simple cookies.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/cookies/delete?k2=&amp;amp;k1=&quot;&gt;&lt;code&gt;/cookies/delete?name&lt;/code&gt;&lt;/a&gt; Deletes one or more simple cookies.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/basic-auth/user/passwd&quot;&gt;&lt;code&gt;/basic-auth/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTPBasic Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/hidden-basic-auth/user/passwd&quot;&gt;&lt;code&gt;/hidden-basic-auth/:user/:passwd&lt;/code&gt;&lt;/a&gt; 404'd BasicAuth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd/:algorithm&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/stream/20&quot;&gt;&lt;code&gt;/stream/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;min(n, 100)&lt;/em&gt; lines.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/delay/3&quot;&gt;&lt;code&gt;/delay/:n&lt;/code&gt;&lt;/a&gt; Delays responding for &lt;em&gt;min(n, 10)&lt;/em&gt; seconds.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/drip?code=200&amp;amp;duration=5&amp;amp;numbytes=5&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/drip?numbytes=5&amp;amp;duration=5&amp;amp;code=200&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/range/1024&quot;&gt;&lt;code&gt;/range/1024?duration=s&amp;amp;chunk_size=code&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; bytes, and allows specifying a &lt;em&gt;Range&lt;/em&gt; header to select a subset of the data. Accepts a &lt;em&gt;chunk_size&lt;/em&gt; and request &lt;em&gt;duration&lt;/em&gt; parameter.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/html&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/html&lt;/code&gt;&lt;/a&gt; Renders an HTML Page.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/robots.txt&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/robots.txt&lt;/code&gt;&lt;/a&gt; Returns some robots.txt rules.&lt;/li&gt;
@@ -449,7 +453,7 @@ $ gunicorn httpbin:app
 &lt;li&gt;&lt;a href=&quot;/etag/etag&quot;&gt;&lt;code&gt;/etag/:etag&lt;/code&gt;&lt;/a&gt; Assumes the resource has the given etag and responds to If-None-Match header with a 200 or 304 and If-Match with a 200 or 412 as appropriate.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/cache/60&quot;&gt;&lt;code&gt;/cache/:n&lt;/code&gt;&lt;/a&gt; Sets a Cache-Control header for &lt;em&gt;n&lt;/em&gt; seconds.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/bytes/1024&quot;&gt;&lt;code&gt;/bytes/:n&lt;/code&gt;&lt;/a&gt; Generates &lt;em&gt;n&lt;/em&gt; random bytes of binary data, accepts optional &lt;em&gt;seed&lt;/em&gt; integer parameter.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/stream-bytes/1024&quot;&gt;&lt;code&gt;/stream-bytes/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; random bytes of binary data, accepts optional &lt;em&gt;seed&lt;/em&gt; and &lt;em&gt;chunk_size&lt;/em&gt; integer parameters.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/stream-bytes/1024&quot;&gt;&lt;code&gt;/stream-bytes/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; random bytes of binary data in chunked encoding, accepts optional &lt;em&gt;seed&lt;/em&gt; and &lt;em&gt;chunk_size&lt;/em&gt; integer parameters.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/links/10&quot;&gt;&lt;code&gt;/links/:n&lt;/code&gt;&lt;/a&gt; Returns page containing &lt;em&gt;n&lt;/em&gt; HTML links.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/image&quot;&gt;&lt;code&gt;/image&lt;/code&gt;&lt;/a&gt; Returns page containing an image based on sent Accept header.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/image/png&quot;&gt;&lt;code&gt;/image/png&lt;/code&gt;&lt;/a&gt; Returns a PNG image.&lt;/li&gt;
@@ -583,16 +587,16 @@ $ gunicorn httpbin:app
 
 &lt;/body&gt;
 &lt;/html&gt;
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Mon, 22 May 2017 18:05:30 GMT
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 12563
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.00762891769409
-13:05:31.034 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 07 Jul 2017 13:27:59 GMT
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 12793
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.00608110427856
+08:28:00.563 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
 </pre>
 </span>
 </div>
@@ -604,7 +608,7 @@ $ gunicorn httpbin:app
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 3.5</a> at May 22, 2017 1:06:06 PM</p>
+<a href="http://www.gradle.org">Gradle 4.0</a> at Jul 7, 2017 8:28:39 AM</p>
 </div>
 </div>
 </body>
