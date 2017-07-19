@@ -1,5 +1,7 @@
 # Contributing to HttpBuilder-NG
 
+> If you have not already, please read our [Code of Conduct](https://github.com/http-builder-ng/http-builder-ng/blob/master/CODE_OF_CONDUCT.md).
+
 ## Did you find a bug?
 
 You have a few options:
