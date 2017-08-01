@@ -322,7 +322,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
     }
 
     final private CloseableHttpClient client;
-    final private ChainedHttpConfig config;
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
     final private ProxyInfo proxyInfo;
@@ -337,7 +336,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
         super(config);
 
         this.proxyInfo = config.getExecution().getProxyInfo();
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
 
@@ -393,10 +391,6 @@ public class ApacheHttpBuilder extends HttpBuilder {
      */
     public Object getClientImplementation() {
         return client;
-    }
-
-    protected ChainedHttpConfig getObjectConfig() {
-        return config;
     }
 
     public Executor getExecutor() {

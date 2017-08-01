@@ -333,7 +333,6 @@ public class JavaHttpBuilder extends HttpBuilder {
         Authenticator.setDefault(new ThreadLocalAuth());
     }
 
-    private final ChainedHttpConfig config;
     private final Executor executor;
     private final SSLContext sslContext;
     private final ProxyInfo proxyInfo;
@@ -343,7 +342,6 @@ public class JavaHttpBuilder extends HttpBuilder {
     // TODO: this can probably be private or protected.
     public JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
@@ -357,10 +355,6 @@ public class JavaHttpBuilder extends HttpBuilder {
     @Override
     public Object getClientImplementation() {
         throw new UnsupportedOperationException("The core Java implementation does not support direct client access.");
-    }
-
-    protected ChainedHttpConfig getObjectConfig() {
-        return config;
     }
 
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {

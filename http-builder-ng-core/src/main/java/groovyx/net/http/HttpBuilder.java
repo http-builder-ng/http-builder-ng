@@ -240,8 +240,10 @@ public abstract class HttpBuilder implements Closeable {
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
     private final CookieManager cookieManager;
-    
+    private final ChainedHttpConfig config;
+
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
+        this.config = new HttpConfigs.ThreadSafeHttpConfig(objectConfig.getChainedConfig());
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
         this.cookieManager = new CookieManager(makeCookieStore(objectConfig), CookiePolicy.ACCEPT_ALL);
     }
@@ -1779,7 +1781,9 @@ public abstract class HttpBuilder implements Closeable {
 
     protected abstract Object doPatch(final ChainedHttpConfig config);
 
-    protected abstract ChainedHttpConfig getObjectConfig();
+    protected ChainedHttpConfig getObjectConfig() {
+        return config;
+    }
 
     public abstract Executor getExecutor();
 

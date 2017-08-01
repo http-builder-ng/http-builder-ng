@@ -52,7 +52,6 @@ import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
 public class OkHttpBuilder extends HttpBuilder {
 
     private static final Function<HttpObjectConfig, ? extends HttpBuilder> okFactory = OkHttpBuilder::new;
-    private final ChainedHttpConfig config;
     private final HttpObjectConfig.Client clientConfig;
     private final Executor executor;
     private final OkHttpClient client;
@@ -60,7 +59,6 @@ public class OkHttpBuilder extends HttpBuilder {
     protected OkHttpBuilder(final HttpObjectConfig config) {
         super(config);
 
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.clientConfig = config.getClient();
         this.executor = config.getExecution().getExecutor();
 
@@ -162,11 +160,6 @@ public class OkHttpBuilder extends HttpBuilder {
      */
     public static HttpBuilder configure(final Consumer<HttpObjectConfig> configuration) {
         return configure(okFactory, configuration);
-    }
-
-    @Override
-    protected ChainedHttpConfig getObjectConfig() {
-        return config;
     }
 
     @Override
