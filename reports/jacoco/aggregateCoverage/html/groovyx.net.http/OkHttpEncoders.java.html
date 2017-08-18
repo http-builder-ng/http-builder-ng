@@ -28,7 +28,7 @@ import static okhttp3.MediaType.parse;
 import static okhttp3.RequestBody.create;
 
 /**
- * Request content encoders specific to the Apache client implementation.
+ * Request content encoders specific to the OkHttp client implementation.
  *
  * See the {@link MultipartContent} class documentation for more configuration details.
  */
