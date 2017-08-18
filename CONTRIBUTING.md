@@ -1,5 +1,7 @@
 # Contributing to HttpBuilder-NG
 
+> If you have not already, please read our [Code of Conduct](https://github.com/http-builder-ng/http-builder-ng/blob/master/CODE_OF_CONDUCT.md).
+
 ## Did you find a bug?
 
 You have a few options:
@@ -12,13 +14,17 @@ You have a few options:
 
 See above.
 
+## Do you want to help?
+
+Check to see if we have any issues labeled "Help Wanted" or if we have any that have been sitting for a while inactive. Take a branch off of the `master` branch (though we may ask you to base it off of `development`) and create a pull request once your code is ready.
+
 ## Having problems using HttpBuilder?
 
 The best place to get help with HTTP Builder NG is via [StackOverflow](http://stackoverflow.com/) with the tag `httpbuilder-ng` - be careful there is a lot of information out there about the old version of the code and the solutions will most likely _not_ work. You can also try to contact us directly, but that is not recommended.
 
 ## Submitting an Issue
 
-If you have decided to [submit an issue](https://github.com/http-builder-ng/http-builder-ng/issues/new), please be as descriptive as possible. Provide details about the code related to the issue and provide as much of an example as possible - if we can't reproduce the issue, we probably won't be able to fix it any time soon.
+If you have decided to [submit an issue](https://github.com/http-builder-ng/http-builder-ng/issues/new), please be as descriptive as possible. Provide details about the code related to the issue and provide as much of an example as possible - if we can't reproduce the issue, we probably won't be able to fix it any time soon. A good guideline is "[How to create a Minimal, Complete, and Verifiable example](https://stackoverflow.com/help/mcve)" from StackOverflow.
 
 Once your issue has been created, we will triage it and figure out how to proceed.
 

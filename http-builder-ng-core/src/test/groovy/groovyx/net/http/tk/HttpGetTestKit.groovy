@@ -679,7 +679,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             request.uri = ersatzServer.httpUrl
 
             response.exception(new Function<Throwable, Object>() {
-                @Override public Object apply(Throwable t) {
+                @Override Object apply(Throwable t) {
                     caughtIt = true
                     caughtCorrectType = (t instanceof IOException)
                     return null
