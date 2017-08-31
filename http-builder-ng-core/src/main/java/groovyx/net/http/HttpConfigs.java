@@ -27,10 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpCookie;
+import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,6 +44,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static groovyx.net.http.ContentTypes.*;
 import static groovyx.net.http.ChainedHttpConfig.*;
 import static groovyx.net.http.Safe.ifClassIsLoaded;
 import static groovyx.net.http.Safe.register;
@@ -269,7 +272,7 @@ public class HttpConfigs {
         private final ConcurrentMap<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
         private final List<HttpCookie> cookies = new CopyOnWriteArrayList<>();
-
+        
         public ThreadSafeRequest(final ChainedRequest parent) {
             super(parent);
             this.auth = new ThreadSafeAuth();
@@ -507,27 +510,33 @@ public class HttpConfigs {
         public ChainedHttpConfig getParent() {
             return parent;
         }
-        
-        public ChainedHttpConfig configure(final String scriptClassPath) {
-            final CompilerConfiguration compilerConfig = new CompilerConfiguration();
-            final ImportCustomizer icustom = new ImportCustomizer();
-            icustom.addImports("groovyx.net.http.NativeHandlers");
-            icustom.addStaticStars("groovyx.net.http.ContentTypes");
-            final Map<String,String> map = Collections.singletonMap("extensions", TYPE_CHECKING_SCRIPT);
-            final ASTTransformationCustomizer ast = new ASTTransformationCustomizer(map, TypeChecked.class);
-            compilerConfig.addCompilationCustomizers(icustom, ast);
-            final GroovyShell shell = new GroovyShell(getClass().getClassLoader(), compilerConfig);
-            shell.setVariable("request", getRequest());
-            shell.setVariable("response", getResponse());
-            
-            try(final InputStream is = getClass().getClassLoader().getResourceAsStream(scriptClassPath)) {
-                final InputStreamReader reader = new InputStreamReader(is);
-                shell.evaluate(reader);
-                return this;
-            }
-            catch(IOException ioe) {
-                throw new RuntimeException("Could not configure main engine", ioe);
-            }
+
+        public ChainedHttpConfig configure() {
+            getRequest().setCharset(StandardCharsets.UTF_8);
+            getRequest().encoder(BINARY, NativeHandlers.Encoders::binary);
+            getRequest().encoder(TEXT, (f,s) -> {
+                    try {
+                        NativeHandlers.Encoders.text(f, s);
+                    }
+                    catch(IOException e) {
+                        throw new TransportingException(e);
+                    } });
+                    
+            getRequest().encoder(URLENC, NativeHandlers.Encoders::form);
+            getRequest().encoder(XML, NativeHandlers.Encoders::xml);
+            getRequest().encoder(JSON, NativeHandlers.Encoders::json);
+
+            getResponse().success(NativeHandlers::success);
+            getResponse().failure(NativeHandlers::failure);
+            getResponse().exception(NativeHandlers::exception);
+                
+            getResponse().parser(BINARY, NativeHandlers.Parsers::streamToBytes);
+            getResponse().parser(TEXT, NativeHandlers.Parsers::textToString);
+            getResponse().parser(URLENC, NativeHandlers.Parsers::form);
+            getResponse().parser(XML, NativeHandlers.Parsers::xml);
+            getResponse().parser(JSON, NativeHandlers.Parsers::json);
+
+            return this;
         }
 
         public void context(final String contentType, final Object id, final Object obj) {
@@ -611,11 +620,10 @@ public class HttpConfigs {
         }
     }
 
-    private static final String CONFIG = "59f7b2e5d5a78b25c6b21eb3b6b4f9ff77d11671.groovy";
     private static final ThreadSafeHttpConfig root;
 
     static {
-        root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure(CONFIG);
+        root = (ThreadSafeHttpConfig) new ThreadSafeHttpConfig(null).configure();
         
         register(root, ifClassIsLoaded("org.cyberneko.html.parsers.SAXParser"),
                  "text/html", () -> NativeHandlers.Encoders::xml, Html.neckoParserSupplier);
@@ -653,6 +661,4 @@ public class HttpConfigs {
     public static BasicHttpConfig requestLevel(final ChainedHttpConfig parent) {
         return new BasicHttpConfig(parent);
     }
-
-    private static final String TYPE_CHECKING_SCRIPT = "typecheckhttpconfig.groovy";
 }

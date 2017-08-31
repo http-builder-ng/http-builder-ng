@@ -53,14 +53,19 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-
+        
+        private boolean isProxied() {
+            return proxyInfo != null && proxyInfo.getProxy().type() != Proxy.Type.DIRECT;
+        }
+        
         public Action(final Consumer<Object> clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
             this.requestConfig = requestConfig;
 
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             theUri = cr.getUri().toURI();
 
-            connection = (HttpURLConnection) theUri.toURL().openConnection();
+            final URL url = theUri.toURL();
+            connection = (HttpURLConnection) (isProxied() ? url.openConnection(proxyInfo.getProxy()) : url.openConnection());
             connection.setRequestMethod(verb);
 
             if (cr.actualBody() != null) {
@@ -331,6 +336,7 @@ public class JavaHttpBuilder extends HttpBuilder {
     private final ChainedHttpConfig config;
     private final Executor executor;
     private final SSLContext sslContext;
+    private final ProxyInfo proxyInfo;
     private final HostnameVerifier hostnameVerifier;
     private final HttpObjectConfig.Client clientConfig;
 
@@ -342,6 +348,7 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.clientConfig = config.getClient();
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
         this.sslContext = config.getExecution().getSslContext();
+        this.proxyInfo = config.getExecution().getProxyInfo();
     }
 
     /**

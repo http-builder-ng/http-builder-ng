@@ -18,7 +18,9 @@ package groovyx.net.http.tk
 import com.stehno.ersatz.Encoders
 import groovyx.net.http.*
 import spock.lang.Unroll
+import spock.lang.IgnoreIf
 
+import java.net.Proxy;
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
@@ -787,4 +789,70 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         handledCorrectly
         noExceptionThrown()
     }
+
+    @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
+    @Unroll 'proxied get(): #protocol #contentType'() {
+        setup:
+        //TODO: Set up proxy supprt in ersatz for proxying to this server
+        //Currently tested by lauching tinyproxy with its default port of 8888
+        //and verifying that tinyproxy is proxying the connections by
+        //manually inspecting the log.
+        ersatzServer.expectations {
+            get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
+        }
+
+        println("Server url: ${serverUri(protocol)}")
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            execution.proxy('127.0.0.1', 8888, Proxy.Type.HTTP, protocol == 'HTTPS')
+            request.uri = "${serverUri(protocol)}/proxied"
+        }
+
+        expect:
+        result(http.get())
+
+        and:
+        ersatzServer.verify()
+
+        //can only enable https testing once https://issues.jboss.org/browse/UNDERTOW-1138 is completed
+        where:
+        protocol | contentType      | content || result
+        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        //'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+    }
+
+    @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
+    @Unroll 'socks proxied get(): #protocol #contentType'() {
+        //currently socks support can be tested by doing the following
+        //1) Make sure sshd is running on localhost
+        //2) Execute the following command: ssh -D 8889 localhost
+        //3) Make sure the login is successful (enter password if needed). It's non-obvious
+        //but by logging in you have also set up a SOCKS proxy listening on 8889 that will
+        //be tunneled through ssh/sshd working in tandem.
+        setup:
+        ersatzServer.expectations {
+            get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
+        }
+
+        println("Server url: ${serverUri(protocol)}")
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            execution.proxy('127.0.0.1', 8889, Proxy.Type.SOCKS, protocol == 'HTTPS')
+            request.uri = "${serverUri(protocol)}/proxied"
+        }
+
+        expect:
+        result(http.get())
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol | contentType      | content || result
+        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+    }
+
 }
