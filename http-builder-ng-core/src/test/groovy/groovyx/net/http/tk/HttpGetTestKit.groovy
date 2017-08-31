@@ -793,6 +793,7 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
     @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
     @Unroll 'proxied get(): #protocol #contentType'() {
         setup:
+        //TODO: Set up proxy supprt in ersatz for proxying to this server
         ersatzServer.expectations {
             get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
         }
