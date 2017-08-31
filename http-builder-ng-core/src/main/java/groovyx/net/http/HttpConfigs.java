@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpCookie;
+import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -269,7 +270,7 @@ public class HttpConfigs {
         private final ConcurrentMap<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
         private final List<HttpCookie> cookies = new CopyOnWriteArrayList<>();
-
+        
         public ThreadSafeRequest(final ChainedRequest parent) {
             super(parent);
             this.auth = new ThreadSafeAuth();

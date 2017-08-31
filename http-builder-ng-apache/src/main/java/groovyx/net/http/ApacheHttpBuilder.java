@@ -19,11 +19,18 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovyx.net.http.util.IoUtils;
 import org.apache.http.*;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -38,12 +45,16 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.NoSuchAlgorithmException;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Proxy;
 import java.net.URI;
+import java.net.Socket;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -122,6 +133,64 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return configure(apacheFactory, configuration);
     }
 
+    private class SocksHttp extends PlainConnectionSocketFactory {
+        final Proxy proxy;
+
+        public SocksHttp(final Proxy proxy) {
+            this.proxy = proxy;
+        }
+
+        @Override
+        public Socket createSocket(final HttpContext context) {
+            return new Socket(proxy);
+        }
+    }
+
+    private class SocksHttps extends SSLConnectionSocketFactory {
+        final Proxy proxy;
+
+        public SocksHttps(final Proxy proxy, final SSLContext sslContext, final HostnameVerifier verifier) {
+            super(sslContext, verifier);
+            this.proxy = proxy;
+        }
+
+        @Override
+        public Socket createSocket(final HttpContext context) {
+            return new Socket(proxy);
+        }
+    }
+
+    private SSLContext sslContext(final HttpObjectConfig config) {
+        try {
+            return (config.getExecution().getSslContext() != null ?
+                    config.getExecution().getSslContext() :
+                    SSLContext.getDefault());
+        }
+        catch(NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    private Registry<ConnectionSocketFactory> registry(final HttpObjectConfig config) {
+        final ProxyInfo proxyInfo = config.getExecution().getProxyInfo();
+
+        final boolean isSocksProxied = (proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.SOCKS);
+
+        if(isSocksProxied) {
+            return RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", new SocksHttp(proxyInfo.getProxy()))
+                .register("https", new SocksHttps(proxyInfo.getProxy(), sslContext(config),
+                                                  config.getExecution().getHostnameVerifier()))
+                .build();
+        }
+        else {
+            return RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .register("https", new SSLConnectionSocketFactory(sslContext(config), config.getExecution().getHostnameVerifier()))
+                .build();
+        }
+    }
+    
     private class ApacheFromServer implements FromServer {
 
         private final HttpResponse response;
@@ -256,6 +325,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     final private ChainedHttpConfig config;
     final private Executor executor;
     final private HttpObjectConfig.Client clientConfig;
+    final private ProxyInfo proxyInfo;
 
     /**
      * Creates a new `HttpBuilder` based on the Apache HTTP client. While it is acceptable to create a builder with this method, it is generally
@@ -266,20 +336,26 @@ public class ApacheHttpBuilder extends HttpBuilder {
     public ApacheHttpBuilder(final HttpObjectConfig config) {
         super(config);
 
+        this.proxyInfo = config.getExecution().getProxyInfo();
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
 
         final HttpClientBuilder myBuilder = HttpClients.custom();
 
+        final Registry<ConnectionSocketFactory> registry = registry(config);
+        
         if (config.getExecution().getMaxThreads() > 1) {
-            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
             cm.setMaxTotal(config.getExecution().getMaxThreads());
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
-
             myBuilder.setConnectionManager(cm);
         }
-
+        else {
+            final BasicHttpClientConnectionManager cm = new BasicHttpClientConnectionManager(registry);
+            myBuilder.setConnectionManager(cm);
+        }
+        
         final SSLContext sslContext = config.getExecution().getSslContext();
         if (sslContext != null) {
             myBuilder.setSSLContext(sslContext);
@@ -364,9 +440,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         return c;
     }
-
-    private <T extends HttpUriRequest> Object exec(final ChainedHttpConfig requestConfig,
-                                                   final Function<URI, T> constructor) {
+        
+    private <T extends HttpRequestBase> Object exec(final ChainedHttpConfig requestConfig,
+                                                    final Function<URI, T> constructor) {
 
         try {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
@@ -377,6 +453,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
                 final HttpEntity entity = entity(requestConfig);
                 ((HttpEntityEnclosingRequest) request).setEntity(entity);
                 request.setHeader(entity.getContentType());
+            }
+
+            if(proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.HTTP) {
+                HttpHost proxy = new HttpHost(proxyInfo.getAddress(), proxyInfo.getPort(), proxyInfo.isSecure() ? "https" : "http");
+                request.setConfig(RequestConfig.custom().setProxy(proxy).build());
             }
 
             return client.execute(request, new Handler(requestConfig), context(requestConfig));

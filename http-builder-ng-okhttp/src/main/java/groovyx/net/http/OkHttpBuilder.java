@@ -27,6 +27,7 @@ import okio.BufferedSink;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -87,7 +88,16 @@ public class OkHttpBuilder extends HttpBuilder {
             clientCustomizer.accept(builder);
         }
 
+        final ProxyInfo pinfo = config.getExecution().getProxyInfo();
+        if(usesProxy(pinfo)) {
+            builder.proxy(pinfo.getProxy());
+        }
+
         this.client = builder.build();
+    }
+    
+    private boolean usesProxy(final ProxyInfo pinfo) {
+        return pinfo != null && pinfo.getProxy().type() != Proxy.Type.DIRECT;
     }
 
     /**

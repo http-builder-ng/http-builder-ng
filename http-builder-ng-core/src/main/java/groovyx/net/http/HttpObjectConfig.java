@@ -15,6 +15,8 @@
  */
 package groovyx.net.http;
 
+import java.net.Proxy;
+import java.net.UnknownHostException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
@@ -136,6 +138,28 @@ public interface HttpObjectConfig extends HttpConfig {
          * @return all interceptors
          */
         EnumMap<HttpVerb,BiFunction<ChainedHttpConfig,Function<ChainedHttpConfig,Object>, Object>> getInterceptors();
+
+        /**
+         * Configures proxy information for all requests using this client
+         *
+         * @param proxy the Proxy object used for configuring proxy connections
+         * @param secure some clients use this parameter to configure application level ssl proxying. If the client
+         * can determine the underlying protocol without issues this parameter will be ignored.
+         */
+        void proxy(Proxy proxy, boolean secure);
+
+        /**
+         * Configures proxy information for all requests using this client
+         *
+         * @param host the host of the proxy. This can be either an ip address or a domain name.
+         * @param port the port of the proxy.
+         * @param type the type of the proxy.
+         * @param secure some clients use this parameter to configure application level ssl proxying. If the client
+         * can determine the underlying protocol without issues this parameter will be ignored.
+         */
+        void proxy(String host, int port, Proxy.Type type, boolean secure) throws UnknownHostException;
+
+        ProxyInfo getProxyInfo();
     }
 
     /**

@@ -161,7 +161,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 
     /**
      * Used to find the encoder configured to encode the specified content-type.
-     *
+     *[
      * @param contentType the content-type to be encoded
      * @return the configured encoder
      * @throws IllegalStateException if no coder was found

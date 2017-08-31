@@ -15,6 +15,8 @@
  */
 package groovyx.net.http;
 
+import java.net.Proxy;
+import java.net.UnknownHostException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
@@ -51,6 +53,7 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         private SSLContext sslContext;
         private HostnameVerifier hostnameVerifier;
         private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
+        private ProxyInfo proxyInfo;
 
         public Exec() {
             interceptors = new EnumMap<>(HttpVerb.class);
@@ -123,6 +126,19 @@ public class HttpObjectConfigImpl implements HttpObjectConfig {
         public EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> getInterceptors() {
             return interceptors;
         }
+
+        public ProxyInfo getProxyInfo() {
+            return proxyInfo;
+        }
+
+        public void proxy(final Proxy proxy, final boolean secure) {
+            proxyInfo = new ProxyInfo(proxy, secure);
+        }
+
+        public void proxy(String host, int port, Proxy.Type type, boolean secure) throws UnknownHostException {
+            proxyInfo = new ProxyInfo(host, port, type, secure);
+        }
+
     }
 
     private static class ClientConfig implements Client {
