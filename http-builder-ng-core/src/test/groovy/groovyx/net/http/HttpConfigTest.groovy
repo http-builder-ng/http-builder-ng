@@ -101,15 +101,6 @@ class HttpConfigTest extends Specification {
         intermediate.response.actualAction(404).closure == failure;
     }
 
-    def Script() {
-        setup:
-        def config = HttpConfigs.basic(null).configure('script1.groovy');
-
-        expect:
-        config.request.contentType == 'application/json';
-        config.request.uri.toURI() == new URI('http://www.google.com');
-    }
-
     private ChainedHttpConfig chainedConfig(ChainedHttpConfig chc, @DelegatesTo(HttpConfig.class) final Closure closure) {
         closure.setDelegate(chc)
         closure.setResolveStrategy(DELEGATE_FIRST)
