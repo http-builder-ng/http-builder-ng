@@ -794,6 +794,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
     @Unroll 'proxied get(): #protocol #contentType'() {
         setup:
         //TODO: Set up proxy supprt in ersatz for proxying to this server
+        //Currently tested by lauching tinyproxy with its default port of 8888
+        //and verifying that tinyproxy is proxying the connections by
+        //manually inspecting the log.
         ersatzServer.expectations {
             get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
         }
@@ -821,6 +824,12 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
     @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
     @Unroll 'socks proxied get(): #protocol #contentType'() {
+        //currently socks support can be tested by doing the following
+        //1) Make sure sshd is running on localhost
+        //2) Execute the following command: ssh -D 8889 localhost
+        //3) Make sure the login is successful (enter password if needed). It's non-obvious
+        //but by logging in you have also set up a SOCKS proxy listening on 8889 that will
+        //be tunneled through ssh/sshd working in tandem.
         setup:
         ersatzServer.expectations {
             get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
