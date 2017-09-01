@@ -16,13 +16,11 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.Encoders
-import groovyx.net.http.ChainedHttpConfig
-import groovyx.net.http.FromServer
-import groovyx.net.http.HttpBuilder
-import groovyx.net.http.HttpConfig
-import groovyx.net.http.NullCookieStore
+import groovyx.net.http.*
 import spock.lang.Unroll
+import spock.lang.IgnoreIf
 
+import java.net.Proxy;
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
@@ -191,20 +189,20 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             get('/multicookie2').cookie('foo', 'bar').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
             get('/lots/of/path/elements/multicookie3').cookie('foo', 'bar').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
         }
-        
+
         def http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
+            request.uri = ersatzServer.httpUrl
             request.cookie 'foo', 'bar'
         }
 
         when:
-        http.get { request.uri.path = '/multicookie1' };
-        http.get { request.uri.path = '/multicookie2' };
-        http.get { request.uri.path = '/lots/of/path/elements/multicookie3' };
-        
+        http.get { request.uri.path = '/multicookie1' }
+        http.get { request.uri.path = '/multicookie2' }
+        http.get { request.uri.path = '/lots/of/path/elements/multicookie3' }
+
         then:
-        http.cookieManager.cookieStore.all.values().size() == 2;
-        ersatzServer.verify();
+        http.cookieManager.cookieStore.all.values().size() == 2
+        ersatzServer.verify()
     }
 
     def 'server set cookies are honored'() {
@@ -225,35 +223,35 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         when:
-        def http = httpBuilder { request.uri = ersatzServer.httpUrl; }
+        def http = httpBuilder { request.uri = ersatzServer.httpUrl }
 
         then:
-        http.cookieStore.all.size() == 0;
+        http.cookieStore.all.size() == 0
 
         when:
-        http.get { request.uri.path = '/setkermit'; }
+        http.get { request.uri.path = '/setkermit' }
 
         then:
-        http.cookieStore.all.size() == 1;
+        http.cookieStore.all.size() == 1
 
         when:
-        http.get { request.uri.path = '/showkermit'; }
+        http.get { request.uri.path = '/showkermit' }
 
         then:
-        http.cookieStore.all.size() == 3;
+        http.cookieStore.all.size() == 3
 
         when:
-        http.get { request.uri.path = '/some/deep/path'; }
+        http.get { request.uri.path = '/some/deep/path' }
 
         then:
-        http.cookieStore.all.size() == 3;
+        http.cookieStore.all.size() == 3
 
         when:
-        http.get { request.uri.path = '/setkermit'; } //verify that duplicate cookies are not created
+        http.get { request.uri.path = '/setkermit' } //verify that duplicate cookies are not created
 
         then:
-        http.cookieStore.all.size() == 3;
-        ersatzServer.verify();
+        http.cookieStore.all.size() == 3
+        ersatzServer.verify()
     }
 
     def 'cookies are not stored when disabled'() {
@@ -268,15 +266,15 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
 
         when:
         def http = httpBuilder {
-            client.cookiesEnabled = false;
-            request.uri = ersatzServer.httpUrl;
+            client.cookiesEnabled = false
+            request.uri = ersatzServer.httpUrl
         }
-        http.get { request.uri.path = '/showkermit'; }
-        
+        http.get { request.uri.path = '/showkermit' }
+
         then:
-        http.cookieStore.cookies.size() == 0;
-        http.cookieStore.URIs.size() == 0;
-        http.cookieStore.is(NullCookieStore.instance());
+        http.cookieStore.cookies.size() == 0
+        http.cookieStore.URIs.size() == 0
+        http.cookieStore.is(NullCookieStore.instance())
     }
 
     @Unroll 'get(Class,Consumer): cookies -> #cookies'() {
@@ -640,34 +638,34 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        boolean caughtIt;
-        boolean caughtCorrectType;
-        
+        boolean caughtIt
+        boolean caughtCorrectType
+
         HttpBuilder http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
-            
+            request.uri = ersatzServer.httpUrl
+
             response.exception { t ->
                 caughtCorrectType = (t instanceof IOException)
-                caughtIt = true;
-                return null;
+                caughtIt = true
+                return null
             }
         }
-        
+
         def config = {
             request.uri.path = '/exceptionally'
 
             response.parser('text/plain') { config, fromServer ->
-                throw new IOException("couldn't parse it");
+                throw new IOException("couldn't parse it")
             }
         }
 
         when:
-        http.get(config);
+        http.get(config)
 
         then:
-        caughtIt;
-        caughtCorrectType;
-        noExceptionThrown();
+        caughtIt
+        caughtCorrectType
+        noExceptionThrown()
     }
 
     def 'exception handler works with function'() {
@@ -676,36 +674,36 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        boolean caughtIt;
-        boolean caughtCorrectType;
-        
-        HttpBuilder http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
+        boolean caughtIt
+        boolean caughtCorrectType
 
-            response.exception(new Function<Throwable,Object>() {
-                                   @Override public Object apply(Throwable t) {
-                                       caughtIt = true;
-                                       caughtCorrectType = (t instanceof IOException);
-                                       return null;
-                                   }
-                               });
+        HttpBuilder http = httpBuilder {
+            request.uri = ersatzServer.httpUrl
+
+            response.exception(new Function<Throwable, Object>() {
+                @Override Object apply(Throwable t) {
+                    caughtIt = true
+                    caughtCorrectType = (t instanceof IOException)
+                    return null
+                }
+            })
         }
-        
+
         def config = {
             request.uri.path = '/exceptionally'
 
             response.parser('text/plain') { config, fromServer ->
-                throw new IOException("couldn't parse it");
+                throw new IOException("couldn't parse it")
             }
         }
 
         when:
-        http.get(config);
+        http.get(config)
 
         then:
-        caughtIt;
-        caughtCorrectType;
-        noExceptionThrown();
+        caughtIt
+        caughtCorrectType
+        noExceptionThrown()
     }
 
     def 'exception handler chain works correctly'() {
@@ -714,37 +712,37 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
             get('/exceptionally').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
-        boolean globalCaughtIt, requestCaughtIt;
-        
+        boolean globalCaughtIt, requestCaughtIt
+
         HttpBuilder http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
-            
+            request.uri = ersatzServer.httpUrl
+
             response.exception { t ->
-                globalCaughtIt = true;
-                return null;
+                globalCaughtIt = true
+                return null
             }
         }
-        
+
         def config = {
             request.uri.path = '/exceptionally'
 
             response.parser('text/plain') { config, fromServer ->
-                throw new IOException("couldn't parse it");
+                throw new IOException("couldn't parse it")
             }
 
             response.exception { t ->
-                requestCaughtIt = true;
-                return null;
+                requestCaughtIt = true
+                return null
             }
         }
 
         when:
-        http.get(config);
+        http.get(config)
 
         then:
-        requestCaughtIt;
-        !globalCaughtIt;
-        noExceptionThrown();
+        requestCaughtIt
+        !globalCaughtIt
+        noExceptionThrown()
     }
 
     def 'handles basic errors'() {
@@ -754,41 +752,107 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         }
 
         when:
-        boolean handledCorrectly = false;
-        
+        boolean handledCorrectly = false
+
         HttpBuilder http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
+            request.uri = ersatzServer.httpUrl
             request.uri.host = 'www.mkdfiwiejglejrligjsldkflwngunwfnkwemfiwefdsf.com'
-            
+
             response.exception { t ->
-                handledCorrectly = (t instanceof java.net.UnknownHostException);
-                return null;
+                handledCorrectly = (t instanceof UnknownHostException)
+                return null
             }
         }
 
-        http.get();
+        http.get()
 
         then:
-        handledCorrectly;
-        noExceptionThrown();
+        handledCorrectly
+        noExceptionThrown()
 
         when:
-        handledCorrectly = false;
-        
+        handledCorrectly = false
+
         http = httpBuilder {
-            request.uri = ersatzServer.httpUrl;
+            request.uri = ersatzServer.httpUrl
             request.uri.host = 'www.g o o g l e.com'
-            
+
             response.exception { t ->
-                handledCorrectly = (t instanceof java.net.URISyntaxException);
-                return null;
+                handledCorrectly = (t instanceof URISyntaxException)
+                return null
             }
         }
 
-        http.get();
+        http.get()
 
         then:
-        handledCorrectly;
-        noExceptionThrown();
+        handledCorrectly
+        noExceptionThrown()
     }
+
+    @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
+    @Unroll 'proxied get(): #protocol #contentType'() {
+        setup:
+        //TODO: Set up proxy supprt in ersatz for proxying to this server
+        //Currently tested by lauching tinyproxy with its default port of 8888
+        //and verifying that tinyproxy is proxying the connections by
+        //manually inspecting the log.
+        ersatzServer.expectations {
+            get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
+        }
+
+        println("Server url: ${serverUri(protocol)}")
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            execution.proxy('127.0.0.1', 8888, Proxy.Type.HTTP, protocol == 'HTTPS')
+            request.uri = "${serverUri(protocol)}/proxied"
+        }
+
+        expect:
+        result(http.get())
+
+        and:
+        ersatzServer.verify()
+
+        //can only enable https testing once https://issues.jboss.org/browse/UNDERTOW-1138 is completed
+        where:
+        protocol | contentType      | content || result
+        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        //'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+    }
+
+    @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
+    @Unroll 'socks proxied get(): #protocol #contentType'() {
+        //currently socks support can be tested by doing the following
+        //1) Make sure sshd is running on localhost
+        //2) Execute the following command: ssh -D 8889 localhost
+        //3) Make sure the login is successful (enter password if needed). It's non-obvious
+        //but by logging in you have also set up a SOCKS proxy listening on 8889 that will
+        //be tunneled through ssh/sshd working in tandem.
+        setup:
+        ersatzServer.expectations {
+            get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
+        }
+
+        println("Server url: ${serverUri(protocol)}")
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            execution.proxy('127.0.0.1', 8889, Proxy.Type.SOCKS, protocol == 'HTTPS')
+            request.uri = "${serverUri(protocol)}/proxied"
+        }
+
+        expect:
+        result(http.get())
+
+        and:
+        ersatzServer.verify()
+
+        where:
+        protocol | contentType      | content || result
+        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+    }
+
 }

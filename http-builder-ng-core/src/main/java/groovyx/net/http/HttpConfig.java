@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovyx.net.http.fn.ClosureBiFunction;
 import groovyx.net.http.fn.ClosureFunction;
 
+import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;

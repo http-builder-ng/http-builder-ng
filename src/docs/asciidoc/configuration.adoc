@@ -216,6 +216,7 @@ encoders. For example, the `OkHttpBuilder` may use the `OkHttpEncoders.&multipar
 ----
 import groovyx.net.http.OkHttpBuilder
 import groovyx.net.http.*
+import static groovyx.net.http.MultipartContent.multipart
 
 File someFile = // ...
 
@@ -541,6 +542,25 @@ why the second approach exists.
 If the `groovyx.net.http.ignore-ssl-issues` system property is specified in the system properties with a value of `true`, the `ignoreSslIssues`
 functionality will be applied by default.
 
+===== Proxying Connections
+
+The library supports both HTTP proxying and SOCKS proxying. The proxying mechanisms are very different, but configuration for either type of proxying is basically the same. The main idea is to set up your proxy information at the execution level (using `HttpObjectConfig.getExecution()`) and then configure everything else as if there were no proxy at all. For example, if I wanted to talk to http://foo.com using a local http proxy running on port 8889 I would do the following:
+
+[source,groovy]
+----
+import groovyx.net.http.JavaHttpBuilder
+import java.net.Proxy
+
+def http = JavaHttpBuilder.configure {
+    execution.proxy '127.0.0.1', 8889, Proxy.Type.HTTP, false
+    request.uri = 'http://foo.com'
+}
+
+//now use your configured client as if the proxy doesn't exist
+----
+
+When using HTTP proxying, set the final parameter to `true` if your proxy server expects inbound connections to be over https. If you are using a SOCKS proxy just replace `Proxy.Type.HTTP` with `Proxy.Type.SOCKS`. The last parameter is ignored when SOCKS proxying is used.
+
 ===== Interceptors
 
 The `HttpObjectConfig` interface allows the configuration of global request/response interceptors, which can perform operations before and after every
@@ -652,7 +672,7 @@ client-configuration. A simple `get()` example would be to determine who are the
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -687,7 +707,7 @@ the current position if the ISS:
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -733,7 +753,7 @@ An example of this for a `get(Integer,Closure)` call would be to retrieve the nu
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.17.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import groovy.json.JsonSlurper
