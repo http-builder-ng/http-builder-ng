@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovyx.net.http.fn.ClosureBiFunction;
 import groovyx.net.http.fn.ClosureFunction;
 
+import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,8 +39,8 @@ public interface HttpConfig {
     /**
      * Defines the an enumeration of the overall HTTP response status categories.
      */
-<span class="pc" id="L41">    enum Status {</span>
-<span class="fc" id="L42">        SUCCESS, FAILURE</span>
+<span class="pc" id="L42">    enum Status {</span>
+<span class="fc" id="L43">        SUCCESS, FAILURE</span>
     }
 
     ;
@@ -47,8 +48,8 @@ public interface HttpConfig {
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
-<span class="pc" id="L50">    enum AuthType {</span>
-<span class="fc" id="L51">        BASIC, DIGEST</span>
+<span class="pc" id="L51">    enum AuthType {</span>
+<span class="fc" id="L52">        BASIC, DIGEST</span>
     }
 
     ;
@@ -95,8 +96,8 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void basic(String user, String password) {
-<span class="fc" id="L98">            basic(user, password, false);</span>
-<span class="fc" id="L99">        }</span>
+<span class="fc" id="L99">            basic(user, password, false);</span>
+<span class="fc" id="L100">        }</span>
 
         /**
          * Configures the request to use BASIC authentication with the given `username` and `password`.
@@ -131,8 +132,8 @@ public interface HttpConfig {
          * @param password the user's password
          */
         default void digest(String user, String password) {
-<span class="fc" id="L134">            digest(user, password, false);</span>
-<span class="fc" id="L135">        }</span>
+<span class="fc" id="L135">            digest(user, password, false);</span>
+<span class="fc" id="L136">        }</span>
 
         /**
          * Configures the request to use DIGEST authentication with the given information.
@@ -433,8 +434,8 @@ public interface HttpConfig {
          * @param value the cookie value
          */
         default void cookie(String name, String value) {
-<span class="fc" id="L436">            cookie(name, value, (Date) null);</span>
-<span class="fc" id="L437">        }</span>
+<span class="fc" id="L437">            cookie(name, value, (Date) null);</span>
+<span class="fc" id="L438">        }</span>
 
         /**
          * The `cookie` configuration options provide a means of adding HTTP Cookies to the request. Cookies are defined with a `name`, `value`, and
@@ -545,8 +546,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void when(Status status, Closure&lt;?&gt; closure) {
-<span class="fc" id="L548">            when(status, new ClosureBiFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L549">        }</span>
+<span class="fc" id="L549">            when(status, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L550">        }</span>
 
         /**
          * Configures the execution of the provided function &quot;when&quot; the given status occurs in the response. The `function` will be called with an instance
@@ -599,8 +600,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void when(Integer code, Closure&lt;?&gt; closure) {
-<span class="fc" id="L602">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L603">        }</span>
+<span class="fc" id="L603">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L604">        }</span>
 
         /**
          * Configures the execution of the provided function &quot;when&quot; the given status code occurs in the response. The `function` will be called with an instance
@@ -653,8 +654,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void when(String code, Closure&lt;?&gt; closure) {
-<span class="fc" id="L656">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L657">        }</span>
+<span class="fc" id="L657">            when(code, new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L658">        }</span>
 
         /**
          * Configures the execution of the provided function &quot;when&quot; the given status code (as a `String`) occurs in the response. The `function` will be
@@ -713,8 +714,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void success(Closure&lt;?&gt; closure) {
-<span class="fc" id="L716">            success(new ClosureBiFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L717">        }</span>
+<span class="fc" id="L717">            success(new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L718">        }</span>
 
         /**
          * Configures the execution of the provided function when a success response is received (code &lt; 400). The `function` will be called with
@@ -766,8 +767,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void failure(Closure&lt;?&gt; closure) {
-<span class="fc" id="L769">            failure(new ClosureBiFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L770">        }</span>
+<span class="fc" id="L770">            failure(new ClosureBiFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L771">        }</span>
 
         /**
          * Configures the execution of the provided function &quot;when&quot; a failure response is received (code &gt;= 400). The `function` will be called with
@@ -827,8 +828,8 @@ public interface HttpConfig {
          * @param closure the closure to be executed
          */
         default void exception(Closure&lt;?&gt; closure) {
-<span class="fc" id="L830">            exception(new ClosureFunction&lt;&gt;(closure));</span>
-<span class="fc" id="L831">        }</span>
+<span class="fc" id="L831">            exception(new ClosureFunction&lt;&gt;(closure));</span>
+<span class="fc" id="L832">        }</span>
 
         /**
          * Configures the execution of the provided `function` to handle exceptions during request/response processing. This is
@@ -905,10 +906,10 @@ public interface HttpConfig {
      * @param obj the mapping value
      */
     default void context(final Iterable&lt;String&gt; contentTypes, final Object id, final Object obj) {
-<span class="fc bfc" id="L908" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
-<span class="fc" id="L909">            context(contentType, id, obj);</span>
-<span class="fc" id="L910">        }</span>
-<span class="fc" id="L911">    }</span>
+<span class="fc bfc" id="L909" title="All 2 branches covered.">        for (String contentType : contentTypes) {</span>
+<span class="fc" id="L910">            context(contentType, id, obj);</span>
+<span class="fc" id="L911">        }</span>
+<span class="fc" id="L912">    }</span>
 
     /**
      * Used to retrieve configuration information about the HTTP request.

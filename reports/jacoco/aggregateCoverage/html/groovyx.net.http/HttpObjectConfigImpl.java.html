@@ -15,6 +15,8 @@
  */
 package groovyx.net.http;
 
+import java.net.Proxy;
+import java.net.UnknownHostException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.File;
@@ -30,179 +32,193 @@ import static groovyx.net.http.util.SslUtils.ANY_HOSTNAME;
 import static groovyx.net.http.util.SslUtils.acceptingSslContext;
 import static groovyx.net.http.util.Misc.isPropertySet;
 
-<span class="fc" id="L33">public class HttpObjectConfigImpl implements HttpObjectConfig {</span>
+<span class="fc" id="L35">public class HttpObjectConfigImpl implements HttpObjectConfig {</span>
 
-<span class="fc" id="L35">    private final ChainedHttpConfig config = basic(root());</span>
+<span class="fc" id="L37">    private final ChainedHttpConfig config = basic(root());</span>
 
     public ChainedHttpConfig getChainedConfig() {
-<span class="fc" id="L38">        return config;</span>
+<span class="fc" id="L40">        return config;</span>
     }
 
-<span class="fc" id="L41">    final Exec exec = new Exec();</span>
-<span class="fc" id="L42">    final ClientConfig clientConfig = new ClientConfig();</span>
+<span class="fc" id="L43">    final Exec exec = new Exec();</span>
+<span class="fc" id="L44">    final ClientConfig clientConfig = new ClientConfig();</span>
 
     public static Object nullInterceptor(final ChainedHttpConfig config, final Function&lt;ChainedHttpConfig, Object&gt; func) {
-<span class="fc" id="L45">        return func.apply(config);</span>
+<span class="fc" id="L47">        return func.apply(config);</span>
     }
 
     private static class Exec implements Execution {
-<span class="fc" id="L49">        private int maxThreads = 1;</span>
-<span class="fc" id="L50">        private Executor executor = SingleThreaded.instance;</span>
+<span class="fc" id="L51">        private int maxThreads = 1;</span>
+<span class="fc" id="L52">        private Executor executor = SingleThreaded.instance;</span>
         private SSLContext sslContext;
         private HostnameVerifier hostnameVerifier;
         private final EnumMap&lt;HttpVerb, BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt;&gt; interceptors;
+        private ProxyInfo proxyInfo;
 
-<span class="fc" id="L55">        public Exec() {</span>
-<span class="fc" id="L56">            interceptors = new EnumMap&lt;&gt;(HttpVerb.class);</span>
-<span class="fc bfc" id="L57" title="All 2 branches covered.">            for (HttpVerb verb : HttpVerb.values()) {</span>
-<span class="fc" id="L58">                interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);</span>
+<span class="fc" id="L58">        public Exec() {</span>
+<span class="fc" id="L59">            interceptors = new EnumMap&lt;&gt;(HttpVerb.class);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (HttpVerb verb : HttpVerb.values()) {</span>
+<span class="fc" id="L61">                interceptors.put(verb, HttpObjectConfigImpl::nullInterceptor);</span>
             }
 
-<span class="pc bpc" id="L61" title="1 of 2 branches missed.">            if(isPropertySet(&quot;groovyx.net.http.ignore-ssl-issues&quot;)) {</span>
-<span class="nc" id="L62">                setSslContext(acceptingSslContext());</span>
-<span class="nc" id="L63">                setHostnameVerifier(ANY_HOSTNAME);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">            if(isPropertySet(&quot;groovyx.net.http.ignore-ssl-issues&quot;)) {</span>
+<span class="nc" id="L65">                setSslContext(acceptingSslContext());</span>
+<span class="nc" id="L66">                setHostnameVerifier(ANY_HOSTNAME);</span>
             }
-<span class="fc" id="L65">        }</span>
+<span class="fc" id="L68">        }</span>
 
         public void setMaxThreads(final int val) {
-<span class="nc bnc" id="L68" title="All 2 branches missed.">            if (val &lt; 1) {</span>
-<span class="nc" id="L69">                throw new IllegalArgumentException(&quot;Max Threads cannot be less than 1&quot;);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (val &lt; 1) {</span>
+<span class="nc" id="L72">                throw new IllegalArgumentException(&quot;Max Threads cannot be less than 1&quot;);</span>
             }
 
-<span class="nc" id="L72">            this.maxThreads = val;</span>
-<span class="nc" id="L73">        }</span>
+<span class="nc" id="L75">            this.maxThreads = val;</span>
+<span class="nc" id="L76">        }</span>
 
         public int getMaxThreads() {
-<span class="fc" id="L76">            return maxThreads;</span>
+<span class="fc" id="L79">            return maxThreads;</span>
         }
 
         public void setExecutor(final Executor val) {
-<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (val == null) {</span>
-<span class="nc" id="L81">                throw new NullPointerException();</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (val == null) {</span>
+<span class="nc" id="L84">                throw new NullPointerException();</span>
             }
 
-<span class="nc" id="L84">            this.executor = val;</span>
-<span class="nc" id="L85">        }</span>
+<span class="nc" id="L87">            this.executor = val;</span>
+<span class="nc" id="L88">        }</span>
 
         public Executor getExecutor() {
-<span class="fc" id="L88">            return executor;</span>
+<span class="fc" id="L91">            return executor;</span>
         }
 
         public void setSslContext(final SSLContext val) {
-<span class="fc" id="L92">            this.sslContext = val;</span>
-<span class="fc" id="L93">        }</span>
+<span class="fc" id="L95">            this.sslContext = val;</span>
+<span class="fc" id="L96">        }</span>
 
         public SSLContext getSslContext() {
-<span class="fc" id="L96">            return sslContext;</span>
+<span class="fc" id="L99">            return sslContext;</span>
         }
 
         @Override
         public void setHostnameVerifier(HostnameVerifier verifier) {
-<span class="fc" id="L101">            this.hostnameVerifier = verifier;</span>
-<span class="fc" id="L102">        }</span>
+<span class="fc" id="L104">            this.hostnameVerifier = verifier;</span>
+<span class="fc" id="L105">        }</span>
 
         @Override
         public HostnameVerifier getHostnameVerifier() {
-<span class="fc" id="L106">            return hostnameVerifier;</span>
+<span class="fc" id="L109">            return hostnameVerifier;</span>
         }
 
         public void interceptor(final HttpVerb verb, final BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt; func) {
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">            if (func == null) {</span>
-<span class="nc" id="L111">                throw new NullPointerException(&quot;func cannot be null&quot;);</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">            if (func == null) {</span>
+<span class="nc" id="L114">                throw new NullPointerException(&quot;func cannot be null&quot;);</span>
             }
 
-<span class="fc" id="L114">            interceptors.put(verb, func);</span>
-<span class="fc" id="L115">        }</span>
+<span class="fc" id="L117">            interceptors.put(verb, func);</span>
+<span class="fc" id="L118">        }</span>
 
         public void interceptor(final HttpVerb[] verbs, final BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt; func) {
-<span class="nc bnc" id="L118" title="All 2 branches missed.">            for (HttpVerb verb : verbs) {</span>
-<span class="nc" id="L119">                interceptors.put(verb, func);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">            for (HttpVerb verb : verbs) {</span>
+<span class="nc" id="L122">                interceptors.put(verb, func);</span>
             }
-<span class="nc" id="L121">        }</span>
+<span class="nc" id="L124">        }</span>
 
         public EnumMap&lt;HttpVerb, BiFunction&lt;ChainedHttpConfig, Function&lt;ChainedHttpConfig, Object&gt;, Object&gt;&gt; getInterceptors() {
-<span class="fc" id="L124">            return interceptors;</span>
+<span class="fc" id="L127">            return interceptors;</span>
         }
+
+        public ProxyInfo getProxyInfo() {
+<span class="fc" id="L131">            return proxyInfo;</span>
+        }
+
+        public void proxy(final Proxy proxy, final boolean secure) {
+<span class="nc" id="L135">            proxyInfo = new ProxyInfo(proxy, secure);</span>
+<span class="nc" id="L136">        }</span>
+
+        public void proxy(String host, int port, Proxy.Type type, boolean secure) throws UnknownHostException {
+<span class="nc" id="L139">            proxyInfo = new ProxyInfo(host, port, type, secure);</span>
+<span class="nc" id="L140">        }</span>
+
     }
 
-<span class="fc" id="L128">    private static class ClientConfig implements Client {</span>
-<span class="fc" id="L129">        private boolean cookiesEnabled = true;</span>
-<span class="fc" id="L130">        private int cookieVersion = 0;</span>
+<span class="fc" id="L144">    private static class ClientConfig implements Client {</span>
+<span class="fc" id="L145">        private boolean cookiesEnabled = true;</span>
+<span class="fc" id="L146">        private int cookieVersion = 0;</span>
         private File cookieFolder;
         private Consumer&lt;Object&gt; clientCustomizer;
 
         @Override
         public void setCookieVersion(int version) {
-<span class="nc" id="L136">            this.cookieVersion = version;</span>
-<span class="nc" id="L137">        }</span>
+<span class="nc" id="L152">            this.cookieVersion = version;</span>
+<span class="nc" id="L153">        }</span>
 
         @Override
         public int getCookieVersion() {
-<span class="fc" id="L141">            return cookieVersion;</span>
+<span class="fc" id="L157">            return cookieVersion;</span>
         }
 
         @Override
         public File getCookieFolder() {
-<span class="fc" id="L146">            return cookieFolder;</span>
+<span class="fc" id="L162">            return cookieFolder;</span>
         }
 
         @Override
         public void setCookieFolder(final File val) {
-<span class="nc" id="L151">            this.cookieFolder = val;</span>
-<span class="nc" id="L152">        }</span>
+<span class="nc" id="L167">            this.cookieFolder = val;</span>
+<span class="nc" id="L168">        }</span>
 
         @Override
         public boolean getCookiesEnabled() {
-<span class="fc" id="L156">            return cookiesEnabled;</span>
+<span class="fc" id="L172">            return cookiesEnabled;</span>
         }
 
         @Override
         public void setCookiesEnabled(final boolean val) {
-<span class="fc" id="L161">            cookiesEnabled = val;</span>
-<span class="fc" id="L162">        }</span>
+<span class="fc" id="L177">            cookiesEnabled = val;</span>
+<span class="fc" id="L178">        }</span>
 
         @Override
         public void clientCustomizer(final Consumer&lt;Object&gt; customizer) {
-<span class="fc" id="L166">            this.clientCustomizer = customizer;</span>
-<span class="fc" id="L167">        }</span>
+<span class="fc" id="L182">            this.clientCustomizer = customizer;</span>
+<span class="fc" id="L183">        }</span>
 
         @Override
         public Consumer&lt;Object&gt; getClientCustomizer() {
-<span class="fc" id="L171">            return clientCustomizer;</span>
+<span class="fc" id="L187">            return clientCustomizer;</span>
         }
     }
 
-<span class="fc" id="L175">    private static class SingleThreaded implements Executor {</span>
+<span class="fc" id="L191">    private static class SingleThreaded implements Executor {</span>
         public void execute(Runnable r) {
-<span class="fc" id="L177">            r.run();</span>
-<span class="fc" id="L178">        }</span>
+<span class="fc" id="L193">            r.run();</span>
+<span class="fc" id="L194">        }</span>
 
-<span class="fc" id="L180">        public static final SingleThreaded instance = new SingleThreaded();</span>
+<span class="fc" id="L196">        public static final SingleThreaded instance = new SingleThreaded();</span>
     }
 
     public Request getRequest() {
-<span class="fc" id="L184">        return config.getRequest();</span>
+<span class="fc" id="L200">        return config.getRequest();</span>
     }
 
     public Response getResponse() {
-<span class="fc" id="L188">        return config.getResponse();</span>
+<span class="fc" id="L204">        return config.getResponse();</span>
     }
 
     public HttpConfig getParent() {
-<span class="nc" id="L192">        return config.getParent();</span>
+<span class="nc" id="L208">        return config.getParent();</span>
     }
 
     public Execution getExecution() {
-<span class="fc" id="L196">        return exec;</span>
+<span class="fc" id="L212">        return exec;</span>
     }
 
     @Override
     public Client getClient() {
-<span class="fc" id="L201">        return clientConfig;</span>
+<span class="fc" id="L217">        return clientConfig;</span>
     }
 
     public void context(final String contentType, final Object id, final Object obj) {
-<span class="fc" id="L205">        config.context(contentType, id, obj);</span>
-<span class="fc" id="L206">    }</span>
+<span class="fc" id="L221">        config.context(contentType, id, obj);</span>
+<span class="fc" id="L222">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

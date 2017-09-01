@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <h1>HttpBuilder-NG User Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.17.0,</span>
-<span id="revdate">July 2017</span>
+<span id="revnumber">version 0.18.0,</span>
+<span id="revdate">September 2017</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -563,6 +563,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_execution">Execution</a>
 <ul class="sectlevel4">
 <li><a href="#_ignoring_ssl_issues">Ignoring SSL Issues</a></li>
+<li><a href="#_proxying_connections">Proxying Connections</a></li>
 <li><a href="#_interceptors">Interceptors</a></li>
 </ul>
 </li>
@@ -679,7 +680,7 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.17.0'</pre>
+<pre>compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.18.0'</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -690,7 +691,7 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.</p>
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;io.github.http-builder-ng&lt;/groupId&gt;
   &lt;artifactId&gt;http-builder-ng-CLIENT&lt;/artifactId&gt;
-  &lt;version&gt;0.17.0&lt;/version&gt;
+  &lt;version&gt;0.18.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -1636,6 +1637,28 @@ functionality will be applied by default.</p>
 </div>
 </div>
 <div class="sect4">
+<h5 id="_proxying_connections">Proxying Connections</h5>
+<div class="paragraph">
+<p>The library supports both HTTP proxying and SOCKS proxying. The proxying mechanisms are very different, but configuration for either type of proxying is basically the same. The main idea is to set up your proxy information at the execution level (using <code>HttpObjectConfig.getExecution()</code>) and then configure everything else as if there were no proxy at all. For example, if I wanted to talk to <a href="http://foo.com" class="bare">http://foo.com</a> using a local http proxy running on port 8889 I would do the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">groovyx.net.http.JavaHttpBuilder</span>
+<span class="keyword">import</span> <span class="include">java.net.Proxy</span>
+
+<span class="keyword">def</span> http = JavaHttpBuilder.configure {
+    execution.proxy <span class="string"><span class="delimiter">'</span><span class="content">127.0.0.1</span><span class="delimiter">'</span></span>, <span class="integer">8889</span>, <span class="predefined-type">Proxy</span>.Type.HTTP, <span class="predefined-constant">false</span>
+    request.uri = <span class="string"><span class="delimiter">'</span><span class="content">http://foo.com</span><span class="delimiter">'</span></span>
+}
+
+<span class="comment">//now use your configured client as if the proxy doesn't exist</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When using HTTP proxying, set the final parameter to <code>true</code> if your proxy server expects inbound connections to be over https. If you are using a SOCKS proxy just replace <code>Proxy.Type.HTTP</code> with <code>Proxy.Type.SOCKS</code>. The last parameter is ignored when SOCKS proxying is used.</p>
+</div>
+</div>
+<div class="sect4">
 <h5 id="_interceptors">Interceptors</h5>
 <div class="paragraph">
 <p>The <code>HttpObjectConfig</code> interface allows the configuration of global request/response interceptors, which can perform operations before and after every
@@ -1768,7 +1791,7 @@ client-configuration. A simple <code>get()</code> example would be to determine 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 
@@ -1807,7 +1830,7 @@ the current position if the ISS:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 
@@ -1859,7 +1882,7 @@ specified <code>type</code> if possible - a response parser may be required to c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">groovy.json.JsonSlurper</span>
@@ -2132,7 +2155,7 @@ with a resulting output line something like:</p>
 <div class="listingblock">
 <div class="title">resource_last_modified_alt.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">java.time.format.DateTimeFormatter.ofPattern</span>
@@ -2165,7 +2188,7 @@ By default, <code>text/html</code> content is parsed with the <a href="https://j
 <div class="listingblock">
 <div class="title">web_scraping.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.jsoup:jsoup:1.9.2</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
@@ -2201,7 +2224,7 @@ parser:</p>
 <div class="listingblock">
 <div class="title">sending_receiving_post.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -2250,7 +2273,7 @@ provides other useful information about the request. The end result is the follo
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.17.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -2367,6 +2390,18 @@ has some good usage examples for this functionality.</p>
 </div>
 <div class="sect2">
 <h3 id="__typecheckhttpconfig_groovy_was_not_found">'typecheckhttpconfig.groovy' was not found</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+As of v0.18.0 the <code>typecheckedhttpconfig.groovy</code> file has been removed, so this should not be an issue going forward.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>We have had a few issues reported related to the following error (<a href="https://github.com/http-builder-ng/http-builder-ng/issues/107">#107</a>,
 <a href="https://github.com/http-builder-ng/http-builder-ng/issues/115">#115</a>, <a href="https://github.com/http-builder-ng/http-builder-ng/issues/144">#144</a>):</p>
@@ -2462,8 +2497,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.17.0<br>
-Last updated 2017-07-07 08:14:58 -05:00
+Version 0.18.0<br>
+Last updated 2017-09-01 06:53:21 -05:00
 </div>
 </div>
 </body>
