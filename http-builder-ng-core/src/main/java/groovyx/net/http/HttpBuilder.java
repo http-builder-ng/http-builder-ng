@@ -321,6 +321,28 @@ public abstract class HttpBuilder implements Closeable {
     }
 
     /**
+     * Create a copy of an existing HttpBuilder, maybe overriding some settings.
+     */
+    public HttpBuilder copy(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
+        closure.setDelegate(impl);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return getFactory().apply(impl);
+    }
+
+    /**
+     * Create a copy of an existing HttpBuilder, maybe overriding some settings.
+     */
+    public HttpBuilder copy(final Consumer<HttpObjectConfig> configuration) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
+        configuration.accept(impl);
+        return getFactory().apply(impl);
+    }
+
+    protected abstract Function<HttpObjectConfig, ? extends HttpBuilder> getFactory();
+
+    /**
      * Executes a GET request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
      * have a target for the request.
      *

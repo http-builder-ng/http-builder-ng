@@ -384,6 +384,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
         this.client = myBuilder.build();
     }
 
+    @Override
+    protected Function<HttpObjectConfig, ? extends HttpBuilder> getFactory() {
+        return apacheFactory;
+    }
+
     /**
      * Retrieves the internal client implementation as an {@link HttpClient} instance.
      *

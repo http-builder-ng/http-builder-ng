@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -347,6 +348,11 @@ public class JavaHttpBuilder extends HttpBuilder {
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
         this.sslContext = config.getExecution().getSslContext();
         this.proxyInfo = config.getExecution().getProxyInfo();
+    }
+
+    @Override
+    protected Function<HttpObjectConfig, ? extends HttpBuilder> getFactory() {
+        return JavaHttpBuilder::new;
     }
 
     /**

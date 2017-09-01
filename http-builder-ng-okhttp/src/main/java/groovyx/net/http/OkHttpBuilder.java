@@ -93,7 +93,12 @@ public class OkHttpBuilder extends HttpBuilder {
 
         this.client = builder.build();
     }
-    
+
+    @Override
+    protected Function<HttpObjectConfig, ? extends HttpBuilder> getFactory() {
+        return okFactory;
+    }
+
     private boolean usesProxy(final ProxyInfo pinfo) {
         return pinfo != null && pinfo.getProxy().type() != Proxy.Type.DIRECT;
     }
