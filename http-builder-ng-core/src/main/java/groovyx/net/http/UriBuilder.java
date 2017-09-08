@@ -208,6 +208,19 @@ public abstract class UriBuilder {
 //        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
     }
 
+    /**
+     * Given the individual `URI` elements, construct a literal string representation of the `URI` that can be used to
+     * call {@link java.net.URI#URI(String)}.
+     *
+     * @param scheme
+     * @param userInfo
+     * @param host
+     * @param port
+     * @param path
+     * @param query
+     * @param fragment
+     * @return
+     */
     private String getURIAsString(String scheme, String userInfo, String host, Integer port, String path, String query, String fragment ) {
 
         String portStr = port == null ? "" : port.toString();
