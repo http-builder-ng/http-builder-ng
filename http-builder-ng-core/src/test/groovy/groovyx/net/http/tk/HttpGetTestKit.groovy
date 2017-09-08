@@ -15,12 +15,15 @@
  */
 package groovyx.net.http.tk
 
+import com.stehno.ersatz.Cookie
+import com.stehno.ersatz.CookieMatcher
 import com.stehno.ersatz.Encoders
+import com.stehno.ersatz.proxy.ErsatzProxy
 import groovyx.net.http.*
-import spock.lang.Unroll
+import org.hamcrest.Matcher
 import spock.lang.IgnoreIf
+import spock.lang.Unroll
 
-import java.net.Proxy;
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
@@ -213,7 +216,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
                 cookie('kermit', 'frog; path=/showkermit')
             }
 
-            get('/showkermit').cookie('kermit', 'frog').called(1).responder {
+            get('/showkermit').cookie('kermit', CookieMatcher.cookieMatcher {
+                value 'frog'
+            }).called(1).responder {
                 content(OK_TEXT, TEXT_PLAIN)
                 cookie('miss', 'piggy; path=/')
                 cookie('fozzy', 'bear; path=/some/deep/path')
@@ -790,35 +795,39 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         noExceptionThrown()
     }
 
-    @IgnoreIf({ !Boolean.valueOf(properties['test.proxy.support']) })
     @Unroll 'proxied get(): #protocol #contentType'() {
         setup:
-        //TODO: Set up proxy supprt in ersatz for proxying to this server
-        //Currently tested by lauching tinyproxy with its default port of 8888
-        //and verifying that tinyproxy is proxying the connections by
-        //manually inspecting the log.
         ersatzServer.expectations {
             get('/proxied').protocol(protocol).called(1).responds().content(content, contentType)
         }
 
-        println("Server url: ${serverUri(protocol)}")
+        ErsatzProxy ersatzProxy = new ErsatzProxy({
+            target ersatzServer.httpUrl
+            expectations {
+                get '/proxied'
+            }
+        })
 
         HttpBuilder http = httpBuilder {
             ignoreSslIssues execution
-            execution.proxy('127.0.0.1', 8888, Proxy.Type.HTTP, protocol == 'HTTPS')
+            execution.proxy('127.0.0.1', ersatzProxy.port, Proxy.Type.HTTP, protocol == 'HTTPS')
             request.uri = "${serverUri(protocol)}/proxied"
         }
 
         expect:
-        result(http.get())
+        result http.get()
 
         and:
+        ersatzProxy.verify()
         ersatzServer.verify()
 
-        //can only enable https testing once https://issues.jboss.org/browse/UNDERTOW-1138 is completed
+        cleanup:
+        ersatzProxy.stop()
+
+        // TODO: HTTPS support can be added once Erstaz supports it (https://github.com/cjstehno/ersatz/issues/68)
         where:
-        protocol | contentType      | content || result
-        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        protocol | contentType | content || result
+        'HTTP'   | TEXT_PLAIN  | OK_TEXT || { r -> r == OK_TEXT }
         //'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
     }
 
@@ -850,9 +859,9 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         ersatzServer.verify()
 
         where:
-        protocol | contentType      | content || result
-        'HTTP'   | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
-        'HTTPS'  | TEXT_PLAIN       | OK_TEXT || { r -> r == OK_TEXT }
+        protocol | contentType | content || result
+        'HTTP'   | TEXT_PLAIN  | OK_TEXT || { r -> r == OK_TEXT }
+        'HTTPS'  | TEXT_PLAIN  | OK_TEXT || { r -> r == OK_TEXT }
     }
 
 }
