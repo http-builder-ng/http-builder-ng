@@ -222,6 +222,11 @@ public abstract class UriBuilder {
      * @return
      */
     private String getURIAsString(String scheme, String userInfo, String host, Integer port, String path, String query, String fragment ) {
+        if (scheme == null) {
+            scheme = "";
+        } else if (!scheme.endsWith("://")) {
+            scheme += "://";
+        }
 
         String portStr = port == null ? "" : port.toString();
 
@@ -231,13 +236,17 @@ public abstract class UriBuilder {
             userInfo += "@";
         }
 
+        if (host == null) {
+            host = "";
+        }
+
         if (!portStr.isEmpty()) {
             portStr = ":" + portStr;
         }
 
         if (path == null) {
             path = "";
-        } else if (!path.startsWith("/")) {
+        } else if (!path.startsWith("/") && !path.isEmpty()) {
             path = "/" + path;
         }
 
@@ -250,10 +259,10 @@ public abstract class UriBuilder {
         if (fragment == null) {
             fragment = "";
         } else if ( !fragment.startsWith("#")) {
-            fragment = "?" + fragment;
+            fragment = "#" + fragment;
         }
 
-        String uri = String.format("%s://%s%s%s%s%s",
+        String uri = String.format("%s%s%s%s%s%s%s",
                 scheme,
                 userInfo,
                 host,
