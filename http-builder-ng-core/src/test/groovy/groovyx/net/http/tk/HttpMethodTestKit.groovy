@@ -19,6 +19,7 @@ import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.ErsatzServer
 import org.jsoup.Jsoup
+import spock.lang.AutoCleanup
 
 import static com.stehno.ersatz.ContentType.*
 
@@ -38,8 +39,8 @@ abstract class HttpMethodTestKit extends TestKit {
     protected static final OK_CSV_DOC = [['alpha', 'bravo', 'charlie'], ['one', 'two', 'three']]
     protected static final OK_HTML_DOC = Jsoup.parse(OK_HTML)
 
+    @AutoCleanup('stop')
     protected final ErsatzServer ersatzServer = new ErsatzServer({
-        autoStart()
         https()
 
         encoder TEXT_PLAIN, String, Encoders.text
@@ -56,11 +57,6 @@ abstract class HttpMethodTestKit extends TestKit {
         decoder TEXT_PLAIN, Decoders.utf8String
         decoder APPLICATION_URLENCODED, Decoders.urlEncoded
     })
-
-    // TODO: will autocleanup work in this case?
-    def cleanup() {
-        ersatzServer.stop()
-    }
 
     protected String serverUri(final String protocol){
         "${protocol == 'HTTPS' ? ersatzServer.httpsUrl : ersatzServer.httpUrl}"
