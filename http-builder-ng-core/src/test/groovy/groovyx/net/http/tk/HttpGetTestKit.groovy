@@ -16,11 +16,9 @@
 package groovyx.net.http.tk
 
 import com.stehno.ersatz.Cookie
-import com.stehno.ersatz.CookieMatcher
 import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.proxy.ErsatzProxy
 import groovyx.net.http.*
-import org.hamcrest.Matcher
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 
@@ -29,6 +27,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.*
+import static com.stehno.ersatz.CookieMatcher.cookieMatcher
 import static com.stehno.ersatz.NoCookiesMatcher.noCookies
 import static groovyx.net.http.HttpVerb.GET
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
@@ -213,15 +212,24 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         ersatzServer.expectations {
             get('/setkermit').called(2).responder {
                 content(OK_TEXT, TEXT_PLAIN)
-                cookie('kermit', 'frog; path=/showkermit')
+                cookie('kermit', Cookie.cookie {
+                    value 'frog'
+                    path '/showkermit'
+                })
             }
 
-            get('/showkermit').cookie('kermit', CookieMatcher.cookieMatcher {
+            get('/showkermit').cookie('kermit', cookieMatcher {
                 value 'frog'
             }).called(1).responder {
                 content(OK_TEXT, TEXT_PLAIN)
-                cookie('miss', 'piggy; path=/')
-                cookie('fozzy', 'bear; path=/some/deep/path')
+                cookie('miss', Cookie.cookie {
+                    value 'piggy'
+                    path '/'
+                })
+                cookie('fozzy', Cookie.cookie {
+                    value 'bear'
+                    path '/some/deep/path'
+                })
             }
 
             get('/some/deep/path').cookie('miss', 'piggy').cookie('fozzy', 'bear').called(1).responds().content(OK_TEXT, TEXT_PLAIN)
