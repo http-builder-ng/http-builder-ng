@@ -39,7 +39,6 @@ abstract class HttpMethodTestKit extends TestKit {
     protected static final OK_HTML_DOC = Jsoup.parse(OK_HTML)
 
     protected final ErsatzServer ersatzServer = new ErsatzServer({
-        autoStart()
         https()
 
         encoder TEXT_PLAIN, String, Encoders.text

@@ -340,8 +340,7 @@ public class JavaHttpBuilder extends HttpBuilder {
     private final HostnameVerifier hostnameVerifier;
     private final HttpObjectConfig.Client clientConfig;
 
-    // TODO: this can probably be private or protected.
-    public JavaHttpBuilder(final HttpObjectConfig config) {
+    protected JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();

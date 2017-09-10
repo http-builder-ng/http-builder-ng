@@ -25,7 +25,6 @@ class JavaHttpBuilderSpec extends Specification {
 
     @AutoCleanup('stop')
     private ErsatzServer ersatzServer = new ErsatzServer({
-        autoStart()
         expectations {
             get('/foo').responds().content('ok', TEXT_PLAIN)
         }
