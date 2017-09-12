@@ -15,9 +15,6 @@
  */
 package groovyx.net.http;
 
-import groovy.lang.GString;
-import org.codehaus.groovy.runtime.GStringImpl;
-
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
@@ -95,19 +92,11 @@ public abstract class UriBuilder {
     public abstract String getHost();
 
     /**
-     * Sets the path part of the URI.
-     *
-     * @param val the path part of the URI
-     * @return a reference to the builder
-     */
-    public abstract UriBuilder setPath(GString val);
-
-    /**
      * Retrieves the path part of the URI.
      *
      * @return the path part of the URI
      */
-    public abstract GString getPath();
+    public abstract String getPath();
 
     /**
      * Sets the query string part of the `URI` from the provided map. The query string key-value pairs will be generated from the key-value pairs
@@ -164,19 +153,30 @@ public abstract class UriBuilder {
      * @return a reference to the builder
      */
     public UriBuilder setPath(final String str) {
-        return setPath(new GStringImpl(EMPTY, new String[]{str}));
+        return setPath(str == null ? "" : str);
     }
 
     public URI forCookie(final HttpCookie cookie) throws URISyntaxException {
         final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
-        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String userInfo = null;
         final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
+        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
         final String path = cookie.getPath();
         final String query = null;
         final String fragment = null;
-        final String userInfo = null;
 
-        return new URI(scheme, userInfo, host, (port == null ? -1 : port), path, query, fragment);
+        final String uri = getURIAsString(
+                scheme,
+                userInfo,
+                host,
+                port,
+                path,
+                query,
+                fragment
+        );
+
+        return new URI(uri);
+//        return new URI(scheme, userInfo, host, (port == null ? -1 : port), path, query, fragment);
     }
 
     /**
@@ -186,14 +186,93 @@ public abstract class UriBuilder {
      */
     public URI toURI() throws URISyntaxException {
         final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
-        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
         final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
-        final GString path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);
+        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);
         final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
-        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
-        
-        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+
+        // <scheme>://[<userInfo@]<host>:<port><path>?<query>#<fragment>
+        final String uri = getURIAsString(
+                scheme,
+                userInfo,
+                host,
+                port,
+                path,
+                query,
+                fragment
+        );
+
+        return new URI(uri);
+//        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+    }
+
+    /**
+     * Given the individual `URI` elements, construct a literal string representation of the `URI` that can be used to
+     * call {@link java.net.URI#URI(String)}.
+     *
+     * @param scheme
+     * @param userInfo
+     * @param host
+     * @param port
+     * @param path
+     * @param query
+     * @param fragment
+     * @return
+     */
+    private String getURIAsString(String scheme, String userInfo, String host, Integer port, String path, String query, String fragment ) {
+        if (scheme == null) {
+            scheme = "";
+        } else if (!scheme.endsWith("://")) {
+            scheme += "://";
+        }
+
+        String portStr = port == null ? "" : port.toString();
+
+        if (userInfo == null) {
+            userInfo = "";
+        } else if (!userInfo.endsWith("@")) {
+            userInfo += "@";
+        }
+
+        if (host == null) {
+            host = "";
+        }
+
+        if (!portStr.isEmpty()) {
+            portStr = ":" + portStr;
+        }
+
+        if (path == null) {
+            path = "";
+        } else if (!path.startsWith("/") && !path.isEmpty()) {
+            path = "/" + path;
+        }
+
+        if (query == null) {
+            query = "";
+        } else if ( !query.startsWith("?")) {
+            query = "?" + query;
+        }
+
+        if (fragment == null) {
+            fragment = "";
+        } else if ( !fragment.startsWith("#")) {
+            fragment = "#" + fragment;
+        }
+
+        String uri = String.format("%s%s%s%s%s%s%s",
+                scheme,
+                userInfo,
+                host,
+                portStr,
+                path,
+                query,
+                fragment
+        );
+
+        return uri;
     }
 
     private static final Object[] EMPTY = new Object[0];
@@ -222,18 +301,18 @@ public abstract class UriBuilder {
             setPort(uri.getPort());
             setHost(uri.getHost());
 
-            final String path = uri.getPath();
+            final String path = uri.getRawPath();
             if (path != null) {
-                setPath(new GStringImpl(EMPTY, new String[]{path}));
+                setPath(path);
             }
 
-            final String rawQuery = uri.getQuery();
+            final String rawQuery = uri.getRawQuery();
             if (rawQuery != null) {
                 setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
             }
 
-            setFragment(uri.getFragment());
-            setUserInfo(uri.getUserInfo());
+            setFragment(uri.getRawFragment());
+            setUserInfo(uri.getRawUserInfo());
         }
         catch (IOException e) {
             //this seems o.k. to just convert to a runtime exception,
@@ -346,14 +425,14 @@ public abstract class UriBuilder {
             return host;
         }
 
-        private GString path;
+        private String path;
 
-        public UriBuilder setPath(GString val) {
+        public UriBuilder setPath(String val) {
             path = val;
             return this;
         }
 
-        public GString getPath() {
+        public String getPath() {
             return path;
         }
 
@@ -437,14 +516,14 @@ public abstract class UriBuilder {
             return host;
         }
 
-        private volatile GString path;
+        private volatile String path;
 
-        public UriBuilder setPath(GString val) {
+        public UriBuilder setPath(String val) {
             path = val;
             return this;
         }
 
-        public GString getPath() {
+        public String getPath() {
             return path;
         }
 

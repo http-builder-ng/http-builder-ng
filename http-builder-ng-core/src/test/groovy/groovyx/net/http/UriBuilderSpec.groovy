@@ -137,6 +137,18 @@ class UriBuilderSpec extends Specification {
 
         then:
         builder.toURI() == 'http://localhost:1234/foo'.toURI()
+
+        when:
+        builder.path = '/foo%2Fbar'
+
+        then:
+        builder.toURI().toString() == 'http://localhost:1234/foo%2Fbar'
+
+        when:
+        builder.path = '/foo%2Fbar%25baz%26qux'
+
+        then:
+        builder.toURI() == 'http://localhost:1234/foo%2Fbar%25baz%26qux'.toURI()
     }
 
     def 'uri full specified with query string'() {
