@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2017 HttpBuilder-NG Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http;
+package groovyx.net.http
 
-/**
- * An enumeration of the supported HTTP verbs.
- */
-public enum HttpVerb {
-    GET, POST, PUT, HEAD, DELETE, PATCH, OPTIONS;
+import groovyx.net.http.tk.HttpOptionsTestKit
+
+class JavaHttpOptionsSpec extends HttpOptionsTestKit implements UsesJavaClient {
+
 }

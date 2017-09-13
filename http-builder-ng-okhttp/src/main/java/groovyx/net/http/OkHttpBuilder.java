@@ -89,13 +89,13 @@ public class OkHttpBuilder extends HttpBuilder {
         }
 
         final ProxyInfo pinfo = config.getExecution().getProxyInfo();
-        if(usesProxy(pinfo)) {
+        if (usesProxy(pinfo)) {
             builder.proxy(pinfo.getProxy());
         }
 
         this.client = builder.build();
     }
-    
+
     private boolean usesProxy(final ProxyInfo pinfo) {
         return pinfo != null && pinfo.getProxy().type() != Proxy.Type.DIRECT;
     }
@@ -205,6 +205,11 @@ public class OkHttpBuilder extends HttpBuilder {
     @Override
     protected Object doDelete(final ChainedHttpConfig chainedConfig) {
         return execute((url) -> new Request.Builder().delete().url(url), chainedConfig);
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+        return execute((url) -> new Request.Builder().method("OPTIONS", null).url(url), config);
     }
 
     @Override
