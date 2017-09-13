@@ -644,9 +644,9 @@ underlying configured client instance. Support for this method is optional, see 
 === Request-Related
 
 The `HttpBuilder` class has request-related configuration methods for each of the supported request verbs, `GET`, `HEAD`, `DELETE`, `PATCH`, `POST`,
-`PUT` and `OPTIONS`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with `Async`, (e.g.
-`headAsync`) and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are
-the same. Only the synchronous versions are discussed below.
+`PUT`, `OPTIONS` and `TRACE`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with
+`Async`, (e.g. `headAsync`) and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the
+async methods are the same. Only the synchronous versions are discussed below.
 
 An example of an async request would be:
 
@@ -664,6 +664,8 @@ Note the difference being the `getAsync()` call and the return type of `Completa
 Each of the request verbs share the same configuration method forms. The examples in the following sections are for `GET` requests; however, they are
 representative of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various
 common HTTP operations.
+
+NOTE: The `TRACE` request method does not support HTTPS requests.
 
 ==== `verb()`
 

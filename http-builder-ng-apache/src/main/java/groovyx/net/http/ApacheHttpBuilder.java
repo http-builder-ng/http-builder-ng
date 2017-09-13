@@ -512,4 +512,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
     protected Object doOptions(final ChainedHttpConfig config) {
         return exec(config, HttpOptions::new);
     }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config){
+        return exec(config, HttpTrace::new);
+    }
 }

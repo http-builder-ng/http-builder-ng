@@ -403,6 +403,11 @@ public class JavaHttpBuilder extends HttpBuilder {
         return createAndExecute(config, "OPTIONS");
     }
 
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+        return createAndExecute(config, "TRACE");
+    }
+
     public Executor getExecutor() {
         return executor;
     }
