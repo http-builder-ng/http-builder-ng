@@ -39,6 +39,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -225,7 +226,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public boolean getHasBody() {
-            return entity != null;
+            return entity != null && !(inputStream instanceof EmptyInputStream);
         }
 
         public int getStatusCode() {

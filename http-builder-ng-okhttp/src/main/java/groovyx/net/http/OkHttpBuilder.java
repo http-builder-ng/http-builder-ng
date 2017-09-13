@@ -290,12 +290,20 @@ public class OkHttpBuilder extends HttpBuilder {
         private final URI uri;
         private final Response response;
         private List<Header<?>> headers;
+        private boolean body;
 
         private OkHttpFromServer(final URI uri, final Response response) {
             this.uri = uri;
             this.response = response;
             this.headers = populateHeaders();
+
             addCookieStore(uri, headers);
+
+            try {
+                body = !response.body().source().exhausted() && response.peekBody(1).bytes().length > 0;
+            } catch (IOException e) {
+                body = false;
+            }
         }
 
         private List<Header<?>> populateHeaders() {
@@ -333,11 +341,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public boolean getHasBody() {
-            try {
-                return !response.body().source().exhausted();
-            } catch (IOException e) {
-                return false;
-            }
+            return body;
         }
 
         @Override
