@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -333,7 +334,6 @@ public class JavaHttpBuilder extends HttpBuilder {
         Authenticator.setDefault(new ThreadLocalAuth());
     }
 
-    private final ChainedHttpConfig config;
     private final Executor executor;
     private final SSLContext sslContext;
     private final ProxyInfo proxyInfo;
@@ -342,12 +342,16 @@ public class JavaHttpBuilder extends HttpBuilder {
 
     protected JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
         this.sslContext = config.getExecution().getSslContext();
         this.proxyInfo = config.getExecution().getProxyInfo();
+    }
+
+    @Override
+    protected Function<HttpObjectConfig, ? extends HttpBuilder> getFactory() {
+        return JavaHttpBuilder::new;
     }
 
     /**
@@ -356,10 +360,6 @@ public class JavaHttpBuilder extends HttpBuilder {
     @Override
     public Object getClientImplementation() {
         throw new UnsupportedOperationException("The core Java implementation does not support direct client access.");
-    }
-
-    protected ChainedHttpConfig getObjectConfig() {
-        return config;
     }
 
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {

@@ -27,6 +27,7 @@ class JavaHttpBuilderSpec extends Specification {
     private ErsatzServer ersatzServer = new ErsatzServer({
         expectations {
             get('/foo').responds().content('ok', TEXT_PLAIN)
+            get('/bar').responds().content('ok2', TEXT_PLAIN)
         }
     })
 
@@ -67,5 +68,19 @@ class JavaHttpBuilderSpec extends Specification {
 
         then: 'just ensure no failure'
         http
+    }
+
+    def 'copying the client'() {
+        when:
+        HttpBuilder http = JavaHttpBuilder.configure {
+            request.uri = "${ersatzServer.httpUrl}/foo"
+        }
+        HttpBuilder http2 = http.copy {
+            request.uri = "${ersatzServer.httpUrl}/bar"
+        }
+
+        then:
+            http.get() == 'ok'
+            http2.get() == 'ok2'
     }
 }

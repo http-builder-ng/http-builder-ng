@@ -240,8 +240,10 @@ public abstract class HttpBuilder implements Closeable {
 
     private final EnumMap<HttpVerb, BiFunction<ChainedHttpConfig, Function<ChainedHttpConfig, Object>, Object>> interceptors;
     private final CookieManager cookieManager;
-    
+    private final ChainedHttpConfig config;
+
     protected HttpBuilder(final HttpObjectConfig objectConfig) {
+        this.config = new HttpConfigs.ThreadSafeHttpConfig(objectConfig.getChainedConfig());
         this.interceptors = new EnumMap<>(objectConfig.getExecution().getInterceptors());
         this.cookieManager = new CookieManager(makeCookieStore(objectConfig), CookiePolicy.ACCEPT_ALL);
     }
@@ -317,6 +319,28 @@ public abstract class HttpBuilder implements Closeable {
             cookieManager.getCookieStore().add(uri, cookie);
         }
     }
+
+    /**
+     * Create a copy of an existing HttpBuilder, maybe overriding some settings.
+     */
+    public HttpBuilder copy(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
+        closure.setDelegate(impl);
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.call();
+        return getFactory().apply(impl);
+    }
+
+    /**
+     * Create a copy of an existing HttpBuilder, maybe overriding some settings.
+     */
+    public HttpBuilder copy(final Consumer<HttpObjectConfig> configuration) {
+        HttpObjectConfig impl = new HttpObjectConfigImpl();
+        configuration.accept(impl);
+        return getFactory().apply(impl);
+    }
+
+    protected abstract Function<HttpObjectConfig, ? extends HttpBuilder> getFactory();
 
     /**
      * Executes a GET request on the configured URI. The `request.uri` property should be configured in the global client configuration in order to
@@ -1779,7 +1803,9 @@ public abstract class HttpBuilder implements Closeable {
 
     protected abstract Object doPatch(final ChainedHttpConfig config);
 
-    protected abstract ChainedHttpConfig getObjectConfig();
+    protected ChainedHttpConfig getObjectConfig() {
+        return config;
+    }
 
     public abstract Executor getExecutor();
 
