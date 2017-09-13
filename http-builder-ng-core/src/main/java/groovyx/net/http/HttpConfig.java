@@ -275,6 +275,9 @@ public interface HttpConfig {
          */
         void setUri(String val);
 
+        // FIXME: document here and user guide
+        void setRaw(String val);
+
         /**
          * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URI` in this case.
          *

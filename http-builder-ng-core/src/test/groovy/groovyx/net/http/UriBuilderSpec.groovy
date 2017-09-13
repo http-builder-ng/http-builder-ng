@@ -182,4 +182,57 @@ class UriBuilderSpec extends Specification {
         cleanup:
         server.stop()
     }
+
+    def 'url with encoded slash'(){
+        setup:
+        String raw = 'http://localhost:8181/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json?ref=master'
+
+        UriBuilder builder = basic(root())
+        builder.useRawValues = true
+
+        when:
+        builder.full = raw
+//        URI uri = builder.toRawURI()
+        URI uri = builder.toURI()
+
+        then:
+        uri == raw.toURI()
+        uri.rawPath == '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+    }
+
+    def 'url with encoded slash (2)'(){
+        setup:
+        def server = new ErsatzServer({
+            expectations {
+                get('/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json').responds().code(200).content('ok', TEXT_PLAIN)
+            }
+        })
+
+        when:
+        def result = JavaHttpBuilder.configure {
+            request.uri = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+        }.get()
+
+        then:
+        result == 'ok'
+    }
+
+    def 'url with encoded slash (3)'(){
+        setup:
+        def server = new ErsatzServer({
+            expectations {
+                get('/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json').responds().code(200).content('ok', TEXT_PLAIN)
+            }
+        })
+
+        when:
+        def result = JavaHttpBuilder.configure {
+            request.uri = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files"
+        }.get {
+            request.uri.path = '/myfile.json'
+        }
+
+        then:
+        result == 'ok'
+    }
 }

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,15 +34,15 @@ import static java.util.Collections.singletonList;
 
 /**
  * Provides a simple means of creating a request URI and optionally overriding its parts.
- *
+ * <p>
  * [source,groovy]
  * ----
  * def uri = UriBuilder.basic(UriBuilder.root())
- *      .setFull('http://localhost:10101')
- *      .setPath('/foo')
- *      .toURI()
+ * .setFull('http://localhost:10101')
+ * .setPath('/foo')
+ * .toURI()
  * ----
- *
+ * <p>
  * Generally, this class is not instantiated directly, but created by the {@link HttpConfig} instance and modified.
  */
 public abstract class UriBuilder {
@@ -192,8 +192,36 @@ public abstract class UriBuilder {
         final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
-        
+
+        if( useRawValues){
+            return toRawURI();
+        }
+
         return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+    }
+
+    public URI toRawURI() throws URISyntaxException {
+        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
+        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
+        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
+        final GString path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);
+        final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
+        final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
+        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
+
+        // FIXME: query string should NOT be encoded by mehtod
+
+        String uri = String.format("%s%s%s%s%s%s%s",
+            scheme == null ? "" : (scheme.endsWith("://") ? scheme : scheme + "://"),
+            userInfo == null ? "" : (userInfo.endsWith("@") ? userInfo : userInfo + "@"),
+            host == null ? "" : host,
+            port == null ? "" : ":" + port.toString(),
+            path == null ? "" : (!path.toString().startsWith("/") && !path.toString().isEmpty() ? "/" + path : path),
+            query != null ? "?" + query : "",
+            fragment == null ? "" : (!fragment.startsWith("#") ? "#" + fragment : fragment)
+        );
+
+        return new URI(uri);
     }
 
     private static final Object[] EMPTY = new Object[0];
@@ -216,26 +244,31 @@ public abstract class UriBuilder {
         }
     }
 
+    private boolean useRawValues;
+
+    public void setUseRawValues(final boolean useRaw) {
+        this.useRawValues = useRaw;
+    }
+
     protected final void populateFrom(final URI uri) {
         try {
             setScheme(uri.getScheme());
             setPort(uri.getPort());
             setHost(uri.getHost());
 
-            final String path = uri.getPath();
+            final String path = useRawValues ? uri.getRawPath() : uri.getPath();
             if (path != null) {
                 setPath(new GStringImpl(EMPTY, new String[]{path}));
             }
 
-            final String rawQuery = uri.getQuery();
+            final String rawQuery = useRawValues ? uri.getRawQuery() : uri.getQuery();
             if (rawQuery != null) {
                 setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
             }
 
-            setFragment(uri.getFragment());
-            setUserInfo(uri.getUserInfo());
-        }
-        catch (IOException e) {
+            setFragment(useRawValues ? uri.getRawFragment() : uri.getFragment());
+            setUserInfo(useRawValues ? uri.getRawUserInfo() : uri.getUserInfo());
+        } catch (IOException e) {
             //this seems o.k. to just convert to a runtime exception,
             //we started with a valid URI, so this should never happen.
             throw new RuntimeException(e);
@@ -271,14 +304,14 @@ public abstract class UriBuilder {
     /**
      * Creates a basic `UriBuilder` from the provided parent builder. An empty `UriBuilder` may be created using the `root()` method as the `parent` value,
      * otherwise a new `UriBuilder` may be created from an existing builder:
-     *
+     * <p>
      * [source,groovy]
      * ----
      * def parent = UriBuilder.basic(UriBuilder.root()).setFull('http://localhost:10101/foo')
      * def child = UriBuilder.basic(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     *
+     * <p>
      * The `UriBuilder` implementation generated with this method is _not_ thread-safe.
      *
      * @param parent the `UriBuilder` parent
@@ -291,14 +324,14 @@ public abstract class UriBuilder {
     /**
      * Creates a thread-safe `UriBuilder` from the provided parent builder. An empty `UriBuilder` may be created using the `root()` method as the
      * `parent` value, otherwise a new `UriBuilder` may be created from an existing builder:
-     *
+     * <p>
      * [source,groovy]
      * ----
      * def parent = UriBuilder.threadSafe(UriBuilder.root()).setFull('http://localhost:10101/foo')
      * def child = UriBuilder.threadSafe(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     *
+     * <p>
      * The `UriBuilder` implementation generated with this method is thread-safe.
      *
      * @param parent the `UriBuilder` parent
@@ -360,7 +393,7 @@ public abstract class UriBuilder {
         private Map<String, Object> query = new LinkedHashMap<>(1);
 
         public UriBuilder setQuery(final Map<String, ?> val) {
-            if(val != null) {
+            if (val != null) {
                 query.putAll(val);
             }
             return this;
@@ -492,3 +525,6 @@ public abstract class UriBuilder {
         }
     }
 }
+
+
+

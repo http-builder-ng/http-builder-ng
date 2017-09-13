@@ -142,6 +142,10 @@ public class HttpConfigs {
             getUri().setFull(val);
         }
 
+        public void setRaw(final String val){
+
+        }
+
         public void setUri(final URI val) {
             getUri().setFull(val);
         }
