@@ -40,7 +40,7 @@ import static java.util.Collections.singletonList;
 
 /**
  * Provides a simple means of creating a request URI and optionally overriding its parts.
- * <p>
+ *
  * [source,groovy]
  * ----
  * def uri = UriBuilder.basic(UriBuilder.root())
@@ -48,7 +48,7 @@ import static java.util.Collections.singletonList;
  * .setPath('/foo')
  * .toURI()
  * ----
- * <p>
+ *
  * Generally, this class is not instantiated directly, but created by the {@link HttpConfig} instance and modified.
  */
 public abstract class UriBuilder {
@@ -323,14 +323,14 @@ public abstract class UriBuilder {
     /**
      * Creates a basic `UriBuilder` from the provided parent builder. An empty `UriBuilder` may be created using the `root()` method as the `parent` value,
      * otherwise a new `UriBuilder` may be created from an existing builder:
-     * <p>
+     *
      * [source,groovy]
      * ----
      * def parent = UriBuilder.basic(UriBuilder.root()).setFull('http://localhost:10101/foo')
      * def child = UriBuilder.basic(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     * <p>
+     *
      * The `UriBuilder` implementation generated with this method is _not_ thread-safe.
      *
      * @param parent the `UriBuilder` parent
@@ -343,14 +343,14 @@ public abstract class UriBuilder {
     /**
      * Creates a thread-safe `UriBuilder` from the provided parent builder. An empty `UriBuilder` may be created using the `root()` method as the
      * `parent` value, otherwise a new `UriBuilder` may be created from an existing builder:
-     * <p>
+     *
      * [source,groovy]
      * ----
      * def parent = UriBuilder.threadSafe(UriBuilder.root()).setFull('http://localhost:10101/foo')
      * def child = UriBuilder.threadSafe(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     * <p>
+     * 
      * The `UriBuilder` implementation generated with this method is thread-safe.
      *
      * @param parent the `UriBuilder` parent
@@ -544,6 +544,3 @@ public abstract class UriBuilder {
         }
     }
 }
-
-
-
