@@ -22,13 +22,19 @@ import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -193,25 +199,15 @@ public abstract class UriBuilder {
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
 
-        if( useRawValues){
-            return toRawURI();
+        if (useRawValues) {
+            return toRawURI(scheme, port, host, path, query, fragment, userInfo);
         }
 
         return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
     }
 
-    public URI toRawURI() throws URISyntaxException {
-        final String scheme = traverse(this, UriBuilder::getParent, UriBuilder::getScheme, Traverser::notNull);
-        final Integer port = traverse(this, UriBuilder::getParent, UriBuilder::getPort, notValue(DEFAULT_PORT));
-        final String host = traverse(this, UriBuilder::getParent, UriBuilder::getHost, Traverser::notNull);
-        final GString path = traverse(this, UriBuilder::getParent, UriBuilder::getPath, Traverser::notNull);
-        final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
-        final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
-        final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
-
-        // FIXME: query string should NOT be encoded by mehtod
-
-        String uri = String.format("%s%s%s%s%s%s%s",
+    private URI toRawURI(final String scheme, final Integer port, final String host, final GString path, final String query, final String fragment, final String userInfo) throws URISyntaxException {
+        return new URI(format("%s%s%s%s%s%s%s",
             scheme == null ? "" : (scheme.endsWith("://") ? scheme : scheme + "://"),
             userInfo == null ? "" : (userInfo.endsWith("@") ? userInfo : userInfo + "@"),
             host == null ? "" : host,
@@ -219,9 +215,7 @@ public abstract class UriBuilder {
             path == null ? "" : (!path.toString().startsWith("/") && !path.toString().isEmpty() ? "/" + path : path),
             query != null ? "?" + query : "",
             fragment == null ? "" : (!fragment.startsWith("#") ? "#" + fragment : fragment)
-        );
-
-        return new URI(uri);
+        ));
     }
 
     private static final Object[] EMPTY = new Object[0];
@@ -248,6 +242,11 @@ public abstract class UriBuilder {
 
     public void setUseRawValues(final boolean useRaw) {
         this.useRawValues = useRaw;
+
+        UriBuilder parent = getParent();
+        if (parent != null) {
+            parent.setUseRawValues(true);
+        }
     }
 
     protected final void populateFrom(final URI uri) {
@@ -263,7 +262,11 @@ public abstract class UriBuilder {
 
             final String rawQuery = useRawValues ? uri.getRawQuery() : uri.getQuery();
             if (rawQuery != null) {
-                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
+                if( useRawValues){
+                    setQuery(extractQueryMap(rawQuery));
+                } else {
+                    setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
+                }
             }
 
             setFragment(useRawValues ? uri.getRawFragment() : uri.getFragment());
@@ -273,6 +276,21 @@ public abstract class UriBuilder {
             //we started with a valid URI, so this should never happen.
             throw new RuntimeException(e);
         }
+    }
+
+    private static Map<String, Collection<String>> extractQueryMap(final String queryString){
+        final Map<String,Collection<String>> map = new HashMap<>();
+
+        for (final String nvp : queryString.split("&")) {
+            final String[] pair = nvp.split("=");
+            map.computeIfAbsent(pair[0], k -> {
+                List<String> list = new LinkedList<>();
+                list.add(pair[1]);
+                return list;
+            });
+        }
+
+        return map;
     }
 
     /**

@@ -15,14 +15,13 @@
  */
 package groovyx.net.http
 
-import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.ErsatzServer
 import spock.lang.Specification
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.UriBuilder.basic
-import static groovyx.net.http.UriBuilder.root;
+import static groovyx.net.http.UriBuilder.root
 
 class UriBuilderSpec extends Specification {
 
@@ -192,12 +191,28 @@ class UriBuilderSpec extends Specification {
 
         when:
         builder.full = raw
-//        URI uri = builder.toRawURI()
         URI uri = builder.toURI()
 
         then:
         uri == raw.toURI()
         uri.rawPath == '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+    }
+
+    def 'url with encoded query'(){
+        setup:
+        String raw = 'http://localhost:8181/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json?ref=master%2Fone&alpha=bravo'
+
+        UriBuilder builder = basic(root())
+        builder.useRawValues = true
+
+        when:
+        builder.full = raw
+        URI uri = builder.toURI()
+
+        then:
+        uri == raw.toURI()
+        uri.rawPath == '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+        uri.rawQuery == 'ref=master%2Fone&alpha=bravo'
     }
 
     def 'url with encoded slash (2)'(){
@@ -210,7 +225,7 @@ class UriBuilderSpec extends Specification {
 
         when:
         def result = JavaHttpBuilder.configure {
-            request.uri = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+            request.raw = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
         }.get()
 
         then:
@@ -227,9 +242,9 @@ class UriBuilderSpec extends Specification {
 
         when:
         def result = JavaHttpBuilder.configure {
-            request.uri = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files"
+            request.raw = server.httpUrl
         }.get {
-            request.uri.path = '/myfile.json'
+            request.uri.path = '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
         }
 
         then:
