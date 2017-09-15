@@ -56,6 +56,18 @@ HttpBuilder.configure {
 }
 ----
 
+An alternate means of specifying the `URI` is the `setRaw(String)` method. This method does not encoding or decoding of the given URI string and any such encoding/decoding must be performed in
+provided URI string itself. This is useful for the case where there are encoded elements within a URI path, such as:
+
+[source,groovy]
+----
+def result = HttpBuilder.configure {
+    request.raw = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+}.get()
+----
+
+Note that the `myteam%2Fmyrepo` part of the path will remain unchanged in the resulting URI.
+
 ===== Cookies
 
 https://en.wikipedia.org/wiki/HTTP_cookie[HTTP Cookies] may be configured on a request using one of the cookie configuration methods on the

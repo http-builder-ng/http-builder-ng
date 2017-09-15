@@ -21,3 +21,24 @@ you can extract the `typecheckhttpconfig.groovy` and `59f7b2e5d5a78b25c6b21eb3b6
 add them to the application's war root classpath.
 
 If neither of these solve the problem for you, please feel free to create an issue, but please provide a working example that we can test against.
+
+=== Encoded URI Path
+
+In some cases HTTP server endpoints will have encoded portions of the path so that you end up with a URI such as:
+
+    http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json
+
+Notice the `myteam%2Fmyrepo` is a URI-encoded string. Using the standard `request.uri` approach with this URI will fail since the encoding will be decoded when used to create the URI. We have provided
+and alternate approach to solve this problem (see <<_uri>> Configuration section). Using the `request.raw` configuration option, you can specify a "raw" URI string which will preserve any
+encoding. In fact, it will perform _no_ encoding or decoding of path or query string elements, so it all must be done in your provided URI string.
+
+An example of this approach would be:
+
+[source,groovy]
+----
+def result = JavaHttpBuilder.configure {
+    request.raw = "http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+}.get()
+----
+
+which would properly preserve the encoded URI content.

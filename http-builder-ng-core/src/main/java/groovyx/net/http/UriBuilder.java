@@ -22,13 +22,19 @@ import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static groovyx.net.http.Traverser.notValue;
 import static groovyx.net.http.Traverser.traverse;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -38,9 +44,9 @@ import static java.util.Collections.singletonList;
  * [source,groovy]
  * ----
  * def uri = UriBuilder.basic(UriBuilder.root())
- *      .setFull('http://localhost:10101')
- *      .setPath('/foo')
- *      .toURI()
+ * .setFull('http://localhost:10101')
+ * .setPath('/foo')
+ * .toURI()
  * ----
  *
  * Generally, this class is not instantiated directly, but created by the {@link HttpConfig} instance and modified.
@@ -192,8 +198,25 @@ public abstract class UriBuilder {
         final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
-        
-        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+
+        if(useRawValues) {
+            return toRawURI(scheme, port, host, path, query, fragment, userInfo);
+        }
+        else {
+            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+        }
+    }
+
+    private URI toRawURI(final String scheme, final Integer port, final String host, final GString path, final String query, final String fragment, final String userInfo) throws URISyntaxException {
+        return new URI(format("%s%s%s%s%s%s%s",
+            scheme == null ? "" : (scheme.endsWith("://") ? scheme : scheme + "://"),
+            userInfo == null ? "" : (userInfo.endsWith("@") ? userInfo : userInfo + "@"),
+            host == null ? "" : host,
+            port == null ? "" : ":" + port.toString(),
+            path == null ? "" : (!path.toString().startsWith("/") && !path.toString().isEmpty() ? "/" + path : path),
+            query != null ? "?" + query : "",
+            fragment == null ? "" : (!fragment.startsWith("#") ? "#" + fragment : fragment)
+        ));
     }
 
     private static final Object[] EMPTY = new Object[0];
@@ -216,30 +239,60 @@ public abstract class UriBuilder {
         }
     }
 
+    private boolean useRawValues;
+
+    public void setUseRawValues(final boolean useRaw) {
+        this.useRawValues = useRaw;
+
+        UriBuilder parent = getParent();
+        if (parent != null) {
+            parent.setUseRawValues(true);
+        }
+    }
+
     protected final void populateFrom(final URI uri) {
         try {
             setScheme(uri.getScheme());
             setPort(uri.getPort());
             setHost(uri.getHost());
 
-            final String path = uri.getPath();
+            final String path = useRawValues ? uri.getRawPath() : uri.getPath();
             if (path != null) {
                 setPath(new GStringImpl(EMPTY, new String[]{path}));
             }
 
-            final String rawQuery = uri.getQuery();
+            final String rawQuery = useRawValues ? uri.getRawQuery() : uri.getQuery();
             if (rawQuery != null) {
-                setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
+                if( useRawValues){
+                    setQuery(extractQueryMap(rawQuery));
+                } else {
+                    setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
+                }
             }
 
-            setFragment(uri.getFragment());
-            setUserInfo(uri.getUserInfo());
-        }
-        catch (IOException e) {
+            setFragment(useRawValues ? uri.getRawFragment() : uri.getFragment());
+            setUserInfo(useRawValues ? uri.getRawUserInfo() : uri.getUserInfo());
+        } catch (IOException e) {
             //this seems o.k. to just convert to a runtime exception,
             //we started with a valid URI, so this should never happen.
             throw new RuntimeException(e);
         }
+    }
+
+    // does not do any encoding
+    private static Map<String, Collection<String>> extractQueryMap(final String queryString){
+        final Map<String,Collection<String>> map = new HashMap<>();
+
+        for (final String nvp : queryString.split("&")) {
+            final String[] pair = nvp.split("=");
+            map.computeIfAbsent(pair[0], k -> {
+                List<String> list = new LinkedList<>();
+                list.add(pair[1]);
+                return list;
+            });
+        }
+
+        return map;
     }
 
     /**
@@ -298,7 +351,7 @@ public abstract class UriBuilder {
      * def child = UriBuilder.threadSafe(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     *
+     * 
      * The `UriBuilder` implementation generated with this method is thread-safe.
      *
      * @param parent the `UriBuilder` parent
@@ -360,7 +413,7 @@ public abstract class UriBuilder {
         private Map<String, Object> query = new LinkedHashMap<>(1);
 
         public UriBuilder setQuery(final Map<String, ?> val) {
-            if(val != null) {
+            if (val != null) {
                 query.putAll(val);
             }
             return this;
