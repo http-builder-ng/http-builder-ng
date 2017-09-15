@@ -198,8 +198,9 @@ public abstract class UriBuilder {
         final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
+        final Boolean useRaw = traverse(this, UriBuilder::getParent, UriBuilder::getUseRawValues, Traverser::notNull);
 
-        if (traverse(this, UriBuilder::getParent, UriBuilder::getUseRawValues, Traverser::notNull)) {
+        if (useRaw != null && useRaw) {
             return toRawURI(scheme, port, host, path, query, fragment, userInfo);
         }
 
