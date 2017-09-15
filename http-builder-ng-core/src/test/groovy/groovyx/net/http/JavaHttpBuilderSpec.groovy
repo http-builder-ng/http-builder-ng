@@ -68,4 +68,46 @@ class JavaHttpBuilderSpec extends Specification {
         then: 'just ensure no failure'
         http
     }
+
+    def 'FromServer hasBody should return false when there is no content'() {
+        setup:
+        ersatzServer.expectations {
+            post('/foo').responds().code(200)
+        }
+
+        when:
+        String result = JavaHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.post(String) {
+            request.uri.path = '/foo'
+            response.success { FromServer fs, Object body ->
+                assert !fs.hasBody
+                body
+            }
+        }
+
+        then:
+        !result
+    }
+
+    def 'FromServer hasBody should return true when there is content'() {
+        setup:
+        ersatzServer.expectations {
+            post('/foo').responds().code(200).content('OK', TEXT_PLAIN)
+        }
+
+        when:
+        String result = JavaHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.post(String) {
+            request.uri.path = '/foo'
+            response.success { FromServer fs, Object body ->
+                assert fs.hasBody
+                body
+            }
+        }
+
+        then:
+        result == 'OK'
+    }
 }

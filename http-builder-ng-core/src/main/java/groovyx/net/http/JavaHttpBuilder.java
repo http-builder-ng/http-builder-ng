@@ -398,6 +398,16 @@ public class JavaHttpBuilder extends HttpBuilder {
         throw new UnsupportedOperationException("java.net.HttpURLConnection does not support the PATCH method. Use the Apache or OkHttp providers instead.");
     }
 
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+        return createAndExecute(config, "OPTIONS");
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+        return createAndExecute(config, "TRACE");
+    }
+
     public Executor getExecutor() {
         return executor;
     }
