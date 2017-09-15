@@ -199,7 +199,7 @@ public abstract class UriBuilder {
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
 
-        if (useRawValues) {
+        if (traverse(this, UriBuilder::getParent, UriBuilder::getUseRawValues, Traverser::notNull)) {
             return toRawURI(scheme, port, host, path, query, fragment, userInfo);
         }
 
@@ -238,39 +238,39 @@ public abstract class UriBuilder {
         }
     }
 
-    private boolean useRawValues;
+    private Boolean useRawValues = null;
 
-    public void setUseRawValues(final boolean useRaw) {
+    public void setUseRawValues(final Boolean useRaw) {
         this.useRawValues = useRaw;
+    }
 
-        UriBuilder parent = getParent();
-        if (parent != null) {
-            parent.setUseRawValues(true);
-        }
+    public Boolean getUseRawValues() {
+        return this.useRawValues;
     }
 
     protected final void populateFrom(final URI uri) {
+        boolean useRaw = useRawValues != null ? useRawValues : false;
         try {
             setScheme(uri.getScheme());
             setPort(uri.getPort());
             setHost(uri.getHost());
 
-            final String path = useRawValues ? uri.getRawPath() : uri.getPath();
+            final String path = useRaw ? uri.getRawPath() : uri.getPath();
             if (path != null) {
                 setPath(new GStringImpl(EMPTY, new String[]{path}));
             }
 
-            final String rawQuery = useRawValues ? uri.getRawQuery() : uri.getQuery();
+            final String rawQuery = useRaw ? uri.getRawQuery() : uri.getQuery();
             if (rawQuery != null) {
-                if( useRawValues){
+                if( useRaw){
                     setQuery(extractQueryMap(rawQuery));
                 } else {
                     setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
                 }
             }
 
-            setFragment(useRawValues ? uri.getRawFragment() : uri.getFragment());
-            setUserInfo(useRawValues ? uri.getRawUserInfo() : uri.getUserInfo());
+            setFragment(useRaw ? uri.getRawFragment() : uri.getFragment());
+            setUserInfo(useRaw ? uri.getRawUserInfo() : uri.getUserInfo());
         } catch (IOException e) {
             //this seems o.k. to just convert to a runtime exception,
             //we started with a valid URI, so this should never happen.
