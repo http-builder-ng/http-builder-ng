@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ import java.util.function.Function;
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
+import static okhttp3.MediaType.parse;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
@@ -188,20 +190,17 @@ public class OkHttpBuilder extends HttpBuilder {
 
     @Override
     protected Object doPost(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
     protected Object doPatch(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
@@ -224,26 +223,37 @@ public class OkHttpBuilder extends HttpBuilder {
         // does nothing
     }
 
-    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig) {
+    private RequestBody resolveRequestBody(final ChainedHttpConfig chainedConfig) {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), "");
+
+        final RequestBody body;
         if (cr.actualBody() != null) {
             final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);
             chainedConfig.findEncoder().accept(chainedConfig, toServer);
-
             body = toServer;
+
+        } else {
+            body = RequestBody.create(resolveMediaType(cr.actualContentType(), cr.actualCharset()), "");
         }
+
         return body;
     }
 
+    private static MediaType resolveMediaType(final String contentType, final Charset charset) {
+        if (contentType != null) {
+            if (charset != null) {
+                return parse(contentType + "; charset=" + charset.toString().toLowerCase());
+            } else {
+                return parse(contentType);
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("Duplicates")
     private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-
-        final String contentType = cr.actualContentType();
-        if (contentType != null) {
-            requestBuilder.addHeader("Content-Type", contentType);
         }
 
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
@@ -272,11 +282,11 @@ public class OkHttpBuilder extends HttpBuilder {
             final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);
 
             applyHeaders(requestBuilder, cr);
+
             applyAuth(requestBuilder, chainedConfig);
 
             try (Response response = client.newCall(requestBuilder.build()).execute()) {
-                return HANDLER_FUNCTION.apply(chainedConfig,
-                    new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
+                return HANDLER_FUNCTION.apply(chainedConfig, new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
             } catch (IOException ioe) {
                 throw ioe; //re-throw, close has happened
             }
@@ -371,7 +381,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public MediaType contentType() {
-            return MediaType.parse(config.findContentType());
+            return resolveMediaType(config.findContentType(), config.findCharset());
         }
 
         @Override

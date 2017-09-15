@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -85,7 +86,12 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             final String contentType = cr.actualContentType();
             if (contentType != null) {
-                connection.addRequestProperty("Content-Type", contentType);
+                final Charset charset = cr.actualCharset();
+                if( charset != null){
+                    connection.addRequestProperty("Content-Type", contentType + "; charset=" + charset.toString().toLowerCase());
+                }  else {
+                    connection.addRequestProperty("Content-Type", contentType);
+                }
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");

@@ -183,4 +183,8 @@ public interface ChainedHttpConfig extends HttpConfig {
 
         return contentType;
     }
+
+    default Charset findCharset(){
+        return getChainedRequest().actualCharset();
+    }
 }

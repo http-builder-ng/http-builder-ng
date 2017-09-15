@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,6 +56,7 @@ import java.net.Proxy;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -70,7 +71,7 @@ import static groovyx.net.http.util.IoUtils.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
- *
+ * <p>
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
@@ -81,11 +82,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * <p>
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * <p>
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
@@ -102,13 +103,13 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * <p>
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * <p>
      * This configuration method is generally meant for use with standard Java.
-     *
+     * <p>
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
@@ -117,9 +118,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * }
      * });
      * ----
-     *
+     * <p>
      * Or, using lambda expressions:
-     *
+     * <p>
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
@@ -439,19 +440,19 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return c;
     }
 
-    private <T extends HttpRequestBase> Object exec(final ChainedHttpConfig requestConfig,
-                                                    final Function<URI, T> constructor) {
-
+    private <T extends HttpRequestBase> Object exec(final ChainedHttpConfig requestConfig, final Function<URI, T> constructor) {
         try {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             final URI theUri = cr.getUri().toURI();
             final T request = constructor.apply(theUri);
-            addHeaders(cr, request);
+
             if ((request instanceof HttpEntityEnclosingRequest) && cr.actualBody() != null) {
                 final HttpEntity entity = entity(requestConfig);
                 ((HttpEntityEnclosingRequest) request).setEntity(entity);
                 request.setHeader(entity.getContentType());
             }
+
+            addHeaders(cr, request);
 
             if (proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.HTTP) {
                 HttpHost proxy = new HttpHost(proxyInfo.getAddress(), proxyInfo.getPort(), proxyInfo.isSecure() ? "https" : "http");
@@ -459,6 +460,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
             }
 
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
+
         } catch (Exception e) {
             return handleException(requestConfig.getChainedResponse(), e);
         }
@@ -470,6 +472,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return ats;
     }
 
+    @SuppressWarnings("Duplicates")
     private <T extends HttpUriRequest> void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
@@ -477,7 +480,12 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         final String contentType = cr.actualContentType();
         if (contentType != null) {
-            message.addHeader("Content-Type", contentType);
+            final Charset charset = cr.actualCharset();
+            if (charset != null) {
+                message.setHeader("Content-Type", contentType + "; charset=" + charset.toString().toLowerCase());
+            } else {
+                message.setHeader("Content-Type", contentType);
+            }
         }
 
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
@@ -515,7 +523,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
     }
 
     @Override
-    protected Object doTrace(final ChainedHttpConfig config){
+    protected Object doTrace(final ChainedHttpConfig config) {
         return exec(config, HttpTrace::new);
     }
 }

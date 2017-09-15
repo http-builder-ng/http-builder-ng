@@ -209,7 +209,9 @@ public interface HttpConfig {
         void setCharset(String val);
 
         /**
-         * The `charset` property is used to specify the character set (as a {@link Charset}) used by the request.
+         * The `charset` property is used to specify the character set (as a {@link Charset}) used by the request. This value will be reflected in
+         * the `Content-Type` header value (e.g. `Content-Type: text/plain; charset=utf-8`). A content-type value must be specified in order for this
+         * value to be applied.
          *
          * [source,groovy]
          * ----
