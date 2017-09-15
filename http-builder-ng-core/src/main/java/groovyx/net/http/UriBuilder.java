@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,12 +22,7 @@ import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -198,11 +193,11 @@ public abstract class UriBuilder {
         final String query = populateQueryString(traverse(this, UriBuilder::getParent, UriBuilder::getQuery, Traverser::nonEmptyMap));
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
+        final Boolean useRaw = traverse(this, UriBuilder::getParent, UriBuilder::getUseRawValues, Traverser::notNull);
 
-        if(useRawValues) {
+        if (useRaw != null && useRaw) {
             return toRawURI(scheme, port, host, path, query, fragment, userInfo);
-        }
-        else {
+        } else {
             return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
         }
     }
@@ -239,39 +234,40 @@ public abstract class UriBuilder {
         }
     }
 
-    private boolean useRawValues;
+    private Boolean useRawValues;
 
     public void setUseRawValues(final boolean useRaw) {
         this.useRawValues = useRaw;
+    }
 
-        UriBuilder parent = getParent();
-        if (parent != null) {
-            parent.setUseRawValues(true);
-        }
+    public Boolean getUseRawValues() {
+        return useRawValues;
     }
 
     protected final void populateFrom(final URI uri) {
+        boolean useRaw = useRawValues != null ? useRawValues : false;
+
         try {
             setScheme(uri.getScheme());
             setPort(uri.getPort());
             setHost(uri.getHost());
 
-            final String path = useRawValues ? uri.getRawPath() : uri.getPath();
+            final String path = useRaw ? uri.getRawPath() : uri.getPath();
             if (path != null) {
                 setPath(new GStringImpl(EMPTY, new String[]{path}));
             }
 
-            final String rawQuery = useRawValues ? uri.getRawQuery() : uri.getQuery();
+            final String rawQuery = useRaw ? uri.getRawQuery() : uri.getQuery();
             if (rawQuery != null) {
-                if( useRawValues){
+                if (useRaw) {
                     setQuery(extractQueryMap(rawQuery));
                 } else {
                     setQuery(Form.decode(new StringBuilder(rawQuery), UTF_8));
                 }
             }
 
-            setFragment(useRawValues ? uri.getRawFragment() : uri.getFragment());
-            setUserInfo(useRawValues ? uri.getRawUserInfo() : uri.getUserInfo());
+            setFragment(useRaw ? uri.getRawFragment() : uri.getFragment());
+            setUserInfo(useRaw ? uri.getRawUserInfo() : uri.getUserInfo());
         } catch (IOException e) {
             //this seems o.k. to just convert to a runtime exception,
             //we started with a valid URI, so this should never happen.
@@ -280,8 +276,8 @@ public abstract class UriBuilder {
     }
 
     // does not do any encoding
-    private static Map<String, Collection<String>> extractQueryMap(final String queryString){
-        final Map<String,Collection<String>> map = new HashMap<>();
+    private static Map<String, Collection<String>> extractQueryMap(final String queryString) {
+        final Map<String, Collection<String>> map = new HashMap<>();
 
         for (final String nvp : queryString.split("&")) {
             final String[] pair = nvp.split("=");
@@ -351,7 +347,7 @@ public abstract class UriBuilder {
      * def child = UriBuilder.threadSafe(parent)
      * child.setPath('/bar').toURI() == new URI('http://localhost:10101/bar')
      * ----
-     * 
+     *
      * The `UriBuilder` implementation generated with this method is thread-safe.
      *
      * @param parent the `UriBuilder` parent
