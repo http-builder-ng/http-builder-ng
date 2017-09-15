@@ -199,11 +199,12 @@ public abstract class UriBuilder {
         final String fragment = traverse(this, UriBuilder::getParent, UriBuilder::getFragment, Traverser::notNull);
         final String userInfo = traverse(this, UriBuilder::getParent, UriBuilder::getUserInfo, Traverser::notNull);
 
-        if (useRawValues) {
+        if(useRawValues) {
             return toRawURI(scheme, port, host, path, query, fragment, userInfo);
         }
-
-        return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+        else {
+            return new URI(scheme, userInfo, host, (port == null ? -1 : port), ((path == null) ? null : path.toString()), query, fragment);
+        }
     }
 
     private URI toRawURI(final String scheme, final Integer port, final String host, final GString path, final String query, final String fragment, final String userInfo) throws URISyntaxException {
