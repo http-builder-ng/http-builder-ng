@@ -182,6 +182,49 @@ include::examples.adoc[]
 
 include::troubleshooting.adoc[]
 
+== Shadow Jars
+
+Each client-implementation library has an alternate "shadowed" jar distribution option available with classifier of `safe`. For Gradle this would look
+like the following:
+
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.0:safe@jar'
+
+or, for Maven add the following to your `pom.xml` file:
+
+    <dependency>
+      <groupId>io.github.http-builder-ng</groupId>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
+      <version>1.0.0</version>
+      <classifier>safe</classifier>
+    </dependency>
+
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`) for the desired client implementation. Notice that the `safe`
+classifier is added to each usage.
+
+These shadowed jars have some of the client dependencies bundled and repackaged into the library so that collisions with other libraries may be avoided
+- the remaining dependencies are excluded. Each library has the specified re-packaged dependencies, while all other dependencies will be left up to the
+using project to include, as necessary.
+
+The re-packages dependency libraries (by client) are listed below (also found in the project `build.gradle` files):
+
+* Core
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+* Apache
+** `org.apache.http` package.
+** `org.apache.commons.codec` package.
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+* OkHttp
+** `okhttp3` package.
+** `okio` package.
+** `com.burgstaller.okhttp` package.
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+
+WARNING: These shadow jars are considered experimental distributions - they will exist moving forward, but will require further testing before they are
+completely vetted.
+
 == Unsupported Features
 
 * The `core` library implementation does not support the `PATCH` request method due to limitations of the underlying client library.

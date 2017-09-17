@@ -5,6 +5,7 @@ plugins {
     id 'jacoco'
     id 'org.asciidoctor.convert' version '1.5.3'
     id 'com.stehno.gradle.site' version '0.0.3'
+    id "com.github.johnrengelman.shadow" version '2.0.1'
 }
 
 group = 'io.github.http-builder-ng'
@@ -28,6 +29,7 @@ subprojects {
     apply plugin: 'maven-publish'
     apply plugin: 'jacoco'
     apply plugin: 'findbugs'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     group = project.parent.group
     version = project.parent.version
@@ -121,6 +123,7 @@ subprojects {
         archives jar
         archives sourcesJar
         archives javadocJar
+        archives shadowJar
     }
 
     publishing {
@@ -129,6 +132,7 @@ subprojects {
                 from components.java
                 artifact sourcesJar
                 artifact javadocJar
+                artifact shadowJar
                 groupId project.group
                 artifactId project.name
                 version project.version
