@@ -586,7 +586,7 @@ import static groovyx.net.http.HttpVerb.GET
 
 long elapsed = configure {
     request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
-    execution.interceptor(GET) { cfg, fx ->
+    execution.interceptor(GET) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
         long started = System.currentTimeMillis()
         fx.apply(cfg)
         System.currentTimeMillis() - started
@@ -602,6 +602,8 @@ time as the result of the request (ignoring the actual response content from the
     Elapsed time for request: 865 ms
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
+
+NOTE: The `ChainedHttpConfig` argument has access to the full scope of `HttpBuilder` configuration, including the request verb.
 
 === Client-Related
 
