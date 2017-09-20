@@ -42,16 +42,12 @@ public interface HttpConfig {
         SUCCESS, FAILURE
     }
 
-    ;
-
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
     enum AuthType {
         BASIC, DIGEST
     }
-
-    ;
 
     /**
      *  Defines the configurable HTTP request authentication properties.

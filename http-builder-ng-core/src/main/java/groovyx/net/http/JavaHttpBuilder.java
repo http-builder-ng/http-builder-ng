@@ -54,11 +54,11 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        
+
         private boolean isProxied() {
             return proxyInfo != null && proxyInfo.getProxy().type() != Proxy.Type.DIRECT;
         }
-        
+
         public Action(final Consumer<Object> clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
             this.requestConfig = requestConfig;
 
@@ -73,7 +73,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 connection.setDoOutput(true);
             }
 
-            if( clientCustomizer != null ){
+            if (clientCustomizer != null) {
                 clientCustomizer.accept(connection);
             }
         }
@@ -87,9 +87,9 @@ public class JavaHttpBuilder extends HttpBuilder {
             final String contentType = cr.actualContentType();
             if (contentType != null) {
                 final Charset charset = cr.actualCharset();
-                if( charset != null){
+                if (charset != null) {
                     connection.addRequestProperty("Content-Type", contentType + "; charset=" + charset.toString().toLowerCase());
-                }  else {
+                } else {
                     connection.addRequestProperty("Content-Type", contentType);
                 }
             }
@@ -139,7 +139,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 }
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Request-URI: {}", theUri);
+                    log.debug("Request-URI({}): {}", connection.getRequestMethod(), theUri);
                 }
 
                 addHeaders();
@@ -148,7 +148,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
                 if (j2s != null) {
                     if (contentLog.isDebugEnabled()) {
-                        contentLog.debug("Request-Body: {}", j2s.content());
+                        contentLog.debug("Request-Body({}): {}", requestConfig.getChainedRequest().actualContentType(), j2s.content());
                     }
 
                     j2s.transfer();
@@ -307,7 +307,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public boolean getHasBody() {
                 return is != null;
             }
-            
+
             public URI getUri() {
                 return uri;
             }

@@ -89,6 +89,10 @@ public interface ChainedHttpConfig extends HttpConfig {
             traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCookies(), addAll);
             return list;
         }
+
+        HttpVerb getVerb();
+
+        void setVerb(HttpVerb verb);
     }
 
     interface ChainedResponse extends Response {

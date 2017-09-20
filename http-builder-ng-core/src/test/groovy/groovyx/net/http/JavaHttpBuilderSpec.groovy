@@ -16,8 +16,13 @@
 package groovyx.net.http
 
 import com.stehno.ersatz.ErsatzServer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import spock.lang.AutoCleanup
 import spock.lang.Specification
+
+import java.util.function.BiFunction
+import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 
@@ -96,9 +101,17 @@ class JavaHttpBuilderSpec extends Specification {
             post('/foo').responds().code(200).content('OK', TEXT_PLAIN)
         }
 
+        Logger log = LoggerFactory.getLogger('TESTING')
+
         when:
         String result = JavaHttpBuilder.configure {
             request.uri = ersatzServer.httpUrl
+
+            execution.interceptor(HttpVerb.POST){ ChainedHttpConfig config, fx ->
+                log.info 'Configuration: {}->{}', config.chainedRequest.verb, config.chainedRequest.uri.toURI()
+                fx.apply(config)
+            }
+
         }.post(String) {
             request.uri.path = '/foo'
             response.success { FromServer fs, Object body ->

@@ -129,6 +129,7 @@ public class HttpConfigs {
     public static abstract class BaseRequest implements ChainedRequest {
 
         final ChainedRequest parent;
+        HttpVerb verb;
 
         public BaseRequest(final ChainedRequest parent) {
             this.parent = parent;
@@ -209,6 +210,16 @@ public class HttpConfigs {
 
         public void cookie(final String name, final String value, final LocalDateTime dateTime){
             cookie(name, value, dateTime == null ? (Instant) null : dateTime.atZone(ZoneId.systemDefault()).toInstant());
+        }
+
+        @Override
+        public HttpVerb getVerb() {
+            return verb;
+        }
+
+        @Override
+        public void setVerb(final HttpVerb verb) {
+            this.verb = verb;
         }
     }
 
