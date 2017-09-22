@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -53,11 +54,11 @@ public class JavaHttpBuilder extends HttpBuilder {
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        
+
         private boolean isProxied() {
             return proxyInfo != null && proxyInfo.getProxy().type() != Proxy.Type.DIRECT;
         }
-        
+
         public Action(final Consumer<Object> clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {
             this.requestConfig = requestConfig;
 
@@ -72,7 +73,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 connection.setDoOutput(true);
             }
 
-            if( clientCustomizer != null ){
+            if (clientCustomizer != null) {
                 clientCustomizer.accept(connection);
             }
         }
@@ -85,7 +86,12 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             final String contentType = cr.actualContentType();
             if (contentType != null) {
-                connection.addRequestProperty("Content-Type", contentType);
+                final Charset charset = cr.actualCharset();
+                if (charset != null) {
+                    connection.addRequestProperty("Content-Type", contentType + "; charset=" + charset.toString().toLowerCase());
+                } else {
+                    connection.addRequestProperty("Content-Type", contentType);
+                }
             }
 
             connection.addRequestProperty("Accept-Encoding", "gzip, deflate");
@@ -133,7 +139,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                 }
 
                 if (log.isDebugEnabled()) {
-                    log.debug("Request-URI: {}", theUri);
+                    log.debug("Request-URI({}): {}", connection.getRequestMethod(), theUri);
                 }
 
                 addHeaders();
@@ -142,7 +148,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
                 if (j2s != null) {
                     if (contentLog.isDebugEnabled()) {
-                        contentLog.debug("Request-Body: {}", j2s.content());
+                        contentLog.debug("Request-Body({}): {}", requestConfig.getChainedRequest().actualContentType(), j2s.content());
                     }
 
                     j2s.transfer();
@@ -301,7 +307,7 @@ public class JavaHttpBuilder extends HttpBuilder {
             public boolean getHasBody() {
                 return is != null;
             }
-            
+
             public URI getUri() {
                 return uri;
             }
@@ -340,8 +346,7 @@ public class JavaHttpBuilder extends HttpBuilder {
     private final HostnameVerifier hostnameVerifier;
     private final HttpObjectConfig.Client clientConfig;
 
-    // TODO: this can probably be private or protected.
-    public JavaHttpBuilder(final HttpObjectConfig config) {
+    protected JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
         this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
         this.executor = config.getExecution().getExecutor();
@@ -397,6 +402,16 @@ public class JavaHttpBuilder extends HttpBuilder {
         // throw a ProtocolException if the user tries to specified PATCH as the HTTP method.
         // See https://docs.oracle.com/javase/8/docs/api/java/net/HttpURLConnection.html#setRequestMethod-java.lang.String-
         throw new UnsupportedOperationException("java.net.HttpURLConnection does not support the PATCH method. Use the Apache or OkHttp providers instead.");
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+        return createAndExecute(config, "OPTIONS");
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+        return createAndExecute(config, "TRACE");
     }
 
     public Executor getExecutor() {

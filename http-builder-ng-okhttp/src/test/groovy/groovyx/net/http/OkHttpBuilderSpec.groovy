@@ -28,7 +28,6 @@ class OkHttpBuilderSpec extends Specification {
 
     @AutoCleanup('stop')
     private ErsatzServer ersatzServer = new ErsatzServer({
-        autoStart()
         expectations {
             get('/foo').responds().content('ok', TEXT_PLAIN)
         }
@@ -71,5 +70,47 @@ class OkHttpBuilderSpec extends Specification {
 
         then:
         client.connectTimeoutMillis() == MILLISECONDS.convert(5, MINUTES)
+    }
+
+    def 'FromServer hasBody should return false when there is no content'() {
+        setup:
+        ersatzServer.expectations {
+            get('/foasdfasdfo').responds().code(200)
+        }
+
+        when:
+        String result = OkHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.get(String) {
+            request.uri.path = '/foasdfasdfo'
+            response.success { FromServer fs, Object body ->
+                assert !fs.hasBody
+                body
+            }
+        }
+
+        then:
+        !result
+    }
+
+    def 'FromServer hasBody should return true when there is content'() {
+        setup:
+        ersatzServer.expectations {
+            get('/gooasdfasdf').responds().code(200).content('GOOD', TEXT_PLAIN)
+        }
+
+        when:
+        String result = OkHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.get(String) {
+            request.uri.path = '/gooasdfasdf'
+            response.success { FromServer fs, Object body ->
+                assert fs.hasBody
+                body
+            }
+        }
+
+        then:
+        result == 'GOOD'
     }
 }

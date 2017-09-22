@@ -28,7 +28,6 @@ class ApacheHttpBuilderSpec extends Specification {
 
     @AutoCleanup('stop')
     private ErsatzServer ersatzServer = new ErsatzServer({
-        autoStart()
         expectations {
             get('/foo').responds().content('ok', TEXT_PLAIN)
         }
@@ -76,5 +75,47 @@ class ApacheHttpBuilderSpec extends Specification {
         then:
         client.defaultConfig.connectTimeout == 1234567
         client.defaultConfig.connectionRequestTimeout == 98765
+    }
+
+    def 'FromServer hasBody should return false when there is no content'() {
+        setup:
+        ersatzServer.expectations {
+            post('/foo').responds().code(200)
+        }
+
+        when:
+        String result = ApacheHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.post(String) {
+            request.uri.path = '/foo'
+            response.success { FromServer fs, Object body ->
+                assert !fs.hasBody
+                body
+            }
+        }
+
+        then:
+        !result
+    }
+
+    def 'FromServer hasBody should return true when there is content'() {
+        setup:
+        ersatzServer.expectations {
+            post('/foo').responds().code(200).content('OK', TEXT_PLAIN)
+        }
+
+        when:
+        String result = ApacheHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.post(String) {
+            request.uri.path = '/foo'
+            response.success { FromServer fs, Object body ->
+                assert fs.hasBody
+                body
+            }
+        }
+
+        then:
+        result == 'OK'
     }
 }

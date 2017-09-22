@@ -1,6 +1,6 @@
 = HttpBuilder-NG User Guide
 David Clark & Christopher J. Stehno
-v0.18.0, September 2017
+v1.0.0, September 2017
 :toc: left
 :toclevels: 4
 
@@ -29,6 +29,7 @@ People are talking about HttpBuilder-NG:
 * The https://groovypodcast.podbean.com/[Groovy Podcast] has discussed the project a few times
 * You can follow the project on Twitter: https://twitter.com/HttpBuilderNG[@HttpBuilderNG]
 * You can ask questions about issues you are having on StackOverflow using the http://stackoverflow.com/questions/tagged/httpbuilder-ng[httpbuilder-ng tag]
+* http://coffeaelectronica.com/blog/2017/rest-httpbuilder-ersatz.html[Take a REST with HttpBuilder-NG and Ersatz] - blog post showing REST client development and testing with examples in Groovy, Java and Kotlin.
 
 == Quick Start
 
@@ -38,14 +39,14 @@ If you are itching to get started, here's what you need to do to get up and runn
 
 First, you need the library in your project. If you are using Gradle, add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.18.0'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.0'
 
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>0.18.0</version>
+      <version>1.0.0</version>
     </dependency>
 
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).
@@ -145,6 +146,8 @@ protected abstract Object doHead(final ChainedHttpConfig config);
 protected abstract Object doPost(final ChainedHttpConfig config);
 protected abstract Object doPut(final ChainedHttpConfig config);
 protected abstract Object doDelete(final ChainedHttpConfig config);
+protected abstract Object doPatch(final ChainedHttpConfig config);
+protected abstract Object doOptions(final ChainedHttpConfig config);
 ----
 
 There is also an abstract method for retrieving the client configuration, though generally this will be a simple getter:
@@ -179,9 +182,53 @@ include::examples.adoc[]
 
 include::troubleshooting.adoc[]
 
+== Shadow Jars
+
+Each client-implementation library has an alternate "shadowed" jar distribution option available with classifier of `safe`. For Gradle this would look
+like the following:
+
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.0:safe@jar'
+
+or, for Maven add the following to your `pom.xml` file:
+
+    <dependency>
+      <groupId>io.github.http-builder-ng</groupId>
+      <artifactId>http-builder-ng-CLIENT</artifactId>
+      <version>1.0.0</version>
+      <classifier>safe</classifier>
+    </dependency>
+
+where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`) for the desired client implementation. Notice that the `safe`
+classifier is added to each usage.
+
+These shadowed jars have some of the client dependencies bundled and repackaged into the library so that collisions with other libraries may be avoided
+- the remaining dependencies are excluded. Each library has the specified re-packaged dependencies, while all other dependencies will be left up to the
+using project to include, as necessary.
+
+The re-packages dependency libraries (by client) are listed below (also found in the project `build.gradle` files):
+
+* Core
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+* Apache
+** `org.apache.http` package.
+** `org.apache.commons.codec` package.
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+* OkHttp
+** `okhttp3` package.
+** `okio` package.
+** `com.burgstaller.okhttp` package.
+** `org.apache.env` package.
+** `org.apache.xml.resolver` package.
+
+WARNING: These shadow jars are considered experimental distributions - they will exist moving forward, but will require further testing before they are
+completely vetted.
+
 == Unsupported Features
 
 * The `core` library implementation does not support the `PATCH` request method due to limitations of the underlying client library.
+* The `TRACE` request method does not support HTTPS requests.
 
 == Contributors
 

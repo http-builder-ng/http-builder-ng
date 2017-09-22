@@ -67,3 +67,24 @@ bintray {
         }
     }
 }
+
+shadowJar {
+    classifier = 'safe'
+
+    dependencies {
+        exclude(dependency('commons-logging:commons-logging:'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-databind:'))
+        exclude(dependency('com.opencsv:opencsv:'))
+        exclude(dependency('javax.mail:javax.mail-api:'))
+        exclude(dependency('com.sun.main:javax.mail:'))
+        exclude(dependency('net.sourceforge.nekohtml:nekohtml:'))
+        exclude(dependency('org.codehaus.groovy:groovy-all:'))
+        exclude(dependency('org.jsoup:jsoup:'))
+        exclude(dependency('oauth.signpost:signpost-commonshttp4:'))
+        exclude(dependency('oauth.signpost:signpost-core:'))
+        exclude(dependency('org.slf4j:slf4j-api:'))
+    }
+
+    relocate 'org.apache.env', 'httpb.env'
+    relocate 'org.apache.xml.resolver', 'httpb.xml.resolver'
+}

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,16 +43,19 @@ import java.util.function.Function;
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
+import static okhttp3.MediaType.parse;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- *
+ * 
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class OkHttpBuilder extends HttpBuilder {
 
     private static final Function<HttpObjectConfig, ? extends HttpBuilder> okFactory = OkHttpBuilder::new;
+    private static final String OPTIONS = "OPTIONS";
+    private static final String TRACE = "TRACE";
     private final ChainedHttpConfig config;
     private final HttpObjectConfig.Client clientConfig;
     private final Executor executor;
@@ -89,13 +93,13 @@ public class OkHttpBuilder extends HttpBuilder {
         }
 
         final ProxyInfo pinfo = config.getExecution().getProxyInfo();
-        if(usesProxy(pinfo)) {
+        if (usesProxy(pinfo)) {
             builder.proxy(pinfo.getProxy());
         }
 
         this.client = builder.build();
     }
-    
+
     private boolean usesProxy(final ProxyInfo pinfo) {
         return pinfo != null && pinfo.getProxy().type() != Proxy.Type.DIRECT;
     }
@@ -111,15 +115,15 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * 
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
-     * request.uri = 'http://localhost:10101'
+     *     request.uri = 'http://localhost:10101'
      * }
      * ----
      *
@@ -132,28 +136,28 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * 
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * This configuration method is generally meant for use with standard Java.
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
      * public void accept(HttpObjectConfig config) {
-     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
      * }
      * });
      * ----
-     *
+     * 
      * Or, using lambda expressions:
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
-     * config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
+     *     config.getRequest().setUri(format("http://localhost:%d", serverRule.getPort()));
      * });
      * ----
      *
@@ -186,20 +190,17 @@ public class OkHttpBuilder extends HttpBuilder {
 
     @Override
     protected Object doPost(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
     protected Object doPatch(final ChainedHttpConfig chainedConfig) {
-        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),
-            chainedConfig);
+        return execute((url) -> new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url), chainedConfig);
     }
 
     @Override
@@ -208,30 +209,51 @@ public class OkHttpBuilder extends HttpBuilder {
     }
 
     @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+        return execute((url) -> new Request.Builder().method(OPTIONS, null).url(url), config);
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+        return execute((url) -> new Request.Builder().method(TRACE, null).url(url), config);
+    }
+
+    @Override
     public void close() throws IOException {
         // does nothing
     }
 
-    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig) {
+    private RequestBody resolveRequestBody(final ChainedHttpConfig chainedConfig) {
         final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();
-        RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), "");
+
+        final RequestBody body;
         if (cr.actualBody() != null) {
             final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);
             chainedConfig.findEncoder().accept(chainedConfig, toServer);
-
             body = toServer;
+
+        } else {
+            body = RequestBody.create(resolveMediaType(cr.actualContentType(), cr.actualCharset()), "");
         }
+
         return body;
     }
 
+    private static MediaType resolveMediaType(final String contentType, final Charset charset) {
+        if (contentType != null) {
+            if (charset != null) {
+                return parse(contentType + "; charset=" + charset.toString().toLowerCase());
+            } else {
+                return parse(contentType);
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("Duplicates")
     private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             requestBuilder.addHeader(entry.getKey(), entry.getValue());
-        }
-
-        final String contentType = cr.actualContentType();
-        if (contentType != null) {
-            requestBuilder.addHeader("Content-Type", contentType);
         }
 
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
@@ -260,11 +282,11 @@ public class OkHttpBuilder extends HttpBuilder {
             final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);
 
             applyHeaders(requestBuilder, cr);
+
             applyAuth(requestBuilder, chainedConfig);
 
             try (Response response = client.newCall(requestBuilder.build()).execute()) {
-                return HANDLER_FUNCTION.apply(chainedConfig,
-                    new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
+                return HANDLER_FUNCTION.apply(chainedConfig, new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));
             } catch (IOException ioe) {
                 throw ioe; //re-throw, close has happened
             }
@@ -278,12 +300,20 @@ public class OkHttpBuilder extends HttpBuilder {
         private final URI uri;
         private final Response response;
         private List<Header<?>> headers;
+        private boolean body;
 
         private OkHttpFromServer(final URI uri, final Response response) {
             this.uri = uri;
             this.response = response;
             this.headers = populateHeaders();
+
             addCookieStore(uri, headers);
+
+            try {
+                body = !response.body().source().exhausted() && response.peekBody(1).bytes().length > 0;
+            } catch (IOException e) {
+                body = false;
+            }
         }
 
         private List<Header<?>> populateHeaders() {
@@ -321,11 +351,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public boolean getHasBody() {
-            try {
-                return !response.body().source().exhausted();
-            } catch (IOException e) {
-                return false;
-            }
+            return body;
         }
 
         @Override
@@ -355,7 +381,7 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public MediaType contentType() {
-            return MediaType.parse(config.findContentType());
+            return resolveMediaType(config.findContentType(), config.findCharset());
         }
 
         @Override

@@ -146,6 +146,40 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
         ]
     }
 
+    @Unroll 'post with defined content-type and charset (#proto)'() {
+        setup:
+        ersatzServer.expectations {
+            post('/chars') {
+                called 2
+                header 'Content-Type', 'text/plain; charset=utf-8'
+                protocol proto
+                responds().code(200)
+            }
+        }
+
+        HttpBuilder http = httpBuilder {
+            ignoreSslIssues execution
+            request.uri = serverUri(proto)
+        }
+
+        when:
+        def result = http.post {
+            request.uri.path = '/chars'
+            request.contentType = 'text/plain'
+            request.charset = 'UTF-8'
+            request.body = 'This is some plain text.'
+            response.success { FromServer fs, Object body ->
+                true
+            }
+        }
+
+        then:
+        result
+
+        where:
+        proto << ['HTTP', 'HTTPS']
+    }
+
     @Unroll 'post(Class,Closure): cookies -> #cookies'() {
         setup:
         ersatzServer.expectations {
@@ -315,7 +349,7 @@ abstract class HttpPostTestKit extends HttpMethodTestKit {
 
         // OkHttp fails due to missing expectation but the request looks good - relaxed the constraint until further investigation
         ersatzServer.expectations {
-            post('/digest')/*.body(REQUEST_BODY_JSON, APPLICATION_JSON)*/.protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
+            post('/digest') /*.body(REQUEST_BODY_JSON, APPLICATION_JSON)*/.protocol(protocol).called(2).responds().content(OK_TEXT, TEXT_PLAIN)
         }
 
         HttpBuilder http = httpBuilder {

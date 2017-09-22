@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,13 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovyx.net.http.util.IoUtils;
 import org.apache.http.*;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.auth.AuthScope;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -34,18 +28,24 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.NoSuchAlgorithmException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
@@ -53,9 +53,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Proxy;
-import java.net.URI;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,7 +71,7 @@ import static groovyx.net.http.util.IoUtils.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
- *
+ * 
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
@@ -80,11 +82,11 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * 
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
@@ -101,13 +103,13 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * 
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * This configuration method is generally meant for use with standard Java.
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
@@ -116,9 +118,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * }
      * });
      * ----
-     *
+     * 
      * Or, using lambda expressions:
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
@@ -163,34 +165,32 @@ public class ApacheHttpBuilder extends HttpBuilder {
     private SSLContext sslContext(final HttpObjectConfig config) {
         try {
             return (config.getExecution().getSslContext() != null ?
-                    config.getExecution().getSslContext() :
-                    SSLContext.getDefault());
-        }
-        catch(NoSuchAlgorithmException e) {
+                config.getExecution().getSslContext() :
+                SSLContext.getDefault());
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     private Registry<ConnectionSocketFactory> registry(final HttpObjectConfig config) {
         final ProxyInfo proxyInfo = config.getExecution().getProxyInfo();
 
         final boolean isSocksProxied = (proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.SOCKS);
 
-        if(isSocksProxied) {
+        if (isSocksProxied) {
             return RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", new SocksHttp(proxyInfo.getProxy()))
                 .register("https", new SocksHttps(proxyInfo.getProxy(), sslContext(config),
-                                                  config.getExecution().getHostnameVerifier()))
+                    config.getExecution().getHostnameVerifier()))
                 .build();
-        }
-        else {
+        } else {
             return RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.INSTANCE)
                 .register("https", new SSLConnectionSocketFactory(sslContext(config), config.getExecution().getHostnameVerifier()))
                 .build();
         }
     }
-    
+
     private class ApacheFromServer implements FromServer {
 
         private final HttpResponse response;
@@ -227,7 +227,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public boolean getHasBody() {
-            return entity != null;
+            return entity != null && !(inputStream instanceof EmptyInputStream);
         }
 
         public int getStatusCode() {
@@ -344,18 +344,17 @@ public class ApacheHttpBuilder extends HttpBuilder {
         final HttpClientBuilder myBuilder = HttpClients.custom();
 
         final Registry<ConnectionSocketFactory> registry = registry(config);
-        
+
         if (config.getExecution().getMaxThreads() > 1) {
             final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
             cm.setMaxTotal(config.getExecution().getMaxThreads());
             cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());
             myBuilder.setConnectionManager(cm);
-        }
-        else {
+        } else {
             final BasicHttpClientConnectionManager cm = new BasicHttpClientConnectionManager(registry);
             myBuilder.setConnectionManager(cm);
         }
-        
+
         final SSLContext sslContext = config.getExecution().getSslContext();
         if (sslContext != null) {
             myBuilder.setSSLContext(sslContext);
@@ -440,27 +439,28 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         return c;
     }
-        
-    private <T extends HttpRequestBase> Object exec(final ChainedHttpConfig requestConfig,
-                                                    final Function<URI, T> constructor) {
 
+    private <T extends HttpRequestBase> Object exec(final ChainedHttpConfig requestConfig, final Function<URI, T> constructor) {
         try {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
             final URI theUri = cr.getUri().toURI();
             final T request = constructor.apply(theUri);
-            addHeaders(cr, request);
+
             if ((request instanceof HttpEntityEnclosingRequest) && cr.actualBody() != null) {
                 final HttpEntity entity = entity(requestConfig);
                 ((HttpEntityEnclosingRequest) request).setEntity(entity);
                 request.setHeader(entity.getContentType());
             }
 
-            if(proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.HTTP) {
+            addHeaders(cr, request);
+
+            if (proxyInfo != null && proxyInfo.getProxy().type() == Proxy.Type.HTTP) {
                 HttpHost proxy = new HttpHost(proxyInfo.getAddress(), proxyInfo.getPort(), proxyInfo.isSecure() ? "https" : "http");
                 request.setConfig(RequestConfig.custom().setProxy(proxy).build());
             }
 
             return client.execute(request, new Handler(requestConfig), context(requestConfig));
+
         } catch (Exception e) {
             return handleException(requestConfig.getChainedResponse(), e);
         }
@@ -472,6 +472,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         return ats;
     }
 
+    @SuppressWarnings("Duplicates")
     private <T extends HttpUriRequest> void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
         for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
             message.addHeader(entry.getKey(), entry.getValue());
@@ -479,7 +480,12 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
         final String contentType = cr.actualContentType();
         if (contentType != null) {
-            message.addHeader("Content-Type", contentType);
+            final Charset charset = cr.actualCharset();
+            if (charset != null) {
+                message.setHeader("Content-Type", contentType + "; charset=" + charset.toString().toLowerCase());
+            } else {
+                message.setHeader("Content-Type", contentType);
+            }
         }
 
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {
@@ -509,5 +515,15 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
         return exec(requestConfig, HttpDelete::new);
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+        return exec(config, HttpOptions::new);
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+        return exec(config, HttpTrace::new);
     }
 }

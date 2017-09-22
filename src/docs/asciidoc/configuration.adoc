@@ -56,6 +56,18 @@ HttpBuilder.configure {
 }
 ----
 
+An alternate means of specifying the `URI` is the `setRaw(String)` method. This method does not encoding or decoding of the given URI string and any such encoding/decoding must be performed in
+provided URI string itself. This is useful for the case where there are encoded elements within a URI path, such as:
+
+[source,groovy]
+----
+def result = HttpBuilder.configure {
+    request.raw = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+}.get()
+----
+
+Note that the `myteam%2Fmyrepo` part of the path will remain unchanged in the resulting URI.
+
 ===== Cookies
 
 https://en.wikipedia.org/wiki/HTTP_cookie[HTTP Cookies] may be configured on a request using one of the cookie configuration methods on the
@@ -574,7 +586,7 @@ import static groovyx.net.http.HttpVerb.GET
 
 long elapsed = configure {
     request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
-    execution.interceptor(GET) { cfg, fx ->
+    execution.interceptor(GET) { ChainedHttpConfig cfg, Function<ChainedHttpConfig, Object> fx ->
         long started = System.currentTimeMillis()
         fx.apply(cfg)
         System.currentTimeMillis() - started
@@ -590,6 +602,8 @@ time as the result of the request (ignoring the actual response content from the
     Elapsed time for request: 865 ms
 
 Using interceptors you can also modify the data before and after the `apply()` method is called.
+
+NOTE: The `ChainedHttpConfig` argument has access to the full scope of `HttpBuilder` configuration, including the request verb.
 
 === Client-Related
 
@@ -644,9 +658,9 @@ underlying configured client instance. Support for this method is optional, see 
 === Request-Related
 
 The `HttpBuilder` class has request-related configuration methods for each of the supported request verbs, `GET`, `HEAD`, `DELETE`, `PATCH`, `POST`,
-and `PUT`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with `Async`, (e.g.
-`headAsync`) and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the async methods are
-the same. Only the synchronous versions are discussed below.
+`PUT`, `OPTIONS` and `TRACE`. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with
+`Async`, (e.g. `headAsync`) and they return a `java.util.concurrent.CompletableFuture` used to retrieve the eventual return value. Otherwise, the
+async methods are the same. Only the synchronous versions are discussed below.
 
 An example of an async request would be:
 
@@ -665,6 +679,8 @@ Each of the request verbs share the same configuration method forms. The example
 representative of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various
 common HTTP operations.
 
+NOTE: The `TRACE` request method does not support HTTPS requests.
+
 ==== `verb()`
 
 The no-argument method executes a request with the verb equivalent of the method name. The configuration for the request will come fully from the
@@ -672,7 +688,7 @@ client-configuration. A simple `get()` example would be to determine who are the
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:1.0.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -707,7 +723,7 @@ the current position if the ISS:
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:1.0.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 
@@ -753,7 +769,7 @@ An example of this for a `get(Integer,Closure)` call would be to retrieve the nu
 
 [source,groovy]
 ----
-@Grab('io.github.http-builder-ng:http-builder-ng-core:0.18.0')
+@Grab('io.github.http-builder-ng:http-builder-ng-core:1.0.0')
 
 import static groovyx.net.http.HttpBuilder.configure
 import groovy.json.JsonSlurper

@@ -15,16 +15,22 @@
  */
 package groovyx.net.http
 
-import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.ErsatzServer
+import groovyx.net.http.optional.Download
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import static com.stehno.ersatz.ContentType.TEXT_JSON
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.UriBuilder.basic
-import static groovyx.net.http.UriBuilder.root;
+import static groovyx.net.http.UriBuilder.root
+import static groovyx.net.http.util.SslUtils.ignoreSslIssues
 
 class UriBuilderSpec extends Specification {
+
+    @Rule TemporaryFolder folder = new TemporaryFolder()
 
     def 'root yields empty URI'() {
         expect:
@@ -181,5 +187,129 @@ class UriBuilderSpec extends Specification {
 
         cleanup:
         server.stop()
+    }
+
+    def 'url with encoded slash'() {
+        setup:
+        String raw = 'http://localhost:8181/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json?ref=master'
+
+        UriBuilder builder = basic(root())
+        builder.useRawValues = true
+
+        when:
+        builder.full = raw
+        URI uri = builder.toURI()
+
+        then:
+        uri == raw.toURI()
+        uri.rawPath == '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+    }
+
+    def 'url with encoded query'() {
+        setup:
+        String raw = 'http://localhost:8181/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json?ref=master%2Fone&alpha=bravo'
+
+        UriBuilder builder = basic(root())
+        builder.useRawValues = true
+
+        when:
+        builder.full = raw
+        URI uri = builder.toURI()
+
+        then:
+        uri == raw.toURI()
+        uri.rawPath == '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+        uri.rawQuery == 'ref=master%2Fone&alpha=bravo'
+    }
+
+    def 'url with encoded slash (2)'() {
+        setup:
+        def server = new ErsatzServer({
+            expectations {
+                get('/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json').responds().code(200).content('ok', TEXT_PLAIN)
+            }
+        })
+
+        when:
+        def result = JavaHttpBuilder.configure {
+            request.raw = "${server.httpUrl}/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json"
+        }.get()
+
+        then:
+        result == 'ok'
+    }
+
+    def 'url with encoded slash (3)'() {
+        setup:
+        def server = new ErsatzServer({
+            expectations {
+                get('/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json').responds().code(200).content('ok', TEXT_PLAIN)
+            }
+        })
+
+        when:
+        def result = JavaHttpBuilder.configure {
+            request.raw = server.httpUrl
+        }.get {
+            request.uri.path = '/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json'
+        }
+
+        then:
+        result == 'ok'
+    }
+
+    def 'another encoded uri test'() {
+        setup:
+        String apiNamespace = 'something'
+        String apiRepoName = 'somewhere'
+        String gitFilePath = 'thefile'
+        String apiToken = 'asdfasdfasdf'
+
+        File dir = folder.newFolder()
+
+        def server = new ErsatzServer({
+            https()
+            expectations {
+                get("/api/v4/projects/${apiNamespace}%2F${apiRepoName}/repository/files/${gitFilePath}/salt-api_request.json") {
+                    query 'ref', 'master'
+                    protocol 'HTTPS'
+                    called 1
+                    responder {
+                        code 200
+                        content '{"value":"ok"}', TEXT_JSON
+                    }
+                }
+            }
+        })
+
+        when:
+        boolean hasFailure = false
+
+        JavaHttpBuilder.configure {
+            request.raw = "${server.httpsUrl}/api/v4/projects/${apiNamespace}%2F${apiRepoName}/repository/files/${gitFilePath}/salt-api_request.json?ref=master"
+            request.contentType = 'application/json'
+            request.accept = 'application/json'
+            request.headers['PRIVATE-TOKEN'] = apiToken
+
+            ignoreSslIssues execution
+
+            response.failure { FromServer fs, Object body ->
+                hasFailure = true
+            }
+
+        }.get {
+            Download.toFile(delegate as HttpConfig, new File(dir, 'salt-api_request.json'))
+        }
+
+        then: 'there is no failure'
+        !hasFailure
+
+        and: 'the file has the expected content'
+        def file = new File(dir, 'salt-api_request.json')
+        file.exists()
+        file.text == '{"value":"ok"}'
+
+        and: 'the server was actually called'
+        server.verify()
     }
 }

@@ -19,7 +19,6 @@ import groovy.lang.Closure;
 import groovyx.net.http.fn.ClosureBiFunction;
 import groovyx.net.http.fn.ClosureFunction;
 
-import java.net.UnknownHostException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -43,16 +42,12 @@ public interface HttpConfig {
         SUCCESS, FAILURE
     }
 
-    ;
-
     /**
      * Defines the allowed values of the HTTP authentication type.
      */
     enum AuthType {
         BASIC, DIGEST
     }
-
-    ;
 
     /**
      *  Defines the configurable HTTP request authentication properties.
@@ -210,7 +205,9 @@ public interface HttpConfig {
         void setCharset(String val);
 
         /**
-         * The `charset` property is used to specify the character set (as a {@link Charset}) used by the request.
+         * The `charset` property is used to specify the character set (as a {@link Charset}) used by the request. This value will be reflected in
+         * the `Content-Type` header value (e.g. `Content-Type: text/plain; charset=utf-8`). A content-type value must be specified in order for this
+         * value to be applied.
          *
          * [source,groovy]
          * ----
@@ -274,6 +271,15 @@ public interface HttpConfig {
          * @throws IllegalArgumentException if there is a problem with the URI syntax
          */
         void setUri(String val);
+
+        /**
+         * The `request.raw` is the means of specifying a "raw" URI as the HTTP endpoint for the request, specified as a `String`. No encoding or decoding is performed on a "raw" URI. Any such
+         * encoding or decoding of URI content must be done in the provided string itself, as it will be used "as is" in the resulting URI. This functionality is useful in the case where
+         * there are encoded entities in the URI path, since the standard `uri` method will decode these on building the `URI`.
+         *
+         * @param val the raw URI string
+         */
+        void setRaw(String val);
 
         /**
          * The `request.uri` is the URI of the HTTP endpoint for the request, specified as a `URI` in this case.
