@@ -514,7 +514,7 @@ table.CodeRay td.code>pre{padding:0}
 <h1>HttpBuilder-NG User Guide</h1>
 <div class="details">
 <span id="author" class="author">David Clark &amp; Christopher J. Stehno</span><br>
-<span id="revnumber">version 0.18.0,</span>
+<span id="revnumber">version 1.0.0,</span>
 <span id="revdate">September 2017</span>
 </div>
 <div id="toc" class="toc2">
@@ -601,8 +601,10 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_troubleshooting">Troubleshooting</a>
 <ul class="sectlevel2">
 <li><a href="#__typecheckhttpconfig_groovy_was_not_found">'typecheckhttpconfig.groovy' was not found</a></li>
+<li><a href="#_encoded_uri_path">Encoded URI Path</a></li>
 </ul>
 </li>
+<li><a href="#_shadow_jars">Shadow Jars</a></li>
 <li><a href="#_unsupported_features">Unsupported Features</a></li>
 <li><a href="#_contributors">Contributors</a>
 <ul class="sectlevel2">
@@ -663,6 +665,9 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.</p>
 <li>
 <p>You can ask questions about issues you are having on StackOverflow using the <a href="http://stackoverflow.com/questions/tagged/httpbuilder-ng">httpbuilder-ng tag</a></p>
 </li>
+<li>
+<p><a href="http://coffeaelectronica.com/blog/2017/rest-httpbuilder-ersatz.html">Take a REST with HttpBuilder-NG and Ersatz</a> - blog post showing REST client development and testing with examples in Groovy, Java and Kotlin.</p>
+</li>
 </ul>
 </div>
 </div>
@@ -680,7 +685,7 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:0.18.0'</pre>
+<pre>compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.0'</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -691,7 +696,7 @@ HttpBuilder-NG is basically a complete re-write and re-architecture.</p>
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;io.github.http-builder-ng&lt;/groupId&gt;
   &lt;artifactId&gt;http-builder-ng-CLIENT&lt;/artifactId&gt;
-  &lt;version&gt;0.18.0&lt;/version&gt;
+  &lt;version&gt;1.0.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -866,6 +871,20 @@ specific request, while leaving the base URI in the global configuration:</p>
     request.uri.query = [<span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">Bob</span><span class="delimiter">'</span></span>]
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>An alternate means of specifying the <code>URI</code> is the <code>setRaw(String)</code> method. This method does not encoding or decoding of the given URI string and any such encoding/decoding must be performed in
+provided URI string itself. This is useful for the case where there are encoded elements within a URI path, such as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> result = HttpBuilder.configure {
+    request.raw = <span class="string"><span class="delimiter">&quot;</span><span class="inline"><span class="inline-delimiter">${</span>server.httpUrl<span class="inline-delimiter">}</span></span><span class="content">/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json</span><span class="delimiter">&quot;</span></span>
+}.get()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that the <code>myteam%2Fmyrepo</code> part of the path will remain unchanged in the resulting URI.</p>
 </div>
 </div>
 <div class="sect4">
@@ -1672,7 +1691,7 @@ handling, you could do something like the following:</p>
 
 <span class="type">long</span> elapsed = configure {
     request.uri = <span class="string"><span class="delimiter">'</span><span class="content">https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all</span><span class="delimiter">'</span></span>
-    execution.interceptor(GET) { cfg, fx -&gt;
+    execution.interceptor(GET) { ChainedHttpConfig cfg, Function&lt;ChainedHttpConfig, <span class="predefined-type">Object</span>&gt; fx -&gt;
         <span class="type">long</span> started = <span class="predefined-type">System</span>.currentTimeMillis()
         fx.apply(cfg)
         <span class="predefined-type">System</span>.currentTimeMillis() - started
@@ -1693,6 +1712,18 @@ time as the result of the request (ignoring the actual response content from the
 </div>
 <div class="paragraph">
 <p>Using interceptors you can also modify the data before and after the <code>apply()</code> method is called.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The <code>ChainedHttpConfig</code> argument has access to the full scope of <code>HttpBuilder</code> configuration, including the request verb.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -1759,9 +1790,9 @@ underlying configured client instance. Support for this method is optional, see 
 <h3 id="_request_related">Request-Related</h3>
 <div class="paragraph">
 <p>The <code>HttpBuilder</code> class has request-related configuration methods for each of the supported request verbs, <code>GET</code>, <code>HEAD</code>, <code>DELETE</code>, <code>PATCH</code>, <code>POST</code>,
-and <code>PUT</code>. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with <code>Async</code>, (e.g.
-<code>headAsync</code>) and they return a <code>java.util.concurrent.CompletableFuture</code> used to retrieve the eventual return value. Otherwise, the async methods are
-the same. Only the synchronous versions are discussed below.</p>
+<code>PUT</code>, <code>OPTIONS</code> and <code>TRACE</code>. Each request verb method has a synchronous and asynchronous version - the asynchronous versions are suffixed with
+<code>Async</code>, (e.g. <code>headAsync</code>) and they return a <code>java.util.concurrent.CompletableFuture</code> used to retrieve the eventual return value. Otherwise, the
+async methods are the same. Only the synchronous versions are discussed below.</p>
 </div>
 <div class="paragraph">
 <p>An example of an async request would be:</p>
@@ -1783,6 +1814,18 @@ the same. Only the synchronous versions are discussed below.</p>
 representative of the available configurations. Also, at the end of the User Guide there is a collection of recipe-style example scripts for various
 common HTTP operations.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+The <code>TRACE</code> request method does not support HTTPS requests.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect3">
 <h4 id="__code_verb_code"><code>verb()</code></h4>
 <div class="paragraph">
@@ -1791,7 +1834,7 @@ client-configuration. A simple <code>get()</code> example would be to determine 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 
@@ -1830,7 +1873,7 @@ the current position if the ISS:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 
@@ -1882,7 +1925,7 @@ specified <code>type</code> if possible - a response parser may be required to c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">groovy.json.JsonSlurper</span>
@@ -2059,7 +2102,9 @@ HTTP verbs:</p>
 <span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doHead(<span class="directive">final</span> ChainedHttpConfig config);
 <span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doPost(<span class="directive">final</span> ChainedHttpConfig config);
 <span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doPut(<span class="directive">final</span> ChainedHttpConfig config);
-<span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doDelete(<span class="directive">final</span> ChainedHttpConfig config);</code></pre>
+<span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doDelete(<span class="directive">final</span> ChainedHttpConfig config);
+<span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doPatch(<span class="directive">final</span> ChainedHttpConfig config);
+<span class="directive">protected</span> <span class="directive">abstract</span> <span class="predefined-type">Object</span> doOptions(<span class="directive">final</span> ChainedHttpConfig config);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2155,7 +2200,7 @@ with a resulting output line something like:</p>
 <div class="listingblock">
 <div class="title">resource_last_modified_alt.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">java.time.format.DateTimeFormatter.ofPattern</span>
@@ -2188,7 +2233,7 @@ By default, <code>text/html</code> content is parsed with the <a href="https://j
 <div class="listingblock">
 <div class="title">web_scraping.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.jsoup:jsoup:1.9.2</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
@@ -2224,7 +2269,7 @@ parser:</p>
 <div class="listingblock">
 <div class="title">sending_receiving_post.groovy</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -2273,7 +2318,7 @@ provides other useful information about the request. The end result is the follo
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:0.18.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">io.github.http-builder-ng:http-builder-ng-core:1.0.0</span><span class="delimiter">'</span></span>)
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.HttpBuilder.configure</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">groovyx.net.http.ContentTypes.JSON</span>
@@ -2424,6 +2469,145 @@ add them to the application&#8217;s war root classpath.</p>
 <p>If neither of these solve the problem for you, please feel free to create an issue, but please provide a working example that we can test against.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_encoded_uri_path">Encoded URI Path</h3>
+<div class="paragraph">
+<p>In some cases HTTP server endpoints will have encoded portions of the path so that you end up with a URI such as:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice the <code>myteam%2Fmyrepo</code> is a URI-encoded string. Using the standard <code>request.uri</code> approach with this URI will fail since the encoding will be decoded when used to create the URI. We have provided
+and alternate approach to solve this problem (see <a href="#_uri">URI</a> Configuration section). Using the <code>request.raw</code> configuration option, you can specify a "raw" URI string which will preserve any
+encoding. In fact, it will perform <em>no</em> encoding or decoding of path or query string elements, so it all must be done in your provided URI string.</p>
+</div>
+<div class="paragraph">
+<p>An example of this approach would be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> result = JavaHttpBuilder.configure {
+    request.raw = <span class="string"><span class="delimiter">&quot;</span><span class="content">http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json</span><span class="delimiter">&quot;</span></span>
+}.get()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>which would properly preserve the encoded URI content.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_shadow_jars">Shadow Jars</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each client-implementation library has an alternate "shadowed" jar distribution option available with classifier of <code>safe</code>. For Gradle this would look
+like the following:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.0:safe@jar'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or, for Maven add the following to your <code>pom.xml</code> file:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>&lt;dependency&gt;
+  &lt;groupId&gt;io.github.http-builder-ng&lt;/groupId&gt;
+  &lt;artifactId&gt;http-builder-ng-CLIENT&lt;/artifactId&gt;
+  &lt;version&gt;1.0.0&lt;/version&gt;
+  &lt;classifier&gt;safe&lt;/classifier&gt;
+&lt;/dependency&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <code>CLIENT</code> is replaced with the client library name (<code>core</code>, <code>apache</code>, or <code>okhttp</code>) for the desired client implementation. Notice that the <code>safe</code>
+classifier is added to each usage.</p>
+</div>
+<div class="paragraph">
+<p>These shadowed jars have some of the client dependencies bundled and repackaged into the library so that collisions with other libraries may be avoided
+- the remaining dependencies are excluded. Each library has the specified re-packaged dependencies, while all other dependencies will be left up to the
+using project to include, as necessary.</p>
+</div>
+<div class="paragraph">
+<p>The re-packages dependency libraries (by client) are listed below (also found in the project <code>build.gradle</code> files):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Core</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>org.apache.env</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.xml.resolver</code> package.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Apache</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>org.apache.http</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.commons.codec</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.env</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.xml.resolver</code> package.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>OkHttp</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>okhttp3</code> package.</p>
+</li>
+<li>
+<p><code>okio</code> package.</p>
+</li>
+<li>
+<p><code>com.burgstaller.okhttp</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.env</code> package.</p>
+</li>
+<li>
+<p><code>org.apache.xml.resolver</code> package.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+These shadow jars are considered experimental distributions - they will exist moving forward, but will require further testing before they are
+completely vetted.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2433,6 +2617,9 @@ add them to the application&#8217;s war root classpath.</p>
 <ul>
 <li>
 <p>The <code>core</code> library implementation does not support the <code>PATCH</code> request method due to limitations of the underlying client library.</p>
+</li>
+<li>
+<p>The <code>TRACE</code> request method does not support HTTPS requests.</p>
 </li>
 </ul>
 </div>
@@ -2497,8 +2684,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.18.0<br>
-Last updated 2017-09-01 06:53:21 -05:00
+Version 1.0.0<br>
+Last updated 2017-09-22 06:42:38 -05:00
 </div>
 </div>
 </body>

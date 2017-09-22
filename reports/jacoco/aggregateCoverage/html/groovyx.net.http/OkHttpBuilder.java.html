@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,62 +43,65 @@ import java.util.function.Function;
 import static groovyx.net.http.FromServer.Header.keyValue;
 import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCTION;
 import static groovyx.net.http.HttpConfig.AuthType.DIGEST;
+import static okhttp3.MediaType.parse;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- *
+ * 
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class OkHttpBuilder extends HttpBuilder {
 
-<span class="fc" id="L54">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; okFactory = OkHttpBuilder::new;</span>
+<span class="fc" id="L56">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; okFactory = OkHttpBuilder::new;</span>
+    private static final String OPTIONS = &quot;OPTIONS&quot;;
+    private static final String TRACE = &quot;TRACE&quot;;
     private final ChainedHttpConfig config;
     private final HttpObjectConfig.Client clientConfig;
     private final Executor executor;
     private final OkHttpClient client;
 
     protected OkHttpBuilder(final HttpObjectConfig config) {
-<span class="fc" id="L61">        super(config);</span>
+<span class="fc" id="L65">        super(config);</span>
 
-<span class="fc" id="L63">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
-<span class="fc" id="L64">        this.clientConfig = config.getClient();</span>
-<span class="fc" id="L65">        this.executor = config.getExecution().getExecutor();</span>
+<span class="fc" id="L67">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L68">        this.clientConfig = config.getClient();</span>
+<span class="fc" id="L69">        this.executor = config.getExecution().getExecutor();</span>
 
-<span class="fc" id="L67">        final OkHttpClient.Builder builder = new OkHttpClient.Builder();</span>
+<span class="fc" id="L71">        final OkHttpClient.Builder builder = new OkHttpClient.Builder();</span>
 
-<span class="fc" id="L69">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (sslContext != null) {</span>
-<span class="fc" id="L71">            builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);</span>
-<span class="fc" id="L72">            builder.hostnameVerifier(config.getExecution().getHostnameVerifier());</span>
+<span class="fc" id="L73">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (sslContext != null) {</span>
+<span class="fc" id="L75">            builder.sslSocketFactory(sslContext.getSocketFactory()/*, (X509TrustManager) TRUST_MANAGERS[0]*/);</span>
+<span class="fc" id="L76">            builder.hostnameVerifier(config.getExecution().getHostnameVerifier());</span>
         }
 
         // DIGEST support - defining this here only allows DIGEST config on the HttpBuilder configuration, not for individual methods.
-<span class="fc" id="L76">        final HttpConfig.Auth auth = config.getRequest().getAuth();</span>
-<span class="pc bpc" id="L77" title="1 of 4 branches missed.">        if (auth != null &amp;&amp; auth.getAuthType() == DIGEST) {</span>
-<span class="fc" id="L78">            Map&lt;String, CachingAuthenticator&gt; authCache = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L80">        final HttpConfig.Auth auth = config.getRequest().getAuth();</span>
+<span class="pc bpc" id="L81" title="1 of 4 branches missed.">        if (auth != null &amp;&amp; auth.getAuthType() == DIGEST) {</span>
+<span class="fc" id="L82">            Map&lt;String, CachingAuthenticator&gt; authCache = new ConcurrentHashMap&lt;&gt;();</span>
 
-<span class="fc" id="L80">            builder.addInterceptor(new AuthenticationCacheInterceptor(authCache));</span>
-<span class="fc" id="L81">            builder.authenticator(new CachingAuthenticatorDecorator(</span>
-<span class="fc" id="L82">                new DigestAuthenticator(new com.burgstaller.okhttp.digest.Credentials(auth.getUser(), auth.getPassword())), authCache)</span>
+<span class="fc" id="L84">            builder.addInterceptor(new AuthenticationCacheInterceptor(authCache));</span>
+<span class="fc" id="L85">            builder.authenticator(new CachingAuthenticatorDecorator(</span>
+<span class="fc" id="L86">                new DigestAuthenticator(new com.burgstaller.okhttp.digest.Credentials(auth.getUser(), auth.getPassword())), authCache)</span>
             );
         }
 
-<span class="fc" id="L86">        final Consumer&lt;Object&gt; clientCustomizer = clientConfig.getClientCustomizer();</span>
-<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (clientCustomizer != null) {</span>
-<span class="fc" id="L88">            clientCustomizer.accept(builder);</span>
+<span class="fc" id="L90">        final Consumer&lt;Object&gt; clientCustomizer = clientConfig.getClientCustomizer();</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (clientCustomizer != null) {</span>
+<span class="fc" id="L92">            clientCustomizer.accept(builder);</span>
         }
 
-<span class="fc" id="L91">        final ProxyInfo pinfo = config.getExecution().getProxyInfo();</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if(usesProxy(pinfo)) {</span>
-<span class="nc" id="L93">            builder.proxy(pinfo.getProxy());</span>
+<span class="fc" id="L95">        final ProxyInfo pinfo = config.getExecution().getProxyInfo();</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (usesProxy(pinfo)) {</span>
+<span class="fc" id="L97">            builder.proxy(pinfo.getProxy());</span>
         }
 
-<span class="fc" id="L96">        this.client = builder.build();</span>
-<span class="fc" id="L97">    }</span>
-    
+<span class="fc" id="L100">        this.client = builder.build();</span>
+<span class="fc" id="L101">    }</span>
+
     private boolean usesProxy(final ProxyInfo pinfo) {
-<span class="pc bpc" id="L100" title="3 of 4 branches missed.">        return pinfo != null &amp;&amp; pinfo.getProxy().type() != Proxy.Type.DIRECT;</span>
+<span class="pc bpc" id="L104" title="1 of 4 branches missed.">        return pinfo != null &amp;&amp; pinfo.getProxy().type() != Proxy.Type.DIRECT;</span>
     }
 
     /**
@@ -106,20 +110,20 @@ public class OkHttpBuilder extends HttpBuilder {
      * @return the reference to the internal client implementation as an {@link OkHttpClient}
      */
     public Object getClientImplementation() {
-<span class="fc" id="L109">        return client;</span>
+<span class="fc" id="L113">        return client;</span>
     }
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * 
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
-     * request.uri = 'http://localhost:10101'
+     *     request.uri = 'http://localhost:10101'
      * }
      * ----
      *
@@ -127,33 +131,33 @@ public class OkHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="fc" id="L130">        return configure(okFactory, closure);</span>
+<span class="fc" id="L134">        return configure(okFactory, closure);</span>
     }
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * 
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * This configuration method is generally meant for use with standard Java.
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer&lt;HttpObjectConfig&gt;() {
      * public void accept(HttpObjectConfig config) {
-     * config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
+     *     config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
      * }
      * });
      * ----
-     *
+     * 
      * Or, using lambda expressions:
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(config -&gt; {
-     * config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
+     *     config.getRequest().setUri(format(&quot;http://localhost:%d&quot;, serverRule.getPort()));
      * });
      * ----
      *
@@ -161,115 +165,133 @@ public class OkHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Consumer&lt;HttpObjectConfig&gt; configuration) {
-<span class="nc" id="L164">        return configure(okFactory, configuration);</span>
+<span class="nc" id="L168">        return configure(okFactory, configuration);</span>
     }
 
     @Override
     protected ChainedHttpConfig getObjectConfig() {
-<span class="fc" id="L169">        return config;</span>
+<span class="fc" id="L173">        return config;</span>
     }
 
     @Override
     public Executor getExecutor() {
-<span class="fc" id="L174">        return executor;</span>
+<span class="fc" id="L178">        return executor;</span>
     }
 
     @Override
     protected Object doGet(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L179">        return execute((url) -&gt; new Request.Builder().get().url(url), chainedConfig);</span>
+<span class="fc" id="L183">        return execute((url) -&gt; new Request.Builder().get().url(url), chainedConfig);</span>
     }
 
     @Override
     protected Object doHead(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L184">        return execute((url) -&gt; new Request.Builder().head().url(url), chainedConfig);</span>
+<span class="fc" id="L188">        return execute((url) -&gt; new Request.Builder().head().url(url), chainedConfig);</span>
     }
 
     @Override
     protected Object doPost(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L189">        return execute((url) -&gt; new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url),</span>
-            chainedConfig);
+<span class="fc" id="L193">        return execute((url) -&gt; new Request.Builder().post(resolveRequestBody(chainedConfig)).url(url), chainedConfig);</span>
     }
 
     @Override
     protected Object doPut(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L195">        return execute((url) -&gt; new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url),</span>
-            chainedConfig);
+<span class="fc" id="L198">        return execute((url) -&gt; new Request.Builder().put(resolveRequestBody(chainedConfig)).url(url), chainedConfig);</span>
     }
 
     @Override
     protected Object doPatch(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L201">        return execute((url) -&gt; new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url),</span>
-            chainedConfig);
+<span class="fc" id="L203">        return execute((url) -&gt; new Request.Builder().patch(resolveRequestBody(chainedConfig)).url(url), chainedConfig);</span>
     }
 
     @Override
     protected Object doDelete(final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L207">        return execute((url) -&gt; new Request.Builder().delete().url(url), chainedConfig);</span>
+<span class="fc" id="L208">        return execute((url) -&gt; new Request.Builder().delete().url(url), chainedConfig);</span>
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+<span class="fc" id="L213">        return execute((url) -&gt; new Request.Builder().method(OPTIONS, null).url(url), config);</span>
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+<span class="fc" id="L218">        return execute((url) -&gt; new Request.Builder().method(TRACE, null).url(url), config);</span>
     }
 
     @Override
     public void close() throws IOException {
         // does nothing
-<span class="nc" id="L213">    }</span>
+<span class="nc" id="L224">    }</span>
 
-    private RequestBody resolveRequestBody(ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L216">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
-<span class="fc" id="L217">        RequestBody body = RequestBody.create(MediaType.parse(cr.actualContentType()), &quot;&quot;);</span>
-<span class="fc bfc" id="L218" title="All 2 branches covered.">        if (cr.actualBody() != null) {</span>
-<span class="fc" id="L219">            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);</span>
-<span class="fc" id="L220">            chainedConfig.findEncoder().accept(chainedConfig, toServer);</span>
+    private RequestBody resolveRequestBody(final ChainedHttpConfig chainedConfig) {
+<span class="fc" id="L227">        final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
 
-<span class="fc" id="L222">            body = toServer;</span>
+        final RequestBody body;
+<span class="fc bfc" id="L230" title="All 2 branches covered.">        if (cr.actualBody() != null) {</span>
+<span class="fc" id="L231">            final OkHttpToServer toServer = new OkHttpToServer(chainedConfig);</span>
+<span class="fc" id="L232">            chainedConfig.findEncoder().accept(chainedConfig, toServer);</span>
+<span class="fc" id="L233">            body = toServer;</span>
+
+<span class="fc" id="L235">        } else {</span>
+<span class="fc" id="L236">            body = RequestBody.create(resolveMediaType(cr.actualContentType(), cr.actualCharset()), &quot;&quot;);</span>
         }
-<span class="fc" id="L224">        return body;</span>
+
+<span class="fc" id="L239">        return body;</span>
     }
 
-    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
-<span class="fc bfc" id="L228" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L229">            requestBuilder.addHeader(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L230">        }</span>
-
-<span class="fc" id="L232">        final String contentType = cr.actualContentType();</span>
-<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (contentType != null) {</span>
-<span class="fc" id="L234">            requestBuilder.addHeader(&quot;Content-Type&quot;, contentType);</span>
+    private static MediaType resolveMediaType(final String contentType, final Charset charset) {
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">        if (contentType != null) {</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">            if (charset != null) {</span>
+<span class="fc" id="L245">                return parse(contentType + &quot;; charset=&quot; + charset.toString().toLowerCase());</span>
+            } else {
+<span class="nc" id="L247">                return parse(contentType);</span>
+            }
         }
+<span class="nc" id="L250">        return null;</span>
+    }
 
-<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
-<span class="fc" id="L238">            requestBuilder.addHeader(e.getKey(), e.getValue());</span>
-<span class="fc" id="L239">        }</span>
-<span class="fc" id="L240">    }</span>
+    @SuppressWarnings(&quot;Duplicates&quot;)
+    private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
+<span class="fc bfc" id="L255" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L256">            requestBuilder.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L257">        }</span>
+
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L260">            requestBuilder.addHeader(e.getKey(), e.getValue());</span>
+<span class="fc" id="L261">        }</span>
+<span class="fc" id="L262">    }</span>
 
     private static void applyAuth(final Request.Builder requestBuilder, final ChainedHttpConfig chainedConfig) {
-<span class="fc" id="L243">        final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();</span>
-<span class="fc bfc" id="L244" title="All 2 branches covered.">        if (auth != null) {</span>
-<span class="pc bfc" id="L245" title="All 2 branches covered.">            switch (auth.getAuthType()) {</span>
+<span class="fc" id="L265">        final HttpConfig.Auth auth = chainedConfig.getChainedRequest().actualAuth();</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        if (auth != null) {</span>
+<span class="pc bfc" id="L267" title="All 2 branches covered.">            switch (auth.getAuthType()) {</span>
                 case BASIC:
-<span class="fc" id="L247">                    requestBuilder.addHeader(&quot;Authorization&quot;, Credentials.basic(auth.getUser(), auth.getPassword()));</span>
-<span class="fc" id="L248">                    break;</span>
+<span class="fc" id="L269">                    requestBuilder.addHeader(&quot;Authorization&quot;, Credentials.basic(auth.getUser(), auth.getPassword()));</span>
+<span class="fc" id="L270">                    break;</span>
                 case DIGEST:
                     // supported in constructor with an interceptor
             }
         }
-<span class="fc" id="L253">    }</span>
+<span class="fc" id="L275">    }</span>
 
     private Object execute(final Function&lt;HttpUrl, Request.Builder&gt; makeBuilder, final ChainedHttpConfig chainedConfig) {
         try {
-<span class="fc" id="L257">            final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
-<span class="fc" id="L258">            final URI uri = cr.getUri().toURI();</span>
-<span class="fc" id="L259">            final HttpUrl httpUrl = HttpUrl.get(uri);</span>
-<span class="fc" id="L260">            final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);</span>
+<span class="fc" id="L279">            final ChainedHttpConfig.ChainedRequest cr = chainedConfig.getChainedRequest();</span>
+<span class="fc" id="L280">            final URI uri = cr.getUri().toURI();</span>
+<span class="fc" id="L281">            final HttpUrl httpUrl = HttpUrl.get(uri);</span>
+<span class="fc" id="L282">            final Request.Builder requestBuilder = makeBuilder.apply(httpUrl);</span>
 
-<span class="fc" id="L262">            applyHeaders(requestBuilder, cr);</span>
-<span class="fc" id="L263">            applyAuth(requestBuilder, chainedConfig);</span>
+<span class="fc" id="L284">            applyHeaders(requestBuilder, cr);</span>
 
-<span class="fc" id="L265">            try (Response response = client.newCall(requestBuilder.build()).execute()) {</span>
-<span class="fc" id="L266">                return HANDLER_FUNCTION.apply(chainedConfig,</span>
-<span class="fc" id="L267">                    new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));</span>
-<span class="pc bpc" id="L268" title="4 of 8 branches missed.">            } catch (IOException ioe) {</span>
-<span class="fc" id="L269">                throw ioe; //re-throw, close has happened</span>
+<span class="fc" id="L286">            applyAuth(requestBuilder, chainedConfig);</span>
+
+<span class="fc" id="L288">            try (Response response = client.newCall(requestBuilder.build()).execute()) {</span>
+<span class="fc" id="L289">                return HANDLER_FUNCTION.apply(chainedConfig, new OkHttpFromServer(chainedConfig.getChainedRequest().getUri().toURI(), response));</span>
+<span class="pc bpc" id="L290" title="4 of 8 branches missed.">            } catch (IOException ioe) {</span>
+<span class="fc" id="L291">                throw ioe; //re-throw, close has happened</span>
             }
-<span class="fc" id="L271">        } catch (Exception e) {</span>
-<span class="fc" id="L272">            return handleException(chainedConfig.getChainedResponse(), e);</span>
+<span class="fc" id="L293">        } catch (Exception e) {</span>
+<span class="fc" id="L294">            return handleException(chainedConfig.getChainedResponse(), e);</span>
         }
     }
 
@@ -278,65 +300,69 @@ public class OkHttpBuilder extends HttpBuilder {
         private final URI uri;
         private final Response response;
         private List&lt;Header&lt;?&gt;&gt; headers;
+        private boolean body;
 
-<span class="fc" id="L282">        private OkHttpFromServer(final URI uri, final Response response) {</span>
-<span class="fc" id="L283">            this.uri = uri;</span>
-<span class="fc" id="L284">            this.response = response;</span>
-<span class="fc" id="L285">            this.headers = populateHeaders();</span>
-<span class="fc" id="L286">            addCookieStore(uri, headers);</span>
-<span class="fc" id="L287">        }</span>
+<span class="fc" id="L305">        private OkHttpFromServer(final URI uri, final Response response) {</span>
+<span class="fc" id="L306">            this.uri = uri;</span>
+<span class="fc" id="L307">            this.response = response;</span>
+<span class="fc" id="L308">            this.headers = populateHeaders();</span>
+
+<span class="fc" id="L310">            addCookieStore(uri, headers);</span>
+
+            try {
+<span class="pc bpc" id="L313" title="1 of 4 branches missed.">                body = !response.body().source().exhausted() &amp;&amp; response.peekBody(1).bytes().length &gt; 0;</span>
+<span class="nc" id="L314">            } catch (IOException e) {</span>
+<span class="nc" id="L315">                body = false;</span>
+<span class="fc" id="L316">            }</span>
+<span class="fc" id="L317">        }</span>
 
         private List&lt;Header&lt;?&gt;&gt; populateHeaders() {
-<span class="fc" id="L290">            final Headers headers = response.headers();</span>
-<span class="fc" id="L291">            List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L292" title="All 2 branches covered.">            for (String name : headers.names()) {</span>
-<span class="fc" id="L293">                List&lt;String&gt; values = headers.values(name);</span>
-<span class="fc bfc" id="L294" title="All 2 branches covered.">                for (String value : values) {</span>
-<span class="fc" id="L295">                    ret.add(keyValue(name, value));</span>
-<span class="fc" id="L296">                }</span>
-<span class="fc" id="L297">            }</span>
+<span class="fc" id="L320">            final Headers headers = response.headers();</span>
+<span class="fc" id="L321">            List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">            for (String name : headers.names()) {</span>
+<span class="fc" id="L323">                List&lt;String&gt; values = headers.values(name);</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">                for (String value : values) {</span>
+<span class="fc" id="L325">                    ret.add(keyValue(name, value));</span>
+<span class="fc" id="L326">                }</span>
+<span class="fc" id="L327">            }</span>
 
-<span class="fc" id="L299">            return ret;</span>
+<span class="fc" id="L329">            return ret;</span>
         }
 
         @Override
         public InputStream getInputStream() {
-<span class="fc" id="L304">            return response.body().byteStream();</span>
+<span class="fc" id="L334">            return response.body().byteStream();</span>
         }
 
         @Override
         public int getStatusCode() {
-<span class="fc" id="L309">            return response.code();</span>
+<span class="fc" id="L339">            return response.code();</span>
         }
 
         @Override
         public String getMessage() {
-<span class="fc" id="L314">            return response.message();</span>
+<span class="fc" id="L344">            return response.message();</span>
         }
 
         @Override
         public List&lt;Header&lt;?&gt;&gt; getHeaders() {
-<span class="fc" id="L319">            return headers;</span>
+<span class="fc" id="L349">            return headers;</span>
         }
 
         @Override
         public boolean getHasBody() {
-            try {
-<span class="fc bfc" id="L325" title="All 2 branches covered.">                return !response.body().source().exhausted();</span>
-<span class="nc" id="L326">            } catch (IOException e) {</span>
-<span class="nc" id="L327">                return false;</span>
-            }
+<span class="fc" id="L354">            return body;</span>
         }
 
         @Override
         public URI getUri() {
-<span class="fc" id="L333">            return uri;</span>
+<span class="fc" id="L359">            return uri;</span>
         }
 
         @Override
         public void finish() {
-<span class="fc" id="L338">            response.close();</span>
-<span class="fc" id="L339">        }</span>
+<span class="fc" id="L364">            response.close();</span>
+<span class="fc" id="L365">        }</span>
     }
 
     private static class OkHttpToServer extends RequestBody implements ToServer {
@@ -344,32 +370,32 @@ public class OkHttpBuilder extends HttpBuilder {
         private ChainedHttpConfig config;
         private InputStream inputStream;
 
-<span class="fc" id="L347">        private OkHttpToServer(final ChainedHttpConfig config) {</span>
-<span class="fc" id="L348">            this.config = config;</span>
-<span class="fc" id="L349">        }</span>
+<span class="fc" id="L373">        private OkHttpToServer(final ChainedHttpConfig config) {</span>
+<span class="fc" id="L374">            this.config = config;</span>
+<span class="fc" id="L375">        }</span>
 
         @Override
         public void toServer(final InputStream inputStream) {
-<span class="fc" id="L353">            this.inputStream = inputStream;</span>
-<span class="fc" id="L354">        }</span>
+<span class="fc" id="L379">            this.inputStream = inputStream;</span>
+<span class="fc" id="L380">        }</span>
 
         @Override
         public MediaType contentType() {
-<span class="fc" id="L358">            return MediaType.parse(config.findContentType());</span>
+<span class="fc" id="L384">            return resolveMediaType(config.findContentType(), config.findCharset());</span>
         }
 
         @Override
         public void writeTo(final BufferedSink sink) throws IOException {
             try {
-<span class="fc" id="L364">                int b = inputStream.read();</span>
-<span class="fc bfc" id="L365" title="All 2 branches covered.">                while (b != -1) {</span>
-<span class="fc" id="L366">                    sink.writeByte(b);</span>
-<span class="fc" id="L367">                    b = inputStream.read();</span>
+<span class="fc" id="L390">                int b = inputStream.read();</span>
+<span class="fc bfc" id="L391" title="All 2 branches covered.">                while (b != -1) {</span>
+<span class="fc" id="L392">                    sink.writeByte(b);</span>
+<span class="fc" id="L393">                    b = inputStream.read();</span>
                 }
             } finally {
-<span class="pc" id="L370">                inputStream.close();</span>
-<span class="fc" id="L371">            }</span>
-<span class="fc" id="L372">        }</span>
+<span class="pc" id="L396">                inputStream.close();</span>
+<span class="fc" id="L397">            }</span>
+<span class="fc" id="L398">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

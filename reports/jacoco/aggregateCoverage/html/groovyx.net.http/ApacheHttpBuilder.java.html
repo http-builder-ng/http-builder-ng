@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApacheHttpBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">ApacheHttpBuilder.java</span></div><h1>ApacheHttpBuilder.java</h1><pre class="source lang-java linenums">/**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,13 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovyx.net.http.util.IoUtils;
 import org.apache.http.*;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.auth.AuthScope;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -34,18 +28,24 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.NoSuchAlgorithmException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
@@ -53,9 +53,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Proxy;
-import java.net.URI;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,22 +71,22 @@ import static groovyx.net.http.util.IoUtils.transfer;
 
 /**
  * `HttpBuilder` implementation based on the https://hc.apache.org/httpcomponents-client-ga/[Apache HttpClient library].
- *
+ * 
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
 public class ApacheHttpBuilder extends HttpBuilder {
 
-<span class="fc" id="L78">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; apacheFactory = ApacheHttpBuilder::new;</span>
-<span class="fc" id="L79">    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);</span>
+<span class="fc" id="L80">    private static final Function&lt;HttpObjectConfig, ? extends HttpBuilder&gt; apacheFactory = ApacheHttpBuilder::new;</span>
+<span class="fc" id="L81">    private static final Logger log = LoggerFactory.getLogger(ApacheHttpBuilder.class);</span>
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration closure.
-     *
+     * 
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
@@ -96,18 +98,18 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(@DelegatesTo(HttpObjectConfig.class) final Closure closure) {
-<span class="fc" id="L99">        return configure(apacheFactory, closure);</span>
+<span class="fc" id="L101">        return configure(apacheFactory, closure);</span>
     }
 
     /**
      * Creates an `HttpBuilder` using the `ApacheHttpBuilder` factory instance configured with the provided configuration function.
-     *
+     * 
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     *
+     * 
      * This configuration method is generally meant for use with standard Java.
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer&lt;HttpObjectConfig&gt;() {
@@ -116,9 +118,9 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * }
      * });
      * ----
-     *
+     * 
      * Or, using lambda expressions:
-     *
+     * 
      * [source,java]
      * ----
      * HttpBuilder.configure(config -&gt; {
@@ -130,67 +132,65 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * @return the configured `HttpBuilder`
      */
     public static HttpBuilder configure(final Consumer&lt;HttpObjectConfig&gt; configuration) {
-<span class="nc" id="L133">        return configure(apacheFactory, configuration);</span>
+<span class="nc" id="L135">        return configure(apacheFactory, configuration);</span>
     }
 
     private class SocksHttp extends PlainConnectionSocketFactory {
         final Proxy proxy;
 
-<span class="nc" id="L139">        public SocksHttp(final Proxy proxy) {</span>
-<span class="nc" id="L140">            this.proxy = proxy;</span>
-<span class="nc" id="L141">        }</span>
+<span class="nc" id="L141">        public SocksHttp(final Proxy proxy) {</span>
+<span class="nc" id="L142">            this.proxy = proxy;</span>
+<span class="nc" id="L143">        }</span>
 
         @Override
         public Socket createSocket(final HttpContext context) {
-<span class="nc" id="L145">            return new Socket(proxy);</span>
+<span class="nc" id="L147">            return new Socket(proxy);</span>
         }
     }
 
     private class SocksHttps extends SSLConnectionSocketFactory {
         final Proxy proxy;
 
-<span class="nc" id="L152">        public SocksHttps(final Proxy proxy, final SSLContext sslContext, final HostnameVerifier verifier) {</span>
-<span class="nc" id="L153">            super(sslContext, verifier);</span>
-<span class="nc" id="L154">            this.proxy = proxy;</span>
-<span class="nc" id="L155">        }</span>
+<span class="nc" id="L154">        public SocksHttps(final Proxy proxy, final SSLContext sslContext, final HostnameVerifier verifier) {</span>
+<span class="nc" id="L155">            super(sslContext, verifier);</span>
+<span class="nc" id="L156">            this.proxy = proxy;</span>
+<span class="nc" id="L157">        }</span>
 
         @Override
         public Socket createSocket(final HttpContext context) {
-<span class="nc" id="L159">            return new Socket(proxy);</span>
+<span class="nc" id="L161">            return new Socket(proxy);</span>
         }
     }
 
     private SSLContext sslContext(final HttpObjectConfig config) {
         try {
-<span class="fc bfc" id="L165" title="All 2 branches covered.">            return (config.getExecution().getSslContext() != null ?</span>
-<span class="fc" id="L166">                    config.getExecution().getSslContext() :</span>
-<span class="fc" id="L167">                    SSLContext.getDefault());</span>
-        }
-<span class="nc" id="L169">        catch(NoSuchAlgorithmException e) {</span>
-<span class="nc" id="L170">            throw new RuntimeException(e);</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            return (config.getExecution().getSslContext() != null ?</span>
+<span class="fc" id="L168">                config.getExecution().getSslContext() :</span>
+<span class="fc" id="L169">                SSLContext.getDefault());</span>
+<span class="nc" id="L170">        } catch (NoSuchAlgorithmException e) {</span>
+<span class="nc" id="L171">            throw new RuntimeException(e);</span>
         }
     }
-    
+
     private Registry&lt;ConnectionSocketFactory&gt; registry(final HttpObjectConfig config) {
-<span class="fc" id="L175">        final ProxyInfo proxyInfo = config.getExecution().getProxyInfo();</span>
+<span class="fc" id="L176">        final ProxyInfo proxyInfo = config.getExecution().getProxyInfo();</span>
 
-<span class="pc bpc" id="L177" title="3 of 4 branches missed.">        final boolean isSocksProxied = (proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() == Proxy.Type.SOCKS);</span>
+<span class="pc bpc" id="L178" title="1 of 4 branches missed.">        final boolean isSocksProxied = (proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() == Proxy.Type.SOCKS);</span>
 
-<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        if(isSocksProxied) {</span>
-<span class="nc" id="L180">            return RegistryBuilder.&lt;ConnectionSocketFactory&gt;create()</span>
-<span class="nc" id="L181">                .register(&quot;http&quot;, new SocksHttp(proxyInfo.getProxy()))</span>
-<span class="nc" id="L182">                .register(&quot;https&quot;, new SocksHttps(proxyInfo.getProxy(), sslContext(config),</span>
-<span class="nc" id="L183">                                                  config.getExecution().getHostnameVerifier()))</span>
-<span class="nc" id="L184">                .build();</span>
-        }
-        else {
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">        if (isSocksProxied) {</span>
+<span class="nc" id="L181">            return RegistryBuilder.&lt;ConnectionSocketFactory&gt;create()</span>
+<span class="nc" id="L182">                .register(&quot;http&quot;, new SocksHttp(proxyInfo.getProxy()))</span>
+<span class="nc" id="L183">                .register(&quot;https&quot;, new SocksHttps(proxyInfo.getProxy(), sslContext(config),</span>
+<span class="nc" id="L184">                    config.getExecution().getHostnameVerifier()))</span>
+<span class="nc" id="L185">                .build();</span>
+        } else {
 <span class="fc" id="L187">            return RegistryBuilder.&lt;ConnectionSocketFactory&gt;create()</span>
 <span class="fc" id="L188">                .register(&quot;http&quot;, PlainConnectionSocketFactory.INSTANCE)</span>
 <span class="fc" id="L189">                .register(&quot;https&quot;, new SSLConnectionSocketFactory(sslContext(config), config.getExecution().getHostnameVerifier()))</span>
 <span class="fc" id="L190">                .build();</span>
         }
     }
-    
+
     private class ApacheFromServer implements FromServer {
 
         private final HttpResponse response;
@@ -227,7 +227,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public boolean getHasBody() {
-<span class="fc bfc" id="L230" title="All 2 branches covered.">            return entity != null;</span>
+<span class="fc bfc" id="L230" title="All 4 branches covered.">            return entity != null &amp;&amp; !(inputStream instanceof EmptyInputStream);</span>
         }
 
         public int getStatusCode() {
@@ -344,47 +344,46 @@ public class ApacheHttpBuilder extends HttpBuilder {
 <span class="fc" id="L344">        final HttpClientBuilder myBuilder = HttpClients.custom();</span>
 
 <span class="fc" id="L346">        final Registry&lt;ConnectionSocketFactory&gt; registry = registry(config);</span>
-        
+
 <span class="pc bpc" id="L348" title="1 of 2 branches missed.">        if (config.getExecution().getMaxThreads() &gt; 1) {</span>
 <span class="nc" id="L349">            final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);</span>
 <span class="nc" id="L350">            cm.setMaxTotal(config.getExecution().getMaxThreads());</span>
 <span class="nc" id="L351">            cm.setDefaultMaxPerRoute(config.getExecution().getMaxThreads());</span>
 <span class="nc" id="L352">            myBuilder.setConnectionManager(cm);</span>
-<span class="nc" id="L353">        }</span>
-        else {
-<span class="fc" id="L355">            final BasicHttpClientConnectionManager cm = new BasicHttpClientConnectionManager(registry);</span>
-<span class="fc" id="L356">            myBuilder.setConnectionManager(cm);</span>
-        }
-        
-<span class="fc" id="L359">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
-<span class="fc bfc" id="L360" title="All 2 branches covered.">        if (sslContext != null) {</span>
-<span class="fc" id="L361">            myBuilder.setSSLContext(sslContext);</span>
-<span class="fc" id="L362">            myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, config.getExecution().getHostnameVerifier()));</span>
+<span class="nc" id="L353">        } else {</span>
+<span class="fc" id="L354">            final BasicHttpClientConnectionManager cm = new BasicHttpClientConnectionManager(registry);</span>
+<span class="fc" id="L355">            myBuilder.setConnectionManager(cm);</span>
         }
 
-<span class="fc" id="L365">        myBuilder.addInterceptorFirst((HttpResponseInterceptor) (response, context) -&gt; {</span>
-<span class="fc" id="L366">            HttpEntity entity = response.getEntity();</span>
-<span class="fc bfc" id="L367" title="All 2 branches covered.">            if (entity != null) {</span>
-<span class="fc" id="L368">                Header ceheader = entity.getContentEncoding();</span>
-<span class="fc bfc" id="L369" title="All 2 branches covered.">                if (ceheader != null) {</span>
-<span class="fc" id="L370">                    HeaderElement[] codecs = ceheader.getElements();</span>
-<span class="pc bpc" id="L371" title="1 of 2 branches missed.">                    for (HeaderElement codec : codecs) {</span>
-<span class="pc bpc" id="L372" title="1 of 2 branches missed.">                        if (codec.getName().equalsIgnoreCase(&quot;gzip&quot;)) {</span>
-<span class="fc" id="L373">                            response.setEntity(new GzipDecompressingEntity(response.getEntity()));</span>
-<span class="fc" id="L374">                            return;</span>
+<span class="fc" id="L358">        final SSLContext sslContext = config.getExecution().getSslContext();</span>
+<span class="fc bfc" id="L359" title="All 2 branches covered.">        if (sslContext != null) {</span>
+<span class="fc" id="L360">            myBuilder.setSSLContext(sslContext);</span>
+<span class="fc" id="L361">            myBuilder.setSSLSocketFactory(new SSLConnectionSocketFactory(sslContext, config.getExecution().getHostnameVerifier()));</span>
+        }
+
+<span class="fc" id="L364">        myBuilder.addInterceptorFirst((HttpResponseInterceptor) (response, context) -&gt; {</span>
+<span class="fc" id="L365">            HttpEntity entity = response.getEntity();</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (entity != null) {</span>
+<span class="fc" id="L367">                Header ceheader = entity.getContentEncoding();</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">                if (ceheader != null) {</span>
+<span class="fc" id="L369">                    HeaderElement[] codecs = ceheader.getElements();</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">                    for (HeaderElement codec : codecs) {</span>
+<span class="pc bpc" id="L371" title="1 of 2 branches missed.">                        if (codec.getName().equalsIgnoreCase(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L372">                            response.setEntity(new GzipDecompressingEntity(response.getEntity()));</span>
+<span class="fc" id="L373">                            return;</span>
                         }
                     }
                 }
             }
-<span class="fc" id="L379">        });</span>
+<span class="fc" id="L378">        });</span>
 
-<span class="fc" id="L381">        final Consumer&lt;Object&gt; clientCustomizer = clientConfig.getClientCustomizer();</span>
-<span class="fc bfc" id="L382" title="All 2 branches covered.">        if (clientCustomizer != null) {</span>
-<span class="fc" id="L383">            clientCustomizer.accept(myBuilder);</span>
+<span class="fc" id="L380">        final Consumer&lt;Object&gt; clientCustomizer = clientConfig.getClientCustomizer();</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">        if (clientCustomizer != null) {</span>
+<span class="fc" id="L382">            clientCustomizer.accept(myBuilder);</span>
         }
 
-<span class="fc" id="L386">        this.client = myBuilder.build();</span>
-<span class="fc" id="L387">    }</span>
+<span class="fc" id="L385">        this.client = myBuilder.build();</span>
+<span class="fc" id="L386">    }</span>
 
     /**
      * Retrieves the internal client implementation as an {@link HttpClient} instance.
@@ -392,75 +391,76 @@ public class ApacheHttpBuilder extends HttpBuilder {
      * @return the reference to the internal client implementation as an {@link HttpClient}
      */
     public Object getClientImplementation() {
-<span class="fc" id="L395">        return client;</span>
+<span class="fc" id="L394">        return client;</span>
     }
 
     protected ChainedHttpConfig getObjectConfig() {
-<span class="fc" id="L399">        return config;</span>
+<span class="fc" id="L398">        return config;</span>
     }
 
     public Executor getExecutor() {
-<span class="fc" id="L403">        return executor;</span>
+<span class="fc" id="L402">        return executor;</span>
     }
 
     public void close() {
         try {
-<span class="nc" id="L408">            client.close();</span>
-<span class="nc" id="L409">        } catch (IOException ioe) {</span>
-<span class="nc bnc" id="L410" title="All 2 branches missed.">            if (log.isWarnEnabled()) {</span>
-<span class="nc" id="L411">                log.warn(&quot;Error in closing http client&quot;, ioe);</span>
+<span class="nc" id="L407">            client.close();</span>
+<span class="nc" id="L408">        } catch (IOException ioe) {</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">            if (log.isWarnEnabled()) {</span>
+<span class="nc" id="L410">                log.warn(&quot;Error in closing http client&quot;, ioe);</span>
             }
-<span class="nc" id="L413">        }</span>
-<span class="nc" id="L414">    }</span>
+<span class="nc" id="L412">        }</span>
+<span class="nc" id="L413">    }</span>
 
     private void basicAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
-<span class="fc" id="L417">        CredentialsProvider provider = new BasicCredentialsProvider();</span>
-<span class="fc" id="L418">        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),</span>
-<span class="fc" id="L419">            new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));</span>
-<span class="fc" id="L420">        c.setCredentialsProvider(provider);</span>
-<span class="fc" id="L421">    }</span>
+<span class="fc" id="L416">        CredentialsProvider provider = new BasicCredentialsProvider();</span>
+<span class="fc" id="L417">        provider.setCredentials(AuthScope.ANY, //new AuthScope(uri.getHost(), port(uri)),</span>
+<span class="fc" id="L418">            new UsernamePasswordCredentials(auth.getUser(), auth.getPassword()));</span>
+<span class="fc" id="L419">        c.setCredentialsProvider(provider);</span>
+<span class="fc" id="L420">    }</span>
 
     private void digestAuth(final HttpClientContext c, final HttpConfig.Auth auth, final URI uri) {
-<span class="fc" id="L424">        basicAuth(c, auth, uri);</span>
-<span class="fc" id="L425">    }</span>
+<span class="fc" id="L423">        basicAuth(c, auth, uri);</span>
+<span class="fc" id="L424">    }</span>
 
     private HttpClientContext context(final ChainedHttpConfig requestConfig) throws URISyntaxException {
-<span class="fc" id="L428">        final HttpClientContext c = HttpClientContext.create();</span>
-<span class="fc" id="L429">        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L430">        final HttpConfig.Auth auth = cr.actualAuth();</span>
+<span class="fc" id="L427">        final HttpClientContext c = HttpClientContext.create();</span>
+<span class="fc" id="L428">        final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L429">        final HttpConfig.Auth auth = cr.actualAuth();</span>
 
-<span class="fc bfc" id="L432" title="All 2 branches covered.">        if (auth != null) {</span>
-<span class="fc" id="L433">            final URI uri = requestConfig.getRequest().getUri().toURI();</span>
-<span class="fc bfc" id="L434" title="All 2 branches covered.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC) {</span>
-<span class="fc" id="L435">                basicAuth(c, auth, uri);</span>
-<span class="pc bpc" id="L436" title="1 of 2 branches missed.">            } else if (auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
-<span class="fc" id="L437">                digestAuth(c, auth, uri);</span>
+<span class="fc bfc" id="L431" title="All 2 branches covered.">        if (auth != null) {</span>
+<span class="fc" id="L432">            final URI uri = requestConfig.getRequest().getUri().toURI();</span>
+<span class="fc bfc" id="L433" title="All 2 branches covered.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC) {</span>
+<span class="fc" id="L434">                basicAuth(c, auth, uri);</span>
+<span class="pc bpc" id="L435" title="1 of 2 branches missed.">            } else if (auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
+<span class="fc" id="L436">                digestAuth(c, auth, uri);</span>
             }
         }
 
-<span class="fc" id="L441">        return c;</span>
+<span class="fc" id="L440">        return c;</span>
     }
-        
-    private &lt;T extends HttpRequestBase&gt; Object exec(final ChainedHttpConfig requestConfig,
-                                                    final Function&lt;URI, T&gt; constructor) {
 
+    private &lt;T extends HttpRequestBase&gt; Object exec(final ChainedHttpConfig requestConfig, final Function&lt;URI, T&gt; constructor) {
         try {
-<span class="fc" id="L448">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L449">            final URI theUri = cr.getUri().toURI();</span>
-<span class="fc" id="L450">            final T request = constructor.apply(theUri);</span>
-<span class="fc" id="L451">            addHeaders(cr, request);</span>
-<span class="fc bfc" id="L452" title="All 4 branches covered.">            if ((request instanceof HttpEntityEnclosingRequest) &amp;&amp; cr.actualBody() != null) {</span>
-<span class="fc" id="L453">                final HttpEntity entity = entity(requestConfig);</span>
-<span class="fc" id="L454">                ((HttpEntityEnclosingRequest) request).setEntity(entity);</span>
-<span class="fc" id="L455">                request.setHeader(entity.getContentType());</span>
+<span class="fc" id="L445">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L446">            final URI theUri = cr.getUri().toURI();</span>
+<span class="fc" id="L447">            final T request = constructor.apply(theUri);</span>
+
+<span class="fc bfc" id="L449" title="All 4 branches covered.">            if ((request instanceof HttpEntityEnclosingRequest) &amp;&amp; cr.actualBody() != null) {</span>
+<span class="fc" id="L450">                final HttpEntity entity = entity(requestConfig);</span>
+<span class="fc" id="L451">                ((HttpEntityEnclosingRequest) request).setEntity(entity);</span>
+<span class="fc" id="L452">                request.setHeader(entity.getContentType());</span>
             }
 
-<span class="pc bpc" id="L458" title="3 of 4 branches missed.">            if(proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() == Proxy.Type.HTTP) {</span>
-<span class="nc bnc" id="L459" title="All 2 branches missed.">                HttpHost proxy = new HttpHost(proxyInfo.getAddress(), proxyInfo.getPort(), proxyInfo.isSecure() ? &quot;https&quot; : &quot;http&quot;);</span>
-<span class="nc" id="L460">                request.setConfig(RequestConfig.custom().setProxy(proxy).build());</span>
+<span class="fc" id="L455">            addHeaders(cr, request);</span>
+
+<span class="pc bpc" id="L457" title="1 of 4 branches missed.">            if (proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() == Proxy.Type.HTTP) {</span>
+<span class="pc bpc" id="L458" title="1 of 2 branches missed.">                HttpHost proxy = new HttpHost(proxyInfo.getAddress(), proxyInfo.getPort(), proxyInfo.isSecure() ? &quot;https&quot; : &quot;http&quot;);</span>
+<span class="fc" id="L459">                request.setConfig(RequestConfig.custom().setProxy(proxy).build());</span>
             }
 
-<span class="fc" id="L463">            return client.execute(request, new Handler(requestConfig), context(requestConfig));</span>
+<span class="fc" id="L462">            return client.execute(request, new Handler(requestConfig), context(requestConfig));</span>
+
 <span class="fc" id="L464">        } catch (Exception e) {</span>
 <span class="fc" id="L465">            return handleException(requestConfig.getChainedResponse(), e);</span>
         }
@@ -472,43 +472,59 @@ public class ApacheHttpBuilder extends HttpBuilder {
 <span class="fc" id="L472">        return ats;</span>
     }
 
+    @SuppressWarnings(&quot;Duplicates&quot;)
     private &lt;T extends HttpUriRequest&gt; void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
-<span class="fc bfc" id="L476" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L477">            message.addHeader(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L478">        }</span>
+<span class="fc bfc" id="L477" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L478">            message.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L479">        }</span>
 
-<span class="fc" id="L480">        final String contentType = cr.actualContentType();</span>
-<span class="fc bfc" id="L481" title="All 2 branches covered.">        if (contentType != null) {</span>
-<span class="fc" id="L482">            message.addHeader(&quot;Content-Type&quot;, contentType);</span>
+<span class="fc" id="L481">        final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L482" title="All 2 branches covered.">        if (contentType != null) {</span>
+<span class="fc" id="L483">            final Charset charset = cr.actualCharset();</span>
+<span class="pc bpc" id="L484" title="1 of 2 branches missed.">            if (charset != null) {</span>
+<span class="fc" id="L485">                message.setHeader(&quot;Content-Type&quot;, contentType + &quot;; charset=&quot; + charset.toString().toLowerCase());</span>
+            } else {
+<span class="nc" id="L487">                message.setHeader(&quot;Content-Type&quot;, contentType);</span>
+            }
         }
 
-<span class="fc bfc" id="L485" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
-<span class="fc" id="L486">            message.addHeader(e.getKey(), e.getValue());</span>
-<span class="fc" id="L487">        }</span>
-<span class="fc" id="L488">    }</span>
+<span class="fc bfc" id="L491" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L492">            message.addHeader(e.getKey(), e.getValue());</span>
+<span class="fc" id="L493">        }</span>
+<span class="fc" id="L494">    }</span>
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L491">        return exec(requestConfig, HttpGet::new);</span>
+<span class="fc" id="L497">        return exec(requestConfig, HttpGet::new);</span>
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L495">        return exec(requestConfig, HttpHead::new);</span>
+<span class="fc" id="L501">        return exec(requestConfig, HttpHead::new);</span>
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L499">        return exec(requestConfig, HttpPost::new);</span>
+<span class="fc" id="L505">        return exec(requestConfig, HttpPost::new);</span>
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L503">        return exec(requestConfig, HttpPut::new);</span>
+<span class="fc" id="L509">        return exec(requestConfig, HttpPut::new);</span>
     }
 
     protected Object doPatch(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L507">        return exec(requestConfig, HttpPatch::new);</span>
+<span class="fc" id="L513">        return exec(requestConfig, HttpPatch::new);</span>
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L511">        return exec(requestConfig, HttpDelete::new);</span>
+<span class="fc" id="L517">        return exec(requestConfig, HttpDelete::new);</span>
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+<span class="fc" id="L522">        return exec(config, HttpOptions::new);</span>
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+<span class="fc" id="L527">        return exec(config, HttpTrace::new);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

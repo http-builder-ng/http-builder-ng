@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.066s</div>
+<div class="counter">0.082s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,12 +79,12 @@
 </thead>
 <tr>
 <td class="success">multipart</td>
-<td>0.032s</td>
+<td>0.036s</td>
 <td class="success">passed</td>
 </tr>
 <tr>
 <td class="success">multipart with JavaMail</td>
-<td>0.034s</td>
+<td>0.046s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -92,19 +92,21 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>06:58:21.837 [XNIO-172 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-2', selector sun.nio.ch.EPollSelectorImpl@4b8be5b2
-06:58:21.837 [XNIO-172 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-1', selector sun.nio.ch.EPollSelectorImpl@595fb41b
-06:58:21.837 [XNIO-172 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-5', selector sun.nio.ch.EPollSelectorImpl@420673c1
-06:58:21.837 [XNIO-172 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-8', selector sun.nio.ch.EPollSelectorImpl@a989249
-06:58:21.837 [XNIO-172 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-7', selector sun.nio.ch.EPollSelectorImpl@18629ec8
-06:58:21.837 [XNIO-172 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-6', selector sun.nio.ch.EPollSelectorImpl@363c5793
-06:58:21.837 [XNIO-172 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-4', selector sun.nio.ch.EPollSelectorImpl@42d95a11
-06:58:21.838 [XNIO-172 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 Accept', selector sun.nio.ch.EPollSelectorImpl@6f8f7d1b
-06:58:21.837 [XNIO-172 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-172 I/O-3', selector sun.nio.ch.EPollSelectorImpl@d613c4
-06:58:21.841 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://localhost:43045/download
-06:58:21.841 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-06:58:21.842 [XNIO-172 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /download (query=[:], headers={Accept=[text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2], Connection=[keep-alive], Accept-Encoding=[gzip, deflate], User-Agent=[Java/1.8.0_131], Host=[localhost:43045]}, cookies=[:]): &lt;empty&gt; }
-06:58:21.848 [XNIO-172 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[multipart/mixed; boundary=abc123]}): --abc123
+<pre>06:44:16.485 [Test worker] DEBUG ersatz.undertow - starting undertow server ersatz.undertow.Undertow@1c5e79d8
+06:44:16.486 [XNIO-186 I/O-3] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-3', selector sun.nio.ch.EPollSelectorImpl@70edc5a1
+06:44:16.486 [XNIO-186 I/O-2] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-2', selector sun.nio.ch.EPollSelectorImpl@7278f16e
+06:44:16.486 [XNIO-186 I/O-1] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-1', selector sun.nio.ch.EPollSelectorImpl@834fb1c
+06:44:16.486 [XNIO-186 I/O-4] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-4', selector sun.nio.ch.EPollSelectorImpl@61b60782
+06:44:16.486 [Test worker] DEBUG ersatz.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+06:44:16.486 [XNIO-186 I/O-5] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-5', selector sun.nio.ch.EPollSelectorImpl@4ce942c2
+06:44:16.486 [XNIO-186 I/O-7] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-7', selector sun.nio.ch.EPollSelectorImpl@3b8e9ff1
+06:44:16.486 [XNIO-186 I/O-6] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-6', selector sun.nio.ch.EPollSelectorImpl@3f34346c
+06:44:16.486 [XNIO-186 Accept] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 Accept', selector sun.nio.ch.EPollSelectorImpl@36ef9829
+06:44:16.487 [XNIO-186 I/O-8] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-186 I/O-8', selector sun.nio.ch.EPollSelectorImpl@2f49583f
+06:44:16.491 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://localhost:39799/download
+06:44:16.491 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+06:44:16.492 [XNIO-186 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /download (query=[:], headers={Accept=[text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2], Connection=[keep-alive], Accept-Encoding=[gzip, deflate], User-Agent=[Java/1.8.0_131], Host=[localhost:39799]}, cookies=[:]): &lt;empty&gt; }
+06:44:16.498 [XNIO-186 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[multipart/mixed; boundary=abc123]}): --abc123
 Content-Disposition: form-data; name=&quot;alpha&quot;
 Content-Type: text/plain
 
@@ -116,7 +118,7 @@ Content-Type: text/plain
 This is some text content
 --abc123--
 
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: --abc123
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: --abc123
 Content-Disposition: form-data; name=&quot;alpha&quot;
 Content-Type: text/plain
 
@@ -128,24 +130,27 @@ Content-Type: text/plain
 This is some text content
 --abc123--
 
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Encoding -&gt; gzip
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; multipart/mixed; boundary=abc123
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 147
-06:58:21.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 01 Sep 2017 11:58:13 GMT
-06:58:21.862 [XNIO-173 I/O-1] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-1', selector sun.nio.ch.EPollSelectorImpl@4c988593
-06:58:21.862 [XNIO-173 I/O-2] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-2', selector sun.nio.ch.EPollSelectorImpl@4047e3d5
-06:58:21.862 [XNIO-173 I/O-3] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-3', selector sun.nio.ch.EPollSelectorImpl@11dcc1a9
-06:58:21.862 [XNIO-173 I/O-6] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-6', selector sun.nio.ch.EPollSelectorImpl@66b196ba
-06:58:21.862 [XNIO-173 Accept] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 Accept', selector sun.nio.ch.EPollSelectorImpl@69740eb7
-06:58:21.862 [XNIO-173 I/O-4] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-4', selector sun.nio.ch.EPollSelectorImpl@41527ec3
-06:58:21.862 [XNIO-173 I/O-5] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-5', selector sun.nio.ch.EPollSelectorImpl@675d3d53
-06:58:21.862 [XNIO-173 I/O-8] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-8', selector sun.nio.ch.EPollSelectorImpl@4d274bfd
-06:58:21.862 [XNIO-173 I/O-7] DEBUG org.xnio.nio - Started channel thread 'XNIO-173 I/O-7', selector sun.nio.ch.EPollSelectorImpl@fbd626
-06:58:21.867 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI: http://localhost:41037/download
-06:58:21.867 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-06:58:21.868 [XNIO-173 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /download (query=[:], headers={Accept=[text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2], Connection=[keep-alive], Accept-Encoding=[gzip, deflate], User-Agent=[Java/1.8.0_131], Host=[localhost:41037]}, cookies=[:]): &lt;empty&gt; }
-06:58:21.869 [XNIO-173 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[multipart/mixed; boundary=abc123]}): --abc123
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Encoding -&gt; gzip
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; multipart/mixed; boundary=abc123
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 147
+06:44:16.498 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 22 Sep 2017 11:44:07 GMT
+06:44:16.503 [Test worker] DEBUG ersatz.undertow - stopping undertow server ersatz.undertow.Undertow@1c5e79d8
+06:44:16.512 [Test worker] DEBUG ersatz.undertow - starting undertow server ersatz.undertow.Undertow@755d0752
+06:44:16.513 [XNIO-187 I/O-1] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-1', selector sun.nio.ch.EPollSelectorImpl@567cee0d
+06:44:16.513 [XNIO-187 I/O-5] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-5', selector sun.nio.ch.EPollSelectorImpl@2133bad7
+06:44:16.513 [XNIO-187 I/O-3] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-3', selector sun.nio.ch.EPollSelectorImpl@2a4b2e87
+06:44:16.515 [XNIO-187 I/O-6] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-6', selector sun.nio.ch.EPollSelectorImpl@705df99b
+06:44:16.513 [XNIO-187 I/O-4] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-4', selector sun.nio.ch.EPollSelectorImpl@3cd54281
+06:44:16.517 [XNIO-187 I/O-7] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-7', selector sun.nio.ch.EPollSelectorImpl@1f01135
+06:44:16.513 [XNIO-187 I/O-2] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-2', selector sun.nio.ch.EPollSelectorImpl@61dfa8e7
+06:44:16.518 [XNIO-187 I/O-8] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 I/O-8', selector sun.nio.ch.EPollSelectorImpl@26747682
+06:44:16.518 [XNIO-187 Accept] DEBUG ersatz.xnio.nio - Started channel thread 'XNIO-187 Accept', selector sun.nio.ch.EPollSelectorImpl@7b997407
+06:44:16.518 [Test worker] DEBUG ersatz.undertow - Configuring listener with protocol HTTP for interface localhost and port 0
+06:44:16.522 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://localhost:44071/download
+06:44:16.522 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+06:44:16.523 [XNIO-187 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Request: { GET /download (query=[:], headers={Accept=[text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2], Connection=[keep-alive], Accept-Encoding=[gzip, deflate], User-Agent=[Java/1.8.0_131], Host=[localhost:44071]}, cookies=[:]): &lt;empty&gt; }
+06:44:16.524 [XNIO-187 task-1] DEBUG com.stehno.ersatz.ErsatzServer - Response({Content-Type=[multipart/mixed; boundary=abc123]}): --abc123
 Content-Disposition: form-data; name=&quot;alpha&quot;
 Content-Type: text/plain
 
@@ -157,7 +162,7 @@ Content-Type: text/plain
 This is some text content
 --abc123--
 
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: --abc123
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: --abc123
 Content-Disposition: form-data; name=&quot;alpha&quot;
 Content-Type: text/plain
 
@@ -169,11 +174,12 @@ Content-Type: text/plain
 This is some text content
 --abc123--
 
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Encoding -&gt; gzip
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; multipart/mixed; boundary=abc123
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 147
-06:58:21.870 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 01 Sep 2017 11:58:13 GMT
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Encoding -&gt; gzip
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; multipart/mixed; boundary=abc123
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 147
+06:44:16.524 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 22 Sep 2017 11:44:07 GMT
+06:44:16.549 [Test worker] DEBUG ersatz.undertow - stopping undertow server ersatz.undertow.Undertow@755d0752
 </pre>
 </span>
 </div>
@@ -185,7 +191,7 @@ This is some text content
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 4.1</a> at Sep 1, 2017 6:58:58 AM</p>
+<a href="http://www.gradle.org">Gradle 4.1</a> at Sep 22, 2017 6:44:55 AM</p>
 </div>
 </div>
 </body>

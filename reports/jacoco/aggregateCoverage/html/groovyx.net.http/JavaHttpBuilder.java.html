@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
@@ -44,150 +45,155 @@ import static groovyx.net.http.HttpBuilder.ResponseHandlerFunction.HANDLER_FUNCT
  */
 public class JavaHttpBuilder extends HttpBuilder {
 
-<span class="fc" id="L47">    private static final Logger log = LoggerFactory.getLogger(JavaHttpBuilder.class);</span>
-<span class="fc" id="L48">    private static final Logger contentLog = LoggerFactory.getLogger(&quot;groovy.net.http.JavaHttpBuilder.content&quot;);</span>
-<span class="fc" id="L49">    private static final Logger headerLog = LoggerFactory.getLogger(&quot;groovy.net.http.JavaHttpBuilder.headers&quot;);</span>
+<span class="fc" id="L48">    private static final Logger log = LoggerFactory.getLogger(JavaHttpBuilder.class);</span>
+<span class="fc" id="L49">    private static final Logger contentLog = LoggerFactory.getLogger(&quot;groovy.net.http.JavaHttpBuilder.content&quot;);</span>
+<span class="fc" id="L50">    private static final Logger headerLog = LoggerFactory.getLogger(&quot;groovy.net.http.JavaHttpBuilder.headers&quot;);</span>
 
     protected class Action {
 
         private final HttpURLConnection connection;
         private final ChainedHttpConfig requestConfig;
         private final URI theUri;
-        
+
         private boolean isProxied() {
-<span class="pc bpc" id="L58" title="3 of 4 branches missed.">            return proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() != Proxy.Type.DIRECT;</span>
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">            return proxyInfo != null &amp;&amp; proxyInfo.getProxy().type() != Proxy.Type.DIRECT;</span>
         }
-        
-<span class="fc" id="L61">        public Action(final Consumer&lt;Object&gt; clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {</span>
-<span class="fc" id="L62">            this.requestConfig = requestConfig;</span>
 
-<span class="fc" id="L64">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc" id="L65">            theUri = cr.getUri().toURI();</span>
+<span class="fc" id="L62">        public Action(final Consumer&lt;Object&gt; clientCustomizer, final ChainedHttpConfig requestConfig, final String verb) throws IOException, URISyntaxException {</span>
+<span class="fc" id="L63">            this.requestConfig = requestConfig;</span>
 
-<span class="fc" id="L67">            final URL url = theUri.toURL();</span>
-<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            connection = (HttpURLConnection) (isProxied() ? url.openConnection(proxyInfo.getProxy()) : url.openConnection());</span>
-<span class="fc" id="L69">            connection.setRequestMethod(verb);</span>
+<span class="fc" id="L65">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L66">            theUri = cr.getUri().toURI();</span>
 
-<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (cr.actualBody() != null) {</span>
-<span class="fc" id="L72">                connection.setDoOutput(true);</span>
+<span class="fc" id="L68">            final URL url = theUri.toURL();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">            connection = (HttpURLConnection) (isProxied() ? url.openConnection(proxyInfo.getProxy()) : url.openConnection());</span>
+<span class="fc" id="L70">            connection.setRequestMethod(verb);</span>
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (cr.actualBody() != null) {</span>
+<span class="fc" id="L73">                connection.setDoOutput(true);</span>
             }
 
-<span class="pc bpc" id="L75" title="1 of 2 branches missed.">            if( clientCustomizer != null ){</span>
-<span class="nc" id="L76">                clientCustomizer.accept(connection);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (clientCustomizer != null) {</span>
+<span class="nc" id="L77">                clientCustomizer.accept(connection);</span>
             }
-<span class="fc" id="L78">        }</span>
+<span class="fc" id="L79">        }</span>
 
         private void addHeaders() throws URISyntaxException {
-<span class="fc" id="L81">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
-<span class="fc bfc" id="L82" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L83">                connection.addRequestProperty(entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L84">            }</span>
+<span class="fc" id="L82">            final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="fc" id="L84">                connection.addRequestProperty(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L85">            }</span>
 
-<span class="fc" id="L86">            final String contentType = cr.actualContentType();</span>
-<span class="fc bfc" id="L87" title="All 2 branches covered.">            if (contentType != null) {</span>
-<span class="fc" id="L88">                connection.addRequestProperty(&quot;Content-Type&quot;, contentType);</span>
+<span class="fc" id="L87">            final String contentType = cr.actualContentType();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            if (contentType != null) {</span>
+<span class="fc" id="L89">                final Charset charset = cr.actualCharset();</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">                if (charset != null) {</span>
+<span class="fc" id="L91">                    connection.addRequestProperty(&quot;Content-Type&quot;, contentType + &quot;; charset=&quot; + charset.toString().toLowerCase());</span>
+                } else {
+<span class="nc" id="L93">                    connection.addRequestProperty(&quot;Content-Type&quot;, contentType);</span>
+                }
             }
 
-<span class="fc" id="L91">            connection.addRequestProperty(&quot;Accept-Encoding&quot;, &quot;gzip, deflate&quot;);</span>
+<span class="fc" id="L97">            connection.addRequestProperty(&quot;Accept-Encoding&quot;, &quot;gzip, deflate&quot;);</span>
 
-<span class="fc bfc" id="L93" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
-<span class="fc" id="L94">                connection.addRequestProperty(e.getKey(), e.getValue());</span>
-<span class="fc" id="L95">            }</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; e : cookiesToAdd(clientConfig, cr).entrySet()) {</span>
+<span class="fc" id="L100">                connection.addRequestProperty(e.getKey(), e.getValue());</span>
+<span class="fc" id="L101">            }</span>
 
-<span class="pc bpc" id="L97" title="1 of 2 branches missed.">            if (headerLog.isDebugEnabled()) {</span>
-<span class="fc" id="L98">                connection.getRequestProperties().forEach((name, values) -&gt; headerLog.debug(&quot;Request-Header: {} -&gt; {}&quot;, name, values));</span>
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">            if (headerLog.isDebugEnabled()) {</span>
+<span class="fc" id="L104">                connection.getRequestProperties().forEach((name, values) -&gt; headerLog.debug(&quot;Request-Header: {} -&gt; {}&quot;, name, values));</span>
             }
-<span class="fc" id="L100">        }</span>
+<span class="fc" id="L106">        }</span>
 
         private PasswordAuthentication getAuthInfo() {
-<span class="fc" id="L103">            final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">            if (auth == null) {</span>
-<span class="fc" id="L105">                return null;</span>
+<span class="fc" id="L109">            final HttpConfig.Auth auth = requestConfig.getChainedRequest().actualAuth();</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            if (auth == null) {</span>
+<span class="fc" id="L111">                return null;</span>
             }
 
-<span class="pc bpc" id="L108" title="1 of 4 branches missed.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
-<span class="fc" id="L109">                return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());</span>
+<span class="pc bpc" id="L114" title="1 of 4 branches missed.">            if (auth.getAuthType() == HttpConfig.AuthType.BASIC || auth.getAuthType() == HttpConfig.AuthType.DIGEST) {</span>
+<span class="fc" id="L115">                return new PasswordAuthentication(auth.getUser(), auth.getPassword().toCharArray());</span>
             } else {
-<span class="nc" id="L111">                throw new UnsupportedOperationException(&quot;HttpURLConnection does not support &quot; + auth.getAuthType() + &quot; authentication&quot;);</span>
+<span class="nc" id="L117">                throw new UnsupportedOperationException(&quot;HttpURLConnection does not support &quot; + auth.getAuthType() + &quot; authentication&quot;);</span>
             }
         }
 
         public Object execute() throws Exception {
-<span class="fc" id="L116">            return ThreadLocalAuth.with(getAuthInfo(), () -&gt; {</span>
-<span class="fc bfc" id="L117" title="All 4 branches covered.">                if (sslContext != null &amp;&amp; connection instanceof HttpsURLConnection) {</span>
-<span class="fc" id="L118">                    HttpsURLConnection https = (HttpsURLConnection) connection;</span>
+<span class="fc" id="L122">            return ThreadLocalAuth.with(getAuthInfo(), () -&gt; {</span>
+<span class="fc bfc" id="L123" title="All 4 branches covered.">                if (sslContext != null &amp;&amp; connection instanceof HttpsURLConnection) {</span>
+<span class="fc" id="L124">                    HttpsURLConnection https = (HttpsURLConnection) connection;</span>
 
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">                    if (hostnameVerifier != null) {</span>
-<span class="fc" id="L121">                        https.setHostnameVerifier(hostnameVerifier);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">                    if (hostnameVerifier != null) {</span>
+<span class="fc" id="L127">                        https.setHostnameVerifier(hostnameVerifier);</span>
                     }
 
-<span class="fc" id="L124">                    https.setSSLSocketFactory(sslContext.getSocketFactory());</span>
+<span class="fc" id="L130">                    https.setSSLSocketFactory(sslContext.getSocketFactory());</span>
                 }
 
-<span class="fc" id="L127">                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
+<span class="fc" id="L133">                final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();</span>
 
-<span class="fc" id="L129">                JavaToServer j2s = null;</span>
-<span class="fc bfc" id="L130" title="All 2 branches covered.">                if (cr.actualBody() != null) {</span>
-<span class="fc" id="L131">                    j2s = new JavaToServer();</span>
-<span class="fc" id="L132">                    requestConfig.findEncoder().accept(requestConfig, j2s);</span>
+<span class="fc" id="L135">                JavaToServer j2s = null;</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">                if (cr.actualBody() != null) {</span>
+<span class="fc" id="L137">                    j2s = new JavaToServer();</span>
+<span class="fc" id="L138">                    requestConfig.findEncoder().accept(requestConfig, j2s);</span>
                 }
 
-<span class="pc bpc" id="L135" title="1 of 2 branches missed.">                if (log.isDebugEnabled()) {</span>
-<span class="fc" id="L136">                    log.debug(&quot;Request-URI: {}&quot;, theUri);</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">                if (log.isDebugEnabled()) {</span>
+<span class="fc" id="L142">                    log.debug(&quot;Request-URI({}): {}&quot;, connection.getRequestMethod(), theUri);</span>
                 }
 
-<span class="fc" id="L139">                addHeaders();</span>
+<span class="fc" id="L145">                addHeaders();</span>
 
-<span class="fc" id="L141">                connection.connect();</span>
+<span class="fc" id="L147">                connection.connect();</span>
 
-<span class="fc bfc" id="L143" title="All 2 branches covered.">                if (j2s != null) {</span>
-<span class="pc bpc" id="L144" title="1 of 2 branches missed.">                    if (contentLog.isDebugEnabled()) {</span>
-<span class="fc" id="L145">                        contentLog.debug(&quot;Request-Body: {}&quot;, j2s.content());</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">                if (j2s != null) {</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">                    if (contentLog.isDebugEnabled()) {</span>
+<span class="fc" id="L151">                        contentLog.debug(&quot;Request-Body({}): {}&quot;, requestConfig.getChainedRequest().actualContentType(), j2s.content());</span>
                     }
 
-<span class="fc" id="L148">                    j2s.transfer();</span>
+<span class="fc" id="L154">                    j2s.transfer();</span>
 
                 }
 
-<span class="fc" id="L152">                final JavaFromServer fromServer = new JavaFromServer(theUri);</span>
+<span class="fc" id="L158">                final JavaFromServer fromServer = new JavaFromServer(theUri);</span>
 
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">                if (contentLog.isDebugEnabled()) {</span>
-<span class="fc" id="L155">                    contentLog.debug(&quot;Response-Body: {}&quot;, fromServer.content());</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">                if (contentLog.isDebugEnabled()) {</span>
+<span class="fc" id="L161">                    contentLog.debug(&quot;Response-Body: {}&quot;, fromServer.content());</span>
                 }
 
-<span class="pc bpc" id="L158" title="1 of 2 branches missed.">                if (headerLog.isDebugEnabled()) {</span>
-<span class="fc" id="L159">                    fromServer.getHeaders().forEach(header -&gt; headerLog.debug(&quot;Response-Header: {} -&gt; {}&quot;, header.getKey(), header.getValue()));</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">                if (headerLog.isDebugEnabled()) {</span>
+<span class="fc" id="L165">                    fromServer.getHeaders().forEach(header -&gt; headerLog.debug(&quot;Response-Header: {} -&gt; {}&quot;, header.getKey(), header.getValue()));</span>
                 }
 
-<span class="fc" id="L162">                return HANDLER_FUNCTION.apply(requestConfig, fromServer);</span>
+<span class="fc" id="L168">                return HANDLER_FUNCTION.apply(requestConfig, fromServer);</span>
             });
         }
 
-<span class="fc" id="L166">        protected class JavaToServer implements ToServer {</span>
+<span class="fc" id="L172">        protected class JavaToServer implements ToServer {</span>
 
             private BufferedInputStream inputStream;
 
             public void toServer(final InputStream inputStream) {
-<span class="pc bpc" id="L171" title="1 of 2 branches missed.">                this.inputStream = inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream : new BufferedInputStream(inputStream);</span>
-<span class="fc" id="L172">            }</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">                this.inputStream = inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream : new BufferedInputStream(inputStream);</span>
+<span class="fc" id="L178">            }</span>
 
             void transfer() throws IOException {
-<span class="fc" id="L175">                IoUtils.transfer(inputStream, connection.getOutputStream(), true);</span>
-<span class="fc" id="L176">            }</span>
+<span class="fc" id="L181">                IoUtils.transfer(inputStream, connection.getOutputStream(), true);</span>
+<span class="fc" id="L182">            }</span>
 
             public String content() {
                 try {
-<span class="fc" id="L180">                    return IoUtils.copyAsString(inputStream);</span>
-<span class="nc" id="L181">                } catch (IOException ioe) {</span>
-<span class="nc bnc" id="L182" title="All 2 branches missed.">                    if (log.isWarnEnabled()) {</span>
-<span class="nc" id="L183">                        log.warn(&quot;Unable to render request stream due to error (may not affect actual content)&quot;, ioe);</span>
+<span class="fc" id="L186">                    return IoUtils.copyAsString(inputStream);</span>
+<span class="nc" id="L187">                } catch (IOException ioe) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                    if (log.isWarnEnabled()) {</span>
+<span class="nc" id="L189">                        log.warn(&quot;Unable to render request stream due to error (may not affect actual content)&quot;, ioe);</span>
                     }
-<span class="nc" id="L185">                } catch (IllegalStateException ise) {</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">                    if (log.isErrorEnabled()) {</span>
-<span class="nc" id="L187">                        log.error(&quot;Unable to reset request stream - actual content may be corrupted (consider disabling content logging)&quot;, ise);</span>
+<span class="nc" id="L191">                } catch (IllegalStateException ise) {</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                    if (log.isErrorEnabled()) {</span>
+<span class="nc" id="L193">                        log.error(&quot;Unable to reset request stream - actual content may be corrupted (consider disabling content logging)&quot;, ise);</span>
                     }
-<span class="nc" id="L189">                }</span>
-<span class="nc" id="L190">                return &quot;&lt;no-information&gt;&quot;;</span>
+<span class="nc" id="L195">                }</span>
+<span class="nc" id="L196">                return &quot;&lt;no-information&gt;&quot;;</span>
             }
         }
 
@@ -199,139 +205,139 @@ public class JavaHttpBuilder extends HttpBuilder {
             private final int statusCode;
             private final String message;
 
-<span class="fc" id="L202">            public JavaFromServer(final URI originalUri) throws IOException {</span>
-<span class="fc" id="L203">                this.uri = originalUri;</span>
-<span class="fc" id="L204">                headers = populateHeaders();</span>
-<span class="fc" id="L205">                addCookieStore(uri, headers);</span>
-<span class="fc" id="L206">                statusCode = connection.getResponseCode();</span>
-<span class="fc" id="L207">                message = connection.getResponseMessage();</span>
-<span class="fc" id="L208">                BufferedInputStream bis = buffered(correctInputStream());</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">                is = (bis == null) ? null : handleEncoding(bis);</span>
-<span class="fc" id="L210">            }</span>
+<span class="fc" id="L208">            public JavaFromServer(final URI originalUri) throws IOException {</span>
+<span class="fc" id="L209">                this.uri = originalUri;</span>
+<span class="fc" id="L210">                headers = populateHeaders();</span>
+<span class="fc" id="L211">                addCookieStore(uri, headers);</span>
+<span class="fc" id="L212">                statusCode = connection.getResponseCode();</span>
+<span class="fc" id="L213">                message = connection.getResponseMessage();</span>
+<span class="fc" id="L214">                BufferedInputStream bis = buffered(correctInputStream());</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">                is = (bis == null) ? null : handleEncoding(bis);</span>
+<span class="fc" id="L216">            }</span>
 
             String content() {
                 try {
-<span class="fc" id="L214">                    return IoUtils.copyAsString(is);</span>
-<span class="nc" id="L215">                } catch (IOException ioe) {</span>
-<span class="nc" id="L216">                    log.warn(&quot;Unable to render response stream due to error (may not affect actual content)&quot;, ioe);</span>
-<span class="nc" id="L217">                } catch (IllegalStateException ise) {</span>
-<span class="nc" id="L218">                    log.error(&quot;Unable to reset response stream - actual content may be corrupted (consider disabling content logging)&quot;, ise);</span>
-<span class="nc" id="L219">                }</span>
-<span class="nc" id="L220">                return &quot;&lt;no-information&gt;&quot;;</span>
+<span class="fc" id="L220">                    return IoUtils.copyAsString(is);</span>
+<span class="nc" id="L221">                } catch (IOException ioe) {</span>
+<span class="nc" id="L222">                    log.warn(&quot;Unable to render response stream due to error (may not affect actual content)&quot;, ioe);</span>
+<span class="nc" id="L223">                } catch (IllegalStateException ise) {</span>
+<span class="nc" id="L224">                    log.error(&quot;Unable to reset response stream - actual content may be corrupted (consider disabling content logging)&quot;, ise);</span>
+<span class="nc" id="L225">                }</span>
+<span class="nc" id="L226">                return &quot;&lt;no-information&gt;&quot;;</span>
             }
 
             private BufferedInputStream buffered(final InputStream is) throws IOException {
-<span class="fc bfc" id="L224" title="All 2 branches covered.">                if (is == null) {</span>
-<span class="fc" id="L225">                    return null;</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">                if (is == null) {</span>
+<span class="fc" id="L231">                    return null;</span>
                 }
 
-<span class="fc" id="L228">                final BufferedInputStream bis = new BufferedInputStream(is);</span>
-<span class="fc" id="L229">                bis.mark(0);</span>
-<span class="fc bfc" id="L230" title="All 2 branches covered.">                if (bis.read() == -1) {</span>
-<span class="fc" id="L231">                    return null;</span>
+<span class="fc" id="L234">                final BufferedInputStream bis = new BufferedInputStream(is);</span>
+<span class="fc" id="L235">                bis.mark(0);</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">                if (bis.read() == -1) {</span>
+<span class="fc" id="L237">                    return null;</span>
                 } else {
-<span class="fc" id="L233">                    bis.reset();</span>
-<span class="fc" id="L234">                    return bis;</span>
+<span class="fc" id="L239">                    bis.reset();</span>
+<span class="fc" id="L240">                    return bis;</span>
                 }
             }
 
             private InputStream correctInputStream() throws IOException {
-<span class="fc bfc" id="L239" title="All 2 branches covered.">                if (getStatusCode() &lt; 400) {</span>
-<span class="fc" id="L240">                    return connection.getInputStream();</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">                if (getStatusCode() &lt; 400) {</span>
+<span class="fc" id="L246">                    return connection.getInputStream();</span>
                 } else {
-<span class="fc" id="L242">                    return connection.getErrorStream();</span>
+<span class="fc" id="L248">                    return connection.getErrorStream();</span>
                 }
             }
 
             private BufferedInputStream handleEncoding(final BufferedInputStream is) throws IOException {
-<span class="fc" id="L247">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
-<span class="fc bfc" id="L248" title="All 2 branches covered.">                if (encodingHeader != null) {</span>
-<span class="pc bpc" id="L249" title="1 of 2 branches missed.">                    if (encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
-<span class="fc" id="L250">                        return new BufferedInputStream(new GZIPInputStream(is));</span>
-<span class="nc bnc" id="L251" title="All 2 branches missed.">                    } else if (encodingHeader.getValue().equals(&quot;deflate&quot;)) {</span>
-<span class="nc" id="L252">                        return new BufferedInputStream(new InflaterInputStream(is));</span>
+<span class="fc" id="L253">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">                if (encodingHeader != null) {</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">                    if (encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
+<span class="fc" id="L256">                        return new BufferedInputStream(new GZIPInputStream(is));</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                    } else if (encodingHeader.getValue().equals(&quot;deflate&quot;)) {</span>
+<span class="nc" id="L258">                        return new BufferedInputStream(new InflaterInputStream(is));</span>
                     }
                 }
 
-<span class="fc" id="L256">                return is;</span>
+<span class="fc" id="L262">                return is;</span>
             }
 
             private String clean(final String str) {
-<span class="fc bfc" id="L260" title="All 2 branches covered.">                if (str == null) {</span>
-<span class="fc" id="L261">                    return null;</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">                if (str == null) {</span>
+<span class="fc" id="L267">                    return null;</span>
                 }
 
-<span class="fc" id="L264">                final String tmp = str.trim();</span>
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">                return &quot;&quot;.equals(tmp) ? null : tmp;</span>
+<span class="fc" id="L270">                final String tmp = str.trim();</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">                return &quot;&quot;.equals(tmp) ? null : tmp;</span>
             }
 
             private List&lt;Header&lt;?&gt;&gt; populateHeaders() {
-<span class="fc" id="L269">                final List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
-<span class="pc bpc" id="L270" title="1 of 2 branches missed.">                for (int i = 0; i &lt; Integer.MAX_VALUE; ++i) {</span>
-<span class="fc" id="L271">                    final String key = clean(connection.getHeaderFieldKey(i));</span>
-<span class="fc" id="L272">                    final String value = clean(connection.getHeaderField(i));</span>
-<span class="fc bfc" id="L273" title="All 4 branches covered.">                    if (key == null &amp;&amp; value == null) {</span>
-<span class="fc" id="L274">                        break;</span>
+<span class="fc" id="L275">                final List&lt;Header&lt;?&gt;&gt; ret = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">                for (int i = 0; i &lt; Integer.MAX_VALUE; ++i) {</span>
+<span class="fc" id="L277">                    final String key = clean(connection.getHeaderFieldKey(i));</span>
+<span class="fc" id="L278">                    final String value = clean(connection.getHeaderField(i));</span>
+<span class="fc bfc" id="L279" title="All 4 branches covered.">                    if (key == null &amp;&amp; value == null) {</span>
+<span class="fc" id="L280">                        break;</span>
                     }
 
-<span class="pc bpc" id="L277" title="1 of 4 branches missed.">                    if (key != null &amp;&amp; value != null) {</span>
-<span class="fc" id="L278">                        ret.add(Header.keyValue(key.trim(), value.trim()));</span>
+<span class="pc bpc" id="L283" title="1 of 4 branches missed.">                    if (key != null &amp;&amp; value != null) {</span>
+<span class="fc" id="L284">                        ret.add(Header.keyValue(key.trim(), value.trim()));</span>
                     }
                 }
 
-<span class="fc" id="L282">                return Collections.unmodifiableList(ret);</span>
+<span class="fc" id="L288">                return Collections.unmodifiableList(ret);</span>
             }
 
             public InputStream getInputStream() {
-<span class="fc" id="L286">                return is;</span>
+<span class="fc" id="L292">                return is;</span>
             }
 
             public final int getStatusCode() {
-<span class="fc" id="L290">                return statusCode;</span>
+<span class="fc" id="L296">                return statusCode;</span>
             }
 
             public String getMessage() {
-<span class="fc" id="L294">                return message;</span>
+<span class="fc" id="L300">                return message;</span>
             }
 
             public List&lt;Header&lt;?&gt;&gt; getHeaders() {
-<span class="fc" id="L298">                return headers;</span>
+<span class="fc" id="L304">                return headers;</span>
             }
 
             public boolean getHasBody() {
-<span class="fc bfc" id="L302" title="All 2 branches covered.">                return is != null;</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">                return is != null;</span>
             }
-            
+
             public URI getUri() {
-<span class="fc" id="L306">                return uri;</span>
+<span class="fc" id="L312">                return uri;</span>
             }
 
             public void finish() {
                 //do nothing, should auto cleanup
-<span class="fc" id="L311">            }</span>
+<span class="fc" id="L317">            }</span>
         }
     }
 
-<span class="fc" id="L315">    protected static class ThreadLocalAuth extends Authenticator {</span>
-<span class="fc" id="L316">        private static final ThreadLocal&lt;PasswordAuthentication&gt; tlAuth = new ThreadLocal&lt;PasswordAuthentication&gt;();</span>
+<span class="fc" id="L321">    protected static class ThreadLocalAuth extends Authenticator {</span>
+<span class="fc" id="L322">        private static final ThreadLocal&lt;PasswordAuthentication&gt; tlAuth = new ThreadLocal&lt;PasswordAuthentication&gt;();</span>
 
         public PasswordAuthentication getPasswordAuthentication() {
-<span class="fc" id="L319">            return tlAuth.get();</span>
+<span class="fc" id="L325">            return tlAuth.get();</span>
         }
 
         public static final &lt;V&gt; V with(final PasswordAuthentication pa, final Callable&lt;V&gt; callable) throws Exception {
-<span class="fc" id="L323">            tlAuth.set(pa);</span>
+<span class="fc" id="L329">            tlAuth.set(pa);</span>
             try {
-<span class="fc" id="L325">                return callable.call();</span>
+<span class="fc" id="L331">                return callable.call();</span>
             } finally {
-<span class="fc" id="L327">                tlAuth.set(null);</span>
+<span class="fc" id="L333">                tlAuth.set(null);</span>
             }
         }
     }
 
     static {
-<span class="fc" id="L333">        Authenticator.setDefault(new ThreadLocalAuth());</span>
-<span class="fc" id="L334">    }</span>
+<span class="fc" id="L339">        Authenticator.setDefault(new ThreadLocalAuth());</span>
+<span class="fc" id="L340">    }</span>
 
     private final ChainedHttpConfig config;
     private final Executor executor;
@@ -340,71 +346,80 @@ public class JavaHttpBuilder extends HttpBuilder {
     private final HostnameVerifier hostnameVerifier;
     private final HttpObjectConfig.Client clientConfig;
 
-    // TODO: this can probably be private or protected.
-    public JavaHttpBuilder(final HttpObjectConfig config) {
-<span class="fc" id="L345">        super(config);</span>
-<span class="fc" id="L346">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
-<span class="fc" id="L347">        this.executor = config.getExecution().getExecutor();</span>
-<span class="fc" id="L348">        this.clientConfig = config.getClient();</span>
-<span class="fc" id="L349">        this.hostnameVerifier = config.getExecution().getHostnameVerifier();</span>
-<span class="fc" id="L350">        this.sslContext = config.getExecution().getSslContext();</span>
-<span class="fc" id="L351">        this.proxyInfo = config.getExecution().getProxyInfo();</span>
-<span class="fc" id="L352">    }</span>
+    protected JavaHttpBuilder(final HttpObjectConfig config) {
+<span class="fc" id="L350">        super(config);</span>
+<span class="fc" id="L351">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L352">        this.executor = config.getExecution().getExecutor();</span>
+<span class="fc" id="L353">        this.clientConfig = config.getClient();</span>
+<span class="fc" id="L354">        this.hostnameVerifier = config.getExecution().getHostnameVerifier();</span>
+<span class="fc" id="L355">        this.sslContext = config.getExecution().getSslContext();</span>
+<span class="fc" id="L356">        this.proxyInfo = config.getExecution().getProxyInfo();</span>
+<span class="fc" id="L357">    }</span>
 
     /**
      * The core Java client implementation does not support direct client access. This method will throw an {@link UnsupportedOperationException}.
      */
     @Override
     public Object getClientImplementation() {
-<span class="fc" id="L359">        throw new UnsupportedOperationException(&quot;The core Java implementation does not support direct client access.&quot;);</span>
+<span class="fc" id="L364">        throw new UnsupportedOperationException(&quot;The core Java implementation does not support direct client access.&quot;);</span>
     }
 
     protected ChainedHttpConfig getObjectConfig() {
-<span class="fc" id="L363">        return config;</span>
+<span class="fc" id="L368">        return config;</span>
     }
 
     private Object createAndExecute(final ChainedHttpConfig config, final String verb) {
         try {
-<span class="fc" id="L368">            Action action = new Action(clientConfig.getClientCustomizer(), config, verb);</span>
-<span class="fc" id="L369">            return action.execute();</span>
-<span class="fc" id="L370">        } catch (Exception e) {</span>
-<span class="fc" id="L371">            return handleException(config.getChainedResponse(), e);</span>
+<span class="fc" id="L373">            Action action = new Action(clientConfig.getClientCustomizer(), config, verb);</span>
+<span class="fc" id="L374">            return action.execute();</span>
+<span class="fc" id="L375">        } catch (Exception e) {</span>
+<span class="fc" id="L376">            return handleException(config.getChainedResponse(), e);</span>
         }
     }
 
     protected Object doGet(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L376">        return createAndExecute(requestConfig, &quot;GET&quot;);</span>
+<span class="fc" id="L381">        return createAndExecute(requestConfig, &quot;GET&quot;);</span>
     }
 
     protected Object doHead(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L380">        return createAndExecute(requestConfig, &quot;HEAD&quot;);</span>
+<span class="fc" id="L385">        return createAndExecute(requestConfig, &quot;HEAD&quot;);</span>
     }
 
     protected Object doPost(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L384">        return createAndExecute(requestConfig, &quot;POST&quot;);</span>
+<span class="fc" id="L389">        return createAndExecute(requestConfig, &quot;POST&quot;);</span>
     }
 
     protected Object doPut(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L388">        return createAndExecute(requestConfig, &quot;PUT&quot;);</span>
+<span class="fc" id="L393">        return createAndExecute(requestConfig, &quot;PUT&quot;);</span>
     }
 
     protected Object doDelete(final ChainedHttpConfig requestConfig) {
-<span class="fc" id="L392">        return createAndExecute(requestConfig, &quot;DELETE&quot;);</span>
+<span class="fc" id="L397">        return createAndExecute(requestConfig, &quot;DELETE&quot;);</span>
     }
 
     protected Object doPatch(final ChainedHttpConfig requestConfig) {
         // The Java HttpURLConnection class only allows standard HTTP/1.1 verbs and will
         // throw a ProtocolException if the user tries to specified PATCH as the HTTP method.
         // See https://docs.oracle.com/javase/8/docs/api/java/net/HttpURLConnection.html#setRequestMethod-java.lang.String-
-<span class="fc" id="L399">        throw new UnsupportedOperationException(&quot;java.net.HttpURLConnection does not support the PATCH method. Use the Apache or OkHttp providers instead.&quot;);</span>
+<span class="fc" id="L404">        throw new UnsupportedOperationException(&quot;java.net.HttpURLConnection does not support the PATCH method. Use the Apache or OkHttp providers instead.&quot;);</span>
+    }
+
+    @Override
+    protected Object doOptions(final ChainedHttpConfig config) {
+<span class="fc" id="L409">        return createAndExecute(config, &quot;OPTIONS&quot;);</span>
+    }
+
+    @Override
+    protected Object doTrace(final ChainedHttpConfig config) {
+<span class="fc" id="L414">        return createAndExecute(config, &quot;TRACE&quot;);</span>
     }
 
     public Executor getExecutor() {
-<span class="fc" id="L403">        return executor;</span>
+<span class="fc" id="L418">        return executor;</span>
     }
 
     public void close() {
         //do nothing, not needed
-<span class="nc" id="L408">    }</span>
+<span class="nc" id="L423">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

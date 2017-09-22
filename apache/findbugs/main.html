@@ -31,7 +31,7 @@
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>274 lines of code analyzed,
+<p>281 lines of code analyzed,
             in 7 classes,
             in 1 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
@@ -48,22 +48,22 @@
 <tr class="tablerow1">
 <td>Medium Priority Warnings</td>
 <td align="right">2</td>
-<td align="right">7.30</td>
+<td align="right">7.12</td>
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">2</td>
-<td align="right">7.30</td>
+<td align="right">3</td>
+<td align="right">10.68</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>4</b>
+<b>5</b>
 </td>
 <td align="right">
-<b>14.60</b>
+<b>17.79</b>
 </td>
 </tr>
 </table>
@@ -82,22 +82,28 @@
 </tr>
 <tr class="tablerow0">
 <td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">1</td>
+</tr>
+<tr class="tablerow1">
+<td>
 <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
 </td>
 <td align="right">3</td>
 </tr>
-<tr class="tablerow1">
+<tr class="tablerow0">
 <td>
 <a href="#Warnings_STYLE">Dodgy code Warnings</a>
 </td>
 <td align="right">1</td>
 </tr>
-<tr class="tablerow0">
+<tr class="tablerow1">
 <td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>4</b>
+<b>5</b>
 </td>
 </tr>
 </table>
@@ -108,6 +114,33 @@
 <h1>Warnings</h1>
 <p>Click on each warning link to see a full description of the issue, and
                     details of how to resolve it.</p>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Use of non-localized String.toUpperCase() or String.toLowerCase() in groovyx.net.http.ApacheHttpBuilder.addHeaders(ChainedHttpConfig$ChainedRequest, HttpUriRequest)<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                line 485<br/>In class groovyx.net.http.ApacheHttpBuilder<br/>In method groovyx.net.http.ApacheHttpBuilder.addHeaders(ChainedHttpConfig$ChainedRequest, HttpUriRequest)<br/>At ApacheHttpBuilder.java:[line 485]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
 <h2>
 <a name="Warnings_PERFORMANCE">Performance Warnings</a>
 </h2>
@@ -127,8 +160,8 @@
 <br/>
 <br/>In file ApacheHttpBuilder.java,
                         
-                                lines 139
-                                to 145<br/>In class groovyx.net.http.ApacheHttpBuilder$SocksHttp<br/>At ApacheHttpBuilder.java:[lines 139-145]</p>
+                                lines 141
+                                to 147<br/>In class groovyx.net.http.ApacheHttpBuilder$SocksHttp<br/>At ApacheHttpBuilder.java:[lines 141-147]</p>
 </td>
 </tr>
 <tr class="tablerow0">
@@ -141,8 +174,8 @@
 <br/>
 <br/>In file ApacheHttpBuilder.java,
                         
-                                lines 152
-                                to 159<br/>In class groovyx.net.http.ApacheHttpBuilder$SocksHttps<br/>At ApacheHttpBuilder.java:[lines 152-159]</p>
+                                lines 154
+                                to 161<br/>In class groovyx.net.http.ApacheHttpBuilder$SocksHttps<br/>At ApacheHttpBuilder.java:[lines 154-161]</p>
 </td>
 </tr>
 <tr class="tablerow1">
@@ -198,6 +231,23 @@
 <h1>
 <a name="Details">Warning Types</a>
 </h1>
+<h2>
+<a name="DM_CONVERT_CASE">Consider using Locale parameterized version of invoked method</a>
+</h2>
+
+  <p> A String is being converted to upper or lowercase, using the platform's default encoding. This may
+      result in improper conversions when used with international characters. Use the </p>
+      <ul>
+    <li>String.toUpperCase( Locale l )</li>
+    <li>String.toLowerCase( Locale l )</li>
+    </ul>
+      <p>versions instead.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
 <h2>
 <a name="REC_CATCH_EXCEPTION">Exception is caught when Exception is not thrown</a>
 </h2>

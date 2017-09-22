@@ -554,12 +554,41 @@ add them to the application&#8217;s war root classpath.</p>
 <p>If neither of these solve the problem for you, please feel free to create an issue, but please provide a working example that we can test against.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_encoded_uri_path">Encoded URI Path</h3>
+<div class="paragraph">
+<p>In some cases HTTP server endpoints will have encoded portions of the path so that you end up with a URI such as:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice the <code>myteam%2Fmyrepo</code> is a URI-encoded string. Using the standard <code>request.uri</code> approach with this URI will fail since the encoding will be decoded when used to create the URI. We have provided
+and alternate approach to solve this problem (see <a href="#_uri">[_uri]</a> Configuration section). Using the <code>request.raw</code> configuration option, you can specify a "raw" URI string which will preserve any
+encoding. In fact, it will perform <em>no</em> encoding or decoding of path or query string elements, so it all must be done in your provided URI string.</p>
+</div>
+<div class="paragraph">
+<p>An example of this approach would be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> result = JavaHttpBuilder.configure {
+    request.raw = <span class="string"><span class="delimiter">&quot;</span><span class="content">http://localhost:1234/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json</span><span class="delimiter">&quot;</span></span>
+}.get()</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>which would properly preserve the encoded URI content.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-09-01 06:53:21 -05:00
+Last updated 2017-09-22 06:42:38 -05:00
 </div>
 </div>
 </body>
