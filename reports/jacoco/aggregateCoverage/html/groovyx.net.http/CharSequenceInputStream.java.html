@@ -75,13 +75,13 @@ public class CharSequenceInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-<span class="fc" id="L78">        ensure();</span>
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        if(outputBuffer.remaining() == 0) {</span>
-<span class="fc" id="L80">            return -1;</span>
+<span class="nc" id="L78">        ensure();</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if(outputBuffer.remaining() == 0) {</span>
+<span class="nc" id="L80">            return -1;</span>
         }
 
-<span class="fc" id="L83">        ++written;</span>
-<span class="fc" id="L84">        return outputBuffer.get();</span>
+<span class="nc" id="L83">        ++written;</span>
+<span class="nc" id="L84">        return outputBuffer.get();</span>
     }
 
     @Override

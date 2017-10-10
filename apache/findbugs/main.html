@@ -52,18 +52,18 @@
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">3</td>
-<td align="right">10.68</td>
+<td align="right">4</td>
+<td align="right">14.23</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>5</b>
+<b>6</b>
 </td>
 <td align="right">
-<b>17.79</b>
+<b>21.35</b>
 </td>
 </tr>
 </table>
@@ -96,14 +96,14 @@
 <td>
 <a href="#Warnings_STYLE">Dodgy code Warnings</a>
 </td>
-<td align="right">1</td>
+<td align="right">2</td>
 </tr>
 <tr class="tablerow1">
 <td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>5</b>
+<b>6</b>
 </td>
 </tr>
 </table>
@@ -219,6 +219,19 @@
                                 line 464<br/>In class groovyx.net.http.ApacheHttpBuilder<br/>In method groovyx.net.http.ApacheHttpBuilder.exec(ChainedHttpConfig, Function)<br/>At ApacheHttpBuilder.java:[line 464]</p>
 </td>
 </tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">Field not initialized in constructor but dereferenced without null check</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>ApacheHttpBuilder$ApacheToServer.bytes not initialized in constructor and dereferenced in groovyx.net.http.ApacheHttpBuilder$ApacheToServer.getContentLength()<br/>
+<br/>
+<br/>In file ApacheHttpBuilder.java,
+                        
+                                line 280<br/>In class groovyx.net.http.ApacheHttpBuilder$ApacheToServer<br/>Field groovyx.net.http.ApacheHttpBuilder$ApacheToServer.bytes<br/>In method groovyx.net.http.ApacheHttpBuilder$ApacheToServer.getContentLength()<br/>At ApacheHttpBuilder.java:[line 280]</p>
+</td>
+</tr>
 </table>
 <p>
 <br/>
@@ -304,6 +317,22 @@ inner object.&nbsp; This reference makes the instances
   of the class larger, and may keep the reference to the creator object
   alive longer than necessary.&nbsp; If possible, the class should be
    made static.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR">Field not initialized in constructor but dereferenced without null check</a>
+</h2>
+
+  <p> This field is never initialized within any constructor, and is therefore could be null after
+the object is constructed. Elsewhere, it is loaded and dereferenced without a null check.
+This could be a either an error or a questionable design, since
+it means a null pointer exception will be generated if that field is dereferenced
+before being initialized.
 </p>
 
     
