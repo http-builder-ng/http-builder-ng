@@ -16,6 +16,7 @@
 package groovyx.net.http
 
 import com.stehno.ersatz.ErsatzServer
+import groovy.transform.Canonical
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spock.lang.AutoCleanup
@@ -25,6 +26,9 @@ import java.util.function.BiFunction
 import java.util.function.Function
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
+import static groovyx.net.http.ContentTypes.JSON
+import static groovyx.net.http.ContentTypes.JSON
+import static groovyx.net.http.NativeHandlers.Parsers.json
 
 class JavaHttpBuilderSpec extends Specification {
 
@@ -122,5 +126,28 @@ class JavaHttpBuilderSpec extends Specification {
 
         then:
         result == 'OK'
+    }
+
+    def 'Sending/Receiving JSON Data (POST)'() {
+        when:
+        ItemScore itemScore = JavaHttpBuilder.configure {
+            request.uri = 'http://httpbin.org'
+            request.contentType = JSON[0]
+            response.parser(JSON[0]) { config, resp ->
+                new ItemScore(json(config, resp).json)
+            }
+        }.post(ItemScore) {
+            request.uri.path = '/post'
+            request.body = new ItemScore('ASDFASEACV235', 90786)
+        }
+
+        then:
+        "Your score for item (${itemScore.item}) was (${itemScore.score})." == "Your score for item (ASDFASEACV235) was (90786)."
+    }
+
+    @Canonical
+    static class ItemScore {
+        String item
+        Long score
     }
 }
