@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import groovyx.net.http.util.IoUtils;
 import okhttp3.*;
 import okio.BufferedSink;
 
@@ -47,7 +48,7 @@ import static okhttp3.MediaType.parse;
 
 /**
  * `HttpBuilder` implementation based on the http://square.github.io/okhttp/[OkHttp] client library.
- * 
+ *
  * Generally, this class should not be used directly, the preferred method of instantiation is via one of the two static `configure()` methods of this
  * class or using one of the `configure` methods of `HttpBuilder` with a factory function for this builder.
  */
@@ -115,11 +116,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration closure.
-     * 
+     *
      * The configuration closure delegates to the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig} interface -
      * configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     * 
+     *
      * [source,groovy]
      * ----
      * def http = HttpBuilder.configure {
@@ -136,13 +137,13 @@ public class OkHttpBuilder extends HttpBuilder {
 
     /**
      * Creates an `HttpBuilder` using the `OkHttpBuilder` factory instance configured with the provided configuration function.
-     * 
+     *
      * The configuration {@link Consumer} function accepts an instance of the {@link HttpObjectConfig} interface, which is an extension of the {@link HttpConfig}
      * interface - configuration properties from either may be applied to the global client configuration here. See the documentation for those interfaces for
      * configuration property details.
-     * 
+     *
      * This configuration method is generally meant for use with standard Java.
-     * 
+     *
      * [source,java]
      * ----
      * HttpBuilder.configure(new Consumer<HttpObjectConfig>() {
@@ -151,9 +152,9 @@ public class OkHttpBuilder extends HttpBuilder {
      * }
      * });
      * ----
-     * 
+     *
      * Or, using lambda expressions:
-     * 
+     *
      * [source,java]
      * ----
      * HttpBuilder.configure(config -> {
@@ -368,7 +369,7 @@ public class OkHttpBuilder extends HttpBuilder {
     private static class OkHttpToServer extends RequestBody implements ToServer {
 
         private ChainedHttpConfig config;
-        private InputStream inputStream;
+        private byte[] bytes;
 
         private OkHttpToServer(final ChainedHttpConfig config) {
             this.config = config;
@@ -376,7 +377,11 @@ public class OkHttpBuilder extends HttpBuilder {
 
         @Override
         public void toServer(final InputStream inputStream) {
-            this.inputStream = inputStream;
+            try {
+                this.bytes = IoUtils.streamToBytes(inputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -385,16 +390,13 @@ public class OkHttpBuilder extends HttpBuilder {
         }
 
         @Override
+        public long contentLength() throws IOException {
+            return bytes.length;
+        }
+
+        @Override
         public void writeTo(final BufferedSink sink) throws IOException {
-            try {
-                int b = inputStream.read();
-                while (b != -1) {
-                    sink.writeByte(b);
-                    b = inputStream.read();
-                }
-            } finally {
-                inputStream.close();
-            }
+            sink.write(bytes);
         }
     }
 }

@@ -277,7 +277,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         }
 
         public long getContentLength() {
-            return -1L;
+            return bytes.length;
         }
 
         public org.apache.http.Header getContentType() {
