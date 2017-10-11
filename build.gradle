@@ -28,7 +28,6 @@ subprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
     apply plugin: 'jacoco'
-    apply plugin: 'findbugs'
     apply plugin: 'com.github.johnrengelman.shadow'
 
     group = project.parent.group
@@ -78,17 +77,6 @@ subprojects {
     test {
         systemProperty 'test.proxy.support', 'false'
         reports.html.enabled = true
-    }
-
-    tasks.withType(FindBugs) {
-        ignoreFailures = true // let's not kill the build for this
-        effort = 'max'
-        reportLevel = 'low'
-        reports {
-            xml.enabled false
-            html.enabled true
-            html.stylesheet resources.text.fromFile('../config/findbugs-styles.xsl')
-        }
     }
 
     jacocoTestReport {
@@ -187,7 +175,7 @@ tasks.site.dependsOn = [
     'build', 'http-builder-ng-core:build', 'http-builder-ng-apache:build', 'http-builder-ng-okhttp:build',
     'http-builder-ng-core:javadoc', 'http-builder-ng-apache:javadoc', 'http-builder-ng-okhttp:javadoc',
     'http-builder-ng-core:jacocoTestReport', 'http-builder-ng-apache:jacocoTestReport', 'http-builder-ng-okhttp:jacocoTestReport',
-    'http-builder-ng-core:findbugsMain', 'http-builder-ng-apache:findbugsMain', 'http-builder-ng-okhttp:findbugsMain',
+    'http-builder-ng-core:spotbugsMain', 'http-builder-ng-apache:spotbugsMain', 'http-builder-ng-okhttp:spotbugsMain',
     'aggregateJavadoc', 'aggregateTestReport', 'aggregateCoverage',
     'asciidoctor'
 ]
