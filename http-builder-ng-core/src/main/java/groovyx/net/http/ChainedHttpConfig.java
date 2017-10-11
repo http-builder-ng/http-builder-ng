@@ -43,23 +43,23 @@ public interface ChainedHttpConfig extends HttpConfig {
         Charset getCharset();
 
         default Charset actualCharset() {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCharset(), Traverser::notNull);
+            return traverse(this, ChainedRequest::getParent, ChainedRequest::getCharset, Traverser::notNull);
         }
 
         default String actualContentType() {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getContentType(), Traverser::notNull);
+            return traverse(this, ChainedRequest::getParent, ChainedRequest::getContentType, Traverser::notNull);
         }
 
         default Object actualBody() {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getBody(), Traverser::notNull);
+            return traverse(this, ChainedRequest::getParent, ChainedRequest::getBody, Traverser::notNull);
         }
 
-        default Map<String, String> actualHeaders(final Map<String, String> map) {
-            Predicate<Map<String, String>> addValues = (headers) -> {
+        default Map<String, CharSequence> actualHeaders(final Map<String, CharSequence> map) {
+            Predicate<Map<String, CharSequence>> addValues = (headers) -> {
                 map.putAll(headers);
                 return false;
             };
-            traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getHeaders(), addValues);
+            traverse(this, ChainedRequest::getParent, Request::getHeaders, addValues);
             return map;
         }
 
@@ -73,12 +73,12 @@ public interface ChainedHttpConfig extends HttpConfig {
                 }
             };
 
-            return traverse(this, (cr) -> cr.getParent(), theValue, Traverser::notNull);
+            return traverse(this, ChainedRequest::getParent, theValue, Traverser::notNull);
         }
 
         default Auth actualAuth() {
             final Predicate<Auth> choose = (a) -> a != null && a.getAuthType() != null;
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getAuth(), choose);
+            return traverse(this, ChainedRequest::getParent, Request::getAuth, choose);
         }
 
         default List<HttpCookie> actualCookies(final List<HttpCookie> list) {
@@ -86,7 +86,7 @@ public interface ChainedHttpConfig extends HttpConfig {
                 list.addAll(cookies);
                 return false;
             };
-            traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getCookies(), addAll);
+            traverse(this, ChainedRequest::getParent, ChainedRequest::getCookies, addAll);
             return list;
         }
 
@@ -103,11 +103,11 @@ public interface ChainedHttpConfig extends HttpConfig {
         Function<Throwable,?> getException();
 
         default BiFunction<FromServer, Object, ?> actualAction(final Integer code) {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.when(code), Traverser::notNull);
+            return traverse(this, ChainedResponse::getParent, (cr) -> cr.when(code), Traverser::notNull);
         }
 
         default Function<Throwable,?> actualException() {
-            return traverse(this, (cr) -> cr.getParent(), (cr) -> cr.getException(), Traverser::notNull);
+            return traverse(this, ChainedResponse::getParent, ChainedResponse::getException, Traverser::notNull);
         }
 
         default BiFunction<ChainedHttpConfig, FromServer, Object> actualParser(final String contentType) {
@@ -120,7 +120,7 @@ public interface ChainedHttpConfig extends HttpConfig {
                 }
             };
 
-            return traverse(this, (cr) -> cr.getParent(), theValue, Traverser::notNull);
+            return traverse(this, ChainedResponse::getParent, theValue, Traverser::notNull);
         }
     }
 
@@ -139,7 +139,7 @@ public interface ChainedHttpConfig extends HttpConfig {
             }
         };
 
-        return traverse(this, (config) -> config.getParent(), theValue, Traverser::notNull);
+        return traverse(this, ChainedHttpConfig::getParent, theValue, Traverser::notNull);
     }
 
     ChainedResponse getChainedResponse();

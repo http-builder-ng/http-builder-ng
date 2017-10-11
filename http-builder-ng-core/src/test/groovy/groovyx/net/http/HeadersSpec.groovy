@@ -13,42 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovyx.net.http;
+package groovyx.net.http
 
-import spock.lang.*;
-import groovyx.net.http.FromServer.Header;
-import static groovyx.net.http.FromServer.Header.full;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import spock.lang.*
+import groovyx.net.http.FromServer.Header
+import static groovyx.net.http.FromServer.Header.full
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 class HeadersSpec extends Specification {
 
-    static Map all;
+    static Map all
     
     def setupSpec() {
         def tmp = [:]
         tmp = HeadersSpec.classLoader.getResourceAsStream('headers.csv').eachLine('UTF-8') { line ->
-            def ary = line.split('~');
-            tmp[ary[0]] = ary[1];
-            return tmp;
+            def ary = line.split('~')
+            tmp[ary[0]] = ary[1]
+            return tmp
         }
         
-        all = tmp.asImmutable();
+        all = tmp.asImmutable()
     }
 
     def "header parsing gives something back"() {
         expect:
-        all.every { key, raw -> FromServer.Header.full(raw) instanceof Header; }
+        all.every { key, raw -> FromServer.Header.full(raw) instanceof Header }
     }
 
     def "correct types"() {
         expect:
-        full(all['Connection']) instanceof FromServer.Header.ValueOnly;
-        full(all["Accept-Patch"]) instanceof FromServer.Header.CombinedMap;
-        full(all['Cache-Control']) instanceof FromServer.Header.MapPairs;
-        full(all['Content-Length']) instanceof FromServer.Header.SingleLong;
-        full(all['Allow']) instanceof FromServer.Header.CsvList;
-        full(all['Date']) instanceof FromServer.Header.HttpDate;
+        full(all['Connection']) instanceof FromServer.Header.ValueOnly
+        full(all["Accept-Patch"]) instanceof FromServer.Header.CombinedMap
+        full(all['Cache-Control']) instanceof FromServer.Header.MapPairs
+        full(all['Content-Length']) instanceof FromServer.Header.SingleLong
+        full(all['Allow']) instanceof FromServer.Header.CsvList
+        full(all['Date']) instanceof FromServer.Header.HttpDate
     }
 
     def "parse returns correct type"() {
@@ -65,8 +65,8 @@ class HeadersSpec extends Specification {
         expect:
         full(all['Connection']).parsed == 'close'
         full(all['Accept-Patch']).parsed == [ 'Accept-Patch': 'text/example', charset: 'utf-8' ]
-        full(all['Alt-Svc']).parsed == [ h2: "http2.example.com:443", ma: '7200' ];
-        full(all['Content-Length']).parsed == 348L;
+        full(all['Alt-Svc']).parsed == [ h2: "http2.example.com:443", ma: '7200' ]
+        full(all['Content-Length']).parsed == 348L
         full(all['Allow']).parsed == [ 'GET', 'POST' ]
         // Tue, 15 Nov 1994 08:12:31 GMT
         full(all['Date']).parsed == ZonedDateTime.of(1994, 11, 15, 8, 12, 31, 0, ZoneOffset.UTC)
