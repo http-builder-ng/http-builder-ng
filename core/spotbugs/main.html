@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>FindBugs Report</title>
+<title>SpotBugs Report</title>
 <style type="text/css">
                     .tablerow0 {
                     background: #EEEEEE;
@@ -26,13 +26,13 @@
                 </style>
 </head>
 <body>
-<h1>FindBugs Report</h1>
-<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<h1>SpotBugs Report</h1>
+<p>Produced using <a href="https://spotbugs.github.io/">SpotBugs</a>3.1.0-RC6.</p>
 <p>Project:
                     </p>
 <h2>Metrics</h2>
-<p>3149 lines of code analyzed,
-            in 90 classes,
+<p>3185 lines of code analyzed,
+            in 93 classes,
             in 4 packages.</p>
 <table width="500" cellpadding="5" cellspacing="2">
 <tr class="tableheader">
@@ -42,28 +42,28 @@
 </tr>
 <tr class="tablerow0">
 <td>High Priority Warnings</td>
-<td align="right">4</td>
-<td align="right">1.27</td>
+<td align="right">6</td>
+<td align="right">1.88</td>
 </tr>
 <tr class="tablerow1">
 <td>Medium Priority Warnings</td>
-<td align="right">8</td>
-<td align="right">2.54</td>
+<td align="right">9</td>
+<td align="right">2.83</td>
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">13</td>
-<td align="right">4.13</td>
+<td align="right">11</td>
+<td align="right">3.45</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>25</b>
+<b>26</b>
 </td>
 <td align="right">
-<b>7.94</b>
+<b>8.16</b>
 </td>
 </tr>
 </table>
@@ -84,7 +84,7 @@
 <td>
 <a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
 </td>
-<td align="right">3</td>
+<td align="right">4</td>
 </tr>
 <tr class="tablerow1">
 <td>
@@ -121,7 +121,7 @@
 <b>Total</b>
 </td>
 <td align="right">
-<b>25</b>
+<b>26</b>
 </td>
 </tr>
 </table>
@@ -168,6 +168,19 @@
 </td>
 </tr>
 <tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">Method ignores exceptional return value</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Exceptional return value of java.io.File.delete() ignored in groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 183<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>Called method java.io.File.delete()<br/>At FileBackedCookieStore.java:[line 183]</p>
+</td>
+</tr>
+<tr class="tablerow0">
 <td width="20%" valign="top">
 <a href="#NM_CONFUSING">Confusing method names</a>
 </td>
@@ -227,6 +240,32 @@
 </td>
 <td width="10%" valign="top">High</td>
 <td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File): new java.io.FileReader(File)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 175<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>Called method new java.io.FileReader(File)<br/>At FileBackedCookieStore.java:[line 175]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie): new java.io.FileWriter(File)<br/>
+<br/>
+<br/>In file FileBackedCookieStore.java,
+                        
+                                line 157<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie)<br/>Called method new java.io.FileWriter(File)<br/>At FileBackedCookieStore.java:[line 157]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
 <p>Found reliance on default encoding in groovyx.net.http.FromServer.getReader(): new java.io.InputStreamReader(InputStream)<br/>
 <br/>
 <br/>In file FromServer.java,
@@ -245,32 +284,6 @@
 <br/>In file IoUtils.java,
                         
                                 line 72<br/>In class groovyx.net.http.util.IoUtils<br/>In method groovyx.net.http.util.IoUtils.copyAsString(BufferedInputStream)<br/>Called method new String(byte[])<br/>At IoUtils.java:[line 72]</p>
-</td>
-</tr>
-<tr class="tablerow1">
-<td width="20%" valign="top">
-<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
-</td>
-<td width="10%" valign="top">Low</td>
-<td width="70%">
-<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File): new java.io.FileReader(File)<br/>
-<br/>
-<br/>In file FileBackedCookieStore.java,
-                        
-                                line 175<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$readAll$5(File)<br/>Called method new java.io.FileReader(File)<br/>At FileBackedCookieStore.java:[line 175]</p>
-</td>
-</tr>
-<tr class="tablerow0">
-<td width="20%" valign="top">
-<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
-</td>
-<td width="10%" valign="top">Low</td>
-<td width="70%">
-<p>Found reliance on default encoding in groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie): new java.io.FileWriter(File)<br/>
-<br/>
-<br/>In file FileBackedCookieStore.java,
-                        
-                                line 157<br/>In class groovyx.net.http.FileBackedCookieStore<br/>In method groovyx.net.http.FileBackedCookieStore.lambda$store$3(NonBlockingCookieStore$Key, HttpCookie)<br/>Called method new java.io.FileWriter(File)<br/>At FileBackedCookieStore.java:[line 157]</p>
 </td>
 </tr>
 <tr class="tablerow1">
@@ -573,7 +586,7 @@ used.
 </p>
 <p>
 Note that Sun's javac compiler often generates dead stores for
-final local variables.  Because FindBugs is a bytecode-based tool,
+final local variables.  Because SpotBugs is a bytecode-based tool,
 there is no easy way to eliminate these false positives.
 </p>
 
@@ -674,7 +687,7 @@ for null.  This may lead to a <code>NullPointerException</code> when the code is
 a null value will be dereferenced, which
 would generate a <code>NullPointerException</code> when the code is executed.
 Of course, the problem might be that the branch or statement is infeasible and that
-the null pointer exception can't ever be executed; deciding that is beyond the ability of FindBugs.
+the null pointer exception can't ever be executed; deciding that is beyond the ability of SpotBugs.
 Due to the fact that this value had been previously tested for nullness,
 this is a definite possibility.
 </p>
@@ -708,11 +721,11 @@ this is a definite possibility.
           (and hopefully better) static analysis technique.
           We are interested is getting feedback about the
           usefulness of this bug pattern.
-          To send feedback, either:
+          For sending feedback, check:
           </p>
           <ul>
-            <li>send email to findbugs@cs.umd.edu</li>
-            <li>file a bug report: <a href="http://findbugs.sourceforge.net/reportingBugs.html">http://findbugs.sourceforge.net/reportingBugs.html</a></li>
+            <li><a href="https://github.com/spotbugs/spotbugs/blob/master/CONTRIBUTING.md">contributing guideline</a></li>
+            <li><a href="https://github.com/spotbugs/discuss/issues?q=">malinglist</a></li>
           </ul>
 
           <p>

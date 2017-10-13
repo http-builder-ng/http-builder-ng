@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>FindBugs Report</title>
+<title>SpotBugs Report</title>
 <style type="text/css">
                     .tablerow0 {
                     background: #EEEEEE;
@@ -26,8 +26,8 @@
                 </style>
 </head>
 <body>
-<h1>FindBugs Report</h1>
-<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<h1>SpotBugs Report</h1>
+<p>Produced using <a href="https://spotbugs.github.io/">SpotBugs</a>3.1.0-RC6.</p>
 <p>Project:
                     </p>
 <h2>Metrics</h2>
@@ -274,14 +274,14 @@
   </p>
   <p>A better approach is to either explicitly catch the specific exceptions that are thrown,
   or to explicitly catch RuntimeException exception, rethrow it, and then catch all non-Runtime Exceptions, as shown below:</p>
-  <pre>
-  try {
+<pre><code>try {
     ...
-  } catch (RuntimeException e) {
+} catch (RuntimeException e) {
     throw e;
-  } catch (Exception e) {
+} catch (Exception e) {
     ... deal with all non-runtime exceptions ...
-  }</pre>
+}
+</code></pre>
   
      
 <p>

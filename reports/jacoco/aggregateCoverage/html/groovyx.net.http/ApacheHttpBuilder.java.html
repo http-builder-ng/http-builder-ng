@@ -474,8 +474,8 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     @SuppressWarnings(&quot;Duplicates&quot;)
     private &lt;T extends HttpUriRequest&gt; void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
-<span class="fc bfc" id="L477" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
-<span class="fc" id="L478">            message.addHeader(entry.getKey(), entry.getValue());</span>
+<span class="fc bfc" id="L477" title="All 2 branches covered.">        for (Map.Entry&lt;String, CharSequence&gt; entry : cr.actualHeaders(new LinkedHashMap&lt;&gt;()).entrySet()) {</span>
+<span class="pc bpc" id="L478" title="1 of 2 branches missed.">            message.addHeader(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);</span>
 <span class="fc" id="L479">        }</span>
 
 <span class="fc" id="L481">        final String contentType = cr.actualContentType();</span>

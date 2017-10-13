@@ -340,7 +340,7 @@ public interface HttpConfig {
          *
          * @return the `Map` of request headers
          */
-        Map&lt;String, String&gt; getHeaders();
+        Map&lt;String, CharSequence&gt; getHeaders();
 
         /**
          * The `headers` property allows the direct specification of the request headers as a `Map&lt;String,String&gt;`. Be aware that `Content-Type` and
@@ -367,7 +367,7 @@ public interface HttpConfig {
          *
          * @param toAdd the headers to be added to the request headers
          */
-        void setHeaders(Map&lt;String, String&gt; toAdd);
+        void setHeaders(Map&lt;String, CharSequence&gt; toAdd);
 
         /**
          * The `accept` property allows configuration of the request `Accept` header, which may be used to specify certain media types which are

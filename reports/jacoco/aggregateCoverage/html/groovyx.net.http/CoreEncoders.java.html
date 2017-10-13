@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoreEncoders.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">http-builder-ng</a> &gt; <a href="index.source.html" class="el_package">groovyx.net.http</a> &gt; <span class="el_source">CoreEncoders.java</span></div><h1>CoreEncoders.java</h1><pre class="source lang-java linenums">/**
+ * Copyright (C) 2017 HttpBuilder-NG Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package groovyx.net.http;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+import java.io.*;
+
+import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA;
+import static groovyx.net.http.ContentTypes.MULTIPART_MIXED;
+import static java.lang.String.format;
+
+/**
+ * Generic content encoders for use with all client implementations. Note that there may be client-specific implementations for some of these (see
+ * {@link groovyx.net.http.ApacheEncoders} and {@link groovyx.net.http.OkHttpEncoders} for more information).
+ * 
+ * See the {@link MultipartContent} class documentation for more configuration details.
+ */
+<span class="nc" id="L35">public class CoreEncoders {</span>
+
+    /**
+     * Encodes multipart/form-data where the body content must be an instance of the {@link MultipartContent} class. Individual parts will be
+     * encoded using the encoders available to the {@link ChainedHttpConfig} object.
+     *
+     * @param config the chained configuration object
+     * @param ts     the server adapter
+     */
+    public static void multipart(final ChainedHttpConfig config, final ToServer ts) {
+        try {
+<span class="fc" id="L46">            final ChainedHttpConfig.ChainedRequest request = config.getChainedRequest();</span>
+
+<span class="fc" id="L48">            final Object body = request.actualBody();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            if (!(body instanceof MultipartContent)) {</span>
+<span class="nc" id="L50">                throw new IllegalArgumentException(&quot;Multipart body content must be MultipartContent.&quot;);</span>
+            }
+
+<span class="fc" id="L53">            final String contentType = request.actualContentType();</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">            if (!(contentType.equals(MULTIPART_FORMDATA.getAt(0)) || contentType.equals(MULTIPART_MIXED.getAt(0)))) {</span>
+<span class="nc" id="L55">                throw new IllegalArgumentException(&quot;Multipart body content must be multipart/form-data.&quot;);</span>
+            }
+
+<span class="fc" id="L58">            final MimeMultipart mimeMultipart = new MimeMultipart();</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (final MultipartContent.MultipartPart mpe : ((MultipartContent) body).parts()) {</span>
+<span class="fc" id="L61">                mimeMultipart.addBodyPart(part(config, mpe));</span>
+<span class="fc" id="L62">            }</span>
+
+<span class="fc" id="L64">            request.setContentType(mimeMultipart.getContentType());</span>
+
+<span class="fc" id="L66">            final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();</span>
+<span class="fc" id="L67">            mimeMultipart.writeTo(bytesOut);</span>
+
+<span class="fc" id="L69">            ts.toServer(new ByteArrayInputStream(bytesOut.toByteArray()));</span>
+
+<span class="nc" id="L71">        } catch (IOException | MessagingException ioe) {</span>
+<span class="nc" id="L72">            ioe.printStackTrace();</span>
+<span class="fc" id="L73">        }</span>
+<span class="fc" id="L74">    }</span>
+
+    private static MimeBodyPart part(final ChainedHttpConfig config, final MultipartContent.MultipartPart multipartPart) throws MessagingException {
+<span class="fc" id="L77">        final MimeBodyPart bodyPart = new MimeBodyPart();</span>
+<span class="fc" id="L78">        bodyPart.setDisposition(&quot;form-data&quot;);</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (multipartPart.getFileName() != null) {</span>
+<span class="fc" id="L81">            bodyPart.setFileName(multipartPart.getFileName());</span>
+<span class="fc" id="L82">            bodyPart.setHeader(&quot;Content-Disposition&quot;, format(&quot;form-data; name=\&quot;%s\&quot;; filename=\&quot;%s\&quot;&quot;, multipartPart.getFieldName(), multipartPart.getFileName()));</span>
+
+        } else {
+<span class="fc" id="L85">            bodyPart.setHeader(&quot;Content-Disposition&quot;, format(&quot;form-data; name=\&quot;%s\&quot;&quot;, multipartPart.getFieldName()));</span>
+        }
+
+<span class="fc" id="L88">        bodyPart.setDataHandler(new DataHandler(new EncodedDataSource(config, multipartPart.getContentType(), multipartPart.getContent())));</span>
+<span class="fc" id="L89">        bodyPart.setHeader(&quot;Content-Type&quot;, multipartPart.getContentType());</span>
+
+<span class="fc" id="L91">        return bodyPart;</span>
+    }
+
+    private static class EncodedDataSource implements DataSource {
+
+        private final ChainedHttpConfig config;
+        private final String contentType;
+        private final Object value;
+
+<span class="fc" id="L100">        private EncodedDataSource(final ChainedHttpConfig config, final String contentType, final Object value) {</span>
+<span class="fc" id="L101">            this.config = config;</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            this.contentType = contentType != null ? contentType : &quot;text/plain&quot;;</span>
+<span class="fc" id="L103">            this.value = value;</span>
+<span class="fc" id="L104">        }</span>
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+<span class="fc" id="L108">            return new ByteArrayInputStream(EmbeddedEncoder.encode(config, contentType, value));</span>
+        }
+
+        @Override
+        public OutputStream getOutputStream() throws IOException {
+<span class="nc" id="L113">            throw new UnsupportedOperationException(&quot;Writing is not supported.&quot;);</span>
+        }
+
+        @Override
+        public String getContentType() {
+<span class="nc" id="L118">            return contentType;</span>
+        }
+
+        @Override
+        public String getName() {
+<span class="nc" id="L123">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

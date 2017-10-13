@@ -43,23 +43,23 @@ public interface ChainedHttpConfig extends HttpConfig {
         Charset getCharset();
 
         default Charset actualCharset() {
-<span class="fc" id="L46">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getCharset(), Traverser::notNull);</span>
+<span class="fc" id="L46">            return traverse(this, ChainedRequest::getParent, ChainedRequest::getCharset, Traverser::notNull);</span>
         }
 
         default String actualContentType() {
-<span class="fc" id="L50">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getContentType(), Traverser::notNull);</span>
+<span class="fc" id="L50">            return traverse(this, ChainedRequest::getParent, ChainedRequest::getContentType, Traverser::notNull);</span>
         }
 
         default Object actualBody() {
-<span class="fc" id="L54">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getBody(), Traverser::notNull);</span>
+<span class="fc" id="L54">            return traverse(this, ChainedRequest::getParent, ChainedRequest::getBody, Traverser::notNull);</span>
         }
 
-        default Map&lt;String, String&gt; actualHeaders(final Map&lt;String, String&gt; map) {
-<span class="fc" id="L58">            Predicate&lt;Map&lt;String, String&gt;&gt; addValues = (headers) -&gt; {</span>
+        default Map&lt;String, CharSequence&gt; actualHeaders(final Map&lt;String, CharSequence&gt; map) {
+<span class="fc" id="L58">            Predicate&lt;Map&lt;String, CharSequence&gt;&gt; addValues = (headers) -&gt; {</span>
 <span class="fc" id="L59">                map.putAll(headers);</span>
 <span class="fc" id="L60">                return false;</span>
             };
-<span class="fc" id="L62">            traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getHeaders(), addValues);</span>
+<span class="fc" id="L62">            traverse(this, ChainedRequest::getParent, Request::getHeaders, addValues);</span>
 <span class="fc" id="L63">            return map;</span>
         }
 
@@ -73,12 +73,12 @@ public interface ChainedHttpConfig extends HttpConfig {
                 }
             };
 
-<span class="fc" id="L76">            return traverse(this, (cr) -&gt; cr.getParent(), theValue, Traverser::notNull);</span>
+<span class="fc" id="L76">            return traverse(this, ChainedRequest::getParent, theValue, Traverser::notNull);</span>
         }
 
         default Auth actualAuth() {
 <span class="pc bpc" id="L80" title="1 of 4 branches missed.">            final Predicate&lt;Auth&gt; choose = (a) -&gt; a != null &amp;&amp; a.getAuthType() != null;</span>
-<span class="fc" id="L81">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getAuth(), choose);</span>
+<span class="fc" id="L81">            return traverse(this, ChainedRequest::getParent, Request::getAuth, choose);</span>
         }
 
         default List&lt;HttpCookie&gt; actualCookies(final List&lt;HttpCookie&gt; list) {
@@ -86,7 +86,7 @@ public interface ChainedHttpConfig extends HttpConfig {
 <span class="fc" id="L86">                list.addAll(cookies);</span>
 <span class="fc" id="L87">                return false;</span>
             };
-<span class="fc" id="L89">            traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getCookies(), addAll);</span>
+<span class="fc" id="L89">            traverse(this, ChainedRequest::getParent, ChainedRequest::getCookies, addAll);</span>
 <span class="fc" id="L90">            return list;</span>
         }
 
@@ -103,11 +103,11 @@ public interface ChainedHttpConfig extends HttpConfig {
         Function&lt;Throwable,?&gt; getException();
 
         default BiFunction&lt;FromServer, Object, ?&gt; actualAction(final Integer code) {
-<span class="fc" id="L106">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.when(code), Traverser::notNull);</span>
+<span class="fc" id="L106">            return traverse(this, ChainedResponse::getParent, (cr) -&gt; cr.when(code), Traverser::notNull);</span>
         }
 
         default Function&lt;Throwable,?&gt; actualException() {
-<span class="fc" id="L110">            return traverse(this, (cr) -&gt; cr.getParent(), (cr) -&gt; cr.getException(), Traverser::notNull);</span>
+<span class="fc" id="L110">            return traverse(this, ChainedResponse::getParent, ChainedResponse::getException, Traverser::notNull);</span>
         }
 
         default BiFunction&lt;ChainedHttpConfig, FromServer, Object&gt; actualParser(final String contentType) {
@@ -120,7 +120,7 @@ public interface ChainedHttpConfig extends HttpConfig {
                 }
             };
 
-<span class="fc" id="L123">            return traverse(this, (cr) -&gt; cr.getParent(), theValue, Traverser::notNull);</span>
+<span class="fc" id="L123">            return traverse(this, ChainedResponse::getParent, theValue, Traverser::notNull);</span>
         }
     }
 
@@ -139,7 +139,7 @@ public interface ChainedHttpConfig extends HttpConfig {
             }
         };
 
-<span class="fc" id="L142">        return traverse(this, (config) -&gt; config.getParent(), theValue, Traverser::notNull);</span>
+<span class="fc" id="L142">        return traverse(this, ChainedHttpConfig::getParent, theValue, Traverser::notNull);</span>
     }
 
     ChainedResponse getChainedResponse();

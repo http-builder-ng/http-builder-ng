@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>FindBugs Report</title>
+<title>SpotBugs Report</title>
 <style type="text/css">
                     .tablerow0 {
                     background: #EEEEEE;
@@ -26,8 +26,8 @@
                 </style>
 </head>
 <body>
-<h1>FindBugs Report</h1>
-<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<h1>SpotBugs Report</h1>
+<p>Produced using <a href="https://spotbugs.github.io/">SpotBugs</a>3.1.0-RC6.</p>
 <p>Project:
                     </p>
 <h2>Metrics</h2>
@@ -52,18 +52,18 @@
 </tr>
 <tr class="tablerow1">
 <td>Low Priority Warnings</td>
-<td align="right">90</td>
-<td align="right">83.80</td>
+<td align="right">141</td>
+<td align="right">131.28</td>
 </tr>
 <tr class="$totalClass">
 <td>
 <b>Total Warnings</b>
 </td>
 <td align="right">
-<b>129</b>
+<b>180</b>
 </td>
 <td align="right">
-<b>120.11</b>
+<b>167.60</b>
 </td>
 </tr>
 </table>
@@ -94,10 +94,16 @@
 </tr>
 <tr class="tablerow0">
 <td>
+<a href="#Warnings_MT_CORRECTNESS">Multithreaded correctness Warnings</a>
+</td>
+<td align="right">51</td>
+</tr>
+<tr class="tablerow1">
+<td>
 <b>Total</b>
 </td>
 <td align="right">
-<b>129</b>
+<b>180</b>
 </td>
 </tr>
 </table>
@@ -1927,6 +1933,734 @@
 <br/>
 <br/>
 </p>
+<h2>
+<a name="Warnings_MT_CORRECTNESS">Multithreaded correctness Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheEncodersSpec.$callSiteArray in groovyx.net.http.ApacheEncodersSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheEncodersSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheEncodersSpec<br/>In method groovyx.net.http.ApacheEncodersSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheEncodersSpec.$callSiteArray<br/>In ApacheEncodersSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheEncodersSpec$_getClientFactory_closure1.$callSiteArray in groovyx.net.http.ApacheEncodersSpec$_getClientFactory_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheEncodersSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheEncodersSpec$_getClientFactory_closure1<br/>In method groovyx.net.http.ApacheEncodersSpec$_getClientFactory_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheEncodersSpec$_getClientFactory_closure1.$callSiteArray<br/>In ApacheEncodersSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec<br/>In method groovyx.net.http.ApacheHttpBuilderSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_0_closure2.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_0_closure2.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_0_closure2<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_0_closure2.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_0_closure2.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_1_closure3.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_1_closure3.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_1_closure3<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_1_closure3.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_1_closure3.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4$_closure14.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4$_closure14.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4$_closure14<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4$_closure14.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_2_closure4$_closure14.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure5.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure5.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure5<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure5.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure5.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure6.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure6.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure6<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure6.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure6.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7$_closure15.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7$_closure15.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7$_closure15<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7$_closure15.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_3_closure7$_closure15.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10$_closure16.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10$_closure16.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10$_closure16<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10$_closure16.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure10$_closure16.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure8.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure8.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure8<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure8.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure8.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure9.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure9.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure9<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure9.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_4_closure9.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11$_closure17.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11$_closure17.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11$_closure17<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11$_closure17.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure11$_closure17.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure12.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure12.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure12<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure12.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_feature_0_5_closure12.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1$_closure13.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1$_closure13.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1$_closure13<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1$_closure13.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$__spock_initializeFields_closure1$_closure13.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpBuilderSpec$ItemScore.$callSiteArray in groovyx.net.http.ApacheHttpBuilderSpec$ItemScore.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpBuilderSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpBuilderSpec$ItemScore<br/>In method groovyx.net.http.ApacheHttpBuilderSpec$ItemScore.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpBuilderSpec$ItemScore.$callSiteArray<br/>In ApacheHttpBuilderSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpDeleteSpec.$callSiteArray in groovyx.net.http.ApacheHttpDeleteSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpDeleteSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpDeleteSpec<br/>In method groovyx.net.http.ApacheHttpDeleteSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpDeleteSpec.$callSiteArray<br/>In ApacheHttpDeleteSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpGetSpec.$callSiteArray in groovyx.net.http.ApacheHttpGetSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpGetSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpGetSpec<br/>In method groovyx.net.http.ApacheHttpGetSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpGetSpec.$callSiteArray<br/>In ApacheHttpGetSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpHeadSpec.$callSiteArray in groovyx.net.http.ApacheHttpHeadSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpHeadSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpHeadSpec<br/>In method groovyx.net.http.ApacheHttpHeadSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpHeadSpec.$callSiteArray<br/>In ApacheHttpHeadSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpOptionsSpec.$callSiteArray in groovyx.net.http.ApacheHttpOptionsSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpOptionsSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpOptionsSpec<br/>In method groovyx.net.http.ApacheHttpOptionsSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpOptionsSpec.$callSiteArray<br/>In ApacheHttpOptionsSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec<br/>In method groovyx.net.http.ApacheHttpPatchSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1<br/>In method groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3<br/>In method groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3$_closure4<br/>In method groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2<br/>In method groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2$_closure5.$callSiteArray in groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2$_closure5.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPatchSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2$_closure5<br/>In method groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2$_closure5.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPatchSpec$__spock_feature_3_0_closure2$_closure5.$callSiteArray<br/>In ApacheHttpPatchSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec<br/>In method groovyx.net.http.ApacheHttpPostSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5$_closure6.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5$_closure6.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5$_closure6<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5$_closure6.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure1$_closure5$_closure6.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2$_closure7.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2$_closure7.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2$_closure7<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2$_closure7.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_0_closure2$_closure7.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8$_closure9.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8$_closure9.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8$_closure9<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8$_closure9.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure3$_closure8$_closure9.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4$_closure10.$callSiteArray in groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4$_closure10.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPostSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4$_closure10<br/>In method groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4$_closure10.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPostSpec$__spock_feature_3_1_closure4$_closure10.$callSiteArray<br/>In ApacheHttpPostSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec<br/>In method groovyx.net.http.ApacheHttpPutSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1<br/>In method groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3<br/>In method groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3$_closure4<br/>In method groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure1$_closure3$_closure4.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2<br/>In method groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2$_closure5.$callSiteArray in groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2$_closure5.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpPutSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2$_closure5<br/>In method groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2$_closure5.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpPutSpec$__spock_feature_3_0_closure2$_closure5.$callSiteArray<br/>In ApacheHttpPutSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.ApacheHttpTraceSpec.$callSiteArray in groovyx.net.http.ApacheHttpTraceSpec.$getCallSiteArray()<br/>
+<br/>
+<br/>In file ApacheHttpTraceSpec.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.ApacheHttpTraceSpec<br/>In method groovyx.net.http.ApacheHttpTraceSpec.$getCallSiteArray()<br/>On field groovyx.net.http.ApacheHttpTraceSpec.$callSiteArray<br/>In ApacheHttpTraceSpec.groovy</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.UsesApacheClient$Trait$Helper.$callSiteArray in groovyx.net.http.UsesApacheClient$Trait$Helper.$getCallSiteArray()<br/>
+<br/>
+<br/>In file UsesApacheClient.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.UsesApacheClient$Trait$Helper<br/>In method groovyx.net.http.UsesApacheClient$Trait$Helper.$getCallSiteArray()<br/>On field groovyx.net.http.UsesApacheClient$Trait$Helper.$callSiteArray<br/>In UsesApacheClient.groovy</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</td>
+<td width="10%" valign="top">Low</td>
+<td width="70%">
+<p>Incorrect lazy initialization of static field groovyx.net.http.UsesApacheClient$Trait$Helper$_setup_closure1.$callSiteArray in groovyx.net.http.UsesApacheClient$Trait$Helper$_setup_closure1.$getCallSiteArray()<br/>
+<br/>
+<br/>In file UsesApacheClient.groovy,
+                        
+                                lines 
+                                to <br/>In class groovyx.net.http.UsesApacheClient$Trait$Helper$_setup_closure1<br/>In method groovyx.net.http.UsesApacheClient$Trait$Helper$_setup_closure1.$getCallSiteArray()<br/>On field groovyx.net.http.UsesApacheClient$Trait$Helper$_setup_closure1.$callSiteArray<br/>In UsesApacheClient.groovy</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
 <p>
 <br/>
 <br/>
@@ -1934,6 +2668,24 @@
 <h1>
 <a name="Details">Warning Types</a>
 </h1>
+<h2>
+<a name="LI_LAZY_INIT_STATIC">Incorrect lazy initialization of static field</a>
+</h2>
+
+<p> This method contains an unsynchronized lazy initialization of a non-volatile static field.
+Because the compiler or processor may reorder instructions,
+threads are not guaranteed to see a completely initialized object,
+<em>if the method can be called by multiple threads</em>.
+You can make the field volatile to correct the problem.
+For more information, see the
+<a href="http://www.cs.umd.edu/~pugh/java/memoryModel/">Java Memory Model web site</a>.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
 <h2>
 <a name="MS_SHOULD_BE_FINAL">Field isn't final but should be</a>
 </h2>

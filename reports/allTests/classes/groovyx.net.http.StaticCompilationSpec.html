@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">1.384s</div>
+<div class="counter">0.170s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">typed handlers should compile static</td>
-<td>1.384s</td>
+<td>0.170s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -87,9 +87,9 @@
 <div id="tab1" class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>10:53:37.644 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://httpbin.org/
-10:53:37.644 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
+<pre>07:40:06.944 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://httpbin.org/
+07:40:06.944 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+07:40:07.003 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
   &lt;meta http-equiv='content-type' value='text/html;charset=utf8'&gt;
@@ -190,7 +190,7 @@
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5/never&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/stream/20&quot;&gt;&lt;code&gt;/stream/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;min(n, 100)&lt;/em&gt; lines.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/delay/3&quot;&gt;&lt;code&gt;/delay/:n&lt;/code&gt;&lt;/a&gt; Delays responding for &lt;em&gt;min(n, 10)&lt;/em&gt; seconds.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/drip?code=200&amp;amp;duration=5&amp;amp;numbytes=5&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/drip?code=200&amp;amp;numbytes=5&amp;amp;duration=5&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/range/1024&quot;&gt;&lt;code&gt;/range/1024?duration=s&amp;amp;chunk_size=code&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; bytes, and allows specifying a &lt;em&gt;Range&lt;/em&gt; header to select a subset of the data. Accepts a &lt;em&gt;chunk_size&lt;/em&gt; and request &lt;em&gt;duration&lt;/em&gt; parameter.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/html&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/html&lt;/code&gt;&lt;/a&gt; Renders an HTML Page.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/robots.txt&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/robots.txt&lt;/code&gt;&lt;/a&gt; Returns some robots.txt rules.&lt;/li&gt;
@@ -334,19 +334,19 @@ $ gunicorn httpbin:app
 
 &lt;/body&gt;
 &lt;/html&gt;
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Tue, 10 Oct 2017 15:53:36 GMT
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 13011
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.0878682136536
-10:53:37.849 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
-10:53:37.861 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://httpbin.org/
-10:53:37.861 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
-10:53:39.019 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
+07:40:07.006 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 13 Oct 2017 12:40:06 GMT
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 13011
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.0106070041656
+07:40:07.007 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
+07:40:07.031 [Test worker] DEBUG groovyx.net.http.JavaHttpBuilder - Request-URI(GET): http://httpbin.org/
+07:40:07.031 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Request-Header: Accept-Encoding -&gt; [gzip, deflate]
+07:40:07.084 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.content - Response-Body: &lt;!DOCTYPE html&gt;
 &lt;html&gt;
 &lt;head&gt;
   &lt;meta http-equiv='content-type' value='text/html;charset=utf8'&gt;
@@ -447,7 +447,7 @@ $ gunicorn httpbin:app
 &lt;li&gt;&lt;a href=&quot;/digest-auth/auth/user/passwd/MD5/never&quot;&gt;&lt;code&gt;/digest-auth/:qop/:user/:passwd&lt;/code&gt;&lt;/a&gt; Challenges HTTP Digest Auth.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/stream/20&quot;&gt;&lt;code&gt;/stream/:n&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;min(n, 100)&lt;/em&gt; lines.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/delay/3&quot;&gt;&lt;code&gt;/delay/:n&lt;/code&gt;&lt;/a&gt; Delays responding for &lt;em&gt;min(n, 10)&lt;/em&gt; seconds.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;/drip?duration=5&amp;amp;numbytes=5&amp;amp;code=200&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;/drip?numbytes=5&amp;amp;code=200&amp;amp;duration=5&quot;&gt;&lt;code&gt;/drip?numbytes=n&amp;amp;duration=s&amp;amp;delay=s&amp;amp;code=code&lt;/code&gt;&lt;/a&gt; Drips data over a duration after an optional initial delay, then (optionally) returns with the given status code.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/range/1024&quot;&gt;&lt;code&gt;/range/1024?duration=s&amp;amp;chunk_size=code&lt;/code&gt;&lt;/a&gt; Streams &lt;em&gt;n&lt;/em&gt; bytes, and allows specifying a &lt;em&gt;Range&lt;/em&gt; header to select a subset of the data. Accepts a &lt;em&gt;chunk_size&lt;/em&gt; and request &lt;em&gt;duration&lt;/em&gt; parameter.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/html&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/html&lt;/code&gt;&lt;/a&gt; Renders an HTML Page.&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;/robots.txt&quot; data-bare-link=&quot;true&quot;&gt;&lt;code&gt;/robots.txt&lt;/code&gt;&lt;/a&gt; Returns some robots.txt rules.&lt;/li&gt;
@@ -591,16 +591,16 @@ $ gunicorn httpbin:app
 
 &lt;/body&gt;
 &lt;/html&gt;
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Tue, 10 Oct 2017 15:53:38 GMT
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 13011
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.0474450588226
-10:53:39.020 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Connection -&gt; keep-alive
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Server -&gt; meinheld/0.6.1
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Date -&gt; Fri, 13 Oct 2017 12:40:07 GMT
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Type -&gt; text/html; charset=utf-8
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Content-Length -&gt; 13011
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Origin -&gt; *
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Access-Control-Allow-Credentials -&gt; true
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Powered-By -&gt; Flask
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: X-Processed-Time -&gt; 0.0053379535675
+07:40:07.086 [Test worker] DEBUG groovy.net.http.JavaHttpBuilder.headers - Response-Header: Via -&gt; 1.1 vegur
 </pre>
 </span>
 </div>
@@ -612,7 +612,7 @@ $ gunicorn httpbin:app
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 4.2.1</a> at Oct 10, 2017 10:54:20 AM</p>
+<a href="http://www.gradle.org">Gradle 4.2.1</a> at Oct 13, 2017 7:40:46 AM</p>
 </div>
 </div>
 </body>

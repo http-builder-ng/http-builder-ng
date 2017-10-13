@@ -184,10 +184,10 @@ import static groovyx.net.http.Safe.register;
 <span class="nc" id="L184">            getHeaders().put(&quot;Accept&quot;, String.join(&quot;;&quot;, values));</span>
 <span class="nc" id="L185">        }</span>
 
-        public void setHeaders(final Map&lt;String,String&gt; toAdd) {
-<span class="fc" id="L188">            final Map&lt;String,String&gt; h = getHeaders();</span>
+        public void setHeaders(final Map&lt;String,CharSequence&gt; toAdd) {
+<span class="fc" id="L188">            final Map&lt;String,CharSequence&gt; h = getHeaders();</span>
 <span class="fc bfc" id="L189" title="All 2 branches covered.">            if(toAdd != null){</span>
-<span class="fc bfc" id="L190" title="All 2 branches covered.">                for(final Map.Entry&lt;String,String&gt; entry : toAdd.entrySet()) {</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">                for(final Map.Entry&lt;String,CharSequence&gt; entry : toAdd.entrySet()) {</span>
 <span class="fc" id="L191">                    h.put(entry.getKey(), entry.getValue());</span>
 <span class="fc" id="L192">                }</span>
             }
@@ -227,7 +227,7 @@ import static groovyx.net.http.Safe.register;
         private String contentType;
         private Charset charset;
         private UriBuilder uriBuilder;
-<span class="fc" id="L230">        private final Map&lt;String,String&gt; headers = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L230">        private final Map&lt;String, CharSequence&gt; headers = new LinkedHashMap&lt;&gt;();</span>
         private Object body;
 <span class="fc" id="L232">        private final Map&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; encoderMap = new LinkedHashMap&lt;&gt;();</span>
 <span class="fc" id="L233">        private BasicAuth auth = new BasicAuth();</span>
@@ -266,7 +266,7 @@ import static groovyx.net.http.Safe.register;
 <span class="fc" id="L266">            return uriBuilder;</span>
         }
 
-        public Map&lt;String,String&gt; getHeaders() {
+        public Map&lt;String,CharSequence&gt; getHeaders() {
 <span class="fc" id="L270">            return headers;</span>
         }
 
@@ -288,7 +288,7 @@ import static groovyx.net.http.Safe.register;
         private volatile String contentType;
         private volatile Charset charset;
         private volatile UriBuilder uriBuilder;
-<span class="fc" id="L291">        private final ConcurrentMap&lt;String,String&gt; headers = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L291">        private final ConcurrentMap&lt;String,CharSequence&gt; headers = new ConcurrentHashMap&lt;&gt;();</span>
         private volatile Object body;
 <span class="fc" id="L293">        private final ConcurrentMap&lt;String,BiConsumer&lt;ChainedHttpConfig,ToServer&gt;&gt; encoderMap = new ConcurrentHashMap&lt;&gt;();</span>
         private final ThreadSafeAuth auth;
@@ -328,7 +328,7 @@ import static groovyx.net.http.Safe.register;
 <span class="fc" id="L328">            return uriBuilder;</span>
         }
 
-        public Map&lt;String,String&gt; getHeaders() {
+        public Map&lt;String,CharSequence&gt; getHeaders() {
 <span class="fc" id="L332">            return headers;</span>
         }
 
