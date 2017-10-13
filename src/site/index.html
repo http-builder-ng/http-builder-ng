@@ -48,9 +48,9 @@
                             <li><a href="docs/javadoc" target="_blank">JavaDocs</a></li>
                             <li><a href="reports/allTests" target="_blank">Test Results</a></li>
                             <li><a href="reports/jacoco/aggregateCoverage/html" target="_blank">Test Coverage</a></li>
-                            <li><a href="core/findbugs/main.html" target="_blank">FindBugs (Core)</a></li>
-                            <li><a href="apache/findbugs/main.html" target="_blank">FindBugs (Apache)</a></li>
-                            <li><a href="okhttp/findbugs/main.html" target="_blank">FindBugs (OkHttp)</a></li>
+                            <li><a href="core/spotbugs/main.html" target="_blank">FindBugs (Core)</a></li>
+                            <li><a href="apache/spotbugs/main.html" target="_blank">FindBugs (Apache)</a></li>
+                            <li><a href="okhttp/spotbugs/main.html" target="_blank">FindBugs (OkHttp)</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -66,7 +66,7 @@
                                                           data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
 <h1>HttpBuilder-NG</h1>
 
-<p>HttpBuilder-NG is a modern Groovy DSL for making HTTP requests. It requires Java 8 and a modern Groovy. It is built against Groovy 2.4.x, but it
+<p>HttpBuilder-NG is a modern Groovy DSL for making HTTP requests. It requires Java 8 and a modern version of Groovy. It is built against Groovy 2.4.x, but it
     doesn't make any assumptions about which version of Groovy you are using. The main goal of HttpBuilder-NG is to allow you to make http requests in a
     natural and readable way. See the <a href="asciidoc/html5" target="_blank">User Guide</a> for more details.</p>
 
@@ -86,7 +86,7 @@
 
 <h2>Artifacts</h2>
 
-<p>The following client implementations are available:</p>
+<p>There are three client implementations available, as described below:</p>
 
 <table>
     <tr>
@@ -107,29 +107,49 @@
     </tr>
 </table>
 
-<p>The library artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a> and Maven Central. For Gradle:
+<p>The library artifacts are available on <a href="https://bintray.com/http-builder-ng">Bintray</a> and Maven Central. For Gradle, add the following to
+    your build:</p>
 
-<pre>compile 'io.github.http-builder-ng:http-builder-ng-[library-name]:${project_version}'</pre>
+<pre style="prettify"><code>compile 'io.github.http-builder-ng:http-builder-ng-[library-name]:${project_version}'</code></pre>
 
-<p>For Maven:</p>
+<p>Similarly for Maven add:</p>
 
-<pre>
-&lt;dependency&gt;
+<pre style="prettify"><code>&lt;dependency&gt;
     &lt;groupId&gt;io.github.http-builder-ng&lt;/groupId&gt;
     &lt;artifactId&gt;http-builder-ng-[library-name]&lt;/artifactId&gt;
     &lt;version&gt;${project_version}&lt;/version&gt;
-&lt;/dependency&gt;
-</pre>
+&lt;/dependency&gt;</code></pre>
 
+<p>Where <code>[library-name]</code> in both instances should be replaced by the desired client library name from the table above.<p>
+
+<h2>Usage</h2>
+
+    <p>The <a href="/asciidoc/html5/#_examples">Examples</a> section of the <a href="asciidoc/html5" target="_blank">User Guide</a> has some
+        self-contained usage examples. The following is a script which will extract the license information for Groovy from the Maven Repository site.</p>
+
+    <pre style="prettify"><code>@Grab('io.github.http-builder-ng:http-builder-ng-core:1.0.2')
+@Grab('org.jsoup:jsoup:1.9.2')
+
+import static groovyx.net.http.HttpBuilder.configure
+import org.jsoup.nodes.Document
+
+Document page = configure {
+    request.uri = 'https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all'
+}.get()
+
+String license = page.select('span.b.lic').collect { it.text() }.join(', ')
+
+println "Groovy is licensed under: &#36;{license}"</code></pre>
+
+    <p>which will print out:<p>
+
+    <pre style="prettify"><code>Groovy is licensed under: Apache 2.0</code></pre>
+
+    <p>when it is executed. The <a href="asciidoc/html5" target="_blank">User Guide</a> and <a href="docs/javadoc" target="_blank">JavaDocs</a> have
+         much more detailed information about usage and configuration.</p>
 
     </div>
     <div id="push"></div>
-</div>
-
-<div id="footer">
-    <div class="container">
-        <p class="muted credit">Mixed with <a href="http://getbootstrap.com/">Bootstrap v3.1.1</a></p>
-    </div>
 </div>
 
 <script src="js/jquery-1.11.1.min.js"></script>

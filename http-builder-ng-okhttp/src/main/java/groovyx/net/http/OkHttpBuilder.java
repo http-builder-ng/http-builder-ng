@@ -253,8 +253,8 @@ public class OkHttpBuilder extends HttpBuilder {
 
     @SuppressWarnings("Duplicates")
     private void applyHeaders(final Request.Builder requestBuilder, final ChainedHttpConfig.ChainedRequest cr) throws URISyntaxException {
-        for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
-            requestBuilder.addHeader(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, CharSequence> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+            requestBuilder.addHeader(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
         }
 
         for (Map.Entry<String, String> e : cookiesToAdd(clientConfig, cr).entrySet()) {

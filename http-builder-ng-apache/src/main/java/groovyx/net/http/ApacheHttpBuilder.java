@@ -474,8 +474,8 @@ public class ApacheHttpBuilder extends HttpBuilder {
 
     @SuppressWarnings("Duplicates")
     private <T extends HttpUriRequest> void addHeaders(final ChainedHttpConfig.ChainedRequest cr, final T message) throws URISyntaxException {
-        for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
-            message.addHeader(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, CharSequence> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+            message.addHeader(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
         }
 
         final String contentType = cr.actualContentType();

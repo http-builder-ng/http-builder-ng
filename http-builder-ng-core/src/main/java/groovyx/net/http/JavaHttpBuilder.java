@@ -80,8 +80,8 @@ public class JavaHttpBuilder extends HttpBuilder {
 
         private void addHeaders() throws URISyntaxException {
             final ChainedHttpConfig.ChainedRequest cr = requestConfig.getChainedRequest();
-            for (Map.Entry<String, String> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
-                connection.addRequestProperty(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, CharSequence> entry : cr.actualHeaders(new LinkedHashMap<>()).entrySet()) {
+                connection.addRequestProperty(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
             }
 
             final String contentType = cr.actualContentType();

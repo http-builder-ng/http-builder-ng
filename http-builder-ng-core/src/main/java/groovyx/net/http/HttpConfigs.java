@@ -184,10 +184,10 @@ public class HttpConfigs {
             getHeaders().put("Accept", String.join(";", values));
         }
 
-        public void setHeaders(final Map<String,String> toAdd) {
-            final Map<String,String> h = getHeaders();
+        public void setHeaders(final Map<String,CharSequence> toAdd) {
+            final Map<String,CharSequence> h = getHeaders();
             if(toAdd != null){
-                for(final Map.Entry<String,String> entry : toAdd.entrySet()) {
+                for(final Map.Entry<String,CharSequence> entry : toAdd.entrySet()) {
                     h.put(entry.getKey(), entry.getValue());
                 }
             }
@@ -227,7 +227,7 @@ public class HttpConfigs {
         private String contentType;
         private Charset charset;
         private UriBuilder uriBuilder;
-        private final Map<String,String> headers = new LinkedHashMap<>();
+        private final Map<String, CharSequence> headers = new LinkedHashMap<>();
         private Object body;
         private final Map<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new LinkedHashMap<>();
         private BasicAuth auth = new BasicAuth();
@@ -266,7 +266,7 @@ public class HttpConfigs {
             return uriBuilder;
         }
 
-        public Map<String,String> getHeaders() {
+        public Map<String,CharSequence> getHeaders() {
             return headers;
         }
 
@@ -288,7 +288,7 @@ public class HttpConfigs {
         private volatile String contentType;
         private volatile Charset charset;
         private volatile UriBuilder uriBuilder;
-        private final ConcurrentMap<String,String> headers = new ConcurrentHashMap<>();
+        private final ConcurrentMap<String,CharSequence> headers = new ConcurrentHashMap<>();
         private volatile Object body;
         private final ConcurrentMap<String,BiConsumer<ChainedHttpConfig,ToServer>> encoderMap = new ConcurrentHashMap<>();
         private final ThreadSafeAuth auth;
@@ -328,7 +328,7 @@ public class HttpConfigs {
             return uriBuilder;
         }
 
-        public Map<String,String> getHeaders() {
+        public Map<String,CharSequence> getHeaders() {
             return headers;
         }
 

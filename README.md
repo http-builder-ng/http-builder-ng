@@ -55,14 +55,14 @@ Hopefully that gives you a general idea of how Http Builder NG works. Http Build
 
 Http Builder NG artifacts are available on [Bintray](https://bintray.com/http-builder-ng/dclark/http-builder-ng) and Maven Central, for Gradle you can add the following dependency to your `build.gradle` file `dependencies` closure:
 
-    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.1'
+    compile 'io.github.http-builder-ng:http-builder-ng-CLIENT:1.0.2'
     
 or, for Maven add the following to your `pom.xml` file:
 
     <dependency>
       <groupId>io.github.http-builder-ng</groupId>
       <artifactId>http-builder-ng-CLIENT</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
     </dependency>
     
 where `CLIENT` is replaced with the client library name (`core`, `apache`, or `okhttp`).

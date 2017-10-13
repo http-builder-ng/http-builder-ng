@@ -18,7 +18,11 @@ package groovyx.net.http.tk
 import com.stehno.ersatz.Cookie
 import com.stehno.ersatz.Encoders
 import com.stehno.ersatz.proxy.ErsatzProxy
-import groovyx.net.http.*
+import groovyx.net.http.ChainedHttpConfig
+import groovyx.net.http.FromServer
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.HttpConfig
+import groovyx.net.http.NullCookieStore
 import spock.lang.IgnoreIf
 import spock.lang.Unroll
 
@@ -26,12 +30,14 @@ import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
 
-import static com.stehno.ersatz.ContentType.*
+import static com.stehno.ersatz.ContentType.APPLICATION_JSON
+import static com.stehno.ersatz.ContentType.APPLICATION_XML
+import static com.stehno.ersatz.ContentType.TEXT_HTML
+import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static com.stehno.ersatz.CookieMatcher.cookieMatcher
 import static com.stehno.ersatz.NoCookiesMatcher.noCookies
 import static groovyx.net.http.HttpVerb.GET
 import static groovyx.net.http.util.SslUtils.ignoreSslIssues
-
 /**
  * Test kit for testing the HTTP GET method with different clients.
  */
@@ -139,7 +145,8 @@ abstract class HttpGetTestKit extends HttpMethodTestKit {
         headers << [
             null,
             [:],
-            [hat: 'fedora']
+            [hat: 'fedora'],
+            [coat: "overcoat ${'something'}"]
         ]
     }
 
