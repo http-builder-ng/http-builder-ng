@@ -312,4 +312,16 @@ class UriBuilderSpec extends Specification {
         and: 'the server was actually called'
         server.verify()
     }
+
+    def 'uri with param with no value'() {
+        setup:
+        UriBuilder builder = basic(root())
+
+        when:
+        builder.full = 'http://test.com/a?wsdl'
+        URI uri = builder.toURI()
+
+        then:
+        uri == 'http://test.com/a?wsdl'.toURI()
+    }
 }
