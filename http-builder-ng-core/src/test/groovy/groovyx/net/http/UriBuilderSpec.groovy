@@ -21,6 +21,7 @@ import groovyx.net.http.optional.Download
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_JSON
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
@@ -323,5 +324,25 @@ class UriBuilderSpec extends Specification {
 
         then:
         uri == 'http://test.com/a?wsdl'.toURI()
+    }
+
+    @Unroll 'relative paths (#baseUrl #path -> #fullUrl)'() {
+        setup:
+        UriBuilder builder = basic(root())
+        builder.full = 'http://localhost:9191/something/'
+
+        when:
+        builder.path = path
+        URI uri = builder.toURI()
+
+        then:
+        uri == fullUrl.toURI()
+
+        where:
+        baseUrl                            | path          || fullUrl
+        'http://localhost:9191/something/' | 'more/pathy'  || 'http://localhost:9191/something/more/pathy'
+        'http://localhost:9191/something'  | 'more/pathy'  || 'http://localhost:9191/something/more/pathy'
+        'http://localhost:9191/something/' | '/more/pathy' || 'http://localhost:9191/more/pathy'
+        'http://localhost:9191/something'  | '/more/pathy' || 'http://localhost:9191/more/pathy'
     }
 }
