@@ -165,7 +165,15 @@ public abstract class UriBuilder {
      * @return a reference to the builder
      */
     public UriBuilder setPath(final String str) {
-        return setPath(new GStringImpl(EMPTY, new String[]{str}));
+        final String[] parts;
+        if (str.startsWith("/")) {
+            parts = new String[]{str};
+        } else {
+            final String base = getPath().toString();
+            parts = new String[]{base, base.endsWith("/") ? "" : "/", str};
+        }
+
+        return setPath(new GStringImpl(EMPTY, parts));
     }
 
     public URI forCookie(final HttpCookie cookie) throws URISyntaxException {
