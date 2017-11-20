@@ -225,9 +225,11 @@ public abstract class UriBuilder {
 
             queryMap.entrySet().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
                 final Collection<?> values = entry.getValue() instanceof Collection ? (Collection<?>) entry.getValue() : singletonList(entry.getValue().toString());
-                values.forEach(value -> {
-                    nvps.add(entry.getKey() + "=" + value);
-                });
+                if(values.isEmpty()){
+                    nvps.add(entry.getKey());
+                } else {
+                    values.forEach(value -> nvps.add(entry.getKey() + "=" + value));
+                }
             });
 
             return nvps.stream().collect(Collectors.joining("&"));
