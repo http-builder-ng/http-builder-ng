@@ -73,63 +73,66 @@ import java.nio.charset.Charset;
 <span class="fc" id="L73">        int lower = 0;</span>
 <span class="fc bfc" id="L74" title="All 2 branches covered.">        while(lower &lt; builder.length()) {</span>
 <span class="fc" id="L75">            int eqAt = builder.indexOf(&quot;=&quot;, lower);</span>
-<span class="fc" id="L76">            int ampAt = builder.indexOf(&quot;&amp;&quot;, eqAt);</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">            if(ampAt == -1) {</span>
-<span class="fc" id="L78">                ampAt = builder.length();</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            if(eqAt == -1) {</span>
+<span class="fc" id="L77">                eqAt = builder.length();</span>
+            }
+<span class="fc" id="L79">            int ampAt = builder.indexOf(&quot;&amp;&quot;, eqAt);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if(ampAt == -1) {</span>
+<span class="fc" id="L81">                ampAt = builder.length();</span>
             }
             
-<span class="fc" id="L81">            final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());</span>
-<span class="fc" id="L82">            final String value = URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());</span>
-<span class="fc" id="L83">            List&lt;String&gt; values = ret.get(key);</span>
-<span class="fc bfc" id="L84" title="All 2 branches covered.">            if(values == null) {</span>
-<span class="fc" id="L85">                values = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L86">                ret.put(key, values);</span>
+<span class="fc" id="L84">            final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            final String value = eqAt == ampAt ? null : URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());</span>
+<span class="fc" id="L86">            List&lt;String&gt; values = ret.get(key);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">            if(values == null) {</span>
+<span class="fc" id="L88">                values = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L89">                ret.put(key, values);</span>
             }
             
-<span class="fc bfc" id="L89" title="All 2 branches covered.">            if(ampAt - eqAt &gt; 1) {</span>
-<span class="fc" id="L90">                values.add(value);</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if(ampAt - eqAt &gt; 1) {</span>
+<span class="fc" id="L93">                values.add(value);</span>
             }
             
-<span class="fc" id="L93">            lower = ampAt + 1;</span>
-<span class="fc" id="L94">        }</span>
+<span class="fc" id="L96">            lower = ampAt + 1;</span>
+<span class="fc" id="L97">        }</span>
         
-<span class="fc" id="L96">        return ret;</span>
+<span class="fc" id="L99">        return ret;</span>
     }
 
     public static List&lt;?&gt; checkValue(final Object v) {
-<span class="fc bfc" id="L100" title="All 2 branches covered.">        if(v instanceof List) {</span>
-<span class="fc" id="L101">            List list = (List) v;</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">            if(list.size() &gt; 0) {</span>
-<span class="fc" id="L103">                return list;</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if(v instanceof List) {</span>
+<span class="fc" id="L104">            List list = (List) v;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            if(list.size() &gt; 0) {</span>
+<span class="fc" id="L106">                return list;</span>
             }
             else {
-<span class="fc" id="L106">                return Collections.singletonList(&quot;&quot;);</span>
+<span class="fc" id="L109">                return Collections.singletonList(&quot;&quot;);</span>
             }
         }
-<span class="fc bfc" id="L109" title="All 2 branches covered.">        else if(v != null) {</span>
-<span class="fc" id="L110">            return Collections.singletonList(v);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        else if(v != null) {</span>
+<span class="fc" id="L113">            return Collections.singletonList(v);</span>
         }
         else {
-<span class="fc" id="L113">            return Collections.singletonList(&quot;&quot;);</span>
+<span class="fc" id="L116">            return Collections.singletonList(&quot;&quot;);</span>
         }
     }
     
     public static String encode(final Map&lt;?,?&gt; map, final Charset charset) {
         try {
-<span class="fc" id="L119">            tlBuffers.get().clear();</span>
-<span class="fc" id="L120">            final StringBuilder builder = tlBuffers.get().builder;</span>
-<span class="fc bfc" id="L121" title="All 2 branches covered.">            for(Map.Entry&lt;?,?&gt; entry : map.entrySet()) {</span>
-<span class="fc bfc" id="L122" title="All 2 branches covered.">                for(Object value : checkValue(entry.getValue())) {</span>
-<span class="fc" id="L123">                    builder.append(URLEncoder.encode(entry.getKey().toString(), charset.toString())).append(&quot;=&quot;);</span>
-<span class="fc" id="L124">                    builder.append(URLEncoder.encode(value.toString(), charset.toString())).append(&quot;&amp;&quot;);</span>
-<span class="fc" id="L125">                }</span>
-<span class="fc" id="L126">            }</span>
+<span class="fc" id="L122">            tlBuffers.get().clear();</span>
+<span class="fc" id="L123">            final StringBuilder builder = tlBuffers.get().builder;</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            for(Map.Entry&lt;?,?&gt; entry : map.entrySet()) {</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">                for(Object value : checkValue(entry.getValue())) {</span>
+<span class="fc" id="L126">                    builder.append(URLEncoder.encode(entry.getKey().toString(), charset.toString())).append(&quot;=&quot;);</span>
+<span class="fc" id="L127">                    builder.append(URLEncoder.encode(value.toString(), charset.toString())).append(&quot;&amp;&quot;);</span>
+<span class="fc" id="L128">                }</span>
+<span class="fc" id="L129">            }</span>
             
-<span class="fc" id="L128">            return builder.substring(0, builder.length() -1);</span>
+<span class="fc" id="L131">            return builder.substring(0, builder.length() -1);</span>
         }
-<span class="nc" id="L130">        catch(UnsupportedEncodingException e) {</span>
-<span class="nc" id="L131">            throw new TransportingException(&quot;Error in encoding form&quot;, e);</span>
+<span class="nc" id="L133">        catch(UnsupportedEncodingException e) {</span>
+<span class="nc" id="L134">            throw new TransportingException(&quot;Error in encoding form&quot;, e);</span>
         }
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
