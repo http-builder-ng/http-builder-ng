@@ -73,13 +73,16 @@ public class Form {
         int lower = 0;
         while(lower < builder.length()) {
             int eqAt = builder.indexOf("=", lower);
+            if(eqAt == -1) {
+                eqAt = builder.length();
+            }
             int ampAt = builder.indexOf("&", eqAt);
             if(ampAt == -1) {
                 ampAt = builder.length();
             }
             
             final String key = URLDecoder.decode(builder.substring(lower, eqAt), charset.toString());
-            final String value = URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());
+            final String value = eqAt == ampAt ? null : URLDecoder.decode(builder.substring(eqAt+1, ampAt), charset.toString());
             List<String> values = ret.get(key);
             if(values == null) {
                 values = new ArrayList<>();
