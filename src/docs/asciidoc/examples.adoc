@@ -167,7 +167,7 @@ def result = configure {
     request.encoder 'application/x-www-form-urlencoded', NativeHandlers.Encoders.&form
 }
 
-println "You submitted: id=${result.form.id} and label=${result.form.id}"
+println "You submitted: id=${result.form.id} and label=${result.form.label}"
 ----
 
 which posts the specified form data to the `http://httpbin.org/post` which replies with JSON content containing the posted
