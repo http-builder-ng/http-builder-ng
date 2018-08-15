@@ -338,7 +338,7 @@ The built-in exception method wraps the exception in a `java.lang.RuntimeExcepti
 
 ===== Parsers
 
-The response body content resulting form a request is parsed based on the response content-type. Content parsers may be configured using the
+The response body content resulting from a request is parsed based on the response content-type. Content parsers may be configured using the
 `HttpConfig.Response.parser(String, BiFunction<ChainedHttpConfig, FromServer, Object>)` method, which takes a `BiFunction` and the response content
 type it is mapped to. The function (or Closure) accepts a `ChainedHttpConfig` object, and a `FromServer` instance and returns the parsed `Object`. If
 we had a server providing the current time as a response like `DATE-TIME: MM/dd/yyyy HH:mm:ss` we could request the time with the following code:
