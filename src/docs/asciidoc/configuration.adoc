@@ -278,7 +278,7 @@ will be called with the `FromServer` instance and an `Object` instance, which wi
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    response.when(200){ FromServer fs ->
+    response.when(200){ FromServer fs, Object body ->
         'ok'
     }
 }
@@ -296,7 +296,7 @@ The other two status handlers are the `success` and `failure` methods:
 HttpBuilder.configure {
     request.uri = 'http://localhost:8181'
 }.head {
-    response.success { FromServer fs ->
+    response.success { FromServer fs, Object body ->
         'ok'
     }
 }
