@@ -68,10 +68,11 @@ or, if you are using Java:
 
 [source,java]
 ----
+import groovyx.net.http.HttpBuilder;
 import static groovyx.net.http.HttpBuilder.configure;
 
-def http = configure(config -> {
-    config.getRequeset().setUri("http://localhost:9876");
+HttpBuilder http = configure(config -> {
+    config.getRequest().setUri("http://localhost:9876");
 });
 ----
 
