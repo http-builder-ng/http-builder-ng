@@ -261,3 +261,49 @@ configure {
 ----
 
 Similar configuration may be found for each of the underlying client implementations.
+
+=== Using Multipart with InputStream
+
+It is possible to use an `InputStream` to provide data for a `POST` request, as the following user-provided shows:
+
+[source,groovy]
+----
+def xlr = HttpBuilder.configure {
+    request.uri = "http://localhost:8765"
+}
+
+def zip = new ZipOutputStream(baos)
+
+zip.putNextEntry(new ZipEntry("release-template.json"))
+zip.write(new JsonBuilder(templateJson).toString().getBytes("UTF-8"))
+zip.closeEntry()
+
+zip.putNextEntry(new ZipEntry("manifest.json"))
+zip.write('{"xlr-data-model-version":"7.5.0#3","xlr-version":"7.5.2"}'.getBytes("UTF-8"))
+zip.closeEntry()
+
+// Put required attachments in the ZIP, if any.
+fileTree(dir: template.file.path, include: 'attachments/').visit { FileTreeElement attachment ->
+    if(!attachment.isDirectory()){
+        zip.putNextEntry(new ZipEntry(attachment.relativePath.toString()))
+        zip.write(attachment.file.bytes)
+        zip.closeEntry()
+    }
+}
+
+zip.close()
+
+def bais = new ByteArrayInputStream(baos.toByteArray())
+
+xlr.post {
+    request.uri.path = "/upload/templates/zip"
+    request.uri.query = [folderId: parentId]
+    request.contentType = 'multipart/form-data'
+    request.body = MultipartContent.multipart {
+        part('file', 'template.xlr', 'application/octet-stream', bais)
+    }
+}
+----
+
+This example will `POST` the given ZIP content as a multipart request part. The primary focus point is the fourth parameter
+of the `part` configuration, which accepts an `InputStream`.
