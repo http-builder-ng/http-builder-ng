@@ -23,7 +23,6 @@ import spock.lang.Ignore
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.MULTIPART_MIXED
-import static com.stehno.ersatz.ContentType.MULTIPART_MIXED
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
 import static groovyx.net.http.ContentTypes.MULTIPART_FORMDATA
 import static groovyx.net.http.MultipartContent.multipart
@@ -43,7 +42,7 @@ class OkHttpPostSpec extends HttpPostTestKit implements UsesOkClient {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
-                responds().content(OK_TEXT, TEXT_PLAIN)
+                responds().body('ok-text', TEXT_PLAIN)
             }
         }.start()
 
@@ -85,7 +84,7 @@ class OkHttpPostSpec extends HttpPostTestKit implements UsesOkClient {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, MULTIPART_MIXED
-                responds().content(OK_TEXT, TEXT_PLAIN)
+                responds().body('ok-text', TEXT_PLAIN)
             }
         }
 

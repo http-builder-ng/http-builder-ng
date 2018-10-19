@@ -41,7 +41,7 @@ class JavaHttpPostSpec extends HttpPostTestKit implements UsesJavaClient {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_MIXED
-                responds().content(OK_TEXT, TEXT_PLAIN)
+                responds().body('ok-text', TEXT_PLAIN)
             }
         }
 

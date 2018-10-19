@@ -40,7 +40,9 @@ class ApacheHttpPutSpec extends HttpPutTestKit implements UsesApacheClient {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
-                responds().content(OK_TEXT, TEXT_PLAIN)
+                responder {
+                    body('ok-text', TEXT_PLAIN)
+                }
             }
         }
 

@@ -19,7 +19,6 @@ import com.stehno.ersatz.ContentType
 import com.stehno.ersatz.Decoders
 import com.stehno.ersatz.MultipartRequestContent
 import groovyx.net.http.tk.HttpPatchTestKit
-import org.apache.http.client.methods.HttpPatch
 import spock.lang.Unroll
 
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
@@ -41,7 +40,7 @@ class ApacheHttpPatchSpec extends HttpPatchTestKit implements UsesApacheClient {
                     part 'alpha', 'some data'
                     part 'bravo', 'bravo.txt', 'text/plain', 'This is bravo content'
                 }, ContentType.MULTIPART_FORMDATA
-                responds().content(OK_TEXT, TEXT_PLAIN)
+                responds().body('ok-text', TEXT_PLAIN)
             }
         }
 
