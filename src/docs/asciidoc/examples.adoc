@@ -244,3 +244,20 @@ HttpBuilder http = OkHttpBuilder.configure {
 ----
 
 This additional custom configuration must be applied with care, as it is possible to undo the configuration provided by the `HttpBuilder` library.
+
+=== Following Redirects
+
+The HttpBuilder-NG library does not provide any special support for the configuration of redirect-following; however, this may be done using a
+`clientCustomizer` with client-library-specific code, such as (for `okhttp`):
+
+[source,groovy]
+----
+configure {
+    request.uri = 'http://localhost:1234'
+    client.clientCustomizer { OkHttpClient.Builder builder ->
+         builder.followRedirects(true)
+    }
+}
+----
+
+Similar configuration may be found for each of the underlying client implementations.
