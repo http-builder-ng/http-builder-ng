@@ -1,8 +1,7 @@
 plugins {
-    id 'com.jfrog.bintray' version '1.7.3'
-    id "com.github.hierynomus.license" version "0.13.1"
-    id 'com.github.ben-manes.versions' version '0.13.0'
-    id "com.github.spotbugs" version "1.6.5"
+    id 'com.jfrog.bintray' version '1.8.4'
+    id "com.github.hierynomus.license" version "0.14.0"
+    id 'com.github.ben-manes.versions' version '0.20.0'
 }
 
 repositories {
@@ -32,21 +31,6 @@ license {
     ext.year = Calendar.instance.get(Calendar.YEAR)
 
     excludes(['**/*.txt', '**/*.dtd', '**/*.xml', '**/*.ent', '**/*.jks'])
-}
-
-spotbugs {
-    toolVersion = '3.1.0-RC6'
-    ignoreFailures = true // let's not kill the build for this
-    effort = 'max'
-    reportLevel = 'low'
-}
-
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
-    reports {
-        xml.enabled false
-        html.enabled true
-        html.stylesheet resources.text.fromFile('../config/findbugs-styles.xsl')
-    }
 }
 
 bintray {

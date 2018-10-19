@@ -157,7 +157,7 @@ The original intent of Http Builder NG was to fix a few bugs and add a slight en
 # License
 
 ```
-Copyright 2017 HttpBuilder-Project
+Copyright 2018 HttpBuilder-Project
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
