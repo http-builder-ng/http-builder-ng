@@ -337,7 +337,7 @@ public class ApacheHttpBuilder extends HttpBuilder {
         super(config);
 
         this.proxyInfo = config.getExecution().getProxyInfo();
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
+        this.config = config.getChainedConfig();
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
 

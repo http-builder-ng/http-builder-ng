@@ -17,6 +17,6 @@ package groovyx.net.http
 
 import groovyx.net.http.tk.HttpOptionsTestKit
 
-class OpHttpOptionsSpec extends HttpOptionsTestKit implements UsesOkClient {
+class OkHttpOptionsSpec extends HttpOptionsTestKit implements UsesOkClient {
 
 }
