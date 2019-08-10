@@ -348,7 +348,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
     protected JavaHttpBuilder(final HttpObjectConfig config) {
         super(config);
-        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());
+        this.config = config.getChainedConfig();
         this.executor = config.getExecution().getExecutor();
         this.clientConfig = config.getClient();
         this.hostnameVerifier = config.getExecution().getHostnameVerifier();
