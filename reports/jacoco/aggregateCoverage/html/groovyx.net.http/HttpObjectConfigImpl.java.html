@@ -26,7 +26,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static groovyx.net.http.HttpConfigs.basic;
+import static groovyx.net.http.HttpConfigs.threadSafe;
 import static groovyx.net.http.HttpConfigs.root;
 import static groovyx.net.http.util.SslUtils.ANY_HOSTNAME;
 import static groovyx.net.http.util.SslUtils.acceptingSslContext;
@@ -34,7 +34,7 @@ import static groovyx.net.http.util.Misc.isPropertySet;
 
 <span class="fc" id="L35">public class HttpObjectConfigImpl implements HttpObjectConfig {</span>
 
-<span class="fc" id="L37">    private final ChainedHttpConfig config = basic(root());</span>
+<span class="fc" id="L37">    private final ChainedHttpConfig config = threadSafe(root());</span>
 
     public ChainedHttpConfig getChainedConfig() {
 <span class="fc" id="L40">        return config;</span>

@@ -65,7 +65,7 @@ public class OkHttpBuilder extends HttpBuilder {
     protected OkHttpBuilder(final HttpObjectConfig config) {
 <span class="fc" id="L66">        super(config);</span>
 
-<span class="fc" id="L68">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L68">        this.config = config.getChainedConfig();</span>
 <span class="fc" id="L69">        this.clientConfig = config.getClient();</span>
 <span class="fc" id="L70">        this.executor = config.getExecution().getExecutor();</span>
 

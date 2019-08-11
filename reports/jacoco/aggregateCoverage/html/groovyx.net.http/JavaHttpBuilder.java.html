@@ -251,7 +251,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
             private BufferedInputStream handleEncoding(final BufferedInputStream is) throws IOException {
 <span class="fc" id="L253">                Header&lt;?&gt; encodingHeader = Header.find(headers, &quot;Content-Encoding&quot;);</span>
-<span class="fc bfc" id="L254" title="All 2 branches covered.">                if (encodingHeader != null) {</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">                if (encodingHeader != null) {</span>
 <span class="pc bpc" id="L255" title="1 of 2 branches missed.">                    if (encodingHeader.getValue().equals(&quot;gzip&quot;)) {</span>
 <span class="fc" id="L256">                        return new BufferedInputStream(new GZIPInputStream(is));</span>
 <span class="nc bnc" id="L257" title="All 2 branches missed.">                    } else if (encodingHeader.getValue().equals(&quot;deflate&quot;)) {</span>
@@ -259,7 +259,7 @@ public class JavaHttpBuilder extends HttpBuilder {
                     }
                 }
 
-<span class="fc" id="L262">                return is;</span>
+<span class="nc" id="L262">                return is;</span>
             }
 
             private String clean(final String str) {
@@ -331,7 +331,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 <span class="fc" id="L331">                return callable.call();</span>
             } finally {
 <span class="fc" id="L333">                tlAuth.set(null);</span>
-            }
+<span class="fc" id="L334">            }</span>
         }
     }
 
@@ -348,7 +348,7 @@ public class JavaHttpBuilder extends HttpBuilder {
 
     protected JavaHttpBuilder(final HttpObjectConfig config) {
 <span class="fc" id="L350">        super(config);</span>
-<span class="fc" id="L351">        this.config = new HttpConfigs.ThreadSafeHttpConfig(config.getChainedConfig());</span>
+<span class="fc" id="L351">        this.config = config.getChainedConfig();</span>
 <span class="fc" id="L352">        this.executor = config.getExecution().getExecutor();</span>
 <span class="fc" id="L353">        this.clientConfig = config.getClient();</span>
 <span class="fc" id="L354">        this.hostnameVerifier = config.getExecution().getHostnameVerifier();</span>
