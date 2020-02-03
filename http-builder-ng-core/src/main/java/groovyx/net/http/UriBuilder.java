@@ -166,7 +166,7 @@ public abstract class UriBuilder {
      */
     public UriBuilder setPath(final String str) {
         final String[] parts;
-        if (str.startsWith("/")) {
+        if ( (str.startsWith("/")) || (getPath()==null) ) {
             parts = new String[]{str};
         } else {
             final String base = getPath().toString();

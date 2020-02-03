@@ -65,11 +65,11 @@ import static java.util.Collections.*;
  * }
  *
  * def content = http.get {
- *     request.uri.path = '/list'
+ *     request.uri.path = request.parent.path + '/list'
  * }
  *
  * def result = http.post {
- *     request.uri.path = '/save'
+ *     request.uri.path = request.parent.path + '/save'
  *     request.body = infoRecord
  *     request.contentType = ContentTypes.JSON[0]
  * }
