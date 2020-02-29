@@ -33,6 +33,7 @@ class ContentTypesSpec extends Specification {
         'application/json'                  || JSON
         'application/javascript'            || JSON
         'text/javascript'                   || JSON
+        'application/hal+json'              || JSON
         'application/xml'                   || XML
         'text/xml'                          || XML
         'application/xhtml+xml'             || XML
@@ -54,6 +55,7 @@ class ContentTypesSpec extends Specification {
         JSON   | 0     || 'application/json'
         JSON   | 1     || 'application/javascript'
         JSON   | 2     || 'text/javascript'
+        JSON   | 0     || 'application/hal+json'
         XML    | 0     || 'application/xml'
         XML    | 1     || 'text/xml'
         XML    | 2     || 'application/xhtml+xml'
@@ -77,6 +79,6 @@ class ContentTypesSpec extends Specification {
         }
 
         then:
-        values == ['application/json', 'application/javascript', 'text/javascript']
+        values == ['application/json', 'application/javascript', 'text/javascript', 'application/hal+json']
     }
 }
