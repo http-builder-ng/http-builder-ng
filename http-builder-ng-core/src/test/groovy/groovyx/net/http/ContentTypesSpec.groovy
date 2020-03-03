@@ -55,7 +55,7 @@ class ContentTypesSpec extends Specification {
         JSON   | 0     || 'application/json'
         JSON   | 1     || 'application/javascript'
         JSON   | 2     || 'text/javascript'
-        JSON   | 0     || 'application/hal+json'
+        JSON   | 3     || 'application/hal+json'
         XML    | 0     || 'application/xml'
         XML    | 1     || 'text/xml'
         XML    | 2     || 'application/xhtml+xml'
