@@ -31,7 +31,7 @@ public enum ContentTypes implements Iterable<String> {
 
     ANY("*/*"),
     TEXT("text/plain"),
-    JSON("application/json", "application/javascript", "text/javascript", "application/hal+json"),
+    JSON("application/json", "application/javascript", "text/javascript", "application/hal+json", "application/problem+json"),
     XML("application/xml", "text/xml", "application/xhtml+xml", "application/atom+xml"),
     HTML("text/html"),
     URLENC("application/x-www-form-urlencoded"),
