@@ -13,6 +13,8 @@
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/httpbuilderng.svg?style=social&label=Follow)]()
 
+> **Dormant** - The HttpBuilder-NG project is going dormant. Neither of us use the project any longer nor do we have the extra time to properly maintain it. Please feel free to fork it and move it forward, or contact us (with an issue) to discuss options for taking over the project.
+
 ## Quick Links for the Impatient
 
 * Site: https://http-builder-ng.github.io/http-builder-ng/
