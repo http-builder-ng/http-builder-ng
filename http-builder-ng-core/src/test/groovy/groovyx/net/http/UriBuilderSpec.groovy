@@ -190,6 +190,17 @@ class UriBuilderSpec extends Specification {
         server.stop()
     }
 
+    def 'url with duplicates in query string'() {
+        given:
+            UriBuilder tsafe = UriBuilder.threadSafe(root())
+            UriBuilder tunsafe = basic(root())
+            tsafe.useRawValues = true
+            tunsafe.useRawValues = true
+        expect:
+            tsafe.setFull('http://foo.com/endpoint?param=1&param=2').toURI() == new URI('http://foo.com/endpoint?param=1&param=2')
+            tunsafe.setFull('http://foo.com/endpoint?param=1&param=2').toURI() == new URI('http://foo.com/endpoint?param=1&param=2')
+    }
+
     def 'url with encoded slash'() {
         setup:
         String raw = 'http://localhost:8181/api/v4/projects/myteam%2Fmyrepo/repository/files/myfile.json?ref=master'

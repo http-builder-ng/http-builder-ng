@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2017 HttpBuilder-NG Project
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -212,13 +212,13 @@ public abstract class UriBuilder {
 
     private URI toRawURI(final String scheme, final Integer port, final String host, final GString path, final String query, final String fragment, final String userInfo) throws URISyntaxException {
         return new URI(format("%s%s%s%s%s%s%s",
-            scheme == null ? "" : (scheme.endsWith("://") ? scheme : scheme + "://"),
-            userInfo == null ? "" : (userInfo.endsWith("@") ? userInfo : userInfo + "@"),
-            host == null ? "" : host,
-            port == null ? "" : ":" + port.toString(),
-            path == null ? "" : (!path.toString().startsWith("/") && !path.toString().isEmpty() ? "/" + path : path),
-            query != null ? "?" + query : "",
-            fragment == null ? "" : (!fragment.startsWith("#") ? "#" + fragment : fragment)
+                scheme == null ? "" : (scheme.endsWith("://") ? scheme : scheme + "://"),
+                userInfo == null ? "" : (userInfo.endsWith("@") ? userInfo : userInfo + "@"),
+                host == null ? "" : host,
+                port == null ? "" : ":" + port.toString(),
+                path == null ? "" : (!path.toString().startsWith("/") && !path.toString().isEmpty() ? "/" + path : path),
+                query != null ? "?" + query : "",
+                fragment == null ? "" : (!fragment.startsWith("#") ? "#" + fragment : fragment)
         ));
     }
 
@@ -233,7 +233,7 @@ public abstract class UriBuilder {
 
             queryMap.entrySet().forEach((Consumer<Map.Entry<String, ?>>) entry -> {
                 final Collection<?> values = entry.getValue() instanceof Collection ? (Collection<?>) entry.getValue() : singletonList(entry.getValue().toString());
-                if(values.isEmpty()){
+                if (values.isEmpty()) {
                     nvps.add(entry.getKey());
                 } else {
                     values.forEach(value -> nvps.add(entry.getKey() + "=" + value));
@@ -291,11 +291,8 @@ public abstract class UriBuilder {
 
         for (final String nvp : queryString.split("&")) {
             final String[] pair = nvp.split("=");
-            map.computeIfAbsent(pair[0], k -> {
-                List<String> list = new LinkedList<>();
-                list.add(pair[1]);
-                return list;
-            });
+            map.putIfAbsent(pair[0], new LinkedList<>());
+            map.get(pair[0]).add(pair[1]);
         }
 
         return map;
