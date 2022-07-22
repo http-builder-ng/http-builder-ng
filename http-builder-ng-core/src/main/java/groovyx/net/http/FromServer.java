@@ -453,14 +453,9 @@ public interface FromServer {
      */
     default Charset getCharset() {
         final Header.CombinedMap header = (Header.CombinedMap) Header.find(getHeaders(), "Content-Type");
-        if (header == null) {
-            return StandardCharsets.UTF_8;
+        if (header != null && header.getParsed().containsKey("charset")) {
+            return Charset.forName(header.getParsed().get("charset"));
         }
-
-        if (header.getParsed().containsKey("charset")) {
-            Charset.forName(header.getParsed().get("charset"));
-        }
-
         return StandardCharsets.UTF_8;
     }
 

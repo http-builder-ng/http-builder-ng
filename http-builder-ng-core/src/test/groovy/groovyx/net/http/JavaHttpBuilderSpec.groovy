@@ -20,13 +20,10 @@ import groovy.transform.Canonical
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spock.lang.AutoCleanup
+import spock.lang.Issue
 import spock.lang.Specification
 
-import java.util.function.BiFunction
-import java.util.function.Function
-
 import static com.stehno.ersatz.ContentType.TEXT_PLAIN
-import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.ContentTypes.JSON
 import static groovyx.net.http.NativeHandlers.Parsers.json
 
@@ -111,7 +108,7 @@ class JavaHttpBuilderSpec extends Specification {
         String result = JavaHttpBuilder.configure {
             request.uri = ersatzServer.httpUrl
 
-            execution.interceptor(HttpVerb.POST){ ChainedHttpConfig config, fx ->
+            execution.interceptor(HttpVerb.POST) { ChainedHttpConfig config, fx ->
                 log.info 'Configuration: {}->{}', config.chainedRequest.verb, config.chainedRequest.uri.toURI()
                 fx.apply(config)
             }
@@ -143,6 +140,34 @@ class JavaHttpBuilderSpec extends Specification {
 
         then:
         "Your score for item (${itemScore.item}) was (${itemScore.score})." == "Your score for item (ASDFASEACV235) was (90786)."
+    }
+
+    @Issue('#187')
+    def "getCharset should return the charset from the response"() {
+        given:
+        String expectedCharset = 'ISO-8859-1'
+        ersatzServer.expectations {
+            get('/bar') {
+                responder {
+                    contentType "text/plain; charset=$expectedCharset"
+                    content 'ok'
+                }
+            }
+        }
+
+        when:
+        String result = JavaHttpBuilder.configure {
+            request.uri = ersatzServer.httpUrl
+        }.get(String) {
+            request.uri.path = '/bar'
+            response.success { FromServer fs, Object body ->
+                assert fs.charset.toString() == expectedCharset
+                body
+            }
+        }
+
+        then:
+        result == 'ok'
     }
 
     @Canonical
